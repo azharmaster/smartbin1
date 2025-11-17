@@ -1,10 +1,17 @@
 @extends('layouts.app')
-
+@section('content_title', 'Tasks')
 @section('content')
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Tasks</h4>
+    </div>
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-3">
-        <h1>Tasks</h1>
-        <a href="{{ route('tasks.create') }}" class="btn btn-success">+ Add Task</a>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            + Add Task
+        </button>
     </div>
 
     @if(session('success'))
@@ -41,6 +48,7 @@
                         </td>
                     </tr>
                     @endforeach
+
                     @if($tasks->isEmpty())
                     <tr>
                         <td colspan="5" class="text-center">No tasks found.</td>
@@ -51,4 +59,51 @@
         </div>
     </div>
 </div>
+
+
+<!-- 🔥 Move modal INSIDE the content section -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="addTaskModalLabel">Add Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+          <form action="{{ route('tasks.store') }}" method="POST">
+              @csrf
+
+              <div class="form-group mb-3">
+                  <label>User</label>
+                  <select name="userID" class="form-control" required>
+                      @foreach($users as $user)
+                      <option value="{{ $user->id }}">{{ $user->name }}</option>
+                      @endforeach
+                  </select>
+              </div>
+
+              <div class="form-group mb-3">
+                  <label>Asset</label>
+                  <select name="assetID" class="form-control" required>
+                      @foreach($assets as $asset)
+                      <option value="{{ $asset->id }}">{{ $asset->name }}</option>
+                      @endforeach
+                  </select>
+              </div>
+
+              <div class="form-group mb-3">
+                  <label>Description</label>
+                  <input type="text" name="description" class="form-control" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Create Task</button>
+          </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 @endsection

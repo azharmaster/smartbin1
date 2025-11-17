@@ -9,19 +9,14 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    // Display all tasks
+    // Display all tasks + data for modal
     public function index()
     {
-        $tasks = Task::with(['user','asset'])->get();
-        return view('tasks.index', compact('tasks'));
-    }
-
-    // Show form to create task
-    public function create()
-    {
-        $users = User::all();
+        $tasks  = Task::with(['user','asset'])->get();
+        $users  = User::all();
         $assets = Asset::all();
-        return view('tasks.create', compact('users','assets'));
+
+        return view('tasks.index', compact('tasks', 'users', 'assets'));
     }
 
     // Store new task
@@ -34,10 +29,12 @@ class TaskController extends Controller
         ]);
 
         Task::create($request->all());
-        return redirect()->route('tasks.index')->with('success', 'Task created successfully!');
+
+        return redirect()->route('tasks.index')
+                         ->with('success', 'Task created successfully!');
     }
 
-    // Show a single task
+    // Show a single task (optional)
     public function show(Task $task)
     {
         return view('tasks.show', compact('task'));
@@ -46,9 +43,10 @@ class TaskController extends Controller
     // Show form to edit task
     public function edit(Task $task)
     {
-        $users = User::all();
+        $users  = User::all();
         $assets = Asset::all();
-        return view('tasks.edit', compact('task','users','assets'));
+
+        return view('tasks.edit', compact('task', 'users', 'assets'));
     }
 
     // Update task
@@ -61,13 +59,17 @@ class TaskController extends Controller
         ]);
 
         $task->update($request->all());
-        return redirect()->route('tasks.index')->with('success', 'Task updated successfully!');
+
+        return redirect()->route('tasks.index')
+                         ->with('success', 'Task updated successfully!');
     }
 
     // Delete task
     public function destroy(Task $task)
     {
         $task->delete();
-        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully!');
+
+        return redirect()->route('tasks.index')
+                         ->with('success', 'Task deleted successfully!');
     }
 }
