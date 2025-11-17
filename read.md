@@ -22,13 +22,7 @@ php artisan make:view kategori.index
 php artisan make:view kategori.index
 php artisan make:component Kateori/FormKategori
 
-0. model
-1. seting route web.php
-2. aside
-5. make:controller
-3. make:view
-4. make:component
-6. make:form
+
 
 1. php artisan make:model Product -cms    
 5. buat database/ migrate

@@ -1,0 +1,51 @@
+@extends('layouts.app')
+@section('content_title', 'Floor')
+@section('content')
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">Floor</h4>
+    </div>
+    <div class="card-body">
+        @if ($errors->any())
+        <div class="alert alert-danger d-flex flex-column">
+            @foreach ($errors->all() as $error)
+            <small class="text-white my-2">{{ $error }}</small>
+            @endforeach
+        </div>
+        @endif
+
+        <div class="d-flex justify-content-end mb-2">
+            <x-floor.form-floor />
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-responsive" id="table1">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Picture</th>
+                        <th>Option</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($floors as $index => $floor)
+                    <tr>
+                        <td>{{  $index + 1  }}</td>
+                        <td>{{ $floor->floor_name }}</td>
+                        <td>{{ $floor->picture }}</td>
+                         <td>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <x-floor.form-floor :id="$floor->id " />
+                               <a href="{{ route('floors.destroy', $floor->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
+    <i class="fas fa-trash-alt text-white"></i>
+</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection
