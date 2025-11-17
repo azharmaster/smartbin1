@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
+            $table->string('asset_name');
             $table->integer('floor_id');
             $table->string('serialNo')->nullable();
             $table->string('description');

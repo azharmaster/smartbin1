@@ -60,6 +60,12 @@ class Aside extends Component
                         "route_name" => "master-data.product.index",
                         "icon" => "fas fa-circle"
                     ],
+                    [
+                        "label" => "Asset",
+                        "route_active" => "master-data.assets.*",
+                        "route_name" => "master-data.assets.index",
+                        "icon" => "fas fa-circle"
+                    ],
                    
                 ]
             ]

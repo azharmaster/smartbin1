@@ -26,5 +26,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             KategoriSeeder::class,
         ]);
+        $this->call(AssetSeeder::class);
     }
 }
