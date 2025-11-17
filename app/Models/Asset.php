@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class Asset
  * 
  * @property int $id
+ * @property string $asset_name
  * @property int $floor_id
  * @property string $serialNo
  * @property string $description
@@ -30,6 +31,7 @@ class Asset extends Model
 
     protected $fillable = [
         'id',
+        'asset_name',
         'floor_id',
         'serialNo',
         'description',

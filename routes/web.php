@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FloorController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
@@ -55,5 +56,12 @@ Route::middleware('auth')->group(function(){
             Route::delete('/{id}/destroy', 'destroy')->name('destroy');
     
         });
+
+        Route::prefix('assets')->as('assets.')->controller(AssetController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    
+        }); 
     });
 });
