@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FloorController;
+use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\SensorController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ProductController;
@@ -30,11 +32,25 @@ Route::middleware('auth')->group(function(){
         Route::delete('/{id}/destroy', 'destroy')->name('destroy');
     });
 
-    // Users
-    Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+     Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    
+    });
+
+    Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    
+    });
+
+    Route::prefix('sensors')->as('sensors.')->controller(SensorController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    
     });
 
     // Floor Pictures
