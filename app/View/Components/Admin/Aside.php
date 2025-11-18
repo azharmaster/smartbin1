@@ -66,6 +66,12 @@ class Aside extends Component
                         "route_name" => "master-data.assets.index",
                         "icon" => "fas fa-circle"
                     ],
+                    [
+                        "label" => "Sensor",
+                        "route_active" => "sensors.*",
+                        "route_name" => "sensors.index",
+                        "icon" => "fas fa-circle"
+                    ],
                    
                 ]
             ]

@@ -2,10 +2,10 @@
     'id' => null,
     'users' => [],
     'assets' => [],
-    'user_id' => null,    {{-- updated --}}
-    'asset_id' => null,   {{-- updated --}}
+    'user_id' => null,    
+    'asset_id' => null,   
     'description' => null,
-    'readonly' => false,  {{-- optional for read-only --}}
+    'readonly' => false,  
 ])
 
 <div>
