@@ -8,14 +8,18 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('devices', function (Blueprint $table) {
-            $table->string('device_name')->nullable()->after('asset_id'); 
+            if (!Schema::hasColumn('devices', 'device_name')) {
+                $table->string('device_name')->nullable()->after('asset_id');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('devices', function (Blueprint $table) {
-            $table->dropColumn(['device_name']);
+            if (Schema::hasColumn('devices', 'device_name')) {
+                $table->dropColumn('device_name');
+            }
         });
     }
 };

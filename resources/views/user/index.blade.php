@@ -24,7 +24,7 @@
                         <th>#</th>
                         <th>name</th>
                         <th>Email</th>
-                        <th>Opsi</th>
+                        <th>Option</th>
                     </tr>
                 </thead>
                 <tbody>
