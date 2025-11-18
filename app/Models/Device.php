@@ -23,12 +23,12 @@ class Device extends Model
     // A Device has many Sensors
     public function sensors()
     {
-        return $this->hasMany(Sensor::class);
+        return $this->hasMany(\App\Models\Sensor::class);
     }
 
-    // Optional: Get the latest sensor
     public function latestSensor()
     {
-        return $this->hasOne(Sensor::class)->latestOfMany();
+        // Laravel 8+ has latestOfMany()
+        return $this->hasOne(\App\Models\Sensor::class)->latestOfMany();
     }
 }
