@@ -18,16 +18,17 @@
             <x-floor.form-floor />
         </div>
         <div class="table-responsive">
-            <table class="table table-sm table-responsive" id="table1">
-                <thead>
-                    <tr>
+        <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
+              <thead>
+                 <tr>
                         <th>#</th>
                         <th>Name</th>
                         <th>Picture</th>
                         <th>Option</th>
                     </tr>
-                </thead>
-                <tbody>
+              </thead>
+              <tbody>
+         
                     @foreach ($floors as $index => $floor)
                     <tr>
                         <td>{{  $index + 1  }}</td>
@@ -35,7 +36,7 @@
                         <td>{{ $floor->picture }}</td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                                <x-floor.form-floor :id="$floor->id " />
+                                <x-floor.form-floor :id="$floor->id " />&nbsp;
                                <a href="{{ route('floors.destroy', $floor->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
     <i class="fas fa-trash-alt text-white"></i>
 </a>

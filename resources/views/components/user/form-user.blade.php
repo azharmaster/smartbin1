@@ -1,7 +1,13 @@
 <div>
-   <button type="button" class="  {{ $id ? 'btn btn-default' : 'btn btn-primary' }}" data-toggle="modal" data-target="#formUser{{ $id ?? '' }}">
-                  {{ $id ? 'Edit' : 'Add' }}
-                </button>
+   <button type="button" 
+        class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
+        data-toggle="modal" data-target="#formAsset{{ $id ?? '' }}">
+
+    <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
+    {{ $id ? '' : 'Add' }}
+
+</button>
+
 
                     <div class="modal fade" id="formUser{{ $id ?? '' }}">
                          <form method="POST" action="{{ route('users.store') }}">

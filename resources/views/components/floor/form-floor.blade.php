@@ -1,7 +1,12 @@
 <div>
-   <button type="button" class="  {{ $id ? 'btn btn-default' : 'btn btn-primary' }}" data-toggle="modal" data-target="#formFloor{{ $id ?? '' }}">
-                  {{ $id ? 'Edit' : 'Add' }}
-                </button>
+   <button type="button" 
+        class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
+        data-toggle="modal" data-target="#formAsset{{ $id ?? '' }}">
+
+    <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
+    {{ $id ? '' : 'Add' }}
+
+</button>
 
                     <div class="modal fade" id="formFloor{{ $id ?? '' }}">
                          <form method="POST" action="{{ route('floors.store') }}">

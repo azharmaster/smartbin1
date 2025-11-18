@@ -18,7 +18,7 @@
             <x-asset.form-asset :floors="$floors" :categories="$categories" />
         </div>
         <div class="table-responsive">
-            <table class="table table-sm table-responsive" id="table1">
+             <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -45,7 +45,7 @@
                         <td>{{ $asset->category }}</td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" />
+                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" />&nbsp;
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
     <i class="fas fa-trash-alt text-white"></i>
 </a>
