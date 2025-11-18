@@ -49,6 +49,13 @@ class AssetController extends Controller
             'category.required' => 'Please select a category',
         ]);
 
+            // FIX: Use new category if selected
+    $category = $request->category;
+
+    if ($category === '__new__') {
+        $category = $request->new_category;
+    }
+
         Asset::updateOrCreate(
             ['id' => $id],
             [

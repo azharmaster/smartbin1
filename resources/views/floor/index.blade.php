@@ -33,8 +33,29 @@
                     <tr>
                         <td>{{  $index + 1  }}</td>
                         <td>{{ $floor->floor_name }}</td>
-                        <td>{{ $floor->picture }}</td>
-                         <td>
+                        <td>
+    @if($floor->picture)
+        <img src="{{ url('floor_pictures/' . $floor->picture) }}" 
+             width="100" alt="Floor Picture" 
+             data-toggle="modal" data-target="#floorImageModal{{ $floor->id }}" 
+             style="cursor: pointer;">
+        
+        <!-- Modal -->
+        <div class="modal fade" id="floorImageModal{{ $floor->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body p-0">
+                        <img src="{{ url('floor_pictures/' . $floor->picture) }}" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        -
+    @endif
+</td>
+
+                        <td>
                             <div class="d-flex align-items-center justify-content-center">
                                 <x-floor.form-floor :id="$floor->id " />&nbsp;
                                <a href="{{ route('floors.destroy', $floor->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
