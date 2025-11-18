@@ -35,12 +35,19 @@ class Aside extends Component
                 "is_dropdown" => false
             ],
             [
-    "label" => "Tasks",
-    "icon" => "fas fa-tasks",
-    "route_name" => "tasks.index",
-    "route_active" => "tasks.*",
-    "is_dropdown" => false
-],
+                "label" => "Tasks",
+                "icon" => "fas fa-tasks",
+                "route_name" => "tasks.index",
+                "route_active" => "tasks.*",
+                "is_dropdown" => false
+            ],
+            [
+                "label" => "Schedule",
+                "icon" => "fas fa-calendar-alt", // optional: a calendar icon
+                "route_name" => "schedules.index",
+                "route_active" => "schedules.*",
+                "is_dropdown" => false
+            ],
 
             [
                 "label" => "Master Data",
