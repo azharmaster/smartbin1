@@ -24,7 +24,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-sm table-responsive" id="table1">
+            <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
                 <thead>
                     <tr>
                         <th>#</th>
