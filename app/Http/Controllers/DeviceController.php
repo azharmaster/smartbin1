@@ -11,7 +11,8 @@ class DeviceController extends Controller
     public function index()
     {
         $devices = Device::with('asset')->get();
-        return view('devices.index', compact('devices'));
+        $assets = Asset::all(); // fetch all assets for dropdown
+        return view('devices.index', compact('devices', 'assets'));
     }
 
     public function create()

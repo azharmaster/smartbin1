@@ -74,6 +74,12 @@ class Aside extends Component
                         "icon" => "fas fa-circle"
                     ],
                     [
+                        "label" => "Devices",
+                        "route_active" => "devices.*",
+                        "route_name" => "devices.index",
+                        "icon" => "fas fa-circle"
+                    ],
+                    [
                         "label" => "Sensor",
                         "route_active" => "sensors.*",
                         "route_name" => "sensors.index",
