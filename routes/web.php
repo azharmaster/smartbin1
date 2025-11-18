@@ -39,6 +39,17 @@ Route::middleware('auth')->group(function(){
     
     });
 
+    // routes/web.php
+    Route::get('floor_pictures/{filename}', function ($filename) {
+        $path = storage_path('app/private/public/floor_pictures/' . $filename);
+
+        if (!file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    });
+
     Route::prefix('master-data')->as('master-data.')->group(function () {
 
         Route::prefix('kategori')->as('kategori.')->controller(KategoriController::class)->group(function () {
