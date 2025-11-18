@@ -83,15 +83,13 @@
                         {{-- Category (Dropdown of unique previous categories) --}}
                         <div class="form-group">
     <label>Category</label>
-    <select name="category" class="form-control">
-        <option value="">-- Select Category --</option>
+    <input list="categoryList" name="category" class="form-control"
+           value="{{ $category ?? '' }}" placeholder="Select or type a category">
+    <datalist id="categoryList">
         @foreach($categories as $cat)
-            <option value="{{ $cat }}"
-                {{ (isset($category) && $category == $cat) ? 'selected' : '' }}>
-                {{ $cat }}
-            </option>
+            <option value="{{ $cat }}">
         @endforeach
-    </select>
+    </datalist>
 </div>
 
                     </div>

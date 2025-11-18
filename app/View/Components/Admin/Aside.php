@@ -29,7 +29,7 @@ class Aside extends Component
             ],
             [
                 "label" => "Floor",
-                "icon" => "fa-solid fas fa-users",
+                "icon" => "fa-solid fas fa-building",
                 "route_name" => "floors.index",
                 "route_active" => "users.*",
                 "is_dropdown" => false
