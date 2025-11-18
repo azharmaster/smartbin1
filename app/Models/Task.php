@@ -7,8 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    /** @use HasFactory<\Database\Factories\TaskFactory> */
     use HasFactory;
 
-    protected $fillable = ['assetID', 'userID', 'description'];
+    // Updated fillable columns
+    protected $fillable = ['asset_id', 'user_id', 'description'];
+
+    // Relationship to User
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Relationship to Asset
+    public function asset()
+    {
+        return $this->belongsTo(Asset::class, 'asset_id');
+    }
 }

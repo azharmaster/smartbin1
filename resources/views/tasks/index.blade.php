@@ -7,103 +7,108 @@
         <h4 class="card-title">Tasks</h4>
     </div>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between mb-3">
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-            + Add Task
-        </button>
-    </div>
+    <div class="card-body">
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+        {{-- Show errors --}}
+        @if ($errors->any())
+        <div class="alert alert-danger d-flex flex-column">
+            @foreach ($errors->all() as $error)
+                <small class="text-white my-2">{{ $error }}</small>
+            @endforeach
+        </div>
+        @endif
 
-    <div class="card">
-        <div class="card-body">
-            <table class="table table-bordered table-hover">
-                <thead class="thead-light">
+        {{-- Add Task Button (top right like Assets page) --}}
+        <div class="d-flex justify-content-end mb-2">
+            <x-task.form-task :users="$users" :assets="$assets" />
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-responsive" id="table1">
+                <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>#</th>
                         <th>User</th>
                         <th>Asset</th>
                         <th>Description</th>
-                        <th>Actions</th>
+                        <th>Option</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    @foreach($tasks as $task)
+                    @foreach ($tasks as $index => $task)
                     <tr>
-                        <td>{{ $task->id }}</td>
+                        <td>{{ $index + 1 }}</td>
                         <td>{{ $task->user->name ?? 'N/A' }}</td>
-                        <td>{{ $task->asset->name ?? 'N/A' }}</td>
+                        <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
                         <td>{{ $task->description }}</td>
+
                         <td>
-                            <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-info btn-sm">View</a>
-                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-primary btn-sm">Edit</a>
-                            <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this task?')">Delete</button>
-                            </form>
+                            <div class="d-flex align-items-center justify-content-center">
+
+                                {{-- Edit Task Button (opens same reusable modal component) --}}
+                                <x-task.form-task 
+                                    :id="$task->id"
+                                    :users="$users"
+                                    :assets="$assets"
+                                    :description="$task->description"
+                                    :user_id="$task->user_id"
+                                    :asset_id="$task->asset_id"
+                                />
+
+                                {{-- View Modal Button --}}
+                                <button 
+                                    class="btn btn-info btn-sm mx-1"
+                                    data-toggle="modal"
+                                    data-target="#viewTaskModal{{ $task->id }}">
+                                    <i class="fas fa-eye text-white"></i>
+                                </button>
+
+                                {{-- Delete --}}
+                                <form action="{{ route('tasks.destroy', $task->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger btn-sm mx-1"
+                                        onclick="return confirm('Delete this task?')">
+                                        <i class="fas fa-trash-alt text-white"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
-                    @endforeach
 
-                    @if($tasks->isEmpty())
-                    <tr>
-                        <td colspan="5" class="text-center">No tasks found.</td>
-                    </tr>
-                    @endif
+                    {{-- View Task Modal --}}
+                    <div class="modal fade" id="viewTaskModal{{ $task->id }}">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Task Details</h4>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <p><strong>ID:</strong> {{ $task->id }}</p>
+                                    <p><strong>User:</strong> {{ $task->user->name ?? 'N/A' }}</p>
+                                    <p><strong>Asset:</strong> {{ $task->asset->asset_name ?? 'N/A' }}</p>
+                                    <p><strong>Description:</strong> {{ $task->description }}</p>
+                                </div>
+
+                                <div class="modal-footer justify-content-between">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    @endforeach
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
-
-
-<!-- 🔥 Move modal INSIDE the content section -->
-<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="addTaskModalLabel">Add Task</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-          <form action="{{ route('tasks.store') }}" method="POST">
-              @csrf
-
-              <div class="form-group mb-3">
-                  <label>User</label>
-                  <select name="userID" class="form-control" required>
-                      @foreach($users as $user)
-                      <option value="{{ $user->id }}">{{ $user->name }}</option>
-                      @endforeach
-                  </select>
-              </div>
-
-              <div class="form-group mb-3">
-                  <label>Asset</label>
-                  <select name="assetID" class="form-control" required>
-                      @foreach($assets as $asset)
-                      <option value="{{ $asset->id }}">{{ $asset->name }}</option>
-                      @endforeach
-                  </select>
-              </div>
-
-              <div class="form-group mb-3">
-                  <label>Description</label>
-                  <input type="text" name="description" class="form-control" required>
-              </div>
-
-              <button type="submit" class="btn btn-primary">Create Task</button>
-          </form>
-      </div>
 
     </div>
-  </div>
 </div>
 
 @endsection

@@ -11,7 +11,7 @@ use Illuminate\View\Component;
 
 class FormTask extends Component
 {
-    public $id, $assetID, $userID, $description, $users, $assets;
+    public $id, $asset_id, $user_id, $description, $users, $assets;
 
     public function __construct($id = null)
     {
@@ -21,8 +21,8 @@ class FormTask extends Component
         if ($id) {
             $task = Task::find($id);
             $this->id = $task->id;
-            $this->assetID = $task->assetID;
-            $this->userID = $task->userID;
+            $this->asset_id = $task->asset_id;   // updated
+            $this->user_id = $task->user_id;     // updated
             $this->description = $task->description;
         }
     }

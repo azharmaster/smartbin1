@@ -23,8 +23,8 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'assetID' => 'required|exists:assets,id',
-            'userID' => 'required|exists:users,id',
+            'asset_id' => 'required|exists:assets,id',
+            'user_id'  => 'required|exists:users,id',
             'description' => 'required|string|max:255',
         ]);
 
@@ -53,8 +53,8 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $request->validate([
-            'assetID' => 'required|exists:assets,id',
-            'userID' => 'required|exists:users,id',
+            'asset_id' => 'required|exists:assets,id',
+            'user_id'  => 'required|exists:users,id',
             'description' => 'required|string|max:255',
         ]);
 
