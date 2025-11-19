@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    //
     public function index(){
         return view('auth.login');
     } 
@@ -23,20 +22,35 @@ class LoginController extends Controller
             'password.required' => 'Password wajib diisi',
         ]);
 
-        if(Auth::attempt($credentials)){ //ambil fecades
+        if(Auth::attempt($credentials)){ 
 
-            //dd('Berhasil login');
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            $user = Auth::user();
+
+            // Role 1 = Admin → existing dashboard
+            if ($user->role == 1) {
+                return redirect('/dashboard');
+            }
+
+            // Role 2 = Staff
+            if ($user->role == 2) {
+                return redirect()->route('staff.dashboard');
+            }
+
+            // Role 3 = Guest
+            if ($user->role == 3) {
+                return redirect()->route('guest.dashboard');
+            }
+
+            // fallback if role undefined
+            return redirect('/dashboard');
         }
 
         return back()->withErrors([
             'email' => 'Credential tidak sesuai',
         ])->onlyInput('email');
-       // dd($request->all());
     }
-
 
     public function logout(Request $request)
     {
