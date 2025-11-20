@@ -49,7 +49,10 @@
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
     <i class="fas fa-trash-alt text-white"></i>
 </a>
-                            </div>
+<a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
+    View Details
+</a>  
+</div>
                         </td>
                     </tr>
                     @endforeach
