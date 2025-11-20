@@ -48,10 +48,10 @@
                                <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" />&nbsp;
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
     <i class="fas fa-trash-alt text-white"></i>
-</a>
+</a>&nbsp;
 <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
-    View Details
-</a>  
+    <i class="far fa-eye"></i>
+</a>
 </div>
                         </td>
                     </tr>
