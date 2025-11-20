@@ -47,7 +47,6 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
     Route::delete('/{id}/destroy', 'destroy')->name('destroy');
 });
 
-
     Route::prefix('sensors')->as('sensors.')->controller(SensorController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
@@ -85,10 +84,13 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
 
         // Assets
         Route::prefix('assets')->as('assets.')->controller(AssetController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-        }); 
+        Route::get('/', 'index')->name('index');
+        Route::get('/{asset}/details', function ($asset) {
+            return view('asset.details', ['asset_id' => $asset]);
+        })->name('details');  // route name: master-data.assets.details
+        Route::post('/', 'store')->name('store');
+        Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+        });
     });
 
     // Top-level Schedule Routes
