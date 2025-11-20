@@ -35,7 +35,7 @@ class Aside extends Component
                 "is_dropdown" => false
             ],
             [
-                "label" => "Tasks",
+                "label" => "Assign Tasks",
                 "icon" => "fas fa-tasks",
                 "route_name" => "tasks.index",
                 "route_active" => "tasks.*",
