@@ -20,8 +20,8 @@ class UserController extends Controller
 
       $id = $request->input('id');
       $request->validate([
-        'name' => 'required|unique:Kategoris,nama_kategori,'.$id,
-        'email' => 'required|max:100|min:10',
+        'name' => 'required|unique:users,name,'.$id,
+        'email' => 'required|email|max:255|unique:users,email,'.$id,
       ],[
         'name.required' => 'Nama kategori harus diisi',
         'name.unique' => 'Nama kategori sudah ada',

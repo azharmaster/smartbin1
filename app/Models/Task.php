@@ -10,7 +10,14 @@ class Task extends Model
     use HasFactory;
 
     // Updated fillable columns
-    protected $fillable = ['asset_id', 'user_id', 'description'];
+    protected $fillable = [
+        'asset_id',
+        'user_id',
+        'floor_id',
+        'description',
+        'notes',
+        'status',
+    ];
 
     // Relationship to User
     public function user()
@@ -22,5 +29,11 @@ class Task extends Model
     public function asset()
     {
         return $this->belongsTo(Asset::class, 'asset_id');
+    }
+
+    // Relationship to Floor
+    public function floor()
+    {
+        return $this->belongsTo(Floor::class, 'floor_id');
     }
 }

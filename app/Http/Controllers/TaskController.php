@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Asset;
+use App\Models\Floor;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -12,31 +13,41 @@ class TaskController extends Controller
     // Display all tasks + data for modal
     public function index()
     {
-        $tasks  = Task::with(['user','asset'])->get();
+        $tasks  = Task::with(['user', 'asset', 'floor'])->get();
         $users  = User::all();
         $assets = Asset::all();
+        $floors = Floor::all(); // for add/assign/edit modal
 
-        return view('tasks.index', compact('tasks', 'users', 'assets'));
+        return view('tasks.index', compact('tasks', 'users', 'assets', 'floors'));
     }
 
-    // Store new task
+    // Store new assigned task
     public function store(Request $request)
     {
         $request->validate([
+            'user_id' => 'required|exists:users,id',
             'asset_id' => 'required|exists:assets,id',
-            'user_id'  => 'required|exists:users,id',
+            'floor_id' => 'required|exists:floor,id',
             'description' => 'required|string|max:255',
+            'notes' => 'nullable|string',
         ]);
 
-        Task::create($request->all());
+        Task::create([
+            'user_id' => $request->user_id,
+            'asset_id' => $request->asset_id,
+            'floor_id' => $request->floor_id,
+            'description' => $request->description,
+            'notes' => $request->notes,
+            'status' => 'pending',
+        ]);
 
-        return redirect()->route('tasks.index')
-                         ->with('success', 'Task created successfully!');
+        return redirect()->route('tasks.index')->with('success', 'Task assigned successfully!');
     }
 
     // Show a single task (optional)
     public function show(Task $task)
     {
+        $task->load(['user', 'asset', 'floor']); // eager load
         return view('tasks.show', compact('task'));
     }
 
@@ -45,8 +56,9 @@ class TaskController extends Controller
     {
         $users  = User::all();
         $assets = Asset::all();
+        $floors = Floor::all();
 
-        return view('tasks.edit', compact('task', 'users', 'assets'));
+        return view('tasks.edit', compact('task', 'users', 'assets', 'floors'));
     }
 
     // Update task
@@ -55,13 +67,15 @@ class TaskController extends Controller
         $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'user_id'  => 'required|exists:users,id',
+            'floor_id' => 'required|exists:floor,id',
             'description' => 'required|string|max:255',
+            'notes' => 'nullable|string',
+            'status' => 'required|in:pending,accepted,rejected,in_progress,completed',
         ]);
 
-        $task->update($request->all());
+        $task->update($request->only('asset_id','user_id','floor_id','description','notes','status'));
 
-        return redirect()->route('tasks.index')
-                         ->with('success', 'Task updated successfully!');
+        return redirect()->route('tasks.index')->with('success', 'Task updated successfully!');
     }
 
     // Delete task
@@ -69,7 +83,6 @@ class TaskController extends Controller
     {
         $task->delete();
 
-        return redirect()->route('tasks.index')
-                         ->with('success', 'Task deleted successfully!');
+        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully!');
     }
 }

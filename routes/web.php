@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StaffTaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -37,7 +38,7 @@ Route::middleware('auth')->group(function(){
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
             Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-    
+
     });
 
 Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
@@ -51,7 +52,7 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
             Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-    
+
     });
 
     // Floor Pictures
@@ -107,4 +108,20 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
     Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])
          ->name('staff.dashboard');
 });
+    // Staff Task Routes
+    Route::middleware(['auth'])->group(function () {
+    // View assigned tasks
+    Route::get('/staff/tasks', [StaffTaskController::class, 'index'])->name('staff.tasks');
 
+    // Accept task
+    Route::post('/staff/tasks/{task}/accept', [StaffTaskController::class, 'accept'])->name('staff.tasks.accept');
+
+    // Reject task
+    Route::post('/staff/tasks/{task}/reject', [StaffTaskController::class, 'reject'])->name('staff.tasks.reject');
+
+    // Update progress: in_progress or done
+    Route::post('/staff/tasks/{task}/progress/{status}', [StaffTaskController::class, 'updateProgress'])->name('staff.tasks.progress');
+
+    // NEW: Update status via dropdown
+    Route::post('/staff/tasks/{task}/update-status', [StaffTaskController::class, 'updateStatus'])->name('staff.tasks.updateStatus');
+});
