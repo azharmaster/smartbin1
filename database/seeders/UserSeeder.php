@@ -11,13 +11,23 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('todos')->insert([
+        DB::table('users')->insert([
             [
                 'name' => 'Admin User',
                 'email' => 'admin@gmail.com',
                 'email_verified_at' => now(),
                 'password' => '$2y$12$TTXZRHJFodaDzE6xJyQyx.vaTwU.X9MVxjFDM1/30/x.uCYn9t6vm',
                 'role' => 1,
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Staff User',
+                'email' => 'staff@gmail.com',
+                'email_verified_at' => now(),
+                'password' => '$2y$12$TTXZRHJFodaDzE6xJyQyx.vaTwU.X9MVxjFDM1/30/x.uCYn9t6vm',
+                'role' => 2,
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
