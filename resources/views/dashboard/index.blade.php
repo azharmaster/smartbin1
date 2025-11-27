@@ -85,35 +85,56 @@
     border-radius: 25px; /* more oval */
     font-size: 1.1rem; /* bigger text */
     font-weight: 700;
-    /* glowing effect */
     box-shadow: 0 0 8px #FF0000, 0 0 12px #FF4d4d, 0 0 18px #FF6666;
     animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-    0% {
-        box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666;
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 0 0 10px #CC0000, 0 0 14px #D93333, 0 0 20px #E06666;
-        transform: scale(1.05);
-    }
-    100% {
-        box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666;
-        transform: scale(1);
-    }
+    0% { box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666; transform: scale(1); }
+    50% { box-shadow: 0 0 10px #CC0000, 0 0 14px #D93333, 0 0 20px #E06666; transform: scale(1.05); }
+    100% { box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666; transform: scale(1); }
 }
 
 .full-device-card .fw-bold.fs-4 {
-    font-size: 1.3rem; /* bigger device name */
+    font-size: 1.3rem;
     font-weight: bold;
 }
 
+.floor-frame {
+    margin-top: 40px;
+    width: 600px;
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+.floor-frame select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.floor-frame img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #aaa;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.floor-frame img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
 </style>
 
 <div class="d-flex flex-wrap">
-    <!-- Total Devices -->
     <div class="status-card card-total">
         <div class="status-title">Total Devices</div>
         <div class="status-content">
@@ -121,8 +142,6 @@
             <span class="status-number">{{ $totalDevices }}</span>
         </div>
     </div>
-
-    <!-- Full Devices -->
     <div class="status-card card-full">
         <div class="status-title">Full Devices</div>
         <div class="status-content">
@@ -130,8 +149,6 @@
             <span class="status-number">{{ $fullDevices }}</span>
         </div>
     </div>
-
-    <!-- Half Full -->
     <div class="status-card card-half">
         <div class="status-title ">Half Full</div>
         <div class="status-content">
@@ -139,8 +156,6 @@
             <span class="status-number">{{ $halfDevices }}</span>
         </div>
     </div>
-
-    <!-- Empty -->
     <div class="status-card card-empty">
         <div class="status-title">Empty Devices</div>
         <div class="status-content">
@@ -148,8 +163,6 @@
             <span class="status-number">{{ $emptyDevices }}</span>
         </div>
     </div>
-
-    <!-- Undetected -->
     <div class="status-card card-undetected">
         <div class="status-title">Undetected</div>
         <div class="status-content">
@@ -163,22 +176,14 @@
     @foreach($fullDevicesCollection as $device)
         <a href="{{ route('master-data.assets.index') }}" class="text-decoration-none">
             <div class="card full-device-card position-relative p-3" style="width: 280px;">
-                
-                <!-- Device Name Top Left -->
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                    
-                    <!-- Full Circle Top Right -->
                     <div class="badge full-status text-white fw-bold fs-5">FULL</div>
                 </div>
-
-                <!-- Floor Location -->
                 <div class="mt-2 text-white">
                     <i class="fas fa-map-marker-alt me-1"></i>
                     {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
                 </div>
-
-                <!-- Progress Bar -->
                 <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
                     <div class="progress-bar bg-danger" role="progressbar" 
                          style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
@@ -186,10 +191,37 @@
                          aria-valuemin="0" aria-valuemax="100">
                     </div>
                 </div>
-
             </div>
         </a>
     @endforeach
 </div>
+
+<!-- Single Floor Image with Dropdown -->
+
+<div class="floor-frame">
+    @php
+        $firstFloor = $floors->first();
+    @endphp
+
+
+<select id="floorSelect">
+    @foreach($floors as $f)
+        <option value="{{ $f->picture }}" {{ $f->id === $firstFloor->id ? 'selected' : '' }}>
+            {{ $f->floor_name }}
+        </option>
+    @endforeach
+</select>
+
+<img id="floorImage" src="{{ asset('storage/floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
+
+
+</div>
+
+<script>
+document.getElementById('floorSelect').addEventListener('change', function() {
+    var selectedPicture = this.value;
+    document.getElementById('floorImage').src = '/storage/floor_pictures/' + selectedPicture;
+});
+</script>
 
 @endsection
