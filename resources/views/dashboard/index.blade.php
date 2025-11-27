@@ -228,7 +228,6 @@
 </div>
 
 <!-- Single Floor Image with Dropdown -->
-
 <div class="floor-frame">
     @php
         $firstFloor = $floors->first();

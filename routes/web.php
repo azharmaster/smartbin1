@@ -110,6 +110,10 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
          ->name('staff.dashboard');
 });
 
+Route::get('/profile', function () {
+    return view('profile/index');
+})->middleware('auth')->name('profile.index');
+
     // Staff Task Routes
     Route::middleware(['auth'])->group(function () {
     // View assigned tasks
