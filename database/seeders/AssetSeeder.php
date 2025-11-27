@@ -101,7 +101,7 @@ class AssetSeeder extends Seeder
                 'y' => null,
             ],
             [
-                'asset_name' => 'Smartbin 001"',
+                'asset_name' => 'Smartbin 001',
                 'floor_id' => 1,
                 'serialNo' => 'TR001',
                 'description' => 'Sensor attached trashbin',
