@@ -36,7 +36,7 @@
                         <td>{{ $todo->status }}</td>
                         <td>
                             <div class="d-flex align-items-center justify-content-center">
-                                <x-todo.form-todo :id="$todo->id" />&nbsp;
+                                <x-todo.form-todo :id="$todo->id" :todo="$todo->todo" :status="$todo->status" />&nbsp;
                                 <form action="{{ route('todos.destroy', $todo->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')

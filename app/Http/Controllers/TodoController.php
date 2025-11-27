@@ -22,7 +22,7 @@ class TodoController extends Controller
                      ->orderBy('created_at', 'desc')
                      ->get();
 
-        return view('dashboard.index', compact('todos'));
+        return view('todos.index', compact('todos'));
     }
 
     public function store(Request $request)
@@ -51,6 +51,24 @@ class TodoController extends Controller
 
         return redirect()->back();
     }
+
+    public function update(Request $request, $id)
+{
+    $request->validate([
+        'todo' => 'required|string|max:255',
+        'status' => 'required|in:pending,done'
+    ]);
+
+    $todo = Todo::where('id', $id)
+                ->where('userID', Auth::id())
+                ->firstOrFail();
+
+    $todo->todo = $request->todo;
+    $todo->status = $request->status;
+    $todo->save();
+
+    return redirect()->back();
+}
 
     public function destroy($id)
     {
