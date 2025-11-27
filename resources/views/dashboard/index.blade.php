@@ -172,29 +172,37 @@
     </div>
 </div>
 
-<div class="full-devices-cards mt-4 d-flex flex-wrap gap-3">
-    @foreach($fullDevicesCollection as $device)
-        <a href="{{ route('master-data.assets.index') }}" class="text-decoration-none">
-            <div class="card full-device-card position-relative p-3" style="width: 280px;">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                    <div class="badge full-status text-white fw-bold fs-5">FULL</div>
-                </div>
-                <div class="mt-2 text-white">
-                    <i class="fas fa-map-marker-alt me-1"></i>
-                    {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
-                </div>
-                <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
-                    <div class="progress-bar bg-danger" role="progressbar" 
-                         style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
-                         aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
-                         aria-valuemin="0" aria-valuemax="100">
+<div class="d-flex gap-4 mt-4">
+
+    <!-- Left Column: Full Devices Cards (2/3 width) -->
+    <div style="flex: 2;">
+        <div class="full-devices-cards d-flex flex-wrap gap-3">
+            @foreach($fullDevicesCollection as $device)
+                <a href="{{ route('master-data.assets.details', $device->asset->id) }}" class="text-decoration-none">
+                    <div class="card full-device-card position-relative p-3" style="width: 280px;">
+                        <!-- Device Name Top Left -->
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                            <div class="badge full-status text-white fw-bold fs-5">FULL</div>
+                        </div>
+                        <!-- Floor Location -->
+                        <div class="mt-2 text-white">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
+                                aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
+                                aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </a>
-    @endforeach
-</div>
+                </a>
+            @endforeach
+        </div>
 
     <!-- Right Column: To Do List (1/3 width) -->
     <div style="flex: 1;">
@@ -217,7 +225,8 @@
             </ul>
         </div>
     </div>
-    
+</div>
+
 <!-- Single Floor Image with Dropdown -->
 
 <div class="floor-frame">

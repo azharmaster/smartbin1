@@ -20,6 +20,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Epson X100',
                 'maintenance' => Carbon::now()->subDays(15),
                 'category' => 'Electronics',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Dell Desktop PC',
@@ -29,6 +31,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Dell Optiplex 3080',
                 'maintenance' => Carbon::now()->subDays(40),
                 'category' => 'Computer',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Air Conditioner LG',
@@ -38,6 +42,8 @@ class AssetSeeder extends Seeder
                 'model' => 'LG CoolPro 2.0HP',
                 'maintenance' => Carbon::now()->subDays(7),
                 'category' => 'Appliance',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'CCTV Camera Hikvision',
@@ -47,6 +53,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Hikvision DS-2CD2143',
                 'maintenance' => Carbon::now()->subDays(20),
                 'category' => 'Security',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Fire Extinguisher ABC',
@@ -56,6 +64,8 @@ class AssetSeeder extends Seeder
                 'model' => 'ABC 2kg Safety',
                 'maintenance' => Carbon::now()->subDays(90),
                 'category' => 'Safety',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'WiFi Router TP-Link',
@@ -65,6 +75,8 @@ class AssetSeeder extends Seeder
                 'model' => 'TP-Link Archer AX20',
                 'maintenance' => Carbon::now()->subDays(30),
                 'category' => 'Network',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Printer HP LaserJet 1020',
@@ -74,6 +86,8 @@ class AssetSeeder extends Seeder
                 'model' => 'LaserJet 1020',
                 'maintenance' => Carbon::now()->subDays(5),
                 'category' => 'Printer',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'LED TV Samsung 50"',
@@ -83,6 +97,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Samsung U50A',
                 'maintenance' => Carbon::now()->subDays(18),
                 'category' => 'Electronics',
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Smartbin 001"',
@@ -92,6 +108,8 @@ class AssetSeeder extends Seeder
                 'model' => 'TRX001',
                 'maintenance' => Carbon::now()->subDays(18),
                 'category' => 'SmartBin',
+                'x'=> 215.00,
+                'y' => 212.00,
             ],
             [
                 'asset_name' => 'Ceiling Fan Panasonic',
@@ -101,8 +119,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Panasonic AirFlow A1',
                 'maintenance' => Carbon::now()->subDays(22),
                 'category' => 'Appliance',
-                'x'=> 215.00,
-                'y' => 212.00,
+                'x'=> null,
+                'y' => null,
             ],
             [
                 'asset_name' => 'Server Rack UPS',
@@ -112,6 +130,8 @@ class AssetSeeder extends Seeder
                 'model' => 'APC Smart UPS 1500VA',
                 'maintenance' => Carbon::now()->subDays(12),
                 'category' => 'Power',
+                'x'=> null,
+                'y' => null,
             ],
         ]);
     }
