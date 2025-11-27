@@ -45,8 +45,8 @@ Route::middleware('auth')->group(function(){
 Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
     Route::get('/', 'index')->name('index');
     Route::post('/', 'store')->name('store');
-    Route::put('/{id}', 'update')->name('update');      // <--- Add this
-    Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    Route::put('/{device}', 'update')->name('update');
+    Route::delete('/{device}/destroy', 'destroy')->name('destroy');
 });
 
     Route::prefix('sensors')->as('sensors.')->controller(SensorController::class)->group(function () {

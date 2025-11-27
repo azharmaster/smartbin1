@@ -1,7 +1,8 @@
 @props([
     'id' => null, 
     'assets' => [], 
-    'categories' => []
+    'device_name' => null,
+    'asset_id' => null,
 ])
 
 <div>
@@ -9,16 +10,18 @@
         class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
         data-toggle="modal" data-target="#formDevices{{ $id ?? '' }}">
 
-    <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
-    {{ $id ? '' : 'Add' }}
-
-</button>
-
+        <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
+        {{ $id ? '' : 'Add' }}
+    </button>
 
     <div class="modal fade" id="formDevices{{ $id ?? '' }}">
-        <form method="POST" action="{{ route('devices.store') }}">
+        
+        <form method="POST" 
+              action="{{ $id ? route('devices.update', $id) : route('devices.store') }}">
             @csrf
-            <input type="hidden" name="id" value="{{ $id ?? '' }}">
+            @if($id)
+                @method('PUT')
+            @endif
 
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -36,22 +39,23 @@
                         <div class="form-group">
                             <label>Device Name</label>
                             <input type="text" class="form-control" name="device_name"
-                                   value="{{ $device_name ?? '' }}">
+                                   value="{{ $device_name }}">
                         </div>
 
-                        {{-- Assets (Dropdown of floor_name) --}}
+                        {{-- Assets --}}
                         <div class="form-group">
                             <label>Assets</label>
                             <select name="asset_id" class="form-control">
                                 <option value="">-- Select Assets --</option>
                                 @foreach($assets as $asset)
                                     <option value="{{ $asset->id }}"
-                                        {{ (isset($asset_id) && $asset_id == $asset->id) ? 'selected' : '' }}>
+                                        {{ $asset_id == $asset->id ? 'selected' : '' }}>
                                         {{ $asset->asset_name }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+
                     </div>
 
                     <div class="modal-footer justify-content-between">

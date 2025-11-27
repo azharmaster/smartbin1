@@ -36,8 +36,9 @@
                         <td>{{ $device->device_name }}</td>
                         <td>
                             <div class="d-flex align-items-center justify-content-center">
-                                <x-device.form-device :id="$device->id" :assets="$assets" />&nbsp;
-                                <form action="{{ route('devices.destroy', $device->id) }}" method="POST" style="display:inline;">
+                                <x-device.form-device :id="$device->id" :device_name="$device->device_name" :asset_id="$device->asset_id" :assets="$assets"/>&nbsp;
+                                <form action="{{ route('devices.destroy', $device->id) }}" method="POST" 
+                                    onsubmit="return confirm('Are you sure you want to delete this device?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-sm" data-confirm-delete="true">

@@ -26,6 +26,7 @@
                         <th>Capacity</th>
                         <th>Time</th>
                         <th>Network</th>
+                        <th>Action</th>
                     </tr>
               </thead>
               <tbody>
