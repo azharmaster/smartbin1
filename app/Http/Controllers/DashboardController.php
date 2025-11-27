@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\Todo;
 use App\Models\Sensor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 { 
@@ -41,13 +43,21 @@ class DashboardController extends Controller
         return is_null($network) || $network === '' || (string)$network === '0' || strtolower((string)$network) === 'unavailable';
     })->count();
 
+    // Fetch To Do items for logged-in user, only pending ones
+    $todos = Todo::where('userID', Auth::id())
+                 ->where('status', 'pending')   // only show incomplete
+                 ->orderBy('id', 'desc')
+                 ->get();
+
+
     return view('dashboard.index', compact(
     'totalDevices',
     'fullDevices',         // integer for stats
     'fullDevicesCollection', // collection for special cards
     'halfDevices',
     'emptyDevices',
-    'undetectedDevices'
+    'undetectedDevices',
+    'todos'
     ));
 }
 

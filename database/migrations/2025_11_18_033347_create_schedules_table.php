@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('floor_id')->constrained()->onDelete('cascade');
+            $table->foreignId('floor_id')->constrained('floor')->onDelete('cascade');
             $table->string('shift');
             $table->timestamps();
         });

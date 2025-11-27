@@ -85,6 +85,15 @@ class AssetSeeder extends Seeder
                 'category' => 'Electronics',
             ],
             [
+                'asset_name' => 'Smartbin 001"',
+                'floor_id' => 1,
+                'serialNo' => 'TR001',
+                'description' => 'Sensor attached trashbin',
+                'model' => 'TRX001',
+                'maintenance' => Carbon::now()->subDays(18),
+                'category' => 'SmartBin',
+            ],
+            [
                 'asset_name' => 'Ceiling Fan Panasonic',
                 'floor_id' => 4,
                 'serialNo' => 'PN-FAN-66541',
@@ -92,6 +101,8 @@ class AssetSeeder extends Seeder
                 'model' => 'Panasonic AirFlow A1',
                 'maintenance' => Carbon::now()->subDays(22),
                 'category' => 'Appliance',
+                'x'=> 215.00,
+                'y' => 212.00,
             ],
             [
                 'asset_name' => 'Server Rack UPS',
