@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
-use App\Models\Sensor;
+use App\Models\Floor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 { 
@@ -34,21 +33,24 @@ class DashboardController extends Controller
             return $d->latestSensor && is_numeric($d->latestSensor->capacity) && $d->latestSensor->capacity <= 40;
         })->count();
 
-    // undetected: no latest sensor OR network indicates 0/unavailable
-    $undetectedDevices = $devices->filter(function($d) {
-        if (!$d->latestSensor) return true;
-        $network = $d->latestSensor->network;
-        return is_null($network) || $network === '' || (string)$network === '0' || strtolower((string)$network) === 'unavailable';
-    })->count();
+        // undetected: no latest sensor OR network indicates 0/unavailable
+        $undetectedDevices = $devices->filter(function($d) {
+            if (!$d->latestSensor) return true;
+            $network = $d->latestSensor->network;
+            return is_null($network) || $network === '' || (string)$network === '0' || strtolower((string)$network) === 'unavailable';
+        })->count();
 
-    return view('dashboard.index', compact(
-    'totalDevices',
-    'fullDevices',         // integer for stats
-    'fullDevicesCollection', // collection for special cards
-    'halfDevices',
-    'emptyDevices',
-    'undetectedDevices'
-    ));
-}
+        // **Fetch all floors for the map display**
+        $floors = Floor::all();
 
+        return view('dashboard.index', compact(
+            'totalDevices',
+            'fullDevices',
+            'fullDevicesCollection',
+            'halfDevices',
+            'emptyDevices',
+            'undetectedDevices',
+            'floors' // <- added this
+        ));
+    }
 }
