@@ -196,6 +196,28 @@
     @endforeach
 </div>
 
+    <!-- Right Column: To Do List (1/3 width) -->
+    <div style="flex: 1;">
+        <div class="card p-3" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h4 class="fw-bold mb-3">
+                <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
+                    To Do List
+                </a>
+            </h4>
+            <ul class="list-group list-group-flush">
+                @foreach($todos as $todo)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ $todo->todo }}
+                        <form method="POST" action="{{ route('todos.complete', $todo->id) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-success">Done</button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    
 <!-- Single Floor Image with Dropdown -->
 
 <div class="floor-frame">
@@ -203,7 +225,6 @@
         $firstFloor = $floors->first();
     @endphp
 
-```
 <select id="floorSelect">
     @foreach($floors as $f)
         <option value="{{ $f->picture }}" {{ $f->id === $firstFloor->id ? 'selected' : '' }}>
@@ -212,8 +233,7 @@
     @endforeach
 </select>
 
-<img id="floorImage" src="{{ asset('storage/floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
-```
+<img id="floorImage" src="{{ url('floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
 
 </div>
 

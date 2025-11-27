@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Floor;
+use App\Models\Todo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 { 
@@ -43,6 +45,12 @@ class DashboardController extends Controller
         // **Fetch all floors for the map display**
         $floors = Floor::all();
 
+        // Fetch To Do items for logged-in user, only pending ones
+    $todos = Todo::where('userID', Auth::id())
+                 ->where('status', 'pending')   // only show incomplete
+                 ->orderBy('id', 'desc')
+                 ->get();
+
         return view('dashboard.index', compact(
             'totalDevices',
             'fullDevices',
@@ -50,6 +58,7 @@ class DashboardController extends Controller
             'halfDevices',
             'emptyDevices',
             'undetectedDevices',
+            'todos',
             'floors' // <- added this
         ));
     }
