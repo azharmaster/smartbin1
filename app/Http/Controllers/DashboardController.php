@@ -12,7 +12,8 @@ class DashboardController extends Controller
 { 
     public function index()
     {
-        $devices = Device::with('latestSensor', 'asset.floor')->get(); // eager-load asset and floor
+        // Eager-load asset and floor
+        $devices = Device::with('latestSensor', 'asset.floor')->get();
 
         // total devices
         $totalDevices = $devices->count();
@@ -21,7 +22,6 @@ class DashboardController extends Controller
         $fullDevicesCollection = $devices->filter(function($d) {
             return $d->latestSensor && is_numeric($d->latestSensor->capacity) && $d->latestSensor->capacity > 85;
         });
-
         $fullDevices = $fullDevicesCollection->count();
 
         // half-full: capacity > 40 and <= 85
@@ -42,15 +42,16 @@ class DashboardController extends Controller
             return is_null($network) || $network === '' || (string)$network === '0' || strtolower((string)$network) === 'unavailable';
         })->count();
 
-        // **Fetch all floors for the map display**
+        // Fetch all floors for the map display
         $floors = Floor::all();
 
         // Fetch To Do items for logged-in user, only pending ones
-    $todos = Todo::where('userID', Auth::id())
-                 ->where('status', 'pending')   // only show incomplete
-                 ->orderBy('id', 'desc')
-                 ->get();
+        $todos = Todo::where('userID', Auth::id())
+                     ->where('status', 'pending')
+                     ->orderBy('id', 'desc')
+                     ->get();
 
+        // Pass $devices to the view for bin list/map
         return view('dashboard.index', compact(
             'totalDevices',
             'fullDevices',
@@ -59,7 +60,8 @@ class DashboardController extends Controller
             'emptyDevices',
             'undetectedDevices',
             'todos',
-            'floors' // <- added this
+            'floors',
+            'devices'
         ));
     }
 }

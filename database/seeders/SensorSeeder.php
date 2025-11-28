@@ -17,7 +17,7 @@ class SensorSeeder extends Seeder
                 'battery' => '34',
                 'capacity' => '90',
                 'time' => '2025-11-20 07:23:15',
-                'network' => '2',
+                'network' => '1',
             ],
             [
                 'device_id' =>	'2',
