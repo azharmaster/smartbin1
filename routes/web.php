@@ -113,6 +113,8 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
 Route::get('/profile', function () {
     return view('profile/index');
 })->middleware('auth')->name('profile.index');
+Route::post('/profile/upload-photo', [App\Http\Controllers\ProfileController::class, 'uploadPhoto'])
+    ->name('profile.upload.photo');
 
     // Staff Task Routes
     Route::middleware(['auth'])->group(function () {
