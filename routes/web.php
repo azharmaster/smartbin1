@@ -14,6 +14,7 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffTaskController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -109,18 +110,25 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
     Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])
          ->name('staff.dashboard');
 });
-Route::get('/profile', function () {
-    return view('profile/staffindex');
-})->middleware('auth')->name('profile.staffindex');
-Route::post('/profile/upload-photo', [App\Http\Controllers\ProfileController::class, 'uploadPhoto'])
-    ->name('profile.upload.photo');
 
-Route::get('/profile', function () {
-    return view('profile/index');
-})->middleware('auth')->name('profile.index');
-Route::post('/profile/upload-photo', [App\Http\Controllers\ProfileController::class, 'uploadPhoto'])
-    ->name('profile.upload.photo');
+//Profile
+Route::middleware('auth')->group(function () {
 
+    // General profile page
+    Route::get('/profile', function () {
+        return view('profile/index');
+    })->name('profile.index');
+
+    // Staff profile page
+    Route::get('/profile/staff', function () {
+        return view('profile/staffindex');
+    })->name('profile.staffindex');
+
+    // Upload profile photo (shared for both)
+    Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])
+        ->name('profile.upload.photo');
+
+});
     // Staff Task Routes
     Route::middleware(['auth'])->group(function () {
     // View assigned tasks

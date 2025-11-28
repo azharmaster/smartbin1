@@ -327,7 +327,7 @@
             @endforeach
         </select>
 
-        <img id="floorImage" src="{{ asset('storage/floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
+        <img id="floorImage" src="{{ asset('uploads/floor/' . $firstFloor->picture) }}" alt="Floor Image">
     </div>
 
     <div class="bins-container">
