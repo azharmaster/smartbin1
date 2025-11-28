@@ -17,15 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'admin@example.com',
-            'password' => '12345678',
-        ]);
-
         $this->call([
             KategoriSeeder::class,
         ]);
         $this->call(AssetSeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(DeviceSeeder::class);
+        $this->call(FloorSeeder::class);
+        $this->call(AssignTaskSeeder::class);
+        $this->call(SensorSeeder::class);
+        $this->call(TaskSeeder::class);
+        $this->call(TodoSeeder::class);
     }
 }
