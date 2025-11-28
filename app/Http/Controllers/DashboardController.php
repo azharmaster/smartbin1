@@ -9,51 +9,59 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
-{ 
+{
     public function index()
     {
-        // Eager-load asset and floor
+        // Load devices with their latest sensor & asset-floor relationship
         $devices = Device::with('latestSensor', 'asset.floor')->get();
 
-        // total devices
+        // Total devices
         $totalDevices = $devices->count();
 
-        // full: capacity > 85
-        $fullDevicesCollection = $devices->filter(function($d) {
-            return $d->latestSensor && is_numeric($d->latestSensor->capacity) && $d->latestSensor->capacity > 85;
+        // FULL > 85%
+        $fullDevicesCollection = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity > 85;
         });
         $fullDevices = $fullDevicesCollection->count();
 
-        // half-full: capacity > 40 and <= 85
-        $halfDevices = $devices->filter(function($d) {
-            return $d->latestSensor && is_numeric($d->latestSensor->capacity)
-                && $d->latestSensor->capacity > 40 && $d->latestSensor->capacity <= 85;
+        // HALF 40–85%
+        $halfDevices = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity > 40 &&
+                   $d->latestSensor->capacity <= 85;
         })->count();
 
-        // empty: capacity <= 40
-        $emptyDevices = $devices->filter(function($d) {
-            return $d->latestSensor && is_numeric($d->latestSensor->capacity) && $d->latestSensor->capacity <= 40;
+        // EMPTY <= 40%
+        $emptyDevices = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity <= 40;
         })->count();
 
-        // undetected: no latest sensor OR network indicates 0/unavailable
-        $undetectedDevices = $devices->filter(function($d) {
+        // Undetected: no sensor or bad network
+        $undetectedDevices = $devices->filter(function ($d) {
             if (!$d->latestSensor) return true;
             $network = $d->latestSensor->network;
-            return is_null($network) || $network === '' || (string)$network === '0' || strtolower((string)$network) === 'unavailable';
+            return is_null($network)
+                || $network === ''
+                || (string)$network === '0'
+                || strtolower((string)$network) === 'unavailable';
         })->count();
 
-        // Fetch all floors for the map display
+        // Load floors for the map dropdown
         $floors = Floor::all();
 
-        // Fetch To Do items for logged-in user, only pending ones
+        // Load To-Do items for the current user
         $todos = Todo::where('userID', Auth::id())
                      ->where('status', 'pending')
                      ->orderBy('id', 'desc')
                      ->get();
 
-        // Pass $devices to the view for bin list/map
+        // Pass all data to the dashboard view
         return view('dashboard.index', compact(
-<<<<<<< Updated upstream
             'totalDevices',
             'fullDevices',
             'fullDevicesCollection',
@@ -64,16 +72,5 @@ class DashboardController extends Controller
             'floors',
             'devices'
         ));
-=======
-    'totalDevices',
-    'fullDevices',
-    'fullDevicesCollection',
-    'halfDevices',
-    'emptyDevices',
-    'undetectedDevices',
-    'floors',
-    'devices' // <-- add this
-));
->>>>>>> Stashed changes
     }
 }
