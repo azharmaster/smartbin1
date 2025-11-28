@@ -53,11 +53,11 @@
     font-weight: bold;
 }
 
-.card-total { background-color: #8c9195ff; }       /* Soft Blue */
-.card-full { background-color: #e74c3c; }        /* Soft Red */
-.card-half { background-color: #f39c12; }        /* Soft Yellow/Gold */
-.card-empty { background-color: #7ccc63; }       /* Soft Green */
-.card-undetected { background-color: #2c3e50; }  /* Soft Purple */
+.card-total { background-color: #8c9195ff; }
+.card-full { background-color: #e74c3c; }
+.card-half { background-color: #f39c12; }
+.card-empty { background-color: #7ccc63; }
+.card-undetected { background-color: #2c3e50; }
 
 .full-devices-cards {
     display: flex;
@@ -67,7 +67,7 @@
 }
 
 .full-device-card {
-    background-color: #6f060687; /* dark red */
+    background-color: #6f060687;
     border: 2px solid #ff4d4d;
     border-radius: 12px;
     box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
@@ -80,10 +80,10 @@
 }
 
 .full-status {
-    background-color: #FF0000; /* bright red */
-    padding: 0.5em 1em; /* slightly bigger padding */
-    border-radius: 25px; /* more oval */
-    font-size: 1.1rem; /* bigger text */
+    background-color: #FF0000;
+    padding: 0.5em 1em;
+    border-radius: 25px;
+    font-size: 1.1rem;
     font-weight: 700;
     box-shadow: 0 0 8px #FF0000, 0 0 12px #FF4d4d, 0 0 18px #FF6666;
     animation: pulse 1.5s infinite;
@@ -132,6 +132,91 @@
     transform: scale(1.03);
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
+
+.bins-container {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    background-color: #fff;
+    padding: 20px;
+}
+
+.bins-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.bins-header h2 {
+    font-size: 1.4rem;
+}
+
+.bin-count {
+    font-weight: bold;
+}
+
+.collapse-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.bins-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.bin-card {
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f5f5f5;
+}
+
+.bin-card.warning { background-color: #f8d7da; }
+.bin-card.normal { background-color: #d4edda; }
+
+.bin-progress {
+    width: 100%;
+    background-color: #e9ecef;
+    height: 10px;
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+.bin-progress-bar {
+    height: 10px;
+    border-radius: 6px;
+}
+
+.progress-warning { background-color: #e74c3c; }
+.progress-normal { background-color: #7ccc63; }
+
+.bin-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+#mapAndList {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.floor-frame {
+    width: 45%;
+}
+
+.bins-container {
+    width: 55%;
+}
 </style>
 
 <div class="d-flex flex-wrap">
@@ -172,83 +257,95 @@
     </div>
 </div>
 
-<div class="d-flex gap-4 mt-4">
-
-    <!-- Left Column: Full Devices Cards (2/3 width) -->
-    <div style="flex: 2;">
-        <div class="full-devices-cards d-flex flex-wrap gap-3">
-            @foreach($fullDevicesCollection as $device)
-                <a href="{{ route('master-data.assets.details', $device->asset->id) }}" class="text-decoration-none">
-                    <div class="card full-device-card position-relative p-3" style="width: 280px;">
-                        <!-- Device Name Top Left -->
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                            <div class="badge full-status text-white fw-bold fs-5">FULL</div>
-                        </div>
-                        <!-- Floor Location -->
-                        <div class="mt-2 text-white">
-                            <i class="fas fa-map-marker-alt me-1"></i>
-                            {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
-                        </div>
-                        <!-- Progress Bar -->
-                        <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
-                            <div class="progress-bar bg-danger" role="progressbar" 
-                                style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
-                                aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
-                                aria-valuemin="0" aria-valuemax="100">
-                            </div>
-                        </div>
+<div class="full-devices-cards mt-4 d-flex flex-wrap gap-3">
+    @foreach($fullDevicesCollection as $device)
+        <a href="{{ route('master-data.assets.index') }}" class="text-decoration-none">
+            <div class="card full-device-card position-relative p-3" style="width: 280px;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                    <div class="badge full-status text-white fw-bold fs-5">FULL</div>
+                </div>
+                <div class="mt-2 text-white">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
+                </div>
+                <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
+                    <div class="progress-bar bg-danger" role="progressbar" 
+                         style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
+                         aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
+                         aria-valuemin="0" aria-valuemax="100">
                     </div>
                 </div>
-                </a>
-            @endforeach
-        </div>
-
-    <!-- Right Column: To Do List (1/3 width) -->
-    <div style="flex: 1;">
-        <div class="card p-3" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h4 class="fw-bold mb-3">
-                <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
-                    To Do List
-                </a>
-            </h4>
-            <ul class="list-group list-group-flush">
-                @foreach($todos as $todo)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ $todo->todo }}
-                        <form method="POST" action="{{ route('todos.complete', $todo->id) }}">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-success">Done</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
+            </div>
+        </a>
+    @endforeach
 </div>
 
-<!-- Single Floor Image with Dropdown -->
-<div class="floor-frame">
-    @php
-        $firstFloor = $floors->first();
-    @endphp
+<div id="mapAndList">
 
-<select id="floorSelect">
-    @foreach($floors as $f)
-        <option value="{{ $f->picture }}" {{ $f->id === $firstFloor->id ? 'selected' : '' }}>
-            {{ $f->floor_name }}
-        </option>
-    @endforeach
-</select>
+    <div class="floor-frame">
+        @php
+            $firstFloor = $floors->first();
+        @endphp
 
-<img id="floorImage" src="{{ url('floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
+        <select id="floorSelect">
+            @foreach($floors as $f)
+                <option value="{{ $f->picture }}" {{ $f->id === $firstFloor->id ? 'selected' : '' }}>
+                    {{ $f->floor_name }}
+                </option>
+            @endforeach
+        </select>
+
+        <img id="floorImage" src="{{ asset('storage/floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
+    </div>
+
+    <div class="bins-container">
+        <div class="bins-header">
+            <h2><i class="fas fa-list"></i> Senarai Tong Sampah</h2>
+            <div class="bin-count" id="binCount">{{ $devices->count() }} Tong</div>
+            <button class="collapse-btn bins-collapse" aria-label="Toggle bins">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div class="bins-list" id="binsList">
+            @foreach($devices as $device)
+                @php
+                    $sensor = $device->latestSensor;
+                    $capacity = $sensor->capacity ?? 0;
+                    $statusClass = $capacity > 80 ? 'warning' : 'normal';
+                    $statusText = $capacity > 80 ? 'AMARAN' : 'NORMAL';
+                    $lastUpdated = $sensor->time ?? 'Tiada Data';
+                @endphp
+                <div class="bin-card {{ $statusClass }}">
+                    <div class="bin-header">
+                        <div class="bin-id">{{ $device->device_name }}</div>
+                        <div class="bin-status status-{{ $statusClass }}">{{ $statusText }}</div>
+                    </div>
+                    <div class="bin-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}</span>
+                    </div>
+                    <div class="bin-progress">
+                        <div class="bin-progress-bar progress-{{ $statusClass }}" style="width: {{ $capacity }}%"></div>
+                    </div>
+                    <div class="bin-details">
+                        <div class="bin-percentage">{{ $capacity }}%</div>
+                        <div class="last-updated">{{ $lastUpdated }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
 
 </div>
 
 <script>
 document.getElementById('floorSelect').addEventListener('change', function() {
-    var selectedPicture = this.value;
-    document.getElementById('floorImage').src = '/storage/floor_pictures/' + selectedPicture;
+    var selectedPicture = this.value.trim();
+    var floorImage = document.getElementById('floorImage');
+    if (selectedPicture) {
+        floorImage.src = "{{ asset('storage/floor_pictures') }}/" + selectedPicture;
+    }
 });
 </script>
 
