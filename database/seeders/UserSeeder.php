@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin User',
                 'email' => 'admin@gmail.com',
-                'profile_photo' => null,
+                'profile_photo' => 'placeholder.jpg',
                 'email_verified_at' => now(),
                 'password' => '$2y$12$TTXZRHJFodaDzE6xJyQyx.vaTwU.X9MVxjFDM1/30/x.uCYn9t6vm',
                 'role' => 1,
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Staff User',
                 'email' => 'staff@gmail.com',
-                'profile_photo' => null,
+                'profile_photo' => 'placeholder.jpg',
                 'email_verified_at' => now(),
                 'password' => '$2y$12$TTXZRHJFodaDzE6xJyQyx.vaTwU.X9MVxjFDM1/30/x.uCYn9t6vm',
                 'role' => 2,
