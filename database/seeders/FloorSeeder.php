@@ -20,7 +20,7 @@ class FloorSeeder extends Seeder
             ],
             [
                 'floor_name' => 'Ground',
-                'picture' => 'trx ground.webp',
+                'picture' => 'trx ground.jpg',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
