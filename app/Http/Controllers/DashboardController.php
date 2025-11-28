@@ -53,6 +53,7 @@ class DashboardController extends Controller
 
         // Pass $devices to the view for bin list/map
         return view('dashboard.index', compact(
+<<<<<<< Updated upstream
             'totalDevices',
             'fullDevices',
             'fullDevicesCollection',
@@ -63,5 +64,16 @@ class DashboardController extends Controller
             'floors',
             'devices'
         ));
+=======
+    'totalDevices',
+    'fullDevices',
+    'fullDevicesCollection',
+    'halfDevices',
+    'emptyDevices',
+    'undetectedDevices',
+    'floors',
+    'devices' // <-- add this
+));
+>>>>>>> Stashed changes
     }
 }
