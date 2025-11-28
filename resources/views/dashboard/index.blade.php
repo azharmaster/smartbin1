@@ -133,7 +133,6 @@
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
-/* Bin list CSS */
 .bins-container {
     margin-top: 40px;
     width: 100%;
@@ -203,7 +202,6 @@
     margin-top: 5px;
 }
 
-/* === ADDED: LEFT–RIGHT LAYOUT WRAPPER === */
 #mapAndList {
     display: flex;
     justify-content: space-between;
@@ -283,9 +281,6 @@
     @endforeach
 </div>
 
-<!-- ========================= -->
-<!-- START LEFT–RIGHT WRAPPER -->
-<!-- ========================= -->
 <div id="mapAndList">
 
     <div class="floor-frame">
@@ -303,18 +298,6 @@
 
         <img id="floorImage" src="{{ asset('storage/floor_pictures/' . $firstFloor->picture) }}" alt="Floor Image">
     </div>
-
-    <script>
-    document.getElementById('floorSelect').addEventListener('change', function() {
-        var selectedPicture = this.value.trim();
-        var floorImage = document.getElementById('floorImage');
-        if(selectedPicture) {
-            floorImage.src = "{{ asset('storage/floor_pictures') }}/" + selectedPicture;
-        }
-    });
-    </script>
-
-    <!-- Bin List Section -->
 
     <div class="bins-container">
         <div class="bins-header">
@@ -355,10 +338,15 @@
     </div>
 
 </div>
-<!-- ========================= -->
-<!-- END LEFT–RIGHT WRAPPER -->
-<!-- ========================= -->
+
+<script>
+document.getElementById('floorSelect').addEventListener('change', function() {
+    var selectedPicture = this.value.trim();
+    var floorImage = document.getElementById('floorImage');
+    if (selectedPicture) {
+        floorImage.src = "{{ asset('storage/floor_pictures') }}/" + selectedPicture;
+    }
+});
+</script>
 
 @endsection
-
-
