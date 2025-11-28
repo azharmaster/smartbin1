@@ -109,6 +109,11 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
     Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])
          ->name('staff.dashboard');
 });
+Route::get('/profile', function () {
+    return view('profile/staffindex');
+})->middleware('auth')->name('profile.staffindex');
+Route::post('/profile/upload-photo', [App\Http\Controllers\ProfileController::class, 'uploadPhoto'])
+    ->name('profile.upload.photo');
 
 Route::get('/profile', function () {
     return view('profile/index');

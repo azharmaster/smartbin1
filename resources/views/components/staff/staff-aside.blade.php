@@ -12,7 +12,7 @@
                 <!-- Optional user image -->
             </div>
             <div class="info">
-                <a href="#" class="d-block">
+                <a href="{{ route('profile.index') }}" class="d-block">
                     {{ auth()->check() ? auth()->user()->name : 'Guest' }}
                 </a>
             </div>
