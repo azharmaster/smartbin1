@@ -57,19 +57,28 @@ class Aside extends Component
                 "route_active" => "schedules.*",
                 "is_dropdown" => false
             ],
+
             [
                 "label" => "Leave",
-                "icon" => "fas fa-calendar-alt", // calendar icon for leave
-                "route_name" => "admin.leave.index", // route to admin leave page
-                "route_active" => "admin.leave.*", // active on all leave routes
-                "is_dropdown" => false
-            ],
-            [
-               "label" => "Leave Quota",
-               "icon" => "fas fa-calendar-check", // Icon for leave quota
-               "route_name" => "admin.leave.quota.index", // Route to admin leave quota page
-               "route_active" => "admin.leave.quota.*", // Active for all quota-related routes
-               "is_dropdown" => false,
+                "icon" => "fas fa-home",
+                "route_active" => "leave-data.*",
+                "is_dropdown" => true,
+                "dropdown" => [
+                    [
+                        "label" => "Leave",
+                        "icon" => "fas fa-calendar-alt", // calendar icon for leave
+                        "route_name" => "admin.leave.index", // route to admin leave page
+                        "route_active" => "admin.leave.*", // active on all leave routes
+                        "is_dropdown" => false
+                    ],
+                    [
+                    "label" => "Leave Quota",
+                    "icon" => "fas fa-calendar-check", // Icon for leave quota
+                    "route_name" => "admin.leave.quota.index", // Route to admin leave quota page
+                    "route_active" => "admin.leave.quota.*", // Active for all quota-related routes
+                    "is_dropdown" => false,
+                    ],
+                ]
             ],
 
 
