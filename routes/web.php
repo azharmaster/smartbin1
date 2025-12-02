@@ -75,6 +75,34 @@ Route::middleware('auth')->group(function(){
     });
 
     // Master Data Modules
+    Route::prefix('leave-data')->as('leave-data.')->group(function () {
+
+       // Attendance
+Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance');
+
+// Leave requests page
+Route::get('/leave', [AdminLeaveController::class, 'index'])->name('admin.leave.index');
+
+// Leave quota index page (with modal for add/edit)
+Route::get('/leave/quota', [AdminLeaveController::class, 'indexQuota'])->name('admin.leave.quota.index');
+
+// Store leave quota (handles both create and edit)
+Route::post('/leave/quota/store', [AdminLeaveController::class, 'storeQuota'])->name('admin.leave.quota.store');
+
+// Update leave quota
+Route::put('/leave/quota/{quota}/update', [AdminLeaveController::class, 'updateQuota'])->name('admin.leave.quota.update');
+
+// Delete leave quota
+Route::delete('/leave/quota/{quota}/destroy', [AdminLeaveController::class, 'destroyQuota'])->name('admin.leave.quota.destroy');
+
+// Approve / Reject leave
+Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus'])->name('admin.leave.status');
+
+// Optional: Show leave detail
+Route::get('/leave/{leave}', [AdminLeaveController::class, 'show'])->name('admin.leave.show');
+    });
+
+    // Master Data Modules
     Route::prefix('master-data')->as('master-data.')->group(function () {
 
         // Kategori
