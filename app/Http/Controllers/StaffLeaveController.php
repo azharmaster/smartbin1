@@ -29,24 +29,28 @@ class StaffLeaveController extends Controller
             $quota->used_emergency = 0;
             $quota->used_hospitality = 0;
         } else {
-            // Calculate used days per leave type
+            // Calculate used days per leave type only, quota remains unchanged
             $quota->used_mc = Leave::where('user_id', Auth::id())
                                    ->where('use', 'mc')
+                                   ->where('status', 'Approved')
                                    ->whereYear('start_date', $year)
                                    ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
 
             $quota->used_annual = Leave::where('user_id', Auth::id())
                                        ->where('use', 'annual_leave')
+                                       ->where('status', 'Approved')
                                        ->whereYear('start_date', $year)
                                        ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
 
             $quota->used_hospitality = Leave::where('user_id', Auth::id())
                                            ->where('use', 'hospitality')
+                                           ->where('status', 'Approved')
                                            ->whereYear('start_date', $year)
                                            ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
 
             $quota->used_emergency = Leave::where('user_id', Auth::id())
                                          ->where('use', 'emergency_leave')
+                                         ->where('status', 'Approved')
                                          ->whereYear('start_date', $year)
                                          ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
         }
@@ -83,29 +87,33 @@ class StaffLeaveController extends Controller
             return redirect()->back()->with('error', 'Leave quota not set for this year.');
         }
 
-        // Calculate remaining days for the selected leave type
+        // Calculate used days only for the selected leave type
         switch ($leaveUse) {
             case 'mc':
                 $used = Leave::where('user_id', $user_id)
                              ->where('use', 'mc')
+                             ->where('status', 'Approved')
                              ->whereYear('start_date', $year)
                              ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
                 break;
             case 'annual_leave':
                 $used = Leave::where('user_id', $user_id)
                              ->where('use', 'annual_leave')
+                             ->where('status', 'Approved')
                              ->whereYear('start_date', $year)
                              ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
                 break;
             case 'hospitality':
                 $used = Leave::where('user_id', $user_id)
                              ->where('use', 'hospitality')
+                             ->where('status', 'Approved')
                              ->whereYear('start_date', $year)
                              ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
                 break;
             case 'emergency_leave':
                 $used = Leave::where('user_id', $user_id)
                              ->where('use', 'emergency_leave')
+                             ->where('status', 'Approved')
                              ->whereYear('start_date', $year)
                              ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
                 break;
@@ -117,7 +125,7 @@ class StaffLeaveController extends Controller
             return redirect()->back()->with('error', 'You have insufficient leave quota for ' . ucfirst(str_replace('_', ' ', $leaveUse)) . '.');
         }
 
-        // Create the leave without deducting quota yet
+        // Create the leave without modifying quota
         Leave::create([
             'user_id' => $user_id,
             'type' => $request->type,

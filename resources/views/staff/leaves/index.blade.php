@@ -79,12 +79,11 @@
                             'annual_leave' => 'Annual Leave',
                             'hospitality' => 'Hospitality',
                         ];
-                        // $quota is passed from controller
                     @endphp
 
                     @foreach($leaveTypes as $key => $label)
                         @php
-                            // Calculate remaining per leave type separately
+                            // Calculate used days only, quota remains unchanged
                             switch ($key) {
                                 case 'mc':
                                     $used = $quota->used_mc ?? 0;
