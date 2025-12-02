@@ -49,5 +49,9 @@ class Asset extends Model
     {
         return $this->hasMany(Device::class);
     }
+    public function complaint()
+    {
+        return $this->hasMany(Complaint::class);
+    }
 }
 
