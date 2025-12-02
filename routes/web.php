@@ -102,6 +102,13 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
         Route::post('/', 'store')->name('store');
         Route::delete('/{id}/destroy', 'destroy')->name('destroy');
         });
+
+        Route::prefix('complaints')->as('complaint.')->controller(ComplaintController::class)->group(function () {
+            Route::get('/', 'index')->name('index');           // show all complaints
+            Route::post('/', 'store')->name('store');          // add complaint
+            Route::put('/{id}', 'update')->name('update');     // update complaint
+            Route::delete('/{id}', 'destroy')->name('destroy'); // delete complaint
+        });
     });
 
     // Top-level Schedule Routes

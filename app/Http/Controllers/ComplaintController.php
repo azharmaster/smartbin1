@@ -9,10 +9,12 @@ class ComplaintController extends Controller
 {
     // Show all complaints
     public function index()
-    {
-        $complaints = Complaint::with('asset')->latest()->paginate(10);
-        return view('complaints.index', compact('complaints'));
-    }
+{
+    $complaints = Complaint::with('asset')->latest()->paginate(10);
+    $assets = \App\Models\Asset::all(); // Fetch all assets
+
+    return view('complaints.index', compact('complaints', 'assets'));
+}
 
     // Show create form
     public function create()
