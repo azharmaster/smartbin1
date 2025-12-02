@@ -80,18 +80,18 @@ class Aside extends Component
                 "route_active" => "master-data.*",
                 "is_dropdown" => true,
                 "dropdown" => [
-                    [
-                        "label" => "Kategori",
-                        "route_active" => "master-data.kategori.*",
-                        "route_name" => "master-data.kategori.index",
-                        "icon" => "fas fa-circle"
-                    ],
-                    [
-                        "label" => "Product",
-                        "route_active" => "master-data.product.*",
-                        "route_name" => "master-data.product.index",
-                        "icon" => "fas fa-circle"
-                    ],
+                    // [
+                    //     "label" => "Kategori",
+                    //     "route_active" => "master-data.kategori.*",
+                    //     "route_name" => "master-data.kategori.index",
+                    //     "icon" => "fas fa-circle"
+                    // ],
+                    // [
+                    //     "label" => "Product",
+                    //     "route_active" => "master-data.product.*",
+                    //     "route_name" => "master-data.product.index",
+                    //     "icon" => "fas fa-circle"
+                    // ],
                     [
                         "label" => "Asset",
                         "route_active" => "master-data.assets.*",
