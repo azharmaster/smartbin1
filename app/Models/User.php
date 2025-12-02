@@ -16,10 +16,8 @@ class User extends Authenticatable
      * The attributes that are mass assignable.
      *
      * @var list<string>
-     * 
      */
-
-     protected $guarded =['id'];
+    protected $guarded = ['id'];
     protected $fillable = [
         'name',
         'email',
@@ -48,5 +46,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relationship: User has one leave quota
+     */
+    public function leaveQuota()
+    {
+        return $this->hasOne(LeaveQuota::class, 'user_id');
+    }
+
+    /**
+     * Relationship: User has many leave requests
+     */
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'user_id');
     }
 }

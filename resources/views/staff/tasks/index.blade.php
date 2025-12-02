@@ -15,7 +15,8 @@
     @endif
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped dataTable dtr-inline">
+       <table id="table1" class="table table-bordered table-striped">
+
             <thead>
                 <tr>
                     <th>#</th>

@@ -27,7 +27,24 @@ class StaffAside extends Component
                 "route_active" => "staff.tasks.*",
                 "is_dropdown" => false
             ],
+            [
+                "label" => "My Schedule",
+                "icon" => "fas fa-calendar-alt", // better icon for schedule
+                "route_name" => "staff.schedule",
+                "route_active" => "staff.schedule.*",
+                "is_dropdown" => false
+            ],
             // You can add more staff menu items here if needed
+
+            [
+               "label" => "My Leave",
+               "icon" => "fas fa-file-alt", // better icon for leave
+               "route_name" => "staff.leave.index",
+               "route_active" => "staff.leave.*",
+               "is_dropdown" => false
+            ],
+
+
         ];
     }
 

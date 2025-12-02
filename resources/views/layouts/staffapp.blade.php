@@ -113,23 +113,24 @@
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 
+    <!-- INSERTED DATATABLES SCRIPT -->
     <script>
         $(function () {
             $("#table1").DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": true,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                responsive: true,
+                lengthChange: false,
+                autoWidth: true,
+                buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
             }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
 
             $('#table2').DataTable({
-                "paging": true,
-                "lengthChange": false,
-                "searching": false,
-                "ordering": true,
-                "info": true,
-                "autoWidth": true,
-                "responsive": true,
+                paging: true,
+                lengthChange: false,
+                searching: false,
+                ordering: true,
+                info: true,
+                autoWidth: true,
+                responsive: true,
             });
         });
     </script>

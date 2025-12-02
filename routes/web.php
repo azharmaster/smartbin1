@@ -14,7 +14,6 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffTaskController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -154,3 +153,33 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/todos/{id}', [TodoController::class, 'destroy'])->name('todos.destroy');
     Route::put('/todos/{id}', [TodoController::class, 'update'])->name('todos.update');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::get('/staff/schedule', [App\Http\Controllers\StaffScheduleController::class, 'index'])
+    ->name('staff.schedule');
+
+});
+
+Route::get('/attendance', [AdminAttendanceController::class, 'index'])
+    ->name('admin.attendance');
+
+// Leave requests page
+Route::get('/leave', [AdminLeaveController::class, 'index'])->name('admin.leave.index');
+
+// Leave quota index page
+Route::get('/leave/quota', [AdminLeaveController::class, 'indexQuota'])->name('admin.leave.quota.index');
+
+// Leave quota create form
+Route::get('/leave/quota/create', [AdminLeaveController::class, 'createQuota'])->name('admin.leave.quota.create');
+
+// Store leave quota
+Route::post('/leave/quota/store', [AdminLeaveController::class, 'storeQuota'])->name('admin.leave.quota.store');
+
+// Approve / Reject leave
+Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus'])->name('admin.leave.status');
+
+// Optional: Show leave detail
+Route::get('/leave/{leave}', [AdminLeaveController::class, 'show'])->name('admin.leave.show');
+
+Route::get('/staff/leaves', [StaffLeaveController::class, 'index'])->name('staff.leave.index');
+Route::post('/staff/leaves', [StaffLeaveController::class, 'store'])->name('staff.leave.store');

@@ -42,12 +42,37 @@ class Aside extends Component
                 "is_dropdown" => false
             ],
             [
+                "label" => "Attendance",
+                "icon" => "fas fa-user-check",
+                "route_name" => "admin.attendance",
+                "route_active" => "admin.attendance",
+                "is_dropdown" => false
+            ],
+
+
+            [
                 "label" => "Schedule",
                 "icon" => "fas fa-calendar-alt", // optional: a calendar icon
                 "route_name" => "schedules.index",
                 "route_active" => "schedules.*",
                 "is_dropdown" => false
             ],
+            [
+                "label" => "Leave",
+                "icon" => "fas fa-calendar-alt", // calendar icon for leave
+                "route_name" => "admin.leave.index", // route to admin leave page
+                "route_active" => "admin.leave.*", // active on all leave routes
+                "is_dropdown" => false
+            ],
+            [
+               "label" => "Leave Quota",
+               "icon" => "fas fa-calendar-check", // Icon for leave quota
+               "route_name" => "admin.leave.quota.index", // Route to admin leave quota page
+               "route_active" => "admin.leave.quota.*", // Active for all quota-related routes
+               "is_dropdown" => false,
+            ],
+
+
 
             [
                 "label" => "Master Data",
