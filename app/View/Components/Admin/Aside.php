@@ -84,7 +84,7 @@ class Aside extends Component
 
 
             [
-                "label" => "Master Data",
+                "label" => "Collective",
                 "icon" => "fas fa-database",
                 "route_active" => "master-data.*",
                 "is_dropdown" => true,
