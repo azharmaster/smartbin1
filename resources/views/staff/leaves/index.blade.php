@@ -79,15 +79,32 @@
                             'annual_leave' => 'Annual Leave',
                             'hospitality' => 'Hospitality',
                         ];
-                        // $quota should be passed from controller as the user's leave_quotas row
+                        // $quota is passed from controller
                     @endphp
 
                     @foreach($leaveTypes as $key => $label)
                         @php
-                            $remaining = $quota->$key - $quota->used_days;
+                            // Calculate remaining per leave type separately
+                            switch ($key) {
+                                case 'mc':
+                                    $used = $quota->used_mc ?? 0;
+                                    break;
+                                case 'annual_leave':
+                                    $used = $quota->used_annual ?? 0;
+                                    break;
+                                case 'hospitality':
+                                    $used = $quota->used_hospitality ?? 0;
+                                    break;
+                                case 'emergency_leave':
+                                    $used = $quota->used_emergency ?? 0;
+                                    break;
+                                default:
+                                    $used = 0;
+                            }
+                            $remaining = max(0, ($quota->$key ?? 0) - $used);
                         @endphp
                         <option value="{{ $key }}" {{ $remaining <= 0 ? 'disabled' : '' }}>
-                            {{ $label }} ({{ $remaining }}/{{ $quota->$key }})
+                            {{ $label }} ({{ $remaining }}/{{ $quota->$key ?? 0 }})
                         </option>
                     @endforeach
                 </select>

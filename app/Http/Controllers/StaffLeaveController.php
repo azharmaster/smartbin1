@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Leave;
 use App\Models\LeaveQuota;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StaffLeaveController extends Controller
 {
@@ -22,6 +23,32 @@ class StaffLeaveController extends Controller
                 'hospitality' => 0,
                 'used_days' => 0,
             ]);
+
+            $quota->used_mc = 0;
+            $quota->used_annual = 0;
+            $quota->used_emergency = 0;
+            $quota->used_hospitality = 0;
+        } else {
+            // Calculate used days per leave type
+            $quota->used_mc = Leave::where('user_id', Auth::id())
+                                   ->where('use', 'mc')
+                                   ->whereYear('start_date', $year)
+                                   ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+
+            $quota->used_annual = Leave::where('user_id', Auth::id())
+                                       ->where('use', 'annual_leave')
+                                       ->whereYear('start_date', $year)
+                                       ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+
+            $quota->used_hospitality = Leave::where('user_id', Auth::id())
+                                           ->where('use', 'hospitality')
+                                           ->whereYear('start_date', $year)
+                                           ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+
+            $quota->used_emergency = Leave::where('user_id', Auth::id())
+                                         ->where('use', 'emergency_leave')
+                                         ->whereYear('start_date', $year)
+                                         ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
         }
 
         return view('staff.leaves.index', compact('leaves', 'quota'));
@@ -56,8 +83,36 @@ class StaffLeaveController extends Controller
             return redirect()->back()->with('error', 'Leave quota not set for this year.');
         }
 
-        // Check remaining days for the selected leave type
-        $remaining = $quota->$leaveUse;
+        // Calculate remaining days for the selected leave type
+        switch ($leaveUse) {
+            case 'mc':
+                $used = Leave::where('user_id', $user_id)
+                             ->where('use', 'mc')
+                             ->whereYear('start_date', $year)
+                             ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+                break;
+            case 'annual_leave':
+                $used = Leave::where('user_id', $user_id)
+                             ->where('use', 'annual_leave')
+                             ->whereYear('start_date', $year)
+                             ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+                break;
+            case 'hospitality':
+                $used = Leave::where('user_id', $user_id)
+                             ->where('use', 'hospitality')
+                             ->whereYear('start_date', $year)
+                             ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+                break;
+            case 'emergency_leave':
+                $used = Leave::where('user_id', $user_id)
+                             ->where('use', 'emergency_leave')
+                             ->whereYear('start_date', $year)
+                             ->sum(DB::raw('DATEDIFF(COALESCE(end_date, start_date), start_date) + 1'));
+                break;
+        }
+
+        $remaining = max(0, $quota->$leaveUse - $used);
+
         if ($remaining < $days) {
             return redirect()->back()->with('error', 'You have insufficient leave quota for ' . ucfirst(str_replace('_', ' ', $leaveUse)) . '.');
         }

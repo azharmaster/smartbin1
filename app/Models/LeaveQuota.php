@@ -46,4 +46,13 @@ class LeaveQuota extends Model
     {
         return max(0, $this->total_days - ($this->used_days ?? 0));
     }
+
+    /**
+     * Scope: get quota for a specific year
+     */
+    public function scopeForYear($query, $year = null)
+    {
+        $year = $year ?? date('Y');
+        return $query->where('year', $year);
+    }
 }

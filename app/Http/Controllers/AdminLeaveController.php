@@ -19,7 +19,7 @@ class AdminLeaveController extends Controller
     }
 
     /**
-     * Display all users' leave quotas and the add quota modal.
+     * Display all users' leave quotas and the add/edit quota modal.
      */
     public function indexQuota()
     {
@@ -29,7 +29,7 @@ class AdminLeaveController extends Controller
     }
 
     /**
-     * Store or update leave quota for a user.
+     * Store or update leave quota for a user (works for both add and edit via modal).
      */
     public function storeQuota(Request $request)
     {
@@ -54,6 +54,41 @@ class AdminLeaveController extends Controller
         );
 
         return redirect()->route('admin.leave.quota.index')->with('success', 'Leave quota set successfully.');
+    }
+
+    /**
+     * Update leave quota via modal.
+     */
+    public function updateQuota(Request $request, LeaveQuota $quota)
+    {
+        $request->validate([
+            'year' => 'required|integer|digits:4',
+            'annual_leave' => 'nullable|integer|min:0',
+            'mc' => 'nullable|integer|min:0',
+            'hospitality' => 'nullable|integer|min:0',
+            'emergency_leave' => 'nullable|integer|min:0',
+            'used_days' => 'nullable|numeric|min:0',
+        ]);
+
+        $quota->update([
+            'year' => $request->year,
+            'annual_leave' => $request->annual_leave ?? 0,
+            'mc' => $request->mc ?? 0,
+            'hospitality' => $request->hospitality ?? 0,
+            'emergency_leave' => $request->emergency_leave ?? 0,
+            'used_days' => $request->used_days ?? 0,
+        ]);
+
+        return redirect()->route('admin.leave.quota.index')->with('success', 'Leave quota updated successfully.');
+    }
+
+    /**
+     * Delete leave quota.
+     */
+    public function destroyQuota(LeaveQuota $quota)
+    {
+        $quota->delete();
+        return redirect()->route('admin.leave.quota.index')->with('success', 'Leave quota deleted successfully.');
     }
 
     /**
@@ -84,15 +119,24 @@ class AdminLeaveController extends Controller
                         ->first();
 
             if ($quota) {
-                // Use leave->use directly as column key in quota table
-                $validLeaveTypes = ['annual_leave', 'mc', 'hospitality', 'emergency_leave'];
-                $leaveKey = strtolower(str_replace(' ', '_', $leave->use));
-
-                if (in_array($leaveKey, $validLeaveTypes)) {
-                    $quota->$leaveKey = max(0, ($quota->$leaveKey ?? 0) - $daysUsed);
-                    $quota->used_days = ($quota->used_days ?? 0) + $daysUsed;
-                    $quota->save();
+                // Only deduct the specific leave type applied
+                switch ($leave->use) {
+                    case 'annual_leave':
+                        $quota->annual_leave = max(0, $quota->annual_leave - $daysUsed);
+                        break;
+                    case 'mc':
+                        $quota->mc = max(0, $quota->mc - $daysUsed);
+                        break;
+                    case 'hospitality':
+                        $quota->hospitality = max(0, $quota->hospitality - $daysUsed);
+                        break;
+                    case 'emergency_leave':
+                        $quota->emergency_leave = max(0, $quota->emergency_leave - $daysUsed);
+                        break;
                 }
+
+                $quota->used_days = ($quota->used_days ?? 0) + $daysUsed;
+                $quota->save();
             }
         }
 

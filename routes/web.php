@@ -40,25 +40,23 @@ Route::middleware('auth')->group(function(){
         Route::delete('/{id}/destroy', 'destroy')->name('destroy');
     });
 
-     Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-
+    Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::delete('/{id}/destroy', 'destroy')->name('destroy');
     });
 
-Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
-    Route::get('/', 'index')->name('index');
-    Route::post('/', 'store')->name('store');
-    Route::put('/{device}', 'update')->name('update');
-    Route::delete('/{device}/destroy', 'destroy')->name('destroy');
-});
+    Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{device}', 'update')->name('update');
+        Route::delete('/{device}/destroy', 'destroy')->name('destroy');
+    });
 
     Route::prefix('sensors')->as('sensors.')->controller(SensorController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::delete('/{id}/destroy', 'destroy')->name('destroy');
     });
 
     // Floor Pictures
@@ -91,66 +89,46 @@ Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->g
 
         // Assets
         Route::prefix('assets')->as('assets.')->controller(AssetController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/{asset}/details', function ($asset) {
-            return view('asset.details', ['asset_id' => $asset]);
-        })->name('details');  // route name: master-data.assets.details
-        Route::post('/', 'store')->name('store');
-        Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+            Route::get('/', 'index')->name('index');
+            Route::get('/{asset}/details', function ($asset) {
+                return view('asset.details', ['asset_id' => $asset]);
+            })->name('details');
+            Route::post('/', 'store')->name('store');
+            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
         });
     });
 
     // Top-level Schedule Routes
     Route::prefix('schedules')->as('schedules.')->controller(ScheduleController::class)->group(function () {
-        Route::get('/', 'index')->name('index');       // List schedules
-        Route::post('/', 'store')->name('store');      // Add schedule
-        Route::put('/{id}', 'update')->name('update'); // Update schedule
-        Route::delete('/{id}', 'destroy')->name('destroy'); // Delete schedule
+        Route::get('/', 'index')->name('index');       
+        Route::post('/', 'store')->name('store');      
+        Route::put('/{id}', 'update')->name('update'); 
+        Route::delete('/{id}', 'destroy')->name('destroy');
     });
-
-});
-    //staff dashboard routes
-    Route::middleware(['auth'])->group(function () {
-    Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])
-         ->name('staff.dashboard');
 });
 
-//Profile
+// Staff dashboard routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
+});
+
+// Profile
 Route::middleware('auth')->group(function () {
-
-    // General profile page
-    Route::get('/profile', function () {
-        return view('profile/index');
-    })->name('profile.index');
-
-    // Staff profile page
-    Route::get('/profile/staff', function () {
-        return view('profile/staffindex');
-    })->name('profile.staffindex');
-
-    // Upload profile photo (shared for both)
-    Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])
-        ->name('profile.upload.photo');
-
+    Route::get('/profile', function () { return view('profile/index'); })->name('profile.index');
+    Route::get('/profile/staff', function () { return view('profile/staffindex'); })->name('profile.staffindex');
+    Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])->name('profile.upload.photo');
 });
-    // Staff Task Routes
-    Route::middleware(['auth'])->group(function () {
-    // View assigned tasks
+
+// Staff Task Routes
+Route::middleware(['auth'])->group(function () {
     Route::get('/staff/tasks', [StaffTaskController::class, 'index'])->name('staff.tasks');
-
-    // Accept task
     Route::post('/staff/tasks/{task}/accept', [StaffTaskController::class, 'accept'])->name('staff.tasks.accept');
-
-    // Reject task
     Route::post('/staff/tasks/{task}/reject', [StaffTaskController::class, 'reject'])->name('staff.tasks.reject');
-
-    // Update progress: in_progress or done
     Route::post('/staff/tasks/{task}/progress/{status}', [StaffTaskController::class, 'updateProgress'])->name('staff.tasks.progress');
-
-    // NEW: Update status via dropdown
     Route::post('/staff/tasks/{task}/update-status', [StaffTaskController::class, 'updateStatus'])->name('staff.tasks.updateStatus');
 });
 
+// Todo routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/todos', [TodoController::class, 'index'])->name('todos.index');
     Route::post('/todos', [TodoController::class, 'store'])->name('todos.store');
@@ -159,26 +137,28 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/todos/{id}', [TodoController::class, 'update'])->name('todos.update');
 });
 
+// Staff schedule
 Route::middleware('auth')->group(function () {
-    Route::get('/staff/schedule', [App\Http\Controllers\StaffScheduleController::class, 'index'])
-    ->name('staff.schedule');
-
+    Route::get('/staff/schedule', [StaffScheduleController::class, 'index'])->name('staff.schedule');
 });
 
-Route::get('/attendance', [AdminAttendanceController::class, 'index'])
-    ->name('admin.attendance');
+// Attendance
+Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance');
 
 // Leave requests page
 Route::get('/leave', [AdminLeaveController::class, 'index'])->name('admin.leave.index');
 
-// Leave quota index page
+// Leave quota index page (with modal for add/edit)
 Route::get('/leave/quota', [AdminLeaveController::class, 'indexQuota'])->name('admin.leave.quota.index');
 
-// Leave quota create form
-Route::get('/leave/quota/create', [AdminLeaveController::class, 'createQuota'])->name('admin.leave.quota.create');
-
-// Store leave quota
+// Store leave quota (handles both create and edit)
 Route::post('/leave/quota/store', [AdminLeaveController::class, 'storeQuota'])->name('admin.leave.quota.store');
+
+// Update leave quota
+Route::put('/leave/quota/{quota}/update', [AdminLeaveController::class, 'updateQuota'])->name('admin.leave.quota.update');
+
+// Delete leave quota
+Route::delete('/leave/quota/{quota}/destroy', [AdminLeaveController::class, 'destroyQuota'])->name('admin.leave.quota.destroy');
 
 // Approve / Reject leave
 Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus'])->name('admin.leave.status');
@@ -186,5 +166,6 @@ Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus
 // Optional: Show leave detail
 Route::get('/leave/{leave}', [AdminLeaveController::class, 'show'])->name('admin.leave.show');
 
+// Staff leave routes
 Route::get('/staff/leaves', [StaffLeaveController::class, 'index'])->name('staff.leave.index');
 Route::post('/staff/leaves', [StaffLeaveController::class, 'store'])->name('staff.leave.store');
