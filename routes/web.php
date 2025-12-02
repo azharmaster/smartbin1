@@ -16,7 +16,6 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffTaskController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffScheduleController;
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\AdminLeaveController;
