@@ -32,7 +32,7 @@
                         <td>{{ $leave->start_date }}</td>
                         <td>{{ $leave->end_date ?? '-' }}</td>
                         <td>{{ $leave->reason }}</td>
-                        <td>{{ $leave->use ?? '-' }}</td>
+                        <td>{{ $leave->use ? ucwords(str_replace('_', ' ', $leave->use)) : '-' }}</td>
                         <td>
                             @if(strtolower($leave->status) == 'pending')
                                 <span class="badge bg-warning">Pending</span>
