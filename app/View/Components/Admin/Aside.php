@@ -110,6 +110,12 @@ class Aside extends Component
                         "route_name" => "sensors.index",
                         "icon" => "fas fa-circle"
                     ],
+                    [
+                        "label" => "Complaints",
+                        "route_active" => "complaints.*",
+                        "route_name" => "complaints.index",
+                        "icon" => "fas fa-circle"
+                    ],
                    
                 ]
             ]
