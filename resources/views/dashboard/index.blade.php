@@ -217,6 +217,15 @@
 .bins-container {
     width: 55%;
 }
+
+.map-card-body {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.map-card-body.collapsed {
+    display: none;
+}
 </style>
 
 <div class="d-flex flex-wrap">
@@ -257,41 +266,96 @@
     </div>
 </div>
 
+{{-- ✅ FULL WIDTH MAP AT THE VERY TOP --}}
+<div class="w-100 mb-4">
+
+    <div class="card map-card" style="margin-top: 20px;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-map-marked-alt"></i> Floor Map
+            </h5>
+            <button class="btn btn-tool collapse-btn" type="button">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <div class="card-body map-card-body collapsed"> {{-- ✅ AUTO COLLAPSED --}}
+
+            @php
+                $firstFloor = $floors->first();
+            @endphp
+
+            <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
+                <select id="floorSelect" class="form-control" style="width: 200px;">
+                    @foreach($floors as $f)
+                        <option 
+                            value="{{ asset('uploads/floor/' . $f->picture) }}"
+                            {{ $f->id === optional($firstFloor)->id ? 'selected' : '' }}>
+                            {{ $f->floor_name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <button id="zoomIn" type="button" class="btn btn-secondary">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+
+                <button id="zoomOut" type="button" class="btn btn-secondary">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+
+                <button id="resetView" type="button" class="btn btn-secondary">
+                    <i class="fas fa-crosshairs"></i> Reset
+                </button>
+            </div>
+
+            <div id="map" class="text-center overflow-auto">
+                <img 
+                    id="floorImage"
+                    src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
+                    alt="Floor Image"
+                    style="max-width: 100%; transition: transform 0.2s ease;">
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+{{-- ✅ ALERT FULL BINS + TODO LIST SAME ROW --}}
 <div class="d-flex gap-4 mt-4">
 
-    <!-- Left Column: Full Devices Cards (2/3 width) -->
+    {{-- LEFT: ALERT / FULL BINS --}}
     <div style="flex: 2;">
         <div class="full-devices-cards d-flex flex-wrap gap-3">
             @foreach($fullDevicesCollection as $device)
                 <a href="{{ route('master-data.assets.details', $device->asset->id) }}" class="text-decoration-none">
                     <div class="card full-device-card position-relative p-3" style="width: 280px;">
-                        <!-- Device Name Top Left -->
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
                             <div class="badge full-status text-white fw-bold fs-5">FULL</div>
                         </div>
-                        <!-- Floor Location -->
+
                         <div class="mt-2 text-white">
                             <i class="fas fa-map-marker-alt me-1"></i>
                             {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
                         </div>
-                        <!-- Progress Bar -->
-                        <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
-                            <div class="progress-bar bg-danger" role="progressbar" 
-                                style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
-                                aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
-                                aria-valuemin="0" aria-valuemax="100">
+
+                        <div class="progress mt-3" style="height: 10px;">
+                            <div class="progress-bar bg-danger"
+                                style="width: {{ $device->latestSensor->capacity ?? 0 }}%;">
                             </div>
                         </div>
                     </div>
-                </div>
                 </a>
             @endforeach
         </div>
+    </div>
 
-    <!-- Right Column: To Do List (1/3 width) -->
+    {{-- RIGHT: TODO LIST --}}
     <div style="flex: 1;">
-        <div class="card p-3" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="card p-3">
             <h4 class="fw-bold mb-3">
                 <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
                     To Do List
@@ -312,71 +376,81 @@
     </div>
 </div>
 
-<div id="mapAndList">
 
-    <div class="floor-frame">
-        @php
-            $firstFloor = $floors->first();
-        @endphp
 
-        <select id="floorSelect">
-            @foreach($floors as $f)
-                <option value="{{ $f->picture }}" {{ $f->id === $firstFloor->id ? 'selected' : '' }}>
-                    {{ $f->floor_name }}
-                </option>
-            @endforeach
-        </select>
-
-        <img id="floorImage" src="{{ asset('uploads/floor/' . $firstFloor->picture) }}" alt="Floor Image">
+{{-- ✅ BINS LIST AT THE VERY BOTTOM --}}
+<div class="bins-container mt-4">
+    <div class="bins-header">
+        <h2><i class="fas fa-list"></i> Bins List</h2>
+        <div class="bin-count">{{ $devices->count() }} Tong</div>
+        <button class="collapse-btn bins-collapse">
+            <i class="fas fa-minus"></i>
+        </button>
     </div>
 
-    <div class="bins-container">
-        <div class="bins-header">
-            <h2><i class="fas fa-list"></i> Senarai Tong Sampah</h2>
-            <div class="bin-count" id="binCount">{{ $devices->count() }} Tong</div>
-            <button class="collapse-btn bins-collapse" aria-label="Toggle bins">
-                <i class="fas fa-minus"></i>
-            </button>
-        </div>
-        <div class="bins-list" id="binsList">
-            @foreach($devices as $device)
-                @php
-                    $sensor = $device->latestSensor;
-                    $capacity = $sensor->capacity ?? 0;
-                    $statusClass = $capacity > 85 ? 'warning' : 'normal';
-                    $statusText = $capacity > 85 ? 'AMARAN' : 'NORMAL';
-                    $lastUpdated = $sensor->time ?? 'Tiada Data';
-                @endphp
-                <div class="bin-card {{ $statusClass }}">
-                    <div class="bin-header">
-                        <div class="bin-id">{{ $device->device_name }}</div>
-                        <div class="bin-status status-{{ $statusClass }}">{{ $statusText }}</div>
-                    </div>
-                    <div class="bin-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}</span>
-                    </div>
-                    <div class="bin-progress">
-                        <div class="bin-progress-bar progress-{{ $statusClass }}" style="width: {{ $capacity }}%"></div>
-                    </div>
-                    <div class="bin-details">
-                        <div class="bin-percentage">{{ $capacity }}%</div>
-                        <div class="last-updated">{{ $lastUpdated }}</div>
-                    </div>
+    <div class="bins-list">
+        @foreach($devices as $device)
+            @php
+                $capacity = $device->latestSensor->capacity ?? 0;
+                $statusClass = $capacity > 85 ? 'warning' : 'normal';
+                $statusText = $capacity > 85 ? 'AMARAN' : 'NORMAL';
+            @endphp
+
+            <div class="bin-card {{ $statusClass }}">
+                <div class="bin-header">
+                    <div class="bin-id">{{ $device->device_name }}</div>
+                    <div class="bin-status">{{ $statusText }}</div>
                 </div>
-            @endforeach
-        </div>
+                <div class="bin-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
+                </div>
+                <div class="bin-progress">
+                    <div class="bin-progress-bar"
+                        style="width: {{ $capacity }}%"></div>
+                </div>
+            </div>
+        @endforeach
     </div>
-
 </div>
 
 <script>
-document.getElementById('floorSelect').addEventListener('change', function() {
-    var selectedPicture = this.value.trim();
-    var floorImage = document.getElementById('floorImage');
-    if (selectedPicture) {
-        floorImage.src = "{{ asset('storage/floor_pictures') }}/" + selectedPicture;
-    }
+document.addEventListener("DOMContentLoaded", function () {
+
+    let scale = 1;
+    const image = document.getElementById('floorImage');
+
+    document.getElementById('floorSelect').addEventListener('change', function () {
+        image.src = this.value;
+        scale = 1;
+        image.style.transform = `scale(${scale})`;
+    });
+
+    document.getElementById('zoomIn').addEventListener('click', function () {
+        scale += 0.1;
+        image.style.transform = `scale(${scale})`;
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', function () {
+        scale = Math.max(0.5, scale - 0.1);
+        image.style.transform = `scale(${scale})`;
+    });
+
+    document.getElementById('resetView').addEventListener('click', function () {
+        scale = 1;
+        image.style.transform = `scale(1)`;
+    });
+
+    // ✅ COLLAPSE BUTTON
+    document.querySelector('.collapse-btn').addEventListener('click', function () {
+        const body = document.querySelector('.map-card-body');
+        body.classList.toggle('collapsed');
+
+        this.innerHTML = body.classList.contains('collapsed')
+            ? '<i class="fas fa-plus"></i>'
+            : '<i class="fas fa-minus"></i>';
+    });
+
 });
 </script>
 
