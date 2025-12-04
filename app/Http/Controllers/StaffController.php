@@ -12,13 +12,44 @@ class StaffController extends Controller
 {
     public function dashboard()
     {
-        // Replace these with your actual queries
-        $totalDevices = Device::count();
-        $fullDevices = Device::whereHas('latestSensor', fn($q) => $q->where('capacity', 100))->count();
-        $halfDevices = Device::whereHas('latestSensor', fn($q) => $q->whereBetween('capacity', [50, 99]))->count();
-        $emptyDevices = Device::whereHas('latestSensor', fn($q) => $q->where('capacity', 0))->count();
-        $undetectedDevices = Device::whereDoesntHave('latestSensor')->count();
-        $fullDevicesCollection = Device::whereHas('latestSensor', fn($q) => $q->where('capacity', 100))->get();
+        // Load devices with their latest sensor & asset-floor relationship
+        $devices = Device::with('latestSensor', 'asset.floor')->get();
+
+        // Total devices
+        $totalDevices = $devices->count();
+
+        // FULL > 85%
+        $fullDevicesCollection = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity > 85;
+        });
+        $fullDevices = $fullDevicesCollection->count();
+
+        // HALF 40–85%
+        $halfDevices = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity > 40 &&
+                   $d->latestSensor->capacity <= 85;
+        })->count();
+
+        // EMPTY <= 40%
+        $emptyDevices = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity <= 40;
+        })->count();
+
+        // Undetected: no sensor or bad network
+        $undetectedDevices = $devices->filter(function ($d) {
+            if (!$d->latestSensor) return true;
+            $network = $d->latestSensor->network;
+            return is_null($network)
+                || $network === ''
+                || (string)$network === '0'
+                || strtolower((string)$network) === 'unavailable';
+        })->count();
 
         /* ---------------------------------------------------
          * BAR CHART DATA (added here, nothing modified)

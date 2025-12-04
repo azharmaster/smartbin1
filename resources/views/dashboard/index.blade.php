@@ -269,13 +269,13 @@
 {{-- ✅ FULL WIDTH MAP AT THE VERY TOP --}}
 <div class="w-100 mb-4">
 
-    <div class="card map-card" style="margin-top: 20px;">
+    <div class="card card-success map-card" style="margin-top: 20px;">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="fas fa-map-marked-alt"></i> Floor Map
             </h5>
-            <button class="btn btn-tool collapse-btn" type="button">
-                <i class="fas fa-plus"></i>
+            <button class="btn btn-tool collapse-btn" style="padding-left: 1050px;" type="button">
+                <i class="fas fa-plus" ></i>
             </button>
         </div>
 
@@ -294,19 +294,19 @@
                             {{ $f->floor_name }}
                         </option>
                     @endforeach
-                </select>
+                </select>&nbsp;
 
                 <button id="zoomIn" type="button" class="btn btn-secondary">
                     <i class="fas fa-search-plus"></i>
-                </button>
+                </button>&nbsp;
 
                 <button id="zoomOut" type="button" class="btn btn-secondary">
                     <i class="fas fa-search-minus"></i>
-                </button>
+                </button>&nbsp;
 
                 <button id="resetView" type="button" class="btn btn-secondary">
                     <i class="fas fa-crosshairs"></i> Reset
-                </button>
+                </button>&nbsp;
             </div>
 
             <div id="map" class="text-center overflow-auto">
@@ -379,7 +379,7 @@
 
 
 {{-- ✅ BINS LIST AT THE VERY BOTTOM --}}
-<div class="bins-container">
+{{-- <div class="bins-container">
         <div class="bins-header">
             <h2><i class="fas fa-list"></i>Bin List</h2>
             <div class="bin-count" id="binCount">{{ $devices->count() }} Tong</div>
@@ -415,7 +415,7 @@
                 </div>
             @endforeach
         </div>
-    </div>
+    </div> --}}
 
 </div>
 
