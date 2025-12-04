@@ -33,7 +33,16 @@
                     <td>{{ $leave->end_date }}</td>
                     <td>{{ ucfirst(str_replace('_', ' ', $leave->use)) }}</td>
                     <td>{{ $leave->reason }}</td>
-                    <td>{{ ucfirst($leave->status) }}</td>
+                    <td>
+                            @if(strtolower($leave->status) == 'pending')
+                                <span class="badge bg-warning">Pending</span>
+                            @elseif(strtolower($leave->status) == 'approved')
+                                <span class="badge bg-success">Approved</span>
+                            @else
+                                <span class="badge bg-danger">Rejected</span>
+                            @endif
+                        </td>
+
                 </tr>
                 @endforeach
             </tbody>
