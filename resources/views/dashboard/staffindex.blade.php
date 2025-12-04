@@ -53,11 +53,11 @@
     font-weight: bold;
 }
 
-.card-total { background-color: #8c9195ff; }       /* Soft Blue */
-.card-full { background-color: #e74c3c; }        /* Soft Red */
-.card-half { background-color: #f39c12; }        /* Soft Yellow/Gold */
-.card-empty { background-color: #7ccc63; }       /* Soft Green */
-.card-undetected { background-color: #2c3e50; }  /* Soft Purple */
+.card-total { background-color: #8c9195ff; }
+.card-full { background-color: #e74c3c; }
+.card-half { background-color: #f39c12; }
+.card-empty { background-color: #7ccc63; }
+.card-undetected { background-color: #2c3e50; }
 
 .full-devices-cards {
     display: flex;
@@ -67,7 +67,7 @@
 }
 
 .full-device-card {
-    background-color: #6f060687; /* dark red */
+    background-color: #6f060687;
     border: 2px solid #ff4d4d;
     border-radius: 12px;
     box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
@@ -80,10 +80,10 @@
 }
 
 .full-status {
-    background-color: #FF0000; /* bright red */
-    padding: 0.5em 1em; /* slightly bigger padding */
-    border-radius: 25px; /* more oval */
-    font-size: 1.1rem; /* bigger text */
+    background-color: #FF0000;
+    padding: 0.5em 1em;
+    border-radius: 25px;
+    font-size: 1.1rem;
     font-weight: 700;
     box-shadow: 0 0 8px #FF0000, 0 0 12px #FF4d4d, 0 0 18px #FF6666;
     animation: pulse 1.5s infinite;
@@ -171,5 +171,73 @@
         </a>
     @endforeach
 </div>
+
+
+<!-- ===================== BAR CHART INSERTED HERE ===================== -->
+<div class="card card-success mt-4">
+    <div class="card-header">
+        <h3 class="card-title">Monthly Task Status</h3>
+
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="chart">
+            <canvas id="barChart" style="min-height: 250px; height: 250px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== CHART.JS SCRIPT ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    let months        = @json($months);
+    let pendingData   = @json($pendingPerMonth);
+    let completedData = @json($completedPerMonth);
+    let rejectedData  = @json($rejectedPerMonth);
+
+    const ctx = document.getElementById('barChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Pending',
+                    data: pendingData,
+                    backgroundColor: 'rgba(255, 206, 86, 0.9)'
+                },
+                {
+                    label: 'Completed',
+                    data: completedData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.9)'
+                },
+                {
+                    label: 'Rejected',
+                    data: rejectedData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.9)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
 
 @endsection

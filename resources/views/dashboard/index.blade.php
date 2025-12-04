@@ -332,7 +332,7 @@
 
     <div class="bins-container">
         <div class="bins-header">
-            <h2><i class="fas fa-list"></i> Senarai Tong Sampah</h2>
+            <h2><i class="fas fa-list"></i>Bin List</h2>
             <div class="bin-count" id="binCount">{{ $devices->count() }} Tong</div>
             <button class="collapse-btn bins-collapse" aria-label="Toggle bins">
                 <i class="fas fa-minus"></i>
