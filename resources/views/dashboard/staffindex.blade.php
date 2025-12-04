@@ -139,29 +139,29 @@
     </div>
 </div>
 
-<div class="full-devices-cards mt-4 d-flex flex-wrap gap-3">
+{{-- <div class="full-devices-cards d-flex flex-wrap gap-3">
     @foreach($fullDevicesCollection as $device)
-        <a href="{{ route('master-data.assets.index') }}" class="text-decoration-none">
+        <a href="{{ route('master-data.assets.details', $device->asset->id) }}" class="text-decoration-none">
             <div class="card full-device-card position-relative p-3" style="width: 280px;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
                     <div class="badge full-status text-white fw-bold fs-5">FULL</div>
                 </div>
+
                 <div class="mt-2 text-white">
                     <i class="fas fa-map-marker-alt me-1"></i>
                     {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
                 </div>
-                <div class="progress mt-3" style="height: 10px; border-radius: 6px;">
-                    <div class="progress-bar bg-danger" role="progressbar" 
-                         style="width: {{ $device->latestSensor->capacity ?? 0 }}%;" 
-                         aria-valuenow="{{ $device->latestSensor->capacity ?? 0 }}" 
-                         aria-valuemin="0" aria-valuemax="100">
+
+                <div class="progress mt-3" style="height: 10px;">
+                    <div class="progress-bar bg-danger"
+                        style="width: {{ $device->latestSensor->capacity ?? 0 }}%;">
                     </div>
                 </div>
             </div>
         </a>
     @endforeach
-</div>
+</div> --}}
 
 
 <!-- ===================== BAR CHART INSERTED HERE ===================== -->
