@@ -31,7 +31,7 @@ class Aside extends Component
                 "label" => "Floor",
                 "icon" => "fa-solid fas fa-building",
                 "route_name" => "floors.index",
-                "route_active" => "users.*",
+                "route_active" => "floors.*",
                 "is_dropdown" => false
             ],
             [
@@ -48,59 +48,48 @@ class Aside extends Component
                 "route_active" => "admin.attendance",
                 "is_dropdown" => false
             ],
-
-
             [
                 "label" => "Schedule",
-                "icon" => "fas fa-calendar-alt", // optional: a calendar icon
+                "icon" => "fas fa-calendar-alt",
                 "route_name" => "schedules.index",
                 "route_active" => "schedules.*",
                 "is_dropdown" => false
             ],
-
             [
                 "label" => "Leave",
                 "icon" => "fas fa-home",
-                "route_active" => "leave-data.*",
+                "route_active" => "admin.leave.*",
                 "is_dropdown" => true,
                 "dropdown" => [
                     [
                         "label" => "Leave",
-                        "icon" => "fas fa-calendar-alt", // calendar icon for leave
-                        "route_name" => "admin.leave.index", // route to admin leave page
-                        "route_active" => "admin.leave.*", // active on all leave routes
+                        "icon" => "fas fa-calendar-alt",
+                        "route_name" => "admin.leave.index",
+                        "route_active" => "admin.leave.*",
                         "is_dropdown" => false
                     ],
                     [
-                    "label" => "Leave Quota",
-                    "icon" => "fas fa-calendar-check", // Icon for leave quota
-                    "route_name" => "admin.leave.quota.index", // Route to admin leave quota page
-                    "route_active" => "admin.leave.quota.*", // Active for all quota-related routes
-                    "is_dropdown" => false,
+                        "label" => "Apply Leave",
+                        "icon" => "fas fa-paper-plane",
+                        "route_name" => "admin.leave.apply",
+                        "route_active" => "admin.leave.apply",
+                        "is_dropdown" => false
+                    ],
+                    [
+                        "label" => "Leave Quota",
+                        "icon" => "fas fa-calendar-check",
+                        "route_name" => "admin.leave.quota.index",
+                        "route_active" => "admin.leave.quota.*",
+                        "is_dropdown" => false
                     ],
                 ]
             ],
-
-
-
             [
                 "label" => "Master Data",
                 "icon" => "fas fa-database",
                 "route_active" => "master-data.*",
                 "is_dropdown" => true,
                 "dropdown" => [
-                    // [
-                    //     "label" => "Kategori",
-                    //     "route_active" => "master-data.kategori.*",
-                    //     "route_name" => "master-data.kategori.index",
-                    //     "icon" => "fas fa-circle"
-                    // ],
-                    // [
-                    //     "label" => "Product",
-                    //     "route_active" => "master-data.product.*",
-                    //     "route_name" => "master-data.product.index",
-                    //     "icon" => "fas fa-circle"
-                    // ],
                     [
                         "label" => "Asset",
                         "route_active" => "master-data.assets.*",
@@ -125,7 +114,6 @@ class Aside extends Component
                         "route_name" => "complaints.index",
                         "icon" => "fas fa-circle"
                     ],
-                   
                 ]
             ]
         ];

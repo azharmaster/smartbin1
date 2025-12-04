@@ -78,28 +78,28 @@ Route::middleware('auth')->group(function(){
     Route::prefix('leave-data')->as('leave-data.')->group(function () {
 
        // Attendance
-Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance');
+       Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance');
 
-// Leave requests page
-Route::get('/leave', [AdminLeaveController::class, 'index'])->name('admin.leave.index');
+       // Leave requests page
+       Route::get('/leave', [AdminLeaveController::class, 'index'])->name('admin.leave.index');
 
-// Leave quota index page (with modal for add/edit)
-Route::get('/leave/quota', [AdminLeaveController::class, 'indexQuota'])->name('admin.leave.quota.index');
+       // Leave quota index page (with modal for add/edit)
+       Route::get('/leave/quota', [AdminLeaveController::class, 'indexQuota'])->name('admin.leave.quota.index');
 
-// Store leave quota (handles both create and edit)
-Route::post('/leave/quota/store', [AdminLeaveController::class, 'storeQuota'])->name('admin.leave.quota.store');
+       // Store leave quota (handles both create and edit)
+       Route::post('/leave/quota/store', [AdminLeaveController::class, 'storeQuota'])->name('admin.leave.quota.store');
 
-// Update leave quota
-Route::put('/leave/quota/{quota}/update', [AdminLeaveController::class, 'updateQuota'])->name('admin.leave.quota.update');
+       // Update leave quota
+       Route::put('/leave/quota/{quota}/update', [AdminLeaveController::class, 'updateQuota'])->name('admin.leave.quota.update');
 
-// Delete leave quota
-Route::delete('/leave/quota/{quota}/destroy', [AdminLeaveController::class, 'destroyQuota'])->name('admin.leave.quota.destroy');
+       // Delete leave quota
+       Route::delete('/leave/quota/{quota}/destroy', [AdminLeaveController::class, 'destroyQuota'])->name('admin.leave.quota.destroy');
 
-// Approve / Reject leave
-Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus'])->name('admin.leave.status');
+       // Approve / Reject leave
+       Route::post('/leave/{leave}/status', [AdminLeaveController::class, 'updateStatus'])->name('admin.leave.status');
 
-// Optional: Show leave detail
-Route::get('/leave/{leave}', [AdminLeaveController::class, 'show'])->name('admin.leave.show');
+       // Optional: Show leave detail
+       Route::get('/leave/{leave}', [AdminLeaveController::class, 'show'])->name('admin.leave.show');
     });
 
     // Master Data Modules
@@ -210,3 +210,12 @@ Route::get('/staff/leaves', [StaffLeaveController::class, 'index'])->name('staff
 Route::post('/staff/leaves', [StaffLeaveController::class, 'store'])->name('staff.leave.store');
 
 Route::resource('complaints', ComplaintController::class);
+
+// ----------------------
+// Admin Apply Leave Routes
+// ----------------------
+Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('admin.leave.apply');
+Route::post('/admin/leave/apply', [AdminLeaveController::class, 'storeApply'])->name('admin.leave.apply.store');
+
+Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('admin.leave.apply');
+

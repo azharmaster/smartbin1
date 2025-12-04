@@ -151,4 +151,49 @@ class AdminLeaveController extends Controller
         $leave->load('user');
         return view('admin.leave.show', compact('leave'));
     }
+
+    /* --------------------------------------------------
+     * NEW FUNCTIONS FOR ADMIN APPLY LEAVE
+     * -------------------------------------------------- */
+
+    /**
+     * Show admin apply leave form.
+     */
+    public function apply()
+    {
+        $users = User::all();
+        $year = date('Y');
+
+        // Load quotas for all users for the current year
+        $quotas = LeaveQuota::where('year', $year)->get()->keyBy('user_id');
+
+        return view('admin.leave.apply_leave', compact('users', 'quotas', 'year'));
+    }
+
+    /**
+     * Store admin applied leave.
+     */
+    public function storeApply(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'type' => 'required|string',
+            'use' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'reason' => 'nullable|string',
+        ]);
+
+        Leave::create([
+            'user_id' => $request->user_id,
+            'type' => $request->type,
+            'use' => $request->use,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'reason' => $request->reason,
+            'status' => 'Pending',
+        ]);
+
+        return redirect()->route('admin.leave.index')->with('success', 'Leave applied successfully.');
+    }
 }
