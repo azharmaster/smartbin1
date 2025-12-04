@@ -172,25 +172,20 @@
     @endforeach
 </div>
 
-
-<!-- ===================== BAR CHART INSERTED HERE ===================== -->
+<!-- ===================== BAR CHART ===================== -->
 <div class="card card-success mt-4">
     <div class="card-header">
         <h3 class="card-title">Monthly Task Status</h3>
-
         <div class="card-tools">
             <button type="button" class="btn btn-tool" data-card-widget="collapse">
                 <i class="fas fa-minus"></i>
-            </button>
-            <button type="button" class="btn btn-tool" data-card-widget="remove">
-                <i class="fas fa-times"></i>
             </button>
         </div>
     </div>
 
     <div class="card-body">
-        <div class="chart">
-            <canvas id="barChart" style="min-height: 250px; height: 250px;"></canvas>
+        <div class="chart" style="height:180px;"> 
+            <canvas id="barChart"></canvas>
         </div>
     </div>
 </div>
@@ -201,6 +196,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // ✅ Only shows logged-in staff tasks
     let months        = @json($months);
     let pendingData   = @json($pendingPerMonth);
     let completedData = @json($completedPerMonth);
@@ -232,6 +228,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true }
             }

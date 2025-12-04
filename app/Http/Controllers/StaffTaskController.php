@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class StaffTaskController extends Controller
 {
     public function __construct()
     {
-        // Ensure user is authenticated
         $this->middleware('auth');
 
-        // Only allow staff (role = 2)
         $this->middleware(function ($request, $next) {
             if (auth()->user()->role != 2) {
                 abort(403, 'Unauthorized. Only staff allowed.');
@@ -56,20 +56,20 @@ class StaffTaskController extends Controller
     {
         if ($task->user_id !== auth()->id()) abort(403);
 
-        if (!in_array($status, ['in_progress', 'done'])) abort(400);
+        if (!in_array($status, ['in_progress', 'completed'])) abort(400);
 
         $task->update(['status' => $status]);
 
         return redirect()->back()->with('success', 'Task status updated.');
     }
 
-    // New: Update task status from dropdown
+    // Update task status from dropdown
     public function updateStatus(Request $request, Task $task)
     {
         if ($task->user_id !== auth()->id()) abort(403);
 
         $request->validate([
-            'status' => 'required|in:pending,reject,in progress,completed',
+            'status' => 'required|in:pending,reject,in_progress,completed',
         ]);
 
         $task->update([
@@ -77,5 +77,45 @@ class StaffTaskController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Task status updated.');
+    }
+
+    // Staff dashboard with chart
+    public function dashboard()
+    {
+        $userId = auth()->id();
+
+        // Get months of the current year
+        $months = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $months[] = Carbon::create()->month($i)->format('F');
+        }
+
+        // Aggregate tasks by month and status for this staff only
+        $tasks = Task::where('user_id', $userId)
+            ->select(
+                DB::raw('MONTH(created_at) as month'),
+                'status',
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('month', 'status')
+            ->get();
+
+        $pendingPerMonth = array_fill(0, 12, 0);
+        $completedPerMonth = array_fill(0, 12, 0);
+        $rejectedPerMonth = array_fill(0, 12, 0);
+
+        foreach ($tasks as $task) {
+            $index = $task->month - 1;
+            if ($task->status === 'pending') $pendingPerMonth[$index] = $task->count;
+            if ($task->status === 'completed') $completedPerMonth[$index] = $task->count;
+            if ($task->status === 'reject') $rejectedPerMonth[$index] = $task->count;
+        }
+
+        return view('staff.dashboard', compact(
+            'months', 
+            'pendingPerMonth', 
+            'completedPerMonth', 
+            'rejectedPerMonth'
+        ));
     }
 }

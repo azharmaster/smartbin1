@@ -8,9 +8,9 @@
         <h4 class="card-title">My Tasks</h4>
     </div>
 
-
 <div class="card-body">
     @if(session('success'))
+        <!-- Display success message if status updated -->
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
@@ -56,12 +56,14 @@
 
                     <!-- Actions / Dropdown Column -->
                     <td>
+                        <!-- Form to update task status -->
                         <form action="{{ route('staff.tasks.updateStatus', $task) }}" method="POST" class="d-flex">
                             @csrf
                             <select name="status" class="form-control form-control-sm">
+                                <!-- The value must match ENUM in DB -->
                                 <option value="pending" {{ $task->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="reject" {{ $task->status == 'reject' ? 'selected' : '' }}>Reject</option>
-                                <option value="in progress" {{ $task->status == 'in progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="in_progress" {{ $task->status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
                                 <option value="completed" {{ $task->status == 'completed' ? 'selected' : '' }}>Completed</option>
                             </select>
                             <button type="submit" class="btn btn-primary btn-sm ml-1">Update</button>
@@ -84,7 +86,7 @@
                                 <p><strong>Description:</strong> {{ $task->description }}</p>
                                 <p><strong>Asset:</strong> {{ $task->asset->asset_name ?? '-' }}</p>
                                 <p><strong>Floor:</strong> {{ $task->floor->floor_name ?? '-' }}</p>
-                                <p><strong>Status:</strong> {{ ucfirst($task->status) }}</p>
+                                <p><strong>Status:</strong> {{ ucfirst(str_replace('_', ' ', $task->status)) }}</p>
                                 <p><strong>Notes:</strong> {{ $task->notes ?? '-' }}</p>
                             </div>
                             <div class="modal-footer justify-content-between">
@@ -105,7 +107,6 @@
         </table>
     </div>
 </div>
-
 
 </div>
 @endsection
