@@ -102,7 +102,6 @@
 </style>
 
 <div class="d-flex flex-wrap">
-    <!-- Total Devices -->
     <div class="status-card card-total">
         <div class="status-title">Total Devices</div>
         <div class="status-content">
@@ -110,8 +109,6 @@
             <span class="status-number">{{ $totalDevices }}</span>
         </div>
     </div>
-
-    <!-- Full Devices -->
     <div class="status-card card-full">
         <div class="status-title">Full Devices</div>
         <div class="status-content">
@@ -119,17 +116,13 @@
             <span class="status-number">{{ $fullDevices }}</span>
         </div>
     </div>
-
-    <!-- Half Full -->
     <div class="status-card card-half">
-        <div class="status-title">Half Full</div>
+        <div class="status-title ">Half Full</div>
         <div class="status-content">
             <i class="fas fa-exclamation-triangle status-icon"></i>
             <span class="status-number">{{ $halfDevices }}</span>
         </div>
     </div>
-
-    <!-- Empty -->
     <div class="status-card card-empty">
         <div class="status-title">Empty Devices</div>
         <div class="status-content">
@@ -137,8 +130,6 @@
             <span class="status-number">{{ $emptyDevices }}</span>
         </div>
     </div>
-
-    <!-- Undetected -->
     <div class="status-card card-undetected">
         <div class="status-title">Undetected</div>
         <div class="status-content">
