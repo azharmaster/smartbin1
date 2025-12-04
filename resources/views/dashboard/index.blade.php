@@ -343,8 +343,8 @@
                 @php
                     $sensor = $device->latestSensor;
                     $capacity = $sensor->capacity ?? 0;
-                    $statusClass = $capacity > 80 ? 'warning' : 'normal';
-                    $statusText = $capacity > 80 ? 'AMARAN' : 'NORMAL';
+                    $statusClass = $capacity > 85 ? 'warning' : 'normal';
+                    $statusText = $capacity > 85 ? 'AMARAN' : 'NORMAL';
                     $lastUpdated = $sensor->time ?? 'Tiada Data';
                 @endphp
                 <div class="bin-card {{ $statusClass }}">

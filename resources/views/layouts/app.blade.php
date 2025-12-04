@@ -111,6 +111,32 @@
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 
     <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+    // Remove AdminLTE's custom scrollbar
+    if ($('.sidebar').data('overlayScrollbars')) {
+        $('.sidebar').overlayScrollbars().destroy();
+    }
+});
+    document.addEventListener("DOMContentLoaded", function () {
+    // Destroy AdminLTE’s OverlayScrollbars so we can control scrolling
+    if ($('.sidebar').data('overlayScrollbars')) {
+        $('.sidebar').overlayScrollbars().destroy();
+    }
+
+    // Apply normal scrolling
+    $('.main-sidebar').css({
+        'position': 'fixed',
+        'height': '100vh',
+        'overflow': 'hidden'
+    });
+
+    $('.sidebar').css({
+        'height': '100%',
+        'overflow-y': 'auto',
+        'overflow-x': 'hidden'
+    });
+});
         $(function () {
             $("#table1").DataTable({
                 responsive: true,

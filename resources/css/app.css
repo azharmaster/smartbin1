@@ -9,3 +9,25 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Make sidebar fixed and full height */
+.main-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    overflow: hidden; /* prevents whole sidebar from scrolling with page */
+}
+
+/* Make ONLY the inside menu scrollable */
+.main-sidebar .sidebar {
+    height: calc(100vh - 60px); /* adjust for brand + user panel */
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-bottom: 30px;
+}
+
+/* Prevent main content from being overlapped */
+.content-wrapper {
+    margin-left: 250px; /* default AdminLTE sidebar width */
+}

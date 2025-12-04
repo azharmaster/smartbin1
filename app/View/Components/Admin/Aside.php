@@ -19,7 +19,7 @@ class Aside extends Component
                 "route_name" => "dashboard",
                 "route_active" => "dashboard",
                 "is_dropdown" => false
-            ], 
+            ],
             [
                 "label" => "User",
                 "icon" => "fa-solid fas fa-users",
@@ -85,7 +85,7 @@ class Aside extends Component
                 ]
             ],
             [
-                "label" => "Master Data",
+                "label" => "Collective",
                 "icon" => "fas fa-database",
                 "route_active" => "master-data.*",
                 "is_dropdown" => true,
