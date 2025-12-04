@@ -279,7 +279,7 @@
             </button>
         </div>
 
-        <div class="card-body map-card-body collapsed"> {{-- ✅ AUTO COLLAPSED --}}
+        <div class="card-body map-card-body collapsed" style="height: 100%;"> {{-- ✅ AUTO COLLAPSED --}}
 
             @php
                 $firstFloor = $floors->first();
@@ -288,7 +288,7 @@
             <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
                 <select id="floorSelect" class="form-control" style="width: 200px;">
                     @foreach($floors as $f)
-                        <option 
+                        <option
                             value="{{ asset('uploads/floor/' . $f->picture) }}"
                             {{ $f->id === optional($firstFloor)->id ? 'selected' : '' }}>
                             {{ $f->floor_name }}
@@ -314,7 +314,7 @@
                     id="floorImage"
                     src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
                     alt="Floor Image"
-                    style="max-width: 100%; transition: transform 0.2s ease;">
+                    style="max-width: 50%; max-height: 50%; transition: transform 0.2s ease;">
             </div>
 
         </div>
@@ -379,39 +379,44 @@
 
 
 {{-- ✅ BINS LIST AT THE VERY BOTTOM --}}
-<div class="bins-container mt-4">
-    <div class="bins-header">
-        <h2><i class="fas fa-list"></i> Bins List</h2>
-        <div class="bin-count">{{ $devices->count() }} Tong</div>
-        <button class="collapse-btn bins-collapse">
-            <i class="fas fa-minus"></i>
-        </button>
+<div class="bins-container">
+        <div class="bins-header">
+            <h2><i class="fas fa-list"></i>Bin List</h2>
+            <div class="bin-count" id="binCount">{{ $devices->count() }} Tong</div>
+            <button class="collapse-btn bins-collapse" aria-label="Toggle bins">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+        <div class="bins-list" id="binsList">
+            @foreach($devices as $device)
+                @php
+                    $sensor = $device->latestSensor;
+                    $capacity = $sensor->capacity ?? 0;
+                    $statusClass = $capacity > 85 ? 'warning' : 'normal';
+                    $statusText = $capacity > 85 ? 'AMARAN' : 'NORMAL';
+                    $lastUpdated = $sensor->time ?? 'Tiada Data';
+                @endphp
+                <div class="bin-card {{ $statusClass }}">
+                    <div class="bin-header">
+                        <div class="bin-id">{{ $device->device_name }}</div>
+                        <div class="bin-status status-{{ $statusClass }}">{{ $statusText }}</div>
+                    </div>
+                    <div class="bin-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}</span>
+                    </div>
+                    <div class="bin-progress">
+                        <div class="bin-progress-bar progress-{{ $statusClass }}" style="width: {{ $capacity }}%"></div>
+                    </div>
+                    <div class="bin-details">
+                        <div class="bin-percentage">{{ $capacity }}%</div>
+                        <div class="last-updated">{{ $lastUpdated }}</div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 
-    <div class="bins-list">
-        @foreach($devices as $device)
-            @php
-                $capacity = $device->latestSensor->capacity ?? 0;
-                $statusClass = $capacity > 85 ? 'warning' : 'normal';
-                $statusText = $capacity > 85 ? 'AMARAN' : 'NORMAL';
-            @endphp
-
-            <div class="bin-card {{ $statusClass }}">
-                <div class="bin-header">
-                    <div class="bin-id">{{ $device->device_name }}</div>
-                    <div class="bin-status">{{ $statusText }}</div>
-                </div>
-                <div class="bin-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
-                </div>
-                <div class="bin-progress">
-                    <div class="bin-progress-bar"
-                        style="width: {{ $capacity }}%"></div>
-                </div>
-            </div>
-        @endforeach
-    </div>
 </div>
 
 <script>
