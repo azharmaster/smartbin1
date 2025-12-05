@@ -28,17 +28,17 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
-            // Role 1 = Admin → existing dashboard
+            // Role 1 = Admin → redirect to admin main menu
             if ($user->role == 1) {
-                return redirect('/dashboard');
+                return redirect()->route('admin.mainmenu');
             }
 
-            // Role 2 = Staff
+            // Role 2 = Staff → redirect to staff main menu
             if ($user->role == 2) {
-                return redirect()->route('staff.dashboard');
+                return redirect()->route('staff.mainmenu');
             }
 
-            // Role 3 = Guest
+            // Role 3 = Guest → redirect to guest dashboard
             if ($user->role == 3) {
                 return redirect()->route('guest.dashboard');
             }

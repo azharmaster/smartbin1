@@ -20,6 +20,8 @@ use App\Http\Controllers\StaffScheduleController;
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\AdminLeaveController;
 use App\Http\Controllers\StaffLeaveController;
+use App\View\Components\Admin\Aside;
+use App\View\Components\Staff\StaffAside;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -32,6 +34,22 @@ Route::get('/guest/complaint', [ComplaintController::class, 'guestForm'])->name(
 Route::post('/guest/complaint', [ComplaintController::class, 'guestSubmit'])->name('complaint.guest.submit');
 
 Route::post('/login',[LoginController::class,'handleLogin'])->name('login')->middleware('guest');
+
+// -------------------------------
+// Admin Main Menu (No Sidebar)
+// -------------------------------
+Route::get('/admin/mainmenu', function () {
+    $aside = new Aside();
+    return view('mainmenu', ['routes' => $aside->routes]);
+})->name('admin.mainmenu');
+
+// -------------------------------
+// Staff Main Menu (No Sidebar)
+// -------------------------------
+Route::get('/staff/mainmenu', function () {
+    $aside = new StaffAside();
+    return view('staffmainmenu', ['routes' => $aside->routes]);
+})->name('staff.mainmenu');
 
 Route::middleware('auth')->group(function(){
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -76,7 +94,6 @@ Route::middleware('auth')->group(function(){
 
     // Master Data Modules
     Route::prefix('leave-data')->as('leave-data.')->group(function () {
-
        // Attendance
        Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance');
 
@@ -104,7 +121,6 @@ Route::middleware('auth')->group(function(){
 
     // Master Data Modules
     Route::prefix('master-data')->as('master-data.')->group(function () {
-
         // Kategori
         Route::prefix('kategori')->as('kategori.')->controller(KategoriController::class)->group(function () {
             Route::get('/', 'index')->name('index');
@@ -218,4 +234,3 @@ Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('
 Route::post('/admin/leave/apply', [AdminLeaveController::class, 'storeApply'])->name('admin.leave.apply.store');
 
 Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('admin.leave.apply');
-

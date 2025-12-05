@@ -1,6 +1,6 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="{{ route('staff.dashboard') }}" class="brand-link text-center">
+    <a href="{{ route('staff.mainmenu') }}" class="brand-link text-center">
         <span class="brand-text font-weight-light">{{ env('APP_NAME') }}</span>
     </a>
 
@@ -13,16 +13,14 @@
             </div>
             <div class="info">
                 <a href="{{ route('profile.staffindex') }}" class="d-block">
-    {{ auth()->check() ? auth()->user()->name : 'Guest' }}
-</a>
+                    {{ auth()->check() ? auth()->user()->name : 'Guest' }}
+                </a>
             </div>
         </div>
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" 
-                data-widget="treeview" role="menu" data-accordion="false">
-                
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 @foreach ($routes as $route)
                     @if (!$route['is_dropdown'])
                         <li class="nav-item">
@@ -55,7 +53,6 @@
                         </li>
                     @endif
                 @endforeach
-
             </ul>
         </nav>
         <!-- /.sidebar-menu -->
