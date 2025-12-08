@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Device;
 use App\Models\Floor;
+use App\Models\Asset;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,10 @@ class DashboardController extends Controller
         // Load floors for the map dropdown
         $floors = Floor::all();
 
+        $assetsWithCoords = Asset::whereNotNull('x')
+            ->whereNotNull('y')
+            ->get();
+
         // Load To-Do items for the current user
         $todos = Todo::where('userID', Auth::id())
                      ->where('status', 'pending')
@@ -70,6 +75,7 @@ class DashboardController extends Controller
             'undetectedDevices',
             'todos',
             'floors',
+            'assetsWithCoords',
             'devices'
         ));
     }

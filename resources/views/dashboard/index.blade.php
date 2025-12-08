@@ -286,12 +286,11 @@
             @endphp
 
             <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
-                <select id="floorSelect" class="form-control" style="width: 200px;">
-                    @foreach($floors as $f)
-                        <option
-                            value="{{ asset('uploads/floor/' . $f->picture) }}"
-                            {{ $f->id === optional($firstFloor)->id ? 'selected' : '' }}>
-                            {{ $f->floor_name }}
+                <select id="floorSelect">
+                    @foreach($floors as $floor)
+                        <option value="{{ asset('uploads/floor/' . $floor->picture) }}"
+                                data-floor-id="{{ $floor->id }}">
+                            {{ $floor->floor_name }}
                         </option>
                     @endforeach
                 </select>&nbsp;
@@ -309,15 +308,39 @@
                 </button>&nbsp;
             </div>
 
-            <div id="map" class="text-center overflow-auto">
-                <img 
-                    id="floorImage"
-                    src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
-                    alt="Floor Image"
-                    style="max-width: 50%; max-height: 50%; transition: transform 0.2s ease;">
-            </div>
+<!-- DASHBOARD MAP — matches admin/editor map size & coordinate system -->
+<div id="dashboardMapWrapper" style="position: relative; width: 50%; height: 600px; margin: 0 auto;">
+    <div id="dashboardMapInner" style="position: relative; width: 100%; height: 100%;">
 
-        </div>
+        <img
+            id="dashboardFloorImage"
+            src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
+            alt="Floor Image"
+            style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;"
+        >
+
+        {{-- ALL ASSET MARKERS (use same pixel x/y as admin) --}}
+        @foreach($assetsWithCoords as $asset)
+            <div class="asset-marker"
+                data-asset-id="{{ $asset->id }}"
+                data-floor-id="{{ $asset->floor_id }}"
+                title="{{ $asset->asset_name ?? 'Asset' }}"
+                style="
+                    position: absolute;
+                    width: 24px;
+                    height: 24px;
+                    background-color: red;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    left: {{ $asset->x ?? 0 }}px;
+                    top: {{ $asset->y ?? 0 }}px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                    z-index: 9999;
+                ">
+            </div>
+        @endforeach
+    </div>
+</div>
     </div>
 </div>
 
@@ -422,28 +445,27 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    // ✅ ZOOM SETUP
     let scale = 1;
-    const image = document.getElementById('floorImage');
-
-    document.getElementById('floorSelect').addEventListener('change', function () {
-        image.src = this.value;
-        scale = 1;
-        image.style.transform = `scale(${scale})`;
-    });
+    const mapInner = document.getElementById('dashboardMapInner');   // ✅ FIXED
+    const image = document.getElementById('dashboardFloorImage');    // ✅ FIXED
 
     document.getElementById('zoomIn').addEventListener('click', function () {
         scale += 0.1;
-        image.style.transform = `scale(${scale})`;
+        mapInner.style.transform = `scale(${scale})`;
+        mapInner.style.transformOrigin = "top left";
     });
 
     document.getElementById('zoomOut').addEventListener('click', function () {
         scale = Math.max(0.5, scale - 0.1);
-        image.style.transform = `scale(${scale})`;
+        mapInner.style.transform = `scale(${scale})`;
+        mapInner.style.transformOrigin = "top left";
     });
 
     document.getElementById('resetView').addEventListener('click', function () {
         scale = 1;
-        image.style.transform = `scale(1)`;
+        mapInner.style.transform = `scale(1)`;
+        mapInner.style.transformOrigin = "top left";
     });
 
     // ✅ COLLAPSE BUTTON
@@ -454,6 +476,37 @@ document.addEventListener("DOMContentLoaded", function () {
         this.innerHTML = body.classList.contains('collapsed')
             ? '<i class="fas fa-plus"></i>'
             : '<i class="fas fa-minus"></i>';
+    });
+
+    // ✅ FLOOR SWITCH + MARKER FILTER
+    const floorSelect = document.getElementById('floorSelect');
+
+    floorSelect.addEventListener('change', function () {
+        const selectedImage = this.value;
+        const selectedFloorId = this.options[this.selectedIndex].dataset.floorId;
+
+        // ✅ Change image
+        image.src = selectedImage;
+
+        // ✅ Filter markers
+        document.querySelectorAll('.asset-marker').forEach(marker => {
+            if (marker.dataset.floorId === selectedFloorId) {
+                marker.style.display = 'block';
+            } else {
+                marker.style.display = 'none';
+            }
+        });
+    });
+
+    // ✅ DEFAULT FLOOR FILTER ON PAGE LOAD
+    const defaultFloorId = floorSelect.options[floorSelect.selectedIndex].dataset.floorId;
+
+    document.querySelectorAll('.asset-marker').forEach(marker => {
+        if (marker.dataset.floorId === defaultFloorId) {
+            marker.style.display = 'block';
+        } else {
+            marker.style.display = 'none';
+        }
     });
 
 });
