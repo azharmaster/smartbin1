@@ -3,7 +3,8 @@
     <!-- Left Column: Map Card -->
     <!-- Map container -->
 <div style="position: relative; width: 50%; height: 600px;" x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
-    <img src="{{ asset('floor_pictures/' . $asset->floor->picture) }}" 
+    <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
+ 
          alt="Floor Map"
          style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
     
