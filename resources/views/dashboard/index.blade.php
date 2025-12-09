@@ -321,24 +321,29 @@
 
         {{-- ALL ASSET MARKERS (use same pixel x/y as admin) --}}
         @foreach($assetsWithCoords as $asset)
-            <div class="asset-marker"
-                data-asset-id="{{ $asset->id }}"
-                data-floor-id="{{ $asset->floor_id }}"
-                title="{{ $asset->asset_name ?? 'Asset' }}"
-                style="
-                    position: absolute;
-                    width: 24px;
-                    height: 24px;
-                    background-color: red;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    left: {{ $asset->x ?? 0 }}px;
-                    top: {{ $asset->y ?? 0 }}px;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                    z-index: 9999;
-                ">
-            </div>
-        @endforeach
+    <div class="asset-marker"
+         data-asset-id="{{ $asset->id }}"
+         data-floor-id="{{ $asset->floor_id }}"
+         title="{{ $asset->asset_name ?? 'Asset' }}"
+         style="
+             position: absolute;
+             width: 24px;
+             height: 24px;
+             cursor: pointer;
+             left: {{ $asset->x ?? 0 }}px;
+             top: {{ $asset->y ?? 0 }}px;
+             z-index: 9999;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+         ">
+         <i class="fas fa-trash-alt" style="
+    font-size: 22px;
+    color: #166b34ff;
+    filter: drop-shadow(0 0 4px #00ff7a) drop-shadow(0 0 6px #00ff7a);
+"></i>
+    </div>
+@endforeach
     </div>
 </div>
     </div>
