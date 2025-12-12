@@ -49,55 +49,10 @@
             </div>
             <div class="modal-footer justify-content-between">
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-danger" 
-                      data-toggle="modal" 
-                      data-target="#resetPasswordModal{{ $id }}">
-                  Reset Password
-              </button>
               <button type="submit" class="btn btn-primary">Save changes</button>
             </div>
           </div>
         </div>
       </form>
 </div>
-</div>
-
-<!-- RESET PASSWORD MODAL -->
-<div class="modal fade" id="resetPasswordModal{{ $id }}" tabindex="-1">
-    <form method="POST" action="{{ route('users.resetPassword') }}">
-        @csrf
-        <input type="hidden" name="id" value="{{ $id }}">
-
-        <div class="modal-dialog">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h4 class="modal-title">Reset Password for {{ $name }}</h4>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="form-group">
-                        <label>New Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    <div class="form-group mt-3">
-                        <label>Confirm Password</label>
-                        <input type="password" name="password_confirmation" class="form-control" required>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Reset</button>
-                </div>
-
-            </div>
-        </div>
-    </form>
 </div>

@@ -51,6 +51,7 @@
                     <button class="btn btn-primary">
                         Upload
                     </button>
+                    <x-user.form-user :id="Auth::user()->id" />
                 </div>
             </form>
 

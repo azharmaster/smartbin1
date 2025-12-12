@@ -49,6 +49,7 @@
                     <button class="btn btn-primary">
                         Upload
                     </button>
+                    <x-user.form-user :id="Auth::user()->id" />
                 </div>
             </form>
 
@@ -78,10 +79,14 @@
                 </span>
             </p>
 
-            <div class="text-center mt-4">
-                <a href="{{ route('profile.editPassword') }}" class="btn btn-danger btn-sm">
-                    Reset Password
-                </a>
+            <div class="d-flex justify-content-center align-items-center mt-4 gap-3">
+
+                <!-- Reset Password Button -->
+                <div>
+                    <a href="{{ route('profile.editPassword') }}" class="btn btn-danger btn-sm">
+                        Reset Password
+                    </a>
+                </div>
             </div>
         </div>
     </div>
