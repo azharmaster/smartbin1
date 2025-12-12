@@ -189,13 +189,13 @@
 .bin-count {
     font-weight: bold;
 }
-
+/*
 .collapse-btn {
     border: none;
     background: transparent;
     cursor: pointer;
 }
-
+*/
 .bins-list {
     max-height: 600px;
     overflow-y: auto;
@@ -251,12 +251,10 @@
 
 .map-card-body {
     overflow: hidden;
-    transition: all 0.3s ease;
+    height: 600px; /* initial height */
+    transition: height 0.3s ease; /* smooth animation */
 }
 
-.map-card-body.collapsed {
-    display: none;
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -306,75 +304,73 @@
         <div class="col-lg-7">
 
             <div class="card card-success map-card mb-4">
+                <!-- Header always visible -->
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="fas fa-map-marked-alt"></i> Floor Map
                     </h5>
-                    <button class="btn btn-tool ms-auto collapse-btn" type="button">
-                        <i class="fas fa-minus"></i>
+                    <button class="btn p-0 collapse-btn ms-auto" id="toggleMap" type="button">
+                        <i class="fas fa-minus fa-lg"></i>
                     </button>
                 </div>
 
-                <div class="card-body map-card-body" style="height: 100%;">
+                <!-- Collapsible wrapper -->
+                <div class="map-collapse-wrapper" style="height: 600px; overflow: hidden; transition: height 0.3s ease;">
+                    <div class="card-body map-card-body" style="height: 100%;">
 
-                    @php
-                        $firstFloor = $floors->first();
-                    @endphp
+                        @php
+                            $firstFloor = $floors->first();
+                        @endphp
 
-                    <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
+                        <!-- Controls -->
+                        <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
+                            <select id="floorSelect" class="form-select form-select-sm" style="width: 200px;">
+                                @foreach($floors as $floor)
+                                    <option value="{{ asset('uploads/floor/' . $floor->picture) }}"
+                                            data-floor-id="{{ $floor->id }}">
+                                        {{ $floor->floor_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button id="zoomIn" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoomOut" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="resetView" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-crosshairs"></i> Reset
+                            </button>
+                        </div>
 
-                        <select id="floorSelect" class="form-select form-select-sm" style="width: 200px;">
-                            @foreach($floors as $floor)
-                                <option value="{{ asset('uploads/floor/' . $floor->picture) }}"
-                                        data-floor-id="{{ $floor->id }}">
-                                    {{ $floor->floor_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <!-- MAP -->
+                        <div id="dashboardMapWrapper" style="position: relative; width: 100%; height: 600px;">
+                            <div id="dashboardMapInner" style="position: relative; width: 100%; height: 100%;">
 
-                        <button id="zoomIn" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-search-plus"></i>
-                        </button>
+                                <img id="dashboardFloorImage"
+                                    src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
+                                    alt="Floor Image"
+                                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
 
-                        <button id="zoomOut" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-search-minus"></i>
-                        </button>
-
-                        <button id="resetView" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-crosshairs"></i> Reset
-                        </button>
-                    </div>
-
-                    <!-- MAP -->
-                    <div id="dashboardMapWrapper" style="position: relative; width: 100%; height: 600px;">
-                        <div id="dashboardMapInner" style="position: relative; width: 100%; height: 100%;">
-
-                            <img id="dashboardFloorImage"
-                                 src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
-                                 alt="Floor Image"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
-
-                            @foreach($assetsWithCoords as $asset)
-                                <div class="asset-marker"
-                                    data-asset-id="{{ $asset->id }}"
-                                    data-floor-id="{{ $asset->floor_id }}"
-                                    title="{{ $asset->asset_name ?? 'Asset' }}"
-                                    style="position: absolute;
-                                            width: 24px; height: 24px;
-                                            left: calc({{ $asset->x }}px + 30px);
-                                            top: calc({{ $asset->y }}px);">
-                                    <i class="fas fa-trash-alt"
-                                        style="font-size: 22px; color: #166b34;
-                                            filter: drop-shadow(0 0 4px #00ff7a);"></i>
-                                </div>
-                            @endforeach
-
+                                @foreach($assetsWithCoords as $asset)
+                                    <div class="asset-marker"
+                                        data-asset-id="{{ $asset->id }}"
+                                        data-floor-id="{{ $asset->floor_id }}"
+                                        title="{{ $asset->asset_name ?? 'Asset' }}"
+                                        style="position: absolute;
+                                                width: 24px; height: 24px;
+                                                left: calc({{ $asset->x }}px + 30px);
+                                                top: calc({{ $asset->y }}px);">
+                                        <i class="fas fa-trash-alt"
+                                            style="font-size: 22px; color: #166b34;
+                                                filter: drop-shadow(0 0 4px #00ff7a);"></i>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
 
         <!-- RIGHT COLUMN: FULL BINS + TODO LIST -->
@@ -383,9 +379,9 @@
             <!-- FULL BINS -->
             <div class="card mb-4" style="max-height: 500px;">
 
-                <div class="p-3 border-bottom sticky-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-trash text-danger"></i> Warning Devices
+                <div class="p-3 border-bottom sticky-header card-full">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-trash-alt"></i> Warning Devices
                     </h5>
                 </div>
                 <div class="p-3 scroll-body" style="overflow-y: auto; max-height: 440px;">
@@ -517,6 +513,20 @@ document.addEventListener("DOMContentLoaded", function () {
         this.innerHTML = body.classList.contains('collapsed')
             ? '<i class="fas fa-plus"></i>'
             : '<i class="fas fa-minus"></i>';
+    });
+
+    document.getElementById('toggleMap').addEventListener('click', function() {
+        const wrapper = document.querySelector('.map-collapse-wrapper');
+
+        if (wrapper.style.height === '0px' || wrapper.style.height === '0') {
+            // Expand
+            wrapper.style.height = '600px';
+            this.querySelector('i').classList.replace('fa-plus', 'fa-minus');
+        } else {
+            // Collapse
+            wrapper.style.height = '0';
+            this.querySelector('i').classList.replace('fa-minus', 'fa-plus');
+        }
     });
 
     // ✅ FLOOR SWITCH + MARKER FILTER
