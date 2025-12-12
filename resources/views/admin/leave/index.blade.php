@@ -49,19 +49,6 @@
                                     data-target="#leaveModal{{ $leave->id }}">
                                 View
                             </button>
-
-                            @if(strtolower($leave->status) == 'pending')
-                                <form action="{{ route('admin.leave.status', $leave) }}" method="POST" style="display:inline">
-                                    @csrf
-                                    <input type="hidden" name="status" value="Approved">
-                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                                </form>
-                                <form action="{{ route('admin.leave.status', $leave) }}" method="POST" style="display:inline">
-                                    @csrf
-                                    <input type="hidden" name="status" value="Rejected">
-                                    <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                </form>
-                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -87,7 +74,11 @@
                         <p><strong>From:</strong> {{ $leave->start_date }}</p>
                         <p><strong>Until:</strong> {{ $leave->end_date ?? '-' }}</p>
                         <p><strong>Total Days:</strong> 
-                            @if($leave->type == 'halfday') 0.5 @else {{ $leave->end_date ? ((\Carbon\Carbon::parse($leave->end_date)->diffInDays(\Carbon\Carbon::parse($leave->start_date))) + 1) : 1 }} @endif
+                            @if($leave->type == 'halfday') 
+                                0.5 
+                            @else 
+                                {{ $leave->end_date ? ((\Carbon\Carbon::parse($leave->end_date)->diffInDays(\Carbon\Carbon::parse($leave->start_date))) + 1) : 1 }} 
+                            @endif
                         </p>
                         <p><strong>Reason:</strong> {{ $leave->reason }}</p>
                         <p><strong>Use:</strong> {{ $leave->use ?? '-' }}</p>
