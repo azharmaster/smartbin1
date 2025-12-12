@@ -28,12 +28,13 @@ class DashboardController extends Controller
         $fullDevices = $fullDevicesCollection->count();
 
         // HALF 40–85%
-        $halfDevices = $devices->filter(function ($d) {
+        $halfDevicesCollection = $devices->filter(function ($d) {
             return $d->latestSensor &&
                    is_numeric($d->latestSensor->capacity) &&
                    $d->latestSensor->capacity > 40 &&
                    $d->latestSensor->capacity <= 85;
-        })->count();
+        });
+        $halfDevices = $halfDevicesCollection->count();
 
         // EMPTY <= 40%
         $emptyDevices = $devices->filter(function ($d) {
@@ -71,6 +72,7 @@ class DashboardController extends Controller
             'fullDevices',
             'fullDevicesCollection',
             'halfDevices',
+            'halfDevicesCollection',
             'emptyDevices',
             'undetectedDevices',
             'todos',
