@@ -49,17 +49,21 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav ml-auto">
+            @php
+                $photo = Auth::user()->profile_photo 
+                    ? asset('uploads/profile/' . Auth::user()->profile_photo)
+                    : 'https://via.placeholder.com/150';
+            @endphp
+
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <!-- Profile Image -->
-                        <img src="{{ auth()->user()->profile_photo_url ?? 'https://via.placeholder.com/30' }}" 
+                        <img src="{{ $photo }}" 
                             class="rounded-circle" 
                             alt="Profile" 
                             width="30" 
                             height="30">
-                        <!-- User Name -->
-                        <span class="ms-2">{{ auth()->user()->name }}</span>
+                        <span class="ms-2">{{ Auth::user()->name }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ route('profile.index') }}">Profile</a></li>
