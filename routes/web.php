@@ -176,6 +176,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/staff', function () { return view('profile/staffindex'); })->name('profile.staffindex');
     Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])->name('profile.upload.photo');
     
+    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.editPassword');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 });
 

@@ -79,80 +79,12 @@
             </p>
 
             <div class="text-center mt-4">
-                <button type="button" class="btn btn-danger btn-sm" onclick="openResetPasswordPopup()">
+                <a href="{{ route('profile.editPassword') }}" class="btn btn-danger btn-sm">
                     Reset Password
-                </button>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 @endsection
-
-<script>
-function openResetPasswordPopup() {
-    Swal.fire({
-        title: 'Reset Password',
-        html: `
-            <div class="mb-2">
-                <input id="currentPassword" type="password" class="form-control" placeholder="Current Password">
-            </div>
-            <div class="mb-2">
-                <input id="newPassword" type="password" class="form-control" placeholder="New Password">
-            </div>
-            <div class="mb-2">
-                <input id="confirmPassword" type="password" class="form-control" placeholder="Confirm Password">
-            </div>
-        `,
-        confirmButtonText: 'Update Password',
-        showCancelButton: true,
-        focusConfirm: false,
-        preConfirm: () => {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirmPass = document.getElementById('confirmPassword').value;
-
-            if (!current || !newPass || !confirmPass) {
-                Swal.showValidationMessage('All fields are required');
-                return false;
-            }
-            if (newPass !== confirmPass) {
-                Swal.showValidationMessage('New password and confirm password do not match');
-                return false;
-            }
-
-            return { current, newPass };
-        },
-        didOpen: () => {
-            // Add focus to the first input
-            document.getElementById('currentPassword').focus();
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Submit via POST using fetch
-            fetch("{{ route('profile.updatePassword') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    current_password: result.value.current,
-                    password: result.value.newPass,
-                    password_confirmation: result.value.newPass
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Success', data.success, 'success');
-                } else {
-                    Swal.fire('Error', data.error || 'Something went wrong', 'error');
-                }
-            })
-            .catch(() => Swal.fire('Error', 'Something went wrong', 'error'));
-        }
-    });
-}
-</script>

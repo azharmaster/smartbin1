@@ -6,17 +6,6 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar user panel (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <!-- Optional: User image -->
-            </div>
-            <div class="info">
-                <a href="{{ route('profile.index') }}" class="d-block">
-                    {{ auth()->check() ? auth()->user()->name : 'Guest' }}
-                </a>
-            </div>
-        </div>
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">

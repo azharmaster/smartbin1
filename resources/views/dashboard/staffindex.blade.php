@@ -183,11 +183,11 @@
 
 <div style="flex: 1;">
         <div class="card p-3">
-            <h4 class="fw-bold mb-3">
+            <h5 class="mb-3">
                 <a href="{{ route('todos.staffindex') }}" class="text-decoration-none text-dark">
                     To Do List
                 </a>
-            </h4>
+            </h5>
             <ul class="list-group list-group-flush">
                 @foreach($todos as $todo)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
