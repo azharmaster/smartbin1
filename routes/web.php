@@ -167,6 +167,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 });
 
+Route::middleware(['auth'])->get('/todos/staff', [TodoController::class, 'staffIndex'])
+    ->name('todos.staffindex');
+
 // Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', function () { return view('profile/index'); })->name('profile.index');

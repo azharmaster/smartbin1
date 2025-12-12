@@ -17,6 +17,10 @@ class TodoController extends Controller
 
     public function index()
     {
+        if (auth()->user()->role == 'staff') {
+        return redirect()->route('todos.staffindex');
+        }
+
         $todos = Todo::where('userID', Auth::id())
                      ->where('status', 'pending')
                      ->orderBy('created_at', 'desc')
@@ -24,6 +28,14 @@ class TodoController extends Controller
 
         return view('todos.index', compact('todos'));
     }
+public function staffIndex()
+{
+    $todos = Todo::where('userID', Auth::id())
+                 ->orderBy('created_at', 'desc')
+                 ->get();
+
+    return view('todos.staffindex', compact('todos'));
+}
 
     public function store(Request $request)
     {
