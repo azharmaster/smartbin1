@@ -187,6 +187,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/staff/tasks/{task}/reject', [StaffTaskController::class, 'reject'])->name('staff.tasks.reject');
     Route::post('/staff/tasks/{task}/progress/{status}', [StaffTaskController::class, 'updateProgress'])->name('staff.tasks.progress');
     Route::post('/staff/tasks/{task}/update-status', [StaffTaskController::class, 'updateStatus'])->name('staff.tasks.updateStatus');
+    Route::post('/staff/tasks', [StaffTaskController::class, 'store'])->name('staff.tasks.store');
+
 });
 
 // Todo routes

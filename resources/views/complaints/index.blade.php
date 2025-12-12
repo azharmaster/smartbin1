@@ -15,8 +15,7 @@
         @endif
 
         <div class="d-flex justify-content-end mb-2">
-        <x-complaint.form-complaint 
-            :assets="$assets" />
+            <x-complaint.form-complaint :assets="$assets" />
         </div>
 
         <div class="table-responsive">
@@ -27,7 +26,8 @@
                         <th>Asset Name</th>
                         <th>Title</th>
                         <th>Description</th>
-                        <th>Option</th>
+                        <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,27 +38,42 @@
                         <td>{{ $complaint->title }}</td>
                         <td>{{ $complaint->description }}</td>
                         <td>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <x-complaint.form-complaint 
-                                    :id="$complaint->id"
-                                    :title="$complaint->title"
-                                    :description="$complaint->description"
-                                    :asset_id="$complaint->asset_id"
-                                    :assets="$assets" />&nbsp;
-                                <form action="{{ route('complaints.destroy', $complaint->id) }}" method="POST" 
-                                    onsubmit="return confirm('Are you sure you want to delete this complaint?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" data-confirm-delete="true">
-                                        <i class="fas fa-trash-alt text-white"></i>
-                                    </button>
-                                </form>
+                            @php
+                                $status = $complaint->status ?? 'pending';
+                            @endphp
+                            <span class="badge 
+                                {{ $status === 'completed' ? 'bg-success' : ($status === 'in_progress' ? 'bg-info' : 'bg-warning') }}">
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="assignTaskDropdown{{ $complaint->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-tasks"></i> Assign Task
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="assignTaskDropdown{{ $complaint->id }}">
+                                    @foreach($staffs as $staff)
+                                    <li>
+                                        <form action="{{ route('staff.tasks.store') }}" method="POST" class="m-0 p-0">
+                                            @csrf
+                                            <input type="hidden" name="complaint_id" value="{{ $complaint->id }}">
+                                            <input type="hidden" name="staff_id" value="{{ $staff->id }}">
+                                            <button type="submit" class="dropdown-item">{{ $staff->name }}</button>
+                                        </form>
+                                    </li>
+                                    @endforeach
+                                </ul>
                             </div>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+
+            {{-- Pagination --}}
+            <div class="mt-3">
+                {{ $complaints->links() }}
+            </div>
         </div>
     </div>
 </div>

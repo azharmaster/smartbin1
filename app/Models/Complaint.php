@@ -13,6 +13,7 @@ class Complaint extends Model
         'asset_id',
         'title',
         'description',
+        'status',
     ];
 
     // A Sensor belongs to a Device

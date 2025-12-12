@@ -9,12 +9,13 @@ class ComplaintController extends Controller
 {
     // Show all complaints
     public function index()
-{
-    $complaints = Complaint::with('asset')->latest()->paginate(10);
-    $assets = \App\Models\Asset::all(); // Fetch all assets
+    {
+        $complaints = Complaint::with('asset')->latest()->paginate(10);
+        $assets = \App\Models\Asset::all(); // Fetch all assets
+        $staffs = \App\Models\User::where('role', 2)->get(); // Fetch all staff (role=3)
 
-    return view('complaints.index', compact('complaints', 'assets'));
-}
+        return view('complaints.index', compact('complaints', 'assets', 'staffs'));
+    }
 
     // Show create form
     public function create()
@@ -31,6 +32,8 @@ class ComplaintController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
+
+        $validated['status'] = 'pending'; // default status
 
         Complaint::create($validated);
 
@@ -59,10 +62,21 @@ class ComplaintController extends Controller
             'asset_id' => 'required',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'status' => 'nullable|in:pending,in_progress,completed', // allow status update
+            'staff_id' => 'nullable|exists:users,id', // assign staff if provided
         ]);
 
         $complaint = Complaint::findOrFail($id);
         $complaint->update($validated);
+
+        // Optionally, create a StaffTask record if staff_id is provided
+        if (isset($validated['staff_id'])) {
+            \App\Models\StaffTask::create([
+                'complaint_id' => $complaint->id,
+                'staff_id' => $validated['staff_id'],
+                'status' => 'pending',
+            ]);
+        }
 
         return redirect()->route('complaints.index')
             ->with('success', 'Complaint updated successfully.');
@@ -93,6 +107,8 @@ class ComplaintController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
+
+        $validated['status'] = 'pending'; // default status
 
         Complaint::create($validated);
 
