@@ -20,10 +20,6 @@
 
         {{-- Buttons above table, right-aligned --}}
         <div class="d-flex justify-content-end mb-2">
-            {{-- Add General Task (minimal) --}}
-            <!-- <x-task.form-task :floors="$floors" minimal="true" class="me-1" /> -->
-
-            {{-- Assign Task to Staff --}}
             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#assignTaskModal">
                 Assign Task
             </button>
@@ -52,7 +48,24 @@
                         <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
                         <td>{{ $task->floor->floor_name ?? 'N/A' }}</td>
                         <td>{{ $task->description }}</td>
-                        <td>{{ ucfirst($task->status) }}</td>
+
+                        <!-- Status Column with badge -->
+                        <td>
+                            @php
+                                $status = $task->status;
+                                $badgeClass = match($status) {
+                                    'pending' => 'bg-warning',
+                                    'in_progress' => 'bg-info',
+                                    'completed' => 'bg-success',
+                                    'reject' => 'bg-danger',
+                                    default => 'bg-secondary',
+                                };
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                            </span>
+                        </td>
+
                         <td>{{ $task->notes ?? '-' }}</td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -106,7 +119,11 @@
                                     <p><strong>Asset:</strong> {{ $task->asset->asset_name ?? 'N/A' }}</p>
                                     <p><strong>Floor:</strong> {{ $task->floor->floor_name ?? 'N/A' }}</p>
                                     <p><strong>Description:</strong> {{ $task->description }}</p>
-                                    <p><strong>Status:</strong> {{ ucfirst($task->status) }}</p>
+                                    <p><strong>Status:</strong>
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                                        </span>
+                                    </p>
                                     <p><strong>Notes:</strong> {{ $task->notes ?? '-' }}</p>
                                 </div>
                                 <div class="modal-footer justify-content-between">

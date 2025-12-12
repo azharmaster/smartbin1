@@ -6,6 +6,11 @@
         <h4 class="card-title">Complaint</h4>
     </div>
     <div class="card-body">
+
+        {{-- Success Message Container --}}
+        <div id="successMessage" class="alert alert-success d-none"></div>
+
+        {{-- Display Errors --}}
         @if ($errors->any())
         <div class="alert alert-danger d-flex flex-column">
             @foreach ($errors->all() as $error)
@@ -32,7 +37,7 @@
                 </thead>
                 <tbody>
                     @foreach ($complaints as $index => $complaint)
-                    <tr>
+                    <tr id="complaintRow{{ $complaint->id }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $complaint->asset->asset_name ?? '-' }}</td>
                         <td>{{ $complaint->title }}</td>
@@ -54,12 +59,11 @@
                                 <ul class="dropdown-menu" aria-labelledby="assignTaskDropdown{{ $complaint->id }}">
                                     @foreach($staffs as $staff)
                                     <li>
-                                        <form action="{{ route('staff.tasks.store') }}" method="POST" class="m-0 p-0">
-                                            @csrf
-                                            <input type="hidden" name="complaint_id" value="{{ $complaint->id }}">
-                                            <input type="hidden" name="staff_id" value="{{ $staff->id }}">
-                                            <button type="submit" class="dropdown-item">{{ $staff->name }}</button>
-                                        </form>
+                                        <a href="#" class="dropdown-item assign-complaint" 
+                                           data-complaint-id="{{ $complaint->id }}" 
+                                           data-staff-id="{{ $staff->id }}">
+                                            {{ $staff->name }}
+                                        </a>
                                     </li>
                                     @endforeach
                                 </ul>
@@ -77,4 +81,51 @@
         </div>
     </div>
 </div>
+
+{{-- AJAX Script --}}
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const token = "{{ csrf_token() }}";
+
+    document.querySelectorAll('.assign-complaint').forEach(function(element) {
+        element.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            if (!confirm('Assign this complaint to this staff?')) return;
+
+            const complaintId = this.dataset.complaintId;
+            const staffId = this.dataset.staffId;
+
+            fetch("{{ route('staff.tasks.store') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": token,
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    complaint_id: complaintId,
+                    staff_id: staffId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const successMessage = document.getElementById('successMessage');
+                    successMessage.textContent = data.success;
+                    successMessage.classList.remove('d-none');
+                    setTimeout(() => { successMessage.classList.add('d-none'); }, 3000);
+                }
+            })
+            .catch(error => {
+                alert('Error assigning task. Try again.');
+                console.error(error);
+            });
+        });
+    });
+});
+</script>
+@endsection
+
 @endsection
