@@ -51,8 +51,22 @@
                         @endif
                     </td>
 
-                    <!-- Status Column -->
-                    <td>{{ ucfirst(str_replace('_', ' ', $task->status)) }}</td>
+                    <!-- Status Column with colored badge -->
+                    <td>
+                        @php
+                            $status = $task->status;
+                            $badgeClass = match($status) {
+                                'pending' => 'bg-warning',
+                                'in_progress' => 'bg-info',
+                                'completed' => 'bg-success',
+                                'reject' => 'bg-danger',
+                                default => 'bg-secondary',
+                            };
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">
+                            {{ ucfirst(str_replace('_', ' ', $status)) }}
+                        </span>
+                    </td>
 
                     <!-- Actions / Dropdown Column -->
                     <td>

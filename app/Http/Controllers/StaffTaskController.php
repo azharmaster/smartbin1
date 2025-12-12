@@ -21,6 +21,28 @@ class StaffTaskController extends Controller
         });
     }
 
+    // ⭐ Store assigned complaint task (Assign Task button)
+    public function store(Request $request)
+    {
+        $request->validate([
+            'complaint_id' => 'required|exists:complaints,id',
+            'staff_id' => 'required|exists:users,id',
+        ]);
+
+        Task::create([
+            'user_id'       => $request->staff_id,
+            'complaint_id'  => $request->complaint_id,
+            'status'        => 'pending',
+        ]);
+
+        // ✅ Return JSON if AJAX, otherwise redirect
+        if ($request->ajax()) {
+            return response()->json(['success' => 'Complaint assigned to staff successfully!']);
+        }
+
+        return redirect()->back()->with('success', 'Complaint assigned to staff successfully!');
+    }
+
     // Show all tasks assigned to logged-in staff
     public function index()
     {
