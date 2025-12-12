@@ -251,7 +251,7 @@
 
 .map-card-body {
     overflow: hidden;
-    height: 600px; /* initial height */
+    height: 650px; /* initial height */
     transition: height 0.3s ease; /* smooth animation */
 }
 
@@ -315,7 +315,7 @@
                 </div>
 
                 <!-- Collapsible wrapper -->
-                <div class="map-collapse-wrapper" style="height: 600px; overflow: hidden; transition: height 0.3s ease;">
+                <div class="map-collapse-wrapper" style="height: 650px; overflow: hidden; transition: height 0.3s ease;">
                     <div class="card-body map-card-body" style="height: 100%;">
 
                         @php
@@ -520,7 +520,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (wrapper.style.height === '0px' || wrapper.style.height === '0') {
             // Expand
-            wrapper.style.height = '600px';
+            wrapper.style.height = '650px';
             this.querySelector('i').classList.replace('fa-plus', 'fa-minus');
         } else {
             // Collapse
