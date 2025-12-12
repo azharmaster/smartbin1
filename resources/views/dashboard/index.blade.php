@@ -58,6 +58,7 @@
 .card-half { background-color: #f39c12; }
 .card-empty { background-color: #7ccc63; }
 .card-undetected { background-color: #2c3e50; }
+.card-primary { background-color: #3f44b5ff;}
 
 /* Container: tighter spacing */
 .full-devices-cards {
@@ -374,7 +375,7 @@
 
            <!-- ASSIGNED TASKS -->
 <div class="card mb-4">
-    <div class="card-header">
+    <div class="card-header card-half">
         <h5 class="mb-0">
             <i class="fas fa-tasks"></i> Assigned Tasks
         </h5>
