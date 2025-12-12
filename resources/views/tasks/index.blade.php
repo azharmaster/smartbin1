@@ -41,9 +41,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($tasks as $index => $task)
+                    @php
+                        // Sort tasks by latest first
+                        $tasksDesc = $tasks->sortByDesc('created_at');
+
+                        // Build numbering based on latest first
+                        $taskNumbers = [];
+                        $counter = 1;
+                        foreach ($tasksDesc as $t) {
+                            $taskNumbers[$t->id] = $counter++;
+                        }
+                    @endphp
+
+                    {{-- Display latest tasks at the top --}}
+                    @foreach ($tasksDesc as $task)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $taskNumbers[$task->id] }}</td>
                         <td>{{ $task->user->name ?? 'N/A' }}</td>
                         <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
                         <td>{{ $task->floor->floor_name ?? 'N/A' }}</td>

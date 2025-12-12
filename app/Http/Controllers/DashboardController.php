@@ -6,6 +6,8 @@ use App\Models\Device;
 use App\Models\Floor;
 use App\Models\Asset;
 use App\Models\Todo;
+use App\Models\User; // <-- Add this
+use App\Models\Task; // <-- Added for assigned tasks
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -66,6 +68,14 @@ class DashboardController extends Controller
                      ->orderBy('id', 'desc')
                      ->get();
 
+        // Load all users for the simple user list
+        $users = User::all(); // <-- Added this line
+
+        // Load assigned tasks (optional: latest 10 or all)
+        $assignedTasks = Task::with('user', 'asset', 'floor')
+                             ->orderBy('id', 'desc')
+                             ->get(); // <-- Added this
+
         // Pass all data to the dashboard view
         return view('dashboard.index', compact(
             'totalDevices',
@@ -78,7 +88,9 @@ class DashboardController extends Controller
             'todos',
             'floors',
             'assetsWithCoords',
-            'devices'
+            'devices',
+            'users',          // <-- Added this here
+            'assignedTasks'   // <-- Added this here
         ));
     }
 }

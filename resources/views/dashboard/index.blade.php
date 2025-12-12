@@ -371,6 +371,72 @@
                     </div>
                 </div>
             </div>
+
+           <!-- ASSIGNED TASKS -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-tasks"></i> Assigned Tasks
+        </h5>
+    </div>
+    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+        <table class="table table-striped mb-0">
+            <thead class="table-light sticky-top">
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Asset</th>
+                    <th>Floor</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    // Sort tasks by creation date descending for display
+                    $tasksToShow = $assignedTasks->sortByDesc('created_at')->take(10);
+                @endphp
+
+                @foreach($tasksToShow as $task)
+                    <tr>
+                        <td>{{ $task->id }}</td> <!-- Use original task ID for consistent numbering -->
+                        <td>{{ $task->user->name ?? 'N/A' }}</td>
+                        <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
+                        <td>{{ $task->floor->floor_name ?? 'N/A' }}</td>
+                        <td>{{ $task->description }}</td>
+                        <td>
+                            @php
+                                $status = $task->status;
+                                $badgeClass = match($status) {
+                                    'pending' => 'bg-warning',
+                                    'in_progress' => 'bg-info',
+                                    'completed' => 'bg-success',
+                                    'reject' => 'bg-danger',
+                                    default => 'bg-secondary',
+                                };
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                            </span>
+                        </td>
+                        <td>{{ $task->notes ?? '-' }}</td>
+                    </tr>
+                @endforeach
+
+                @if($tasksToShow->isEmpty())
+                    <tr>
+                        <td colspan="7" class="text-center">No tasks assigned.</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
         </div>
 
         <!-- RIGHT COLUMN: FULL BINS + TODO LIST -->
@@ -460,6 +526,28 @@
                     @endforeach
                 </ul>
             </div>
+
+            <!-- SIMPLE USER LIST BELOW TODO LIST -->
+<div class="card p-3 mt-4">
+    <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
+    <ul class="list-group">
+        @foreach($users as $user)
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ $user->name }}
+                <span class="badge bg-primary">
+                    @switch($user->role)
+                        @case(1) Admin @break
+                        @case(2) Staff @break
+                        @case(3) User @break
+                        @default Unknown
+                    @endswitch
+                </span>
+            </li>
+        @endforeach
+    </ul>
+</div>
+
+
 
         </div>
 

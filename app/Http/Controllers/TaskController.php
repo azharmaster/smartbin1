@@ -13,12 +13,20 @@ class TaskController extends Controller
     // Display all tasks + data for modal
     public function index()
     {
-        $tasks  = Task::with(['user', 'asset', 'floor'])->get();
+        // Load tasks with relations and order by creation ascending for numbering
+        $tasks  = Task::with(['user', 'asset', 'floor'])->orderBy('created_at', 'asc')->get();
         $users  = User::all();
         $assets = Asset::all();
         $floors = Floor::all(); // for add/assign/edit modal
 
-        return view('tasks.index', compact('tasks', 'users', 'assets', 'floors'));
+        // Build numbering based on oldest task first
+        $taskNumbers = [];
+        $counter = 1;
+        foreach ($tasks as $t) {
+            $taskNumbers[$t->id] = $counter++;
+        }
+
+        return view('tasks.index', compact('tasks', 'users', 'assets', 'floors', 'taskNumbers'));
     }
 
     // Store new assigned task
