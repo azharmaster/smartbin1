@@ -381,67 +381,69 @@
         <div class="col-lg-5">
 
             <!-- FULL BINS -->
-            <div class="card mb-4 p-3" style="max-height: 500px; overflow-y: auto;">
-            <h5 class="mb-3">
-                <i class="fas fa-trash text-danger"></i> Warning Devices
-            </h5>
+            <div class="card mb-4" style="max-height: 500px;">
 
-            <div class="full-devices-cards">
+                <div class="p-3 border-bottom sticky-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trash text-danger"></i> Warning Devices
+                    </h5>
+                </div>
+                <div class="p-3 scroll-body" style="overflow-y: auto; max-height: 440px;">
+                    <div class="full-devices-cards">
 
-                {{-- FULL DEVICES --}}
-                @foreach($fullDevicesCollection as $device)
-                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                    class="text-decoration-none">
-                        <div class="full-device-card p-3" style="width: 430px;">
+                        {{-- FULL DEVICES --}}
+                        @foreach($fullDevicesCollection as $device)
+                            <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
+                            class="text-decoration-none">
+                                <div class="full-device-card p-3" style="width: 430px;">
 
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                <div class="badge full-status text-white">FULL</div>
-                            </div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                                        <div class="badge full-status text-white">FULL</div>
+                                    </div>
 
-                            <div class="mt-1 text-white">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                            </div>
+                                    <div class="mt-1 text-white">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                    </div>
 
-                            <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar bg-danger"
-                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                            </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-danger"
+                                            style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
+                                    </div>
 
-                        </div>
-                    </a>
-                @endforeach
+                                </div>
+                            </a>
+                        @endforeach
 
 
-                {{-- HALF-FULL DEVICES --}}
-                @foreach($halfDevicesCollection as $device)
-                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                    class="text-decoration-none">
-                        <div class="half-device-card p-3" style="width: 430px;">
+                        {{-- HALF-FULL DEVICES --}}
+                        @foreach($halfDevicesCollection as $device)
+                            <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
+                            class="text-decoration-none">
+                                <div class="half-device-card p-3" style="width: 430px;">
 
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                <div class="badge half-status text-dark">HALF</div>
-                            </div>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                                        <div class="badge half-status text-dark">HALF</div>
+                                    </div>
 
-                            <div class="mt-1 text-white">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                            </div>
+                                    <div class="mt-1 text-white">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                    </div>
 
-                            <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar bg-warning"
-                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                            </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-warning"
+                                            style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
+                                    </div>
 
-                        </div>
-                    </a>
-                @endforeach
-
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
-        </div>
-
             <!-- TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3">
