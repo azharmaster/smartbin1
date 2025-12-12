@@ -2,6 +2,8 @@
 @section('content_title', 'User Profile')
 @section('content')
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
@@ -77,6 +79,12 @@
                     {{ $roleName }}
                 </span>
             </p>
+
+            <div class="text-center mt-4">
+                <a href="{{ route('profile.editPassword') }}" class="btn btn-danger btn-sm">
+                    Reset Password
+                </a>
+            </div>
 
         </div>
     </div>

@@ -16,6 +16,12 @@
     <!-- AdminLTE Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css') }}">
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JS (with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
@@ -44,10 +50,29 @@
             </ul>
 
             <ul class="navbar-nav ml-auto">
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-danger">Log Out</button>
-                </form>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Profile Image -->
+                        <img src="{{ auth()->user()->profile_photo_url ?? 'https://via.placeholder.com/30' }}" 
+                            class="rounded-circle" 
+                            alt="Profile" 
+                            width="30" 
+                            height="30">
+                        <!-- User Name -->
+                        <span class="ms-2">{{ auth()->user()->name }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{{ route('profile.index') }}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ route('profile.editPassword') }}">Reset Password</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="dropdown-item">Log Out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
 
@@ -82,7 +107,7 @@
 
         <footer class="main-footer">
             <div class="float-right d-none d-sm-inline">Anything you want</div>
-            <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong>
+            <strong>Copyright &copy; 2014-2021 PSENSEHUB/SmartBin.</strong>
             All rights reserved.
         </footer>
     </div>

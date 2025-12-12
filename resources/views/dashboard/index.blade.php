@@ -227,13 +227,8 @@
     display: none;
 }
 </style>
-{{-- @if($fullDevices > 0)
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong><i class="fas fa-exclamation-triangle"></i> Alert!</strong>  
-        There are <strong>{{ $fullDevices }}</strong> full trash bins that need attention.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
         <div class="status-title">Total Devices</div>
@@ -390,11 +385,11 @@
     {{-- RIGHT: TODO LIST --}}
     <div style="flex: 1;">
         <div class="card p-3">
-            <h4 class="fw-bold mb-3">
+            <h5 class="mb-3">
                 <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
                     To Do List
                 </a>
-            </h4>
+            </h5>
             <ul class="list-group list-group-flush">
                 @foreach($todos as $todo)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -455,6 +450,17 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    // 🔥 SWEETALERT POP-UP FOR FULL BINS
+    @if($fullDevices > 0)
+        Swal.fire({
+            icon: 'warning',
+            title: 'Full Trash Bins Detected!',
+            html: '<b>{{ $fullDevices }}</b> bin(s) are FULL and need to be cleared.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#d33',
+        });
+    @endif
 
     // ✅ ZOOM SETUP
     let scale = 1;
@@ -519,11 +525,6 @@ document.addEventListener("DOMContentLoaded", function () {
             marker.style.display = 'none';
         }
     });
-
-    @if($fullDevices > 0)
-    alert("⚠️ There are {{ $fullDevices }} FULL trash bins that need attention!");
-@endif
-
 
 });
 </script>

@@ -7,6 +7,8 @@ use App\Models\Device; // adjust if needed
 use App\Models\Asset;
 use App\Models\Task;   // <-- added for task charts
 use Carbon\Carbon;
+use App\Models\Todo;
+use Illuminate\Support\Facades\Auth;
 
 class StaffController extends Controller
 {
@@ -77,6 +79,11 @@ class StaffController extends Controller
                 ->count();
         }
 
+        $todos = Todo::where('userID', Auth::id())
+                     ->where('status', 'pending')
+                     ->orderBy('id', 'desc')
+                     ->get();
+
         return view('dashboard.staffindex', [
             'totalDevices' => $totalDevices,
             'fullDevices' => $fullDevices,
@@ -90,6 +97,8 @@ class StaffController extends Controller
             'pendingPerMonth' => $pendingPerMonth,
             'completedPerMonth' => $completedPerMonth,
             'rejectedPerMonth' => $rejectedPerMonth,
+
+            'todos' => $todos,
         ]);
     }
 }

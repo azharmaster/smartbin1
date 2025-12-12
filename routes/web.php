@@ -167,11 +167,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 });
 
+Route::middleware(['auth'])->get('/todos/staff', [TodoController::class, 'staffIndex'])
+    ->name('todos.staffindex');
+
 // Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', function () { return view('profile/index'); })->name('profile.index');
     Route::get('/profile/staff', function () { return view('profile/staffindex'); })->name('profile.staffindex');
     Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])->name('profile.upload.photo');
+    
+    Route::get('/profile/password', [ProfileController::class, 'editPassword'])->name('profile.editPassword');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 });
 
 // Staff Task Routes

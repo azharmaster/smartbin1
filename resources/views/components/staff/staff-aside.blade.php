@@ -7,16 +7,6 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- Sidebar user panel -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <!-- Optional user image -->
-            </div>
-            <div class="info">
-                <a href="{{ route('profile.staffindex') }}" class="d-block">
-                    {{ auth()->check() ? auth()->user()->name : 'Guest' }}
-                </a>
-            </div>
-        </div>
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
