@@ -175,6 +175,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', function () { return view('profile/index'); })->name('profile.index');
     Route::get('/profile/staff', function () { return view('profile/staffindex'); })->name('profile.staffindex');
     Route::post('/profile/upload-photo', [ProfileController::class, 'uploadPhoto'])->name('profile.upload.photo');
+    
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 });
 
 // Staff Task Routes

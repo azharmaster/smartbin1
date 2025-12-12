@@ -451,7 +451,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-       // 🔥 SWEETALERT POP-UP FOR FULL BINS
+    // 🔥 SWEETALERT POP-UP FOR FULL BINS
     @if($fullDevices > 0)
         Swal.fire({
             icon: 'warning',
