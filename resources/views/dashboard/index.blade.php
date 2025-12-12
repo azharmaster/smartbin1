@@ -227,7 +227,13 @@
     display: none;
 }
 </style>
-
+{{-- @if($fullDevices > 0)
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><i class="fas fa-exclamation-triangle"></i> Alert!</strong>  
+        There are <strong>{{ $fullDevices }}</strong> full trash bins that need attention.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif --}}
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
         <div class="status-title">Total Devices</div>
@@ -513,6 +519,11 @@ document.addEventListener("DOMContentLoaded", function () {
             marker.style.display = 'none';
         }
     });
+
+    @if($fullDevices > 0)
+    alert("⚠️ There are {{ $fullDevices }} FULL trash bins that need attention!");
+@endif
+
 
 });
 </script>
