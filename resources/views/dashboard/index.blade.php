@@ -310,7 +310,7 @@
                     <h5 class="mb-0">
                         <i class="fas fa-map-marked-alt"></i> Floor Map
                     </h5>
-                    <button class="btn btn-tool collapse-btn" type="button">
+                    <button class="btn btn-tool ms-auto collapse-btn" type="button">
                         <i class="fas fa-minus"></i>
                     </button>
                 </div>
