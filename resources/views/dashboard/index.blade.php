@@ -440,7 +440,7 @@
 
         </div>
 
-        <!-- RIGHT COLUMN: FULL BINS + TODO LIST -->
+        <!-- RIGHT COLUMN -->
         <div class="col-lg-5">
 
             <!-- FULL BINS -->
@@ -507,6 +507,61 @@
                     </div>
                 </div>
             </div>
+            <!-- LATEST COMPLAINTS -->
+            <div class="card mb-4">
+                <div class="card-header card-full text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle"></i> Latest Complaints
+                    </h5>
+                </div>
+
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>Asset</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse($latestComplaints as $complaint)
+                                <tr>
+                                    <td>{{ $complaint->id }}</td>
+
+                                    <!-- Asset Name instead of asset_id -->
+                                    <td>{{ $complaint->asset->asset_name ?? 'N/A' }}</td>
+
+                                    <td>{{ $complaint->description }}</td>
+
+                                    <td>
+                                        @php
+                                            $badgeClass = match($complaint->status) {
+                                                'pending' => 'bg-warning',
+                                                'in_progress' => 'bg-info',
+                                                'completed' => 'bg-success',
+                                                default => 'bg-secondary',
+                                            };
+                                        @endphp
+
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $complaint->status)) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        No complaints found.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             <!-- TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3">
@@ -529,27 +584,24 @@
             </div>
 
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
-<div class="card p-3 mt-4">
-    <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
-    <ul class="list-group">
-        @foreach($users as $user)
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ $user->name }}
-                <span class="badge bg-primary">
-                    @switch($user->role)
-                        @case(1) Admin @break
-                        @case(2) Staff @break
-                        @case(3) User @break
-                        @default Unknown
-                    @endswitch
-                </span>
-            </li>
-        @endforeach
-    </ul>
-</div>
-
-
-
+            <div class="card p-3 mt-4">
+                <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
+                <ul class="list-group">
+                    @foreach($users as $user)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ $user->name }}
+                            <span class="badge bg-primary">
+                                @switch($user->role)
+                                    @case(1) Admin @break
+                                    @case(2) Staff @break
+                                    @case(3) User @break
+                                    @default Unknown
+                                @endswitch
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
 
     </div>

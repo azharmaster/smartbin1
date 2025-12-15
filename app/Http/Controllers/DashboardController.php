@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\Floor;
 use App\Models\Asset;
 use App\Models\Todo;
+use App\Models\Complaint;
 use App\Models\User; // <-- Add this
 use App\Models\Task; // <-- Added for assigned tasks
 use Illuminate\Http\Request;
@@ -68,6 +69,12 @@ class DashboardController extends Controller
                      ->orderBy('id', 'desc')
                      ->get();
 
+        // Load latest complaints
+        $latestComplaints = Complaint::with('asset')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
         // Load all users for the simple user list
         $users = User::all(); // <-- Added this line
 
@@ -90,7 +97,8 @@ class DashboardController extends Controller
             'assetsWithCoords',
             'devices',
             'users',          // <-- Added this here
-            'assignedTasks'   // <-- Added this here
+            'assignedTasks',   // <-- Added this here
+            'latestComplaints'
         ));
     }
 }
