@@ -1,4 +1,4 @@
-@extends('layouts.nosidebar')
+@extends('layouts.nosidebarsupervisor')
 
 @section('content_title', 'Supervisor Dashboard')
 

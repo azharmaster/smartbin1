@@ -41,7 +41,7 @@ class AdminMainDashboardController extends Controller
             ->whereNotNull('y')
             ->get();
 
-        return view('supervisormaindashboard', compact(
+        return view('adminmaindashboard', compact(
             'floors',
             'assetsWithCoords',
             'fullDevices',

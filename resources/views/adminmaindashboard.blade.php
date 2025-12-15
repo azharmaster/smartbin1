@@ -1,4 +1,4 @@
-@extends('layouts.nosidebar')
+@extends('layouts.nosidebaradmin')
 
 @section('content_title', 'Main Dashboard')
 
@@ -258,6 +258,7 @@
 }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container-fluid mt-4">
     <div class="row">
