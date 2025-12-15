@@ -48,7 +48,7 @@ class LoginController extends Controller
             }
 
             // fallback if role undefined
-            return redirect('/dashboard');
+            return redirect('auth.login');
         }
 
         return back()->withErrors([
