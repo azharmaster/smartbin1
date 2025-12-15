@@ -6,7 +6,7 @@ use App\Models\Floor;
 use App\Models\Asset;
 use App\Models\Device;
 
-class SupervisorMainDashboardController extends Controller
+class AdminMainDashboardController extends Controller
 {
     public function index()
     {
