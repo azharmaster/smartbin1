@@ -22,6 +22,7 @@ use App\Http\Controllers\AdminLeaveController;
 use App\Http\Controllers\StaffLeaveController;
 use App\View\Components\Admin\Aside;
 use App\View\Components\Staff\StaffAside;
+use App\Http\Controllers\AdminMainDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -242,3 +243,7 @@ Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('
 Route::post('/admin/leave/apply', [AdminLeaveController::class, 'storeApply'])->name('admin.leave.apply.store');
 
 Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('admin.leave.apply');
+
+
+Route::get('/admin/main-dashboard', [AdminMainDashboardController::class, 'index'])
+    ->name('admin.main.dashboard');
