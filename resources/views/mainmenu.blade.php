@@ -3,7 +3,10 @@
 
 @section('content')
 
-<h1 class="text-center my-4">Main Menu</h1>
+<a href="{{ route('admin.main.dashboard') }}" class="text-decoration-none text-dark">
+    <h1 class="text-center my-4">Main Menu</h1>
+</a>
+
 
 <div class="container">
     <div class="row">
