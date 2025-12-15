@@ -4,6 +4,13 @@
 
 @section('content')
 
+{{-- back button --}}
+<div class="container-fluid mt-3">
+    <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
+
 <style>
 .dashboard-cards {
     display: grid;
