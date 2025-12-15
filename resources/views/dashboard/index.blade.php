@@ -595,6 +595,7 @@
                                     @case(1) Admin @break
                                     @case(2) Staff @break
                                     @case(3) User @break
+                                    @case(4) Supervisor @break
                                     @default Unknown
                                 @endswitch
                             </span>
