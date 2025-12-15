@@ -44,7 +44,7 @@ class LoginController extends Controller
             }
 
             if ($user->role == 4) {
-                return redirect()->route('supervisor.dashboard');
+                return redirect()->route('supervisor.mainmenu');
             }
 
             // fallback if role undefined

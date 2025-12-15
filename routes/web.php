@@ -247,3 +247,11 @@ Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('
 
 Route::get('/admin/main-dashboard', [AdminMainDashboardController::class, 'index'])
     ->name('admin.main.dashboard');
+
+Route::get('/supervisor/mainmenu', function() {
+    return view('supervisormainmenu');
+})->name('supervisor.mainmenu')->middleware('auth');
+
+Route::get('/supervisor/dashboard', function() {
+    return view('supervisormaindashboard');
+})->name('supervisor.dashboard')->middleware('auth');
