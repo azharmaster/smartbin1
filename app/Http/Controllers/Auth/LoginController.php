@@ -43,6 +43,10 @@ class LoginController extends Controller
                 return redirect()->route('guest.dashboard');
             }
 
+            if ($user->role == 4) {
+                return redirect()->route('supervisor.dashboard');
+            }
+
             // fallback if role undefined
             return redirect('/dashboard');
         }
