@@ -393,7 +393,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="main-footer">
+        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff" >
             <div class="float-right d-none d-sm-inline">
                 Anything you want
             </div>
