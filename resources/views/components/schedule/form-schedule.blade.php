@@ -2,7 +2,8 @@
     'id' => null,
     'user_id' => null,
     'floor_id' => null,
-    'shift' => null,
+    'start_shift' => null,
+    'end_shift' => null,
     'date' => null,
     'users' => [],
     'floors' => []
@@ -63,11 +64,18 @@
                             </select>
                         </div>
 
-                        {{-- Shift --}}
+                        {{-- Start Shift --}}
                         <div class="form-group">
-                            <label>Shift</label>
-                            <input type="text" name="shift" class="form-control" placeholder="Morning/Evening/Night"
-                                value="{{ $shift ?? '' }}" required>
+                            <label>Start Time</label>
+                            <input type="time" name="start_shift" class="form-control"
+                                value="{{ $start_shift ?? '' }}" required>
+                        </div>
+
+                        {{-- End Shift --}}
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" name="end_shift" class="form-control"
+                                value="{{ $end_shift ?? '' }}" required>
                         </div>
 
                         {{-- Date --}}

@@ -20,7 +20,7 @@
                 @forelse($schedules as $s)
                     <tr>
                         <td>{{ $s->floor->floor_name ?? '-' }}</td>
-                        <td>{{ $s->shift }}</td>
+                        <td>{{ $s->start_shift }} - {{ $s->end_shift }}</td>
                         <td>{{ $s->date }}</td>
                     </tr>
                 @empty

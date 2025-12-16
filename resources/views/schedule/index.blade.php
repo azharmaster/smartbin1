@@ -29,7 +29,7 @@
                         <th>#</th>
                         <th>User</th>
                         <th>Floor</th>
-                        <th>Shift</th>
+                        <th>Shift Time</th>
                         <th>Date</th>
                         <th>Option</th>
                     </tr>
@@ -40,7 +40,11 @@
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $schedule->user->name ?? '—' }}</td>
                         <td>{{ $schedule->floor->floor_name ?? '—' }}</td>
-                        <td>{{ $schedule->shift }}</td>
+                        <td>
+                            {{ \Carbon\Carbon::parse($schedule->start_shift)->format('H:i') }}
+                            -
+                            {{ \Carbon\Carbon::parse($schedule->end_shift)->format('H:i') }}
+                        </td>
                         <td>{{ \Carbon\Carbon::parse($schedule->date)->format('Y-m-d') }}</td>
                         <td>
                             <div class="d-flex align-items-center justify-content-center">

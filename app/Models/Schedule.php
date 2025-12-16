@@ -11,11 +11,13 @@ class Schedule extends Model
 
     // Mass assignable fields
     protected $fillable = [
-        'user_id',
-        'floor_id',
-        'shift',
-        'date',
-    ];
+    'user_id',
+    'floor_id',
+    'start_shift',
+    'end_shift',
+    'date',
+];
+
 
     // Relationship: Schedule belongs to a User
     public function user()

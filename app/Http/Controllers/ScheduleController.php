@@ -24,13 +24,20 @@ class ScheduleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'floor_id' => 'required|exists:floor,id', // updated to singular
-            'shift' => 'required|string',
-            'date' => 'required|date',
+            'user_id'     => 'required|exists:users,id',
+            'floor_id'    => 'required|exists:floor,id', // updated to singular
+            'start_shift' => 'required|date_format:H:i',
+            'end_shift'   => 'required|date_format:H:i|after:start_shift',
+            'date'        => 'required|date',
         ]);
 
-        Schedule::create($request->all());
+        Schedule::create([
+            'user_id'     => $request->user_id,
+            'floor_id'    => $request->floor_id,
+            'start_shift' => $request->start_shift,
+            'end_shift'   => $request->end_shift,
+            'date'        => $request->date,
+        ]);
 
         return redirect()->back()->with('success', 'Schedule added successfully.');
     }
@@ -39,14 +46,22 @@ class ScheduleController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'floor_id' => 'required|exists:floor,id', // updated to singular
-            'shift' => 'required|string',
-            'date' => 'required|date',
+            'user_id'     => 'required|exists:users,id',
+            'floor_id'    => 'required|exists:floor,id', // updated to singular
+            'start_shift' => 'required|date_format:H:i',
+            'end_shift'   => 'required|date_format:H:i|after:start_shift',
+            'date'        => 'required|date',
         ]);
 
         $schedule = Schedule::findOrFail($id);
-        $schedule->update($request->all());
+
+        $schedule->update([
+            'user_id'     => $request->user_id,
+            'floor_id'    => $request->floor_id,
+            'start_shift' => $request->start_shift,
+            'end_shift'   => $request->end_shift,
+            'date'        => $request->date,
+        ]);
 
         return redirect()->back()->with('success', 'Schedule updated successfully.');
     }
