@@ -9,7 +9,7 @@
     <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm">
         <i class="fas fa-arrow-left me-1"></i> Back
     </a>
-</div>
+</div>&nbsp;
 
 <style>
 .dashboard-cards {
@@ -377,7 +377,7 @@
                                         title="{{ $asset->asset_name ?? 'Asset' }}"
                                         style="position: absolute;
                                                 width: 24px; height: 24px;
-                                                left: calc({{ $asset->x }}px + 100px);
+                                                left: calc({{ $asset->x }}px + 155px);
                                                 top: calc({{ $asset->y }}px);">
                                         <i class="fas fa-trash-alt"
                                             style="font-size: 22px; color: #166b34;
@@ -393,9 +393,9 @@
 
         {{-- RIGHT COLUMN : WARNING DEVICES --}}
         <div class="col-lg-4">
-        <div class="card mb-4" style="max-height: 650px;">
+        <div class="card mb-4" style="max-height: 650px; background-color: rgba(0, 0, 0, 0)">
 
-                <div class="p-3 border-bottom sticky-header card-full">
+                <div class="p-3 sticky-header" style="background-color: rgba(255, 255, 255, 0.1);">
                     <h5 class="mb-0 text-white">
                         <i class="fas fa-trash-alt"></i> Warning Devices
                     </h5>
