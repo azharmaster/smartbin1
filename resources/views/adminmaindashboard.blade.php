@@ -291,7 +291,7 @@
 
 .devices-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(4, 1fr); /* ✅ 4 in a row */
     gap: 16px;
 }
 
@@ -300,7 +300,6 @@
     padding: 16px;
     border-radius: 12px;
     min-height: 130px;
-    width: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -378,7 +377,7 @@
     </div>
 </div>
 
-<div class="container-fluid mt-4">
+
     <div class="card mb-4" style=" background-color: rgba(0, 0, 0, 0)">
         <div class="p-3 scroll-body" style="overflow-y: auto;">
             <!-- GRID CONTAINER -->
@@ -411,7 +410,7 @@
                                 {{ $device->asset->floor->floor_name ?? 'Unknown' }}
                             </div>
 
-                            <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress mt-2" style="height: 12px; border-radius: 999px; ">
                                 <div class="progress-bar bg-danger"
                                     style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
                             </div>
@@ -435,7 +434,7 @@
                                 {{ $device->asset->floor->floor_name ?? 'Unknown' }}
                             </div>
 
-                            <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress mt-2" style="height: 12px; border-radius: 999px;">
                                 <div class="progress-bar bg-warning"
                                     style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
                             </div>
@@ -459,7 +458,7 @@
                                 {{ $device->asset->floor->floor_name ?? 'Unknown' }}
                             </div>
 
-                            <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress mt-2" style="height: 12px; border-radius: 999px;">
                                 <div class="progress-bar bg-success"
                                     style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
                             </div>
@@ -470,7 +469,7 @@
             </div>
         </div>
     </div>
-</div>
+
 
 {{-- BIN POPUP & FLOOR SCRIPT --}}
 <script>
