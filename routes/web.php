@@ -259,6 +259,6 @@ Route::get('/supervisor/dashboard', [SupervisorMainDashboardController::class, '
     ->name('supervisor.dashboard')->middleware('auth');
 
 Route::get(
-    '/admin/dashboard/bin/{assetId}/popup',
+    '/admin/dashboard/bin/{id}/popup',
     [AdminMainDashboardController::class, 'binPopup']
 )->name('admin.dashboard.bin.popup');    

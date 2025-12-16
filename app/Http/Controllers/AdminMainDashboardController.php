@@ -71,12 +71,12 @@ class AdminMainDashboardController extends Controller
     }
 
     // ✅ NEW METHOD (ADDED ONLY – NOTHING ELSE TOUCHED)
-    public function binPopup($assetId)
+    public function binPopup($id)
     {
-        $asset = Asset::with(['floor'])->findOrFail($assetId);
+        $asset = Asset::with(['floor'])->findOrFail($id);
 
         $devices = Device::with(['latestSensor', 'asset.floor'])
-            ->where('asset_id', $assetId)
+            ->where('asset_id', $id)
             ->get();
 
         return view(

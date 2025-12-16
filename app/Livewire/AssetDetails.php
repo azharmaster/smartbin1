@@ -7,25 +7,26 @@ use App\Models\Asset;
 
 class AssetDetails extends Component
 {
-    public $asset;
+    public Asset $asset;
 
-    public function mount($asset)
+    public function mount(Asset $asset)
     {
-        // If $asset is an ID, load the full Asset
-        $this->asset = Asset::with(['floor', 'devices.sensors'])->findOrFail($asset);
+        // Asset is already loaded by controller
+        $this->asset = $asset->load(['floor', 'devices.sensors']);
     }
 
-public function updatePosition($assetId, $x, $y)
-{
-    $asset = Asset::find($assetId);
-    if ($asset) {
-        $asset->x = $x;
-        $asset->y = $y;
-        $asset->save();
-    }
+    public function updatePosition($assetId, $x, $y)
+    {
+        $asset = Asset::find($assetId);
 
-    $this->asset->refresh();
-}
+        if ($asset) {
+            $asset->x = $x;
+            $asset->y = $y;
+            $asset->save();
+        }
+
+        $this->asset->refresh();
+    }
 
     public function render()
     {

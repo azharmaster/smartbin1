@@ -16,7 +16,7 @@
     <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
 
         <!-- Asset Card -->
-        <div style="padding: 12px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <div style="padding: 12px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: #000000ff"">
             <h2 style="font-weight: 700; font-size: 18px; margin-bottom: 6px; color: #2c3e50;">{{ $asset->asset_name }}</h2>
             <p style="margin: 2px 0;"><strong>Floor:</strong> {{ $asset->floor->floor_name ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
@@ -30,7 +30,7 @@
         @foreach($asset->devices as $device)
         <div style="padding: 12px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 6px; color: #34495e;">{{ $device->device_name }}</h3>
-            <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+            <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; color: #000000ff">
                 <li><i class="fas fa-battery-three-quarters" style="color:#f39c12;"></i> {{ $device->sensors->first()->battery ?? 'N/A' }}%</li>
                 <li><i class="fas fa-trash" style="color:#e74c3c;"></i> {{ $device->sensors->first()->capacity ?? 'N/A' }}%</li>
                 <li><i class="fas fa-history" style="color:#3498db;"></i> {{ $device->sensors->first()->time ?? 'N/A' }}</li>
