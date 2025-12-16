@@ -267,6 +267,44 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<div class="d-flex flex-wrap">
+    <div class="status-card card-total">
+        <div class="status-title">Total Devices</div>
+        <div class="status-content">
+            <i class="fas fa-satellite-dish status-icon"></i>
+            <span class="status-number">{{ $totalDevices }}</span>
+        </div>
+    </div>
+    <div class="status-card card-full">
+        <div class="status-title">Full Devices</div>
+        <div class="status-content">
+            <i class="fas fa-trash status-icon"></i>
+            <span class="status-number">{{ $fullDevices }}</span>
+        </div>
+    </div>
+    <div class="status-card card-half">
+        <div class="status-title ">Half Full</div>
+        <div class="status-content">
+            <i class="fas fa-exclamation-triangle status-icon"></i>
+            <span class="status-number">{{ $halfDevices }}</span>
+        </div>
+    </div>
+    <div class="status-card card-empty">
+        <div class="status-title">Empty Devices</div>
+        <div class="status-content">
+            <i class="fas fa-recycle status-icon"></i>
+            <span class="status-number">{{ $emptyDevices }}</span>
+        </div>
+    </div>
+    <div class="status-card card-undetected">
+        <div class="status-title">Undetected</div>
+        <div class="status-content">
+            <i class="fas fa-minus-circle status-icon"></i>
+            <span class="status-number">{{ $undetectedDevices }}</span>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid mt-4">
     <div class="row">
 

@@ -33,6 +33,20 @@ class AdminMainDashboardController extends Controller
         });
         $halfDevices = $halfDevicesCollection->count();
 
+        // EMPTY <= 40%
+        $emptyDevicesCollection = $devices->filter(function ($d) {
+            return $d->latestSensor &&
+                   is_numeric($d->latestSensor->capacity) &&
+                   $d->latestSensor->capacity <= 40;
+        });
+        $emptyDevices = $emptyDevicesCollection->count();
+
+        // UNDETECTED (no sensor or capacity null)
+        $undetectedDevicesCollection = $devices->filter(function ($d) {
+            return !$d->latestSensor || !is_numeric($d->latestSensor->capacity);
+        });
+        $undetectedDevices = $undetectedDevicesCollection->count();
+
         // Get all floors
         $floors = Floor::all();
 
@@ -44,10 +58,13 @@ class AdminMainDashboardController extends Controller
         return view('adminmaindashboard', compact(
             'floors',
             'assetsWithCoords',
+            'totalDevices',
             'fullDevices',
             'fullDevicesCollection',
             'halfDevices',
             'halfDevicesCollection',
+            'emptyDevices',
+            'undetectedDevices'
         ));
     }
 }
