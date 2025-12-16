@@ -262,3 +262,8 @@ Route::get(
     '/admin/dashboard/bin/{id}/popup',
     [AdminMainDashboardController::class, 'binPopup']
 )->name('admin.dashboard.bin.popup');    
+
+Route::get(
+    '/supervisor/dashboard/bin/{id}/popup',
+    [SupervisorMainDashboardController::class, 'binPopup']
+)->name('supervisor.dashboard.bin.popup');
