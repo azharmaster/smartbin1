@@ -447,8 +447,9 @@
 
                 {{-- EMPTY DEVICES --}}
                 @foreach($emptyDevicesCollection as $device)
-                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                    class="text-decoration-none device-link">
+                    <a href="#" class="text-decoration-none device-link open-bin-modal"
+                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
+                    <!-- class="text-decoration-none device-link"> -->
 
                         <div class="device-card empty-device-card" data-status="empty">
                             <div class="d-flex justify-content-between align-items-start">
