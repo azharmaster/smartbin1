@@ -396,8 +396,9 @@
 
                 {{-- FULL DEVICES --}}
                 @foreach($fullDevicesCollection as $device)
-                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                    class="text-decoration-none device-link">
+                    <a href="#" class="text-decoration-none device-link open-bin-modal"
+                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
+                    <!-- class="text-decoration-none device-link"> -->
 
                         <div class="device-card full-device-card" data-status="full">
                             <div class="d-flex justify-content-between align-items-start">
@@ -420,8 +421,10 @@
 
                 {{-- HALF DEVICES --}}
                 @foreach($halfDevicesCollection as $device)
-                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                    class="text-decoration-none device-link">
+                    <a href="#" class="text-decoration-none device-link open-bin-modal"
+                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
+
+                    <!-- class="text-decoration-none device-link"> -->
 
                         <div class="device-card half-device-card" data-status="half">
                             <div class="d-flex justify-content-between align-items-start">
@@ -584,5 +587,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
+{{-- BIN DETAILS MODAL --}}
+<div class="modal fade" id="binDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bin Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="binModalContent">
+                {{-- content loaded dynamically --}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.open-bin-modal').forEach(el => {
+        el.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const url = this.dataset.url;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('binModalContent').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('binDetailsModal')).show();
+                });
+        });
+    });
+});
+</script>
+
+
 
 @endsection

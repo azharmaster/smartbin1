@@ -69,4 +69,19 @@ class AdminMainDashboardController extends Controller
             'undetectedDevices'
         ));
     }
+
+    // ✅ NEW METHOD (ADDED ONLY – NOTHING ELSE TOUCHED)
+    public function binPopup($assetId)
+    {
+        $asset = Asset::with(['floor'])->findOrFail($assetId);
+
+        $devices = Device::with(['latestSensor', 'asset.floor'])
+            ->where('asset_id', $assetId)
+            ->get();
+
+        return view(
+            'admin.dashboardpopupview.dashboard_bin_modal',
+            compact('asset', 'devices')
+        );
+    }
 }

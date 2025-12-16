@@ -257,3 +257,8 @@ Route::get('/supervisor/mainmenu', function() {
 // Supervisor Main Dashboard
 Route::get('/supervisor/dashboard', [SupervisorMainDashboardController::class, 'index'])
     ->name('supervisor.dashboard')->middleware('auth');
+
+Route::get(
+    '/admin/dashboard/bin/{assetId}/popup',
+    [AdminMainDashboardController::class, 'binPopup']
+)->name('admin.dashboard.bin.popup');    
