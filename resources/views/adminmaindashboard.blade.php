@@ -264,6 +264,44 @@
     transition: height 0.3s ease; /* smooth animation */
 }
 
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* ✅ 4 in a row */
+    gap: 16px;
+}
+
+/* shared card sizing */
+.device-card {
+    padding: 16px;
+    border-radius: 12px;
+    min-height: 130px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* hover effect */
+.device-link:hover .device-card {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1200px) {
+    .devices-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .devices-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .devices-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -306,155 +344,59 @@
 </div>
 
 <div class="container-fluid mt-4">
-    <div class="row">
+    <div class="card mb-4" style=" background-color: rgba(0, 0, 0, 0)">
+        <div class="p-3 scroll-body" style="overflow-y: auto;">
+            <!-- GRID CONTAINER -->
+            <div class="devices-grid">
 
-        {{-- LEFT COLUMN : FLOOR MAP --}}
-        <div class="col-lg-8">
+                {{-- FULL DEVICES --}}
+                @foreach($fullDevicesCollection as $device)
+                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
+                    class="text-decoration-none device-link">
 
-            {{-- ✅ YOUR MAP CODE (UNCHANGED) --}}
-            <div class="card map-card mb-4" style="background-color: rgba(255, 255, 255, 0.1);">
-                <!-- Header always visible -->
-                <div class="card-header d-flex align-items-center" style="background-color: rgba(255, 255, 255, 0.1);">
-                    <div class="flex-grow-1">
-                        <h5 class="mb-0">
-                            <i class="fas fa-map-marked-alt"></i> Floor Map
-                        </h5>
-                    </div>
+                        <div class="device-card full-device-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                                <div class="badge full-status text-white">FULL</div>
+                            </div>
 
-                    <button class="btn p-0 collapse-btn" id="toggleMap" type="button">
-                        <i class="fas fa-minus fa-lg"></i>
-                    </button>
-                </div>
+                            <div class="mt-1 text-white">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                            </div>
 
-                <!-- Collapsible wrapper -->
-                <div class="map-collapse-wrapper" style="height: 650px; overflow: hidden; transition: height 0.3s ease;">
-                    <div class="card-body map-card-body" style="height: 100%;">
-
-                        @php
-                            $firstFloor = $floors->first();
-                        @endphp
-
-                        <!-- Controls -->
-                        <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
-                            <select id="floorSelect" class="form-select form-select-sm" style="width: 200px;">
-                                @foreach($floors as $floor)
-                                    <option value="{{ asset('uploads/floor/' . $floor->picture) }}"
-                                            data-floor-id="{{ $floor->id }}">
-                                        {{ $floor->floor_name }}
-                                    </option>
-                                @endforeach
-                            </select>&nbsp;
-                            <button id="zoomIn" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-search-plus"></i>
-                            </button>&nbsp;
-                            <button id="zoomOut" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-search-minus"></i>
-                            </button>&nbsp;
-                            <button id="resetView" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-crosshairs"></i> Reset
-                            </button>&nbsp;
-                        </div>
-
-                        <!-- MAP -->
-                        <div id="dashboardMapWrapper" style="position: relative; width: 100%; height: 600px;">
-                            <div id="dashboardMapInner" style="position: relative; width: 100%; height: 100%;">
-
-                                <img id="dashboardFloorImage"
-                                    src="{{ $firstFloor ? asset('uploads/floor/' . $firstFloor->picture) : '' }}"
-                                    alt="Floor Image"
-                                    style="
-                                        width: 100%;
-                                        height: 100%;
-                                        object-fit: contain;
-                                        background: #f8f9fa;
-                                        border-radius: 10px;
-                                    ">
-
-                                @foreach($assetsWithCoords as $asset)
-                                    <div class="asset-marker"
-                                        data-asset-id="{{ $asset->id }}"
-                                        data-floor-id="{{ $asset->floor_id }}"
-                                        title="{{ $asset->asset_name ?? 'Asset' }}"
-                                        style="position: absolute;
-                                                width: 24px; height: 24px;
-                                                left: calc({{ $asset->x }}px + 155px);
-                                                top: calc({{ $asset->y }}px);">
-                                        <i class="fas fa-trash-alt"
-                                            style="font-size: 22px; color: #166b34;
-                                                filter: drop-shadow(0 0 4px #00ff7a);"></i>
-                                    </div>
-                                @endforeach
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-danger"
+                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </a>
+                @endforeach
 
-        {{-- RIGHT COLUMN : WARNING DEVICES --}}
-        <div class="col-lg-4">
-        <div class="card mb-4" style="max-height: 650px; background-color: rgba(0, 0, 0, 0)">
+                {{-- HALF DEVICES --}}
+                @foreach($halfDevicesCollection as $device)
+                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
+                    class="text-decoration-none device-link">
 
-                <div class="p-3 sticky-header" style="background-color: rgba(255, 255, 255, 0.1);">
-                    <h5 class="mb-0 text-white">
-                        <i class="fas fa-trash-alt"></i> Warning Devices
-                    </h5>
-                </div>
-                <div class="p-3 scroll-body" style="overflow-y: auto; max-height: 650px;">
-                    <div class="full-devices-cards">
+                        <div class="device-card half-device-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                                <div class="badge half-status text-dark">HALF</div>
+                            </div>
 
-                        {{-- FULL DEVICES --}}
-                        @foreach($fullDevicesCollection as $device)
-                            <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                            class="text-decoration-none">
-                                <div class="full-device-card p-3" style="width: 430px;">
+                            <div class="mt-1 text-white">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                            </div>
 
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                        <div class="badge full-status text-white">FULL</div>
-                                    </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning"
+                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
 
-                                    <div class="mt-1 text-white">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                                    </div>
-
-                                    <div class="progress mt-2" style="height: 8px;">
-                                        <div class="progress-bar bg-danger"
-                                            style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                                    </div>
-
-                                </div>
-                            </a>
-                        @endforeach
-
-
-                        {{-- HALF-FULL DEVICES --}}
-                        @foreach($halfDevicesCollection as $device)
-                            <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
-                            class="text-decoration-none">
-                                <div class="half-device-card p-3" style="width: 430px;">
-
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                        <div class="badge half-status text-dark">HALF</div>
-                                    </div>
-
-                                    <div class="mt-1 text-white">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                                    </div>
-
-                                    <div class="progress mt-2" style="height: 8px;">
-                                        <div class="progress-bar bg-warning"
-                                            style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                                    </div>
-
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
             </div>
         </div>
     </div>

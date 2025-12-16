@@ -56,6 +56,7 @@ class AdminMainDashboardController extends Controller
             ->get();
 
         return view('adminmaindashboard', compact(
+            'devices',  
             'floors',
             'assetsWithCoords',
             'totalDevices',
