@@ -61,12 +61,12 @@
     font-weight: bold;
 }
 
-.card-total { background-color: #8c9195ff; }
-.card-full { background-color: #e74c3c; }
-.card-half { background-color: #f39c12; }
-.card-empty { background-color: #7ccc63; }
-.card-undetected { background-color: #2c3e50; }
-.card-primary { background-color: #3f44b5ff;}
+.card-total { background-color: rgba(255, 255, 255, 0.1); }
+.card-full { background-color: rgba(255, 255, 255, 0.1); }
+.card-half { background-color: rgba(255, 255, 255, 0.1); }
+.card-empty { background-color: rgba(255, 255, 255, 0.1); }
+.card-undetected { background-color: rgba(255, 255, 255, 0.1); }
+.card-primary { background-color: rgba(255, 255, 255, 0.1); }
 
 /* Container: tighter spacing */
 .full-devices-cards {
@@ -268,37 +268,37 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="d-flex flex-wrap">
-    <div class="status-card card-total">
+    <div class="status-card card-total" style="color: #4cd964;">
         <div class="status-title">Total Devices</div>
-        <div class="status-content">
+        <div class="status-content" style="color: #fff">
             <i class="fas fa-satellite-dish status-icon"></i>
             <span class="status-number">{{ $totalDevices }}</span>
         </div>
     </div>
-    <div class="status-card card-full">
+    <div class="status-card card-full" style="color: #4cd964;">
         <div class="status-title">Full Devices</div>
-        <div class="status-content">
+        <div class="status-content" style="color: #fff">
             <i class="fas fa-trash status-icon"></i>
             <span class="status-number">{{ $fullDevices }}</span>
         </div>
     </div>
-    <div class="status-card card-half">
+    <div class="status-card card-half" style="color: #4cd964;">
         <div class="status-title ">Half Full</div>
-        <div class="status-content">
+        <div class="status-content" style="color: #fff">
             <i class="fas fa-exclamation-triangle status-icon"></i>
             <span class="status-number">{{ $halfDevices }}</span>
         </div>
     </div>
-    <div class="status-card card-empty">
+    <div class="status-card card-empty" style="color: #4cd964;">
         <div class="status-title">Empty Devices</div>
-        <div class="status-content">
+        <div class="status-content" style="color: #fff">
             <i class="fas fa-recycle status-icon"></i>
             <span class="status-number">{{ $emptyDevices }}</span>
         </div>
     </div>
-    <div class="status-card card-undetected">
+    <div class="status-card card-undetected" style="color: #4cd964;">
         <div class="status-title">Undetected</div>
-        <div class="status-content">
+        <div class="status-content" style="color: #fff">
             <i class="fas fa-minus-circle status-icon"></i>
             <span class="status-number">{{ $undetectedDevices }}</span>
         </div>
@@ -312,9 +312,9 @@
         <div class="col-lg-8">
 
             {{-- ✅ YOUR MAP CODE (UNCHANGED) --}}
-            <div class="card card-success map-card mb-4">
+            <div class="card map-card mb-4" style="background-color: rgba(255, 255, 255, 0.1);">
                 <!-- Header always visible -->
-                <div class="card-header d-flex align-items-center">
+                <div class="card-header d-flex align-items-center" style="background-color: rgba(255, 255, 255, 0.1);">
                     <div class="flex-grow-1">
                         <h5 class="mb-0">
                             <i class="fas fa-map-marked-alt"></i> Floor Map

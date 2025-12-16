@@ -173,12 +173,12 @@
             font-weight: bold;
         }
 
-        .card-total { background-color: #8c9195ff; }
-        .card-full { background-color: #e74c3c; }
-        .card-half { background-color: #f39c12; }
-        .card-empty { background-color: #7ccc63; }
-        .card-undetected { background-color: #2c3e50; }
-        .card-primary { background-color: #3f44b5ff; }
+        .card-total { background-color: rgba(255, 255, 255, 0.1); }
+        .card-full { background-color: rgba(255, 255, 255, 0.1); }
+        .card-half { background-color: rgba(255, 255, 255, 0.1); }
+        .card-empty { background-color: rgba(255, 255, 255, 0.1); }
+        .card-undetected { background-color: rgba(255, 255, 255, 0.1); }
+        .card-primary { background-color: rgba(255, 255, 255, 0.1); }
 
         .full-devices-cards {
             display: flex;
