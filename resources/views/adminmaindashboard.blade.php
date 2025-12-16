@@ -132,9 +132,34 @@
     box-shadow: 0 0 8px #FFD70090;
 }
 
+/* HALF DEVICE CARD (similar style but yellow, no pulse) */
+.empty-device-card {
+    background-color: #4cd9633a; /* translucent yellow-brown */
+    border: 2px solid #4ab65eff;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.empty-device-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 14px rgba(41, 56, 43, 0.2);
+}
+
+/* EMPTY STATUS – No pulse */
+.empty-status {
+    background-color: #4cd964;
+    padding: 0.4em 0.9em;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 0 8px #4cd96381;
+}
+
 /* Title size */
 .full-device-card .fw-bold.fs-4,
-.half-device-card .fw-bold.fs-4 {
+.half-device-card .fw-bold.fs-4, 
+.empty-device-card .fw-bold.fs-4, {
     font-size: 1.3rem;
     font-weight: bold;
 }
@@ -266,7 +291,7 @@
 
 .devices-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* ✅ 4 in a row */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
 }
 
@@ -275,6 +300,7 @@
     padding: 16px;
     border-radius: 12px;
     min-height: 130px;
+    width: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -302,6 +328,15 @@
     }
 }
 
+#deviceFilter {
+    border-radius: 10px;
+    min-width: 100px;
+    min-height: 10px;
+}
+
+#deviceFilter:focus {
+    box-shadow: 0 0 0 0.15rem rgba(108, 117, 125, 0.25); /* subtle */
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -347,6 +382,17 @@
     <div class="card mb-4" style=" background-color: rgba(0, 0, 0, 0)">
         <div class="p-3 scroll-body" style="overflow-y: auto;">
             <!-- GRID CONTAINER -->
+            <div class="d-flex justify-content-end mb-3">
+                <select id="deviceFilter"
+                        class="form-select form-select-md w-auto px-2">
+                    <option value="critical">Default</option>
+                    <option value="all">All Devices</option>
+                    <option value="full">Full</option>
+                    <option value="half">Half</option>
+                    <option value="empty">Empty</option>
+                </select>
+            </div>
+
             <div class="devices-grid">
 
                 {{-- FULL DEVICES --}}
@@ -354,7 +400,7 @@
                     <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                     class="text-decoration-none device-link">
 
-                        <div class="device-card full-device-card">
+                        <div class="device-card full-device-card" data-status="full">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
                                 <div class="badge full-status text-white">FULL</div>
@@ -378,7 +424,7 @@
                     <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                     class="text-decoration-none device-link">
 
-                        <div class="device-card half-device-card">
+                        <div class="device-card half-device-card" data-status="half">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
                                 <div class="badge half-status text-dark">HALF</div>
@@ -397,6 +443,30 @@
                     </a>
                 @endforeach
 
+                {{-- EMPTY DEVICES --}}
+                @foreach($emptyDevicesCollection as $device)
+                    <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
+                    class="text-decoration-none device-link">
+
+                        <div class="device-card empty-device-card" data-status="empty">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
+                                <div class="badge empty-status text-dark">EMPTY</div>
+                            </div>
+
+                            <div class="mt-1 text-white">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                            </div>
+
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success"
+                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
+
             </div>
         </div>
     </div>
@@ -405,6 +475,35 @@
 {{-- BIN POPUP & FLOOR SCRIPT --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const filterSelect = document.getElementById('deviceFilter');
+    const cards = document.querySelectorAll('.device-card');
+
+    function applyFilter(filter) {
+        cards.forEach(card => {
+            const status = card.dataset.status;
+
+            let show = false;
+
+            if (filter === 'all') {
+                show = true;
+            } else if (filter === 'critical') {
+                show = (status === 'full' || status === 'half');
+            } else {
+                show = (status === filter);
+            }
+
+            // hide/show entire link wrapper
+            card.closest('a').style.display = show ? '' : 'none';
+        });
+    }
+
+    // ✅ default: show FULL + HALF
+    applyFilter('critical');
+
+    filterSelect.addEventListener('change', () => {
+        applyFilter(filterSelect.value);
+    });
 
     // ✅ ZOOM SETUP
     let scale = 1;

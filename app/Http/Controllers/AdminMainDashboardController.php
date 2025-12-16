@@ -65,6 +65,7 @@ class AdminMainDashboardController extends Controller
             'halfDevices',
             'halfDevicesCollection',
             'emptyDevices',
+            'emptyDevicesCollection',
             'undetectedDevices'
         ));
     }
