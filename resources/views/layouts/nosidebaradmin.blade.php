@@ -27,7 +27,7 @@
     <!-- Custom Background Style -->
     <style>
         body {
-            background-color: #e9ecef;
+            background-color: #2d4a5c;
         }
 
         .content-wrapper {
@@ -35,7 +35,7 @@
         }
 
         .content-wrapper .content {
-            background: #b33737ff;
+            background: #2d4a5c;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
