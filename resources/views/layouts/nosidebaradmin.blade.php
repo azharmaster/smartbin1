@@ -1,4 +1,4 @@
-{{-- resources/views/layouts/nosidebar.blade.php --}}
+{{-- resources/views/layouts/nosidebaradmin.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,19 +23,28 @@
         href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+
+    <!-- Custom Background Style -->
+    <style>
+        body {
+            background-color: #e9ecef;
+        }
+
+        .content-wrapper {
+            background: transparent;
+        }
+
+        .content-wrapper .content {
+            background: #b33737ff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
 
 <body class="hold-transition layout-top-nav">
     <div class="wrapper">
-
-        <!-- Navbar -->
-        <!-- <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <div class="container">
-                <a href="{{ route('staff.dashboard') }}" class="navbar-brand">
-                    <span class="brand-text font-weight-light">{{ env('APP_NAME') }}</span>
-                </a>
-            </div>
-        </nav> -->
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
@@ -49,7 +58,9 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
+                                <li class="breadcrumb-item">
+                                    <a href="{{ route('dashboard') }}">Home</a>
+                                </li>
                                 <li class="breadcrumb-item active">@yield('content_title')</li>
                             </ol>
                         </div>
@@ -67,8 +78,12 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <div class="float-right d-none d-sm-inline">Anything you want</div>
-            <strong>Copyright &copy; 2014-2025 PSENSEHUB/SmartBin.</strong>
+            <div class="float-right d-none d-sm-inline">
+                Anything you want
+            </div>
+            <strong>
+                Copyright &copy; 2014-2025 PSENSEHUB / SmartBin.
+            </strong>
             All rights reserved.
         </footer>
 
@@ -77,8 +92,10 @@
     <!-- Scripts -->
     <!-- jQuery -->
     <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
+
     <!-- Bootstrap 4 -->
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
     <!-- AdminLTE App -->
     <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
 
