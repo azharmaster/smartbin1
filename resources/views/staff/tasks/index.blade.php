@@ -44,7 +44,7 @@
 
                     <!-- Floor Column -->
                     <td>
-                        @if($task->floor_id)
+                        @if($task->floor)
                             {{ $task->floor->floor_name }}
                         @else
                             <span class="text-muted">-</span>

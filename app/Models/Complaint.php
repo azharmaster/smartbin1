@@ -13,6 +13,7 @@ class Complaint extends Model
         'asset_id',
         'title',
         'description',
+        'assigned_to',
         'status',
     ];
 
@@ -21,4 +22,9 @@ class Complaint extends Model
     {
         return $this->belongsTo(Asset::class);
     }
+    public function assignedStaff()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+    
 }

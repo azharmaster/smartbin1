@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Models\Task;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
@@ -10,9 +11,9 @@ class ComplaintController extends Controller
     // Show all complaints
     public function index()
     {
-        $complaints = Complaint::with('asset')->latest()->paginate(10);
-        $assets = \App\Models\Asset::all(); // Fetch all assets
-        $staffs = \App\Models\User::where('role', 2)->get(); // Fetch all staff (role=3)
+        $complaints = Complaint::with(['asset', 'assignedStaff'])->latest()->paginate(10);
+        $assets = \App\Models\Asset::all();
+        $staffs = \App\Models\User::where('role', 2)->get(); 
 
         return view('complaints.index', compact('complaints', 'assets', 'staffs'));
     }
@@ -55,32 +56,6 @@ class ComplaintController extends Controller
         return view('complaints.edit', compact('complaint'));
     }
 
-    // Update complaint
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'asset_id' => 'required',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'status' => 'nullable|in:pending,in_progress,completed', // allow status update
-            'staff_id' => 'nullable|exists:users,id', // assign staff if provided
-        ]);
-
-        $complaint = Complaint::findOrFail($id);
-        $complaint->update($validated);
-
-        // Optionally, create a StaffTask record if staff_id is provided
-        if (isset($validated['staff_id'])) {
-            \App\Models\StaffTask::create([
-                'complaint_id' => $complaint->id,
-                'staff_id' => $validated['staff_id'],
-                'status' => 'pending',
-            ]);
-        }
-
-        return redirect()->route('complaints.index')
-            ->with('success', 'Complaint updated successfully.');
-    }
 
     // Delete a complaint
     public function destroy($id)
@@ -114,4 +89,40 @@ class ComplaintController extends Controller
 
         return redirect()->back()->with('success', 'Your complaint has been submitted.');
     }
+
+public function assignStaff(Request $request, Complaint $complaint)
+{
+    $request->validate([
+        'staff_id' => 'required|exists:users,id',
+    ]);
+
+    if ($complaint->assigned_to) {
+        return response()->json([
+            'success' => false,
+            'message' => 'This complaint is already assigned.'
+        ]);
+    }
+
+    $staff = \App\Models\User::find($request->staff_id);
+
+    $task = Task::create([
+        'asset_id' => optional($complaint->asset)->id,
+        'floor_id' => optional($complaint->asset)->floor_id,
+        'user_id' => $staff->id,
+        'description' => "Complaint: {$complaint->title} - {$complaint->description}",
+        'status' => 'pending',
+        'complaint_id' => $complaint->id,
+    ]);
+
+    $complaint->update([
+        'assigned_to' => $staff->id,
+        'status' => 'assigned',
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'assigned_to' => $staff->name
+    ]);
+}
+
 }

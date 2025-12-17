@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('content_title', 'Complaint')
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="card">
     <div class="card-header">
         <h4 class="card-title">Complaint</h4>
@@ -43,89 +45,115 @@
                         <td>{{ $complaint->title }}</td>
                         <td>{{ $complaint->description }}</td>
                         <td>
+                        <td>
                             @php
                                 $status = $complaint->status ?? 'pending';
+                                $badgeClass = match($status) {
+                                    'completed' => 'bg-success',
+                                    'in_progress' => 'bg-primary',
+                                    'assigned' => 'bg-info', // new color
+                                    'pending' => 'bg-warning',
+                                    default => 'bg-secondary',
+                                };
                             @endphp
-                            <span class="badge 
-                                {{ $status === 'completed' ? 'bg-success' : ($status === 'in_progress' ? 'bg-info' : 'bg-warning') }}">
+                            <span class="badge {{ $badgeClass }}">
                                 {{ ucfirst(str_replace('_', ' ', $status)) }}
                             </span>
                         </td>
                         <td>
+                        @if($complaint->status === 'assigned' && $complaint->assignedStaff)
+                            <span class="badge bg-success">{{ $complaint->assignedStaff->name }}</span>
+                        @else
                             <div class="dropdown">
-                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="assignTaskDropdown{{ $complaint->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" 
+                                        id="assignTaskDropdown{{ $complaint->id }}" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-tasks"></i> Assign Task
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="assignTaskDropdown{{ $complaint->id }}">
                                     @foreach($staffs as $staff)
                                     <li>
                                         <a href="#" class="dropdown-item assign-complaint" 
-                                           data-complaint-id="{{ $complaint->id }}" 
-                                           data-staff-id="{{ $staff->id }}">
+                                        data-complaint-id="{{ $complaint->id }}" 
+                                        data-staff-id="{{ $staff->id }}">
                                             {{ $staff->name }}
                                         </a>
                                     </li>
                                     @endforeach
                                 </ul>
                             </div>
-                        </td>
+                        @endif
+                    </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
 
-            {{-- Pagination --}}
             <div class="mt-3">
-                {{ $complaints->links() }}
-            </div>
+    {{ $complaints->links('pagination::bootstrap-5') }}
+</div>
         </div>
     </div>
 </div>
 
-{{-- AJAX Script --}}
-@section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const token = "{{ csrf_token() }}";
+document.addEventListener('click', function(e) {
+    const target = e.target.closest('.assign-complaint');
+    if (!target) return;
 
-    document.querySelectorAll('.assign-complaint').forEach(function(element) {
-        element.addEventListener('click', function(e) {
-            e.preventDefault();
+    e.preventDefault();
 
-            if (!confirm('Assign this complaint to this staff?')) return;
+    const complaintId = target.dataset.complaintId;
+    const staffId = target.dataset.staffId;
 
-            const complaintId = this.dataset.complaintId;
-            const staffId = this.dataset.staffId;
+    const dropdownBtn = document.getElementById('assignTaskDropdown' + complaintId);
+    dropdownBtn.disabled = true;
 
-            fetch("{{ route('staff.tasks.store') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": token,
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    complaint_id: complaintId,
-                    staff_id: staffId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const successMessage = document.getElementById('successMessage');
-                    successMessage.textContent = data.success;
-                    successMessage.classList.remove('d-none');
-                    setTimeout(() => { successMessage.classList.add('d-none'); }, 3000);
-                }
-            })
-            .catch(error => {
-                alert('Error assigning task. Try again.');
-                console.error(error);
+    fetch(`/complaints/${complaintId}/assign`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ staff_id: staffId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            Swal.fire({
+                icon: 'success',
+                title: 'Assigned!',
+                text: `Complaint assigned to ${data.assigned_to}`,
+                timer: 2000,
+                showConfirmButton: false
             });
+
+            // Replace dropdown with assigned staff badge
+            const row = document.getElementById('complaintRow' + complaintId);
+            row.querySelector('td:last-child').innerHTML = `<span class="badge bg-success">${data.assigned_to}</span>`;
+
+            // Update status badge
+            const statusBadge = row.querySelector('td:nth-child(5) .badge');
+            statusBadge.className = 'badge bg-info';
+            statusBadge.textContent = 'Assigned';
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: data.message || 'This complaint is already assigned'
+            });
+            dropdownBtn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong'
         });
+        dropdownBtn.disabled = false;
     });
 });
 </script>
-@endsection
-
 @endsection

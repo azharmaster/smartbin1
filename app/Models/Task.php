@@ -17,6 +17,7 @@ class Task extends Model
         'description',
         'notes',
         'status',
+        'complaint_id',
     ];
 
     // Relationship to User
@@ -35,5 +36,10 @@ class Task extends Model
     public function floor()
     {
         return $this->belongsTo(Floor::class, 'floor_id');
+    }
+
+    public function complaint()
+    {
+        return $this->belongsTo(Complaint::class);
     }
 }
