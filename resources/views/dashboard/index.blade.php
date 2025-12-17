@@ -302,7 +302,7 @@
     <div class="row">
 
         <!-- LEFT COLUMN: MAP -->
-        <div class="col-lg-7">
+        <div class="col-lg-6">
 
             <div class="card card-success map-card mb-4">
                 <!-- Header always visible -->
@@ -360,7 +360,7 @@
                                         title="{{ $asset->asset_name ?? 'Asset' }}"
                                         style="position: absolute;
                                                 width: 24px; height: 24px;
-                                                left: calc({{ $asset->x }}px + 30px);
+                                                left: calc({{ $asset->x }}px - 18px);
                                                 top: calc({{ $asset->y }}px);">
                                         <i class="fas fa-trash-alt"
                                             style="font-size: 22px; color: #166b34;
@@ -374,74 +374,70 @@
             </div>
 
            <!-- ASSIGNED TASKS -->
-<div class="card mb-4">
-    <div class="card-header card-half">
-        <h5 class="mb-0">
-            <i class="fas fa-tasks"></i> Assigned Tasks
-        </h5>
-    </div>
-    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
-        <table class="table table-striped mb-0">
-            <thead class="table-light sticky-top">
-                <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Asset</th>
-                    <th>Floor</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    // Sort tasks by creation date descending for display
-                    $tasksToShow = $assignedTasks->sortByDesc('created_at')->take(10);
-                @endphp
-
-                @foreach($tasksToShow as $task)
-                    <tr>
-                        <td>{{ $task->id }}</td> <!-- Use original task ID for consistent numbering -->
-                        <td>{{ $task->user->name ?? 'N/A' }}</td>
-                        <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
-                        <td>{{ $task->floor->floor_name ?? 'N/A' }}</td>
-                        <td>{{ $task->description }}</td>
-                        <td>
+            <div class="card mb-4">
+                <div class="card-header card-half">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tasks"></i> Assigned Tasks
+                    </h5>
+                </div>
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Asset</th>
+                                <th>Floor</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             @php
-                                $status = $task->status;
-                                $badgeClass = match($status) {
-                                    'pending' => 'bg-warning',
-                                    'in_progress' => 'bg-info',
-                                    'completed' => 'bg-success',
-                                    'reject' => 'bg-danger',
-                                    default => 'bg-secondary',
-                                };
+                                // Sort tasks by creation date descending for display
+                                $tasksToShow = $assignedTasks->sortByDesc('created_at')->take(10);
                             @endphp
-                            <span class="badge {{ $badgeClass }}">
-                                {{ ucfirst(str_replace('_', ' ', $status)) }}
-                            </span>
-                        </td>
-                        <td>{{ $task->notes ?? '-' }}</td>
-                    </tr>
-                @endforeach
 
-                @if($tasksToShow->isEmpty())
-                    <tr>
-                        <td colspan="7" class="text-center">No tasks assigned.</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-</div>
+                            @foreach($tasksToShow as $task)
+                                <tr>
+                                    <td>{{ $task->id }}</td> <!-- Use original task ID for consistent numbering -->
+                                    <td>{{ $task->user->name ?? 'N/A' }}</td>
+                                    <td>{{ $task->asset->asset_name ?? 'N/A' }}</td>
+                                    <td>{{ $task->floor->floor_name ?? 'N/A' }}</td>
+                                    <td>{{ $task->description }}</td>
+                                    <td>
+                                        @php
+                                            $status = $task->status;
+                                            $badgeClass = match($status) {
+                                                'pending' => 'bg-warning',
+                                                'in_progress' => 'bg-info',
+                                                'completed' => 'bg-success',
+                                                'reject' => 'bg-danger',
+                                                default => 'bg-secondary',
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $task->notes ?? '-' }}</td>
+                                </tr>
+                            @endforeach
 
-
-
-
+                            @if($tasksToShow->isEmpty())
+                                <tr>
+                                    <td colspan="7" class="text-center">No tasks assigned.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- RIGHT COLUMN -->
-        <div class="col-lg-5">
+        <div class="col-lg-6">
 
             <!-- FULL BINS -->
             <div class="card mb-4" style="max-height: 500px;">
@@ -458,7 +454,7 @@
                         @foreach($fullDevicesCollection as $device)
                             <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                             class="text-decoration-none">
-                                <div class="full-device-card p-3" style="width: 430px;">
+                                <div class="full-device-card p-3" style="width: 500px;">
 
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
@@ -484,7 +480,7 @@
                         @foreach($halfDevicesCollection as $device)
                             <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                             class="text-decoration-none">
-                                <div class="half-device-card p-3" style="width: 430px;">
+                                <div class="half-device-card p-3" style="width: 500px;">
 
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>

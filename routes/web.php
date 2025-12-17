@@ -158,9 +158,9 @@ Route::middleware('auth')->group(function(){
         });
     });
 
-Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assignStaff'])
-    ->name('complaints.assignStaff')
-    ->middleware('auth');
+    Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assignStaff'])
+        ->name('complaints.assignStaff')
+        ->middleware('auth');
 
     // Top-level Schedule Routes
     Route::prefix('schedules')->as('schedules.')->controller(ScheduleController::class)->group(function () {
