@@ -30,7 +30,7 @@ class LoginController extends Controller
 
             // Role 1 = Admin → redirect to admin main menu
             if ($user->role == 1) {
-                return redirect()->route('admin.mainmenu');
+                return redirect()->route('dashboard');
             }
 
             // Role 2 = Staff → redirect to staff main menu
