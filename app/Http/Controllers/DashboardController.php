@@ -17,147 +17,36 @@ use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
 {
+    /**
+     * Display the dashboard.
+     *
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
-        // Load devices with their latest sensor & asset-floor relationship
-        $devices = Device::with('latestSensor', 'asset.floor')->get();
+        /** @var \Illuminate\Support\Collection<int, Device> $devices */
+        $devices = $this->loadDevicesWithLatestSensor();
 
-        // Total devices
         $totalDevices = $devices->count();
-
-        // FULL > 85%
-        $fullDevicesCollection = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity > 85;
-        });
+        $fullDevicesCollection = $this->countFullDevices($devices);
         $fullDevices = $fullDevicesCollection->count();
-
-        // HALF 40–85%
-        $halfDevicesCollection = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity > 40 &&
-                   $d->latestSensor->capacity <= 85;
-        });
+        $halfDevicesCollection = $this->countHalfDevices($devices);
         $halfDevices = $halfDevicesCollection->count();
+        $emptyDevices = $this->countEmptyDevices($devices);
+        $undetectedDevices = $this->countUndetectedDevices($devices);
 
-        // EMPTY <= 40%
-        $emptyDevices = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity <= 40;
-        })->count();
-
-        // Undetected: no sensor or bad network
-        $undetectedDevices = $devices->filter(function ($d) {
-            if (!$d->latestSensor) return true;
-            $network = $d->latestSensor->network;
-            return is_null($network)
-                || $network === ''
-                || (string)$network === '0'
-                || strtolower((string)$network) === 'unavailable';
-        })->count();
-
-        // Load floors for the map dropdown
         $floors = Floor::all();
-
         $assetsWithCoords = Asset::whereNotNull('x')
-            ->whereNotNull('y')
-            ->get();
+                                 ->whereNotNull('y')
+                                 ->get();
+        $todos = $this->loadTodosForUser(Auth::id());
+        $latestComplaints = $this->loadLatestComplaints();
+        $users = User::all();
+        $assignedTasks = $this->loadAssignedTasks();
+        $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 
-        // Load To-Do items for the current user
-        $todos = Todo::where('userID', Auth::id())
-                     ->where('status', 'pending')
-                     ->orderBy('id', 'desc')
-                     ->get();
+        $smartBinClearTimes = $this->calculateSmartBinClearTimes();
 
-        // Load latest complaints
-        $latestComplaints = Complaint::with('asset')
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
-
-        // Load all users for the simple user list
-        $users = User::all(); // <-- Added this line
-
-        // Load assigned tasks (optional: latest 10 or all)
-        $assignedTasks = Task::with('user', 'asset', 'floor')
-                             ->orderBy('id', 'desc')
-                             ->get();
-
-        // TASKS COMPLETED PER STAFF (CURRENT MONTH)
-        $tasksCompletedPerStaff = Task::select(
-                'user_id',
-                DB::raw('COUNT(*) as completed_count')
-            )
-            ->where('status', 'completed')
-            ->whereMonth('updated_at', Carbon::now()->month)
-            ->whereYear('updated_at', Carbon::now()->year)
-            ->whereHas('user', function ($q) {
-                $q->where('role', 2); // staff
-            })
-            ->groupBy('user_id')
-            ->with('user:id,name')
-            ->get();
-
-$smartBinClearTimes = [];
-
-$devices = Device::with([
-        'asset',
-        'sensors' => function ($q) {
-            $q->orderBy('time', 'asc'); // ✅ IMPORTANT
-        }
-    ])
-    ->whereHas('asset', function ($q) {
-        $q->where('category', 'SmartBin');
-    })
-    ->get();
-
-foreach ($devices as $device) {
-
-    // Skip if no asset (extra safety)
-    if (!$device->asset) {
-        continue;
-    }
-
-    $fullTimestamp = null;
-
-    foreach ($device->sensors as $sensor) {
-
-        // Detect FULL (>85%)
-        if ($sensor->capacity > 85 && $fullTimestamp === null) {
-            $fullTimestamp = $sensor->time;
-            continue;
-        }
-
-        // Detect EMPTY (<=40%) AFTER FULL
-        if ($fullTimestamp && $sensor->capacity <= 40) {
-
-            $minutes = Carbon::parse($fullTimestamp)
-                ->diffInMinutes(Carbon::parse($sensor->time));
-
-            $smartBinClearTimes[] = [
-                'asset_name'  => $device->asset->asset_name,
-                'device_name' => $device->device_name,
-                'minutes'     => $minutes,
-                'cleared_at'  => $sensor->time,
-            ];
-
-            // Reset → ready for next FULL → EMPTY cycle
-            $fullTimestamp = null;
-        }
-    }
-}
-
-$smartBinClearTimes = collect($smartBinClearTimes)->map(function($item) {
-    $item['hours'] = round($item['minutes'] / 60, 2); // convert to hours, 2 decimals
-    return $item;
-});
-
-$smartBinClearTimes = collect($smartBinClearTimes);
-
-        // Pass all data to the dashboard view
         return view('dashboard.index', compact(
             'totalDevices',
             'fullDevices',
@@ -170,11 +59,136 @@ $smartBinClearTimes = collect($smartBinClearTimes);
             'floors',
             'assetsWithCoords',
             'devices',
-            'users',          // <-- Added this here
-            'assignedTasks',   // <-- Added this here
+            'users',
+            'assignedTasks',
             'latestComplaints',
             'tasksCompletedPerStaff',
-            'smartBinClearTimes',
+            'smartBinClearTimes'
         ));
+    }
+
+    /** Load devices with latest sensor and asset-floor relationship */
+    private function loadDevicesWithLatestSensor()
+    {
+        return Device::with('latestSensor', 'asset.floor')->get();
+    }
+
+    private function countFullDevices($devices)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity > 85
+        );
+    }
+
+    private function countHalfDevices($devices)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity > 40 &&
+            $d->latestSensor->capacity <= 85
+        );
+    }
+
+    private function countEmptyDevices($devices)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity <= 40
+        )->count();
+    }
+
+    private function countUndetectedDevices($devices)
+    {
+        return $devices->filter(function($d) {
+            if (!$d->latestSensor) return true;
+            $network = $d->latestSensor->network;
+            return is_null($network)
+                || $network === ''
+                || (string)$network === '0'
+                || strtolower((string)$network) === 'unavailable';
+        })->count();
+    }
+
+    private function loadTodosForUser($userId)
+    {
+        return Todo::where('userID', $userId)
+                    ->where('status', 'pending')
+                    ->orderByDesc('id')
+                    ->get();
+    }
+
+    private function loadLatestComplaints()
+    {
+        return Complaint::with('asset')
+                        ->orderByDesc('created_at')
+                        ->take(10)
+                        ->get();
+    }
+
+    private function loadAssignedTasks()
+    {
+        return Task::with('user', 'asset', 'floor')
+                   ->orderByDesc('id')
+                   ->get();
+    }
+
+    private function loadTasksCompletedPerStaff()
+    {
+        return Task::select('user_id', DB::raw('COUNT(*) as completed_count'))
+                   ->where('status', 'completed')
+                   ->whereMonth('updated_at', Carbon::now()->month)
+                   ->whereYear('updated_at', Carbon::now()->year)
+                   ->whereHas('user', fn($q) => $q->where('role', 2))
+                   ->groupBy('user_id')
+                   ->with('user:id,name')
+                   ->get();
+    }
+
+    /** Calculate SmartBin clear times in hours */
+    private function calculateSmartBinClearTimes()
+    {
+        $smartBinClearTimes = [];
+
+        /** @var \Illuminate\Support\Collection<int, Device> $devices */
+        $devices = Device::with([
+                'asset',
+                'sensors' => fn($q) => $q->orderBy('time', 'asc')
+            ])
+            ->whereHas('asset', fn($q) => $q->where('category', 'SmartBin'))
+            ->get();
+
+        foreach ($devices as $device) {
+            if (!$device->asset) continue;
+
+            $fullTimestamp = null;
+
+            foreach ($device->sensors as $sensor) {
+                if ($sensor->capacity > 85 && $fullTimestamp === null) {
+                    $fullTimestamp = $sensor->time;
+                    continue;
+                }
+
+                if ($fullTimestamp && $sensor->capacity <= 40) {
+                    $minutes = Carbon::parse($fullTimestamp)
+                                     ->diffInMinutes(Carbon::parse($sensor->time));
+
+                    $smartBinClearTimes[] = [
+                        'asset_name'  => $device->asset->asset_name,
+                        'device_name' => $device->device_name,
+                        'minutes'     => $minutes,
+                        'hours'       => round($minutes / 60, 2),
+                        'cleared_at'  => $sensor->time,
+                    ];
+
+                    $fullTimestamp = null; // reset for next cycle
+                }
+            }
+        }
+
+        return collect($smartBinClearTimes);
     }
 }
