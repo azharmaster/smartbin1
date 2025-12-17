@@ -107,6 +107,12 @@
                                     <a href="{{ route('dashboard') }}">Home</a>
                                 </li> --}}
                                 {{-- <li class="breadcrumb-item active">@yield('content_title')</li> --}}
+                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="dropdown-item d-flex align-items-center text-white">
+                                    <i class="fas fa-sign-out-alt me-2" style="padding-right: 5px;"></i> Log Out
+                                </button>
+                            </form>
                             </ol>
                         </div>
                     </div>
