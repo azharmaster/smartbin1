@@ -25,6 +25,7 @@
                     <th>Floor</th>
                     <th>Status</th>
                     <th>Actions</th>
+                    <th>Created At</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,6 +84,7 @@
                             <button type="submit" class="btn btn-primary btn-sm ml-1">Update</button>
                         </form>
                     </td>
+                    <td>{{ $task->created_at }}</td>
                 </tr>
 
                 {{-- View Task Modal --}}

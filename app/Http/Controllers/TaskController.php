@@ -14,12 +14,11 @@ class TaskController extends Controller
     public function index()
     {
         // Load tasks with relations and order by creation ascending for numbering
-        $tasks  = Task::with(['user', 'asset', 'floor'])->orderBy('created_at', 'asc')->get();
+        $tasks  = Task::with(['user', 'asset', 'floor'])->orderBy('created_at', 'desc')->get();
         $users  = User::all();
         $assets = Asset::all();
         $floors = Floor::all(); // for add/assign/edit modal
 
-        // Build numbering based on oldest task first
         $taskNumbers = [];
         $counter = 1;
         foreach ($tasks as $t) {

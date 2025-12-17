@@ -46,7 +46,12 @@ class StaffTaskController extends Controller
     // Show all tasks assigned to logged-in staff
     public function index()
     {
-        $tasks = Task::where('user_id', auth()->id())->get();
+        // Load tasks for logged-in staff, latest first
+        $tasks = Task::where('user_id', auth()->id())
+                    ->with(['asset', 'floor'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
         return view('staff.tasks.index', compact('tasks'));
     }
 
