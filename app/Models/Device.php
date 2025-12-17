@@ -28,7 +28,6 @@ class Device extends Model
 
     public function latestSensor()
     {
-        // Laravel 8+ has latestOfMany()
-        return $this->hasOne(\App\Models\Sensor::class)->latestOfMany();
+        return $this->hasOne(Sensor::class)->latestOfMany('time');
     }
 }

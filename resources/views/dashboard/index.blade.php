@@ -258,6 +258,7 @@
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
@@ -432,6 +433,28 @@
                             @endif
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <!-- COMPLETED TASK GRAPH-->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Tasks Completed (This Month)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="tasksCompletedChart" height="120"></canvas>
+                </div>
+            </div>
+            <!--SMARTBIN TRACK-->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trash"></i> SmartBin Clear Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="smartBinClearChart" height="120"></canvas>
                 </div>
             </div>
         </div>
@@ -695,6 +718,62 @@ document.addEventListener("DOMContentLoaded", function () {
             marker.style.display = 'block';
         } else {
             marker.style.display = 'none';
+        }
+    });
+
+    //COMPLETED TASKS
+    const taskCtx = document.getElementById('tasksCompletedChart');
+
+    new Chart(taskCtx, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($tasksCompletedPerStaff->pluck('user.name')) !!},
+            datasets: [{
+                label: 'Completed Tasks',
+                data: {!! json_encode($tasksCompletedPerStaff->pluck('completed_count')) !!},
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
+    //smartbin tracker
+    const binCtx = document.getElementById('smartBinClearChart');
+
+    new Chart(binCtx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($smartBinClearTimes->pluck('device_name')) !!},
+            datasets: [{
+                label: 'Hours to Clear',
+                data: {!! json_encode($smartBinClearTimes->pluck('hours')) !!},
+                tension: 0.4,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Minutes'
+                    }
+                }
+            }
         }
     });
 
