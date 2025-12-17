@@ -23,6 +23,15 @@
         href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+    
+    <style>
+    .logout-btn:hover,
+    .logout-btn:focus,
+    .logout-btn:active {
+        background-color: transparent !important;
+        color: inherit !important;
+    }
+        </style>
 </head>
 
 <body class="hold-transition layout-top-nav">
@@ -51,6 +60,13 @@
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="#">Home</a></li>
                                 <li class="breadcrumb-item active">@yield('content_title')</li>
+                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="dropdown-item d-flex align-items-center text-white logout-btn">
+                                    <i class="fas fa-sign-out-alt me-2" style="padding-right: 5px;"></i>
+                                        Log Out
+                                    </button>
+                            </form>
                             </ol>
                         </div>
                     </div>
