@@ -67,8 +67,11 @@ Route::middleware('auth')->group(function(){
     Route::prefix('users')->as('users.')->controller(UserController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
+        Route::get('/{user}/details', 'details')->name('details');
+        Route::post('/{user}/reset-password', 'resetPassword')->name('reset-password');
         Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-    });
+        });
+
 
     Route::prefix('devices')->as('devices.')->controller(DeviceController::class)->group(function () {
         Route::get('/', 'index')->name('index');

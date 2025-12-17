@@ -36,8 +36,15 @@ class ProfileController extends Controller
     }
 public function editPassword()
 {
-    // Show the dedicated reset password page
-    return view('profile.password'); // Create this Blade
+    $user = auth()->user();
+
+    // Adjust role values if yours differ
+    if ($user->role == 2) { // Staff
+        return view('profile.staffpassword');
+    }
+
+    // Default: Admin
+    return view('profile.password');
 }
 
 public function updatePassword(Request $request)

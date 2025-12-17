@@ -38,6 +38,9 @@
                                 <x-user.form-user :id="$user->id " />&nbsp;
                                <a href="{{ route('users.destroy', $user->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
     <i class="fas fa-trash-alt text-white"></i>
+</a>&nbsp;
+<a href="{{ route('users.details', $user->id) }}" class="btn btn-info btn-sm">
+    <i class="far fa-eye"></i>
 </a>
                             </div>
                         </td>

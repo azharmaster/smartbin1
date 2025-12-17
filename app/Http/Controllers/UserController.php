@@ -54,4 +54,26 @@ class UserController extends Controller
      toast()->success('Data berhasil dihapus');
      return redirect()->route('users.index');
     }
+    public function details(User $user)
+    {
+        // Optional: security check
+        if (auth()->user()->role != 1) {
+            abort(403);
+        }
+
+        return view('user.details', compact('user'));
+    }
+
+    public function resetPassword(User $user)
+{
+    // Only admin allowed
+    if (auth()->user()->role !== 1) {
+        abort(403);
+    }
+
+    $user->password = Hash::make('12345678');
+    $user->save();
+
+    return back()->with('success', 'Password has been reset to default (12345678)');
+}
 }

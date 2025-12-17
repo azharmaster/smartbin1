@@ -62,13 +62,23 @@
                         <span class="ms-2">{{ auth()->user()->name }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="{{ route('profile.index') }}">Profile</a></li>
-                        <li><a class="dropdown-item" href="{{ route('profile.editPassword') }}">Reset Password</a></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('profile.staffindex') }}">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('profile.editPassword') }}">
+                                <i class="fas fa-key me-2"></i> Reset Password
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="dropdown-item">Log Out</button>
+                                <button type="submit" class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Log Out
+                                </button>
                             </form>
                         </li>
                     </ul>
