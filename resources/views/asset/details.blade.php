@@ -1,4 +1,10 @@
-@extends('layouts.app')
+@php
+    $layout = auth()->user()->role == 4 
+        ? 'layouts.supervisorapp' 
+        : 'layouts.app';
+@endphp
+
+@extends($layout)
 @section('content_title', 'Asset Details')
 
 @section('content')

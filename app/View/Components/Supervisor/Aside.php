@@ -36,6 +36,77 @@ class Aside extends Component
                 ],
                 'is_logout' => false,
             ],
+            
+            // WorkForceHub (UNCHANGED)
+            [
+                "label" => "WorkForceHub",
+                "icon" => "fas fa-briefcase",
+                "color" => "#1cc88a",
+                "route_active" => [
+                    "users.*",
+                    "floors.*",
+                    "tasks.*",
+                    "schedules.*"
+                ],
+                "is_dropdown" => true,
+                "dropdown" => [
+                    [
+                        "label" => "Assign Tasks",
+                        "icon" => "fas fa-tasks",
+                        "color" => "#e74a3b",
+                        "route_name" => "tasks.index",
+                        "route_active" => "tasks.*",
+                        "is_dropdown" => false
+                    ],
+                    [
+                        "label" => "Schedule",
+                        "icon" => "fas fa-calendar-alt",
+                        "color" => "#858796",
+                        "route_name" => "schedules.index",
+                        "route_active" => "schedules.*",
+                        "is_dropdown" => false
+                    ],
+                ]
+            ],
+
+            // Collective (UNCHANGED)
+            [
+                "label" => "Collective",
+                "icon" => "fas fa-database",
+                "color" => "#6f42c1",
+                "route_active" => "master-data.*",
+                "is_dropdown" => true,
+                "dropdown" => [
+                    [
+                        "label" => "Asset",
+                        "route_active" => "master-data.assets.*",
+                        "route_name" => "master-data.assets.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#4e73df",
+                    ],
+                    [
+                        "label" => "Devices",
+                        "route_active" => "devices.*",
+                        "route_name" => "devices.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#1cc88a",
+                    ],
+                    [
+                        "label" => "Sensor",
+                        "route_active" => "sensors.*",
+                        "route_name" => "sensors.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#f6c23e",
+                    ],
+                    [
+                        "label" => "Complaints",
+                        "route_active" => "complaints.*",
+                        "route_name" => "complaints.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#e74a3b",
+                    ],
+                ]
+            ],
             [
                 "label" => "Logout",
                 "icon" => "fas fa-sign-out-alt",
