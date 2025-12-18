@@ -19,6 +19,18 @@ class Aside extends Component
                 'color' => '#4e73df',
                 'route_name' => 'supervisor.dashboard',
                 'route_active' => 'supervisor.dashboard',
+                'is_dropdown' => false,
+                'is_logout' => false,
+            ],
+            // ✅ LOGOUT BUTTON
+            [
+                "label" => "Logout",
+                "icon" => "fas fa-sign-out-alt",
+                "color" => "#e74a3b",
+                "route_name" => "logout",
+                "route_active" => null,
+                "is_dropdown" => false,
+                "is_logout" => true
             ],
         ];
     }
