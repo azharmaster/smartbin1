@@ -1,9 +1,3 @@
-@php
-    $layout = auth()->user()->role == 4 
-        ? 'layouts.supervisorapp' 
-        : 'layouts.app';
-@endphp
-
 @extends($layout)
 @section('content_title', 'To-Do')
 @section('content')

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends($layout)
 @section('content_title', 'Devices')
 @section('content')
 <div class="card">

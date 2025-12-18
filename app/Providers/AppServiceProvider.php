@@ -2,23 +2,21 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+public function boot()
+{
+    View::composer('*', function ($view) {
+        if (auth()->check()) {
+            $layout = auth()->user()->role == 4
+                ? 'layouts.supervisorapp'
+                : 'layouts.app';
 
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
-    }
+            $view->with('layout', $layout);
+        }
+    });
+}
 }
