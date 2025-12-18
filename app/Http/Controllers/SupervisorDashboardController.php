@@ -47,6 +47,34 @@ class SupervisorDashboardController extends Controller
 
         $smartBinClearTimes = $this->calculateSmartBinClearTimes();
 
+        /* =======================
+           📅 CALENDAR EVENTS (ADDED)
+        ======================= */
+        $calendarEvents = collect();
+
+        foreach ($assignedTasks as $task) {
+            $calendarEvents->push([
+                'title' => 'Task: ' . ($task->asset->asset_name ?? 'Asset'),
+                'start' => $task->created_at->toDateString(),
+                'color' => match ($task->status) {
+                    'completed'   => '#28a745',
+                    'in_progress' => '#17a2b8',
+                    'pending'     => '#ffc107',
+                    'reject'      => '#dc3545',
+                    default       => '#6c757d',
+                },
+            ]);
+        }
+
+        foreach ($smartBinClearTimes as $bin) {
+            $calendarEvents->push([
+                'title' => 'Bin Cleared: ' . $bin['device_name'],
+                'start' => Carbon::parse($bin['cleared_at'])->toDateString(),
+                'color' => '#0d6efd',
+            ]);
+        }
+        /* ======================= */
+
         return view('dashboard.supervisorindex', compact(
             'totalDevices',
             'fullDevices',
@@ -63,7 +91,8 @@ class SupervisorDashboardController extends Controller
             'assignedTasks',
             'latestComplaints',
             'tasksCompletedPerStaff',
-            'smartBinClearTimes'
+            'smartBinClearTimes',
+            'calendarEvents' // ✅ ADDED
         ));
     }
 
@@ -184,7 +213,7 @@ class SupervisorDashboardController extends Controller
                         'cleared_at'  => $sensor->time,
                     ];
 
-                    $fullTimestamp = null; // reset for next cycle
+                    $fullTimestamp = null;
                 }
             }
         }

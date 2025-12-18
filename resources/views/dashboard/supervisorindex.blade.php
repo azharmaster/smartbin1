@@ -259,6 +259,9 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
@@ -446,6 +449,18 @@
                     <canvas id="tasksCompletedChart" height="120"></canvas>
                 </div>
             </div>
+
+            <!--SMARTBIN TRACK-->
+            <div class="card mb-4">
+                <div class="card-header bg-primary">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trash"></i> SmartBin Clear Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="smartBinClearChart" height="120"></canvas>
+                </div>
+            </div>
             
         </div>
 
@@ -517,6 +532,18 @@
                 </div>
             </div>
 
+            <!-- Calender -->
+             <div class="card mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar-alt"></i> Activity Calendar
+        </h5>
+    </div>
+    <div class="card-body">
+        <div id="supervisorCalendar"></div>
+    </div>
+</div>
+
             <!-- TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3">
@@ -538,7 +565,7 @@
                 </ul>
             </div>
             <!--SMARTBIN TRACK-->
-            <div class="card mb-4">
+            <!-- <div class="card mb-4">
                 <div class="card-header bg-primary">
                     <h5 class="mb-0">
                         <i class="fas fa-trash"></i> SmartBin Clear Time
@@ -547,7 +574,7 @@
                 <div class="card-body">
                     <canvas id="smartBinClearChart" height="120"></canvas>
                 </div>
-            </div>
+            </div> -->
 
         </div>
 
@@ -770,5 +797,29 @@ new Chart(binCtx, {
 
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const calendarEl = document.getElementById('supervisorCalendar');
+
+    if (!calendarEl) return;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 550,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        events: {!! json_encode($calendarEvents) !!},
+        eventDisplay: 'block'
+    });
+
+    calendar.render();
+});
+</script>
+
+
 
 @endsection
