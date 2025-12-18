@@ -312,12 +312,12 @@
                         <i class="fas fa-map-marked-alt"></i> Floor Map
                     </h5>
                     <button class="btn p-0 collapse-btn ms-auto" id="toggleMap" type="button">
-                        <i class="fas fa-minus fa-lg"></i>
+                        <i class="fas fa-plus fa-lg"></i>
                     </button>
                 </div>
 
                 <!-- Collapsible wrapper -->
-                <div class="map-collapse-wrapper" style="height: 650px; overflow: hidden; transition: height 0.3s ease;">
+                <div class="map-collapse-wrapper" style="height: 0px; overflow: hidden; transition: height 0.3s ease;">
                     <div class="card-body map-card-body" style="height: 100%;">
 
                         @php
@@ -376,7 +376,7 @@
 
            <!-- ASSIGNED TASKS -->
             <div class="card mb-4">
-                <div class="card-header card-half">
+                <div class="card-header card-half bg-info">
                     <h5 class="mb-0">
                         <i class="fas fa-tasks"></i> Assigned Tasks
                     </h5>
@@ -437,7 +437,7 @@
             </div>
             <!-- COMPLETED TASK GRAPH-->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header bg-secondary">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-bar"></i> Tasks Completed (This Month)
                     </h5>
@@ -448,7 +448,7 @@
             </div>
             <!--SMARTBIN TRACK-->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header bg-primary">
                     <h5 class="mb-0">
                         <i class="fas fa-trash"></i> SmartBin Clear Time
                     </h5>
