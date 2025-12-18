@@ -532,17 +532,54 @@
                 </div>
             </div>
 
-            <!-- Calender -->
-             <div class="card mb-4">
-    <div class="card-header bg-dark text-white">
-        <h5 class="mb-0">
-            <i class="fas fa-calendar-alt"></i> Activity Calendar
+            <!-- Activity Calendar -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            Activity Calendar
         </h5>
     </div>
-    <div class="card-body">
+
+    <div class="card-body p-2">
         <div id="supervisorCalendar"></div>
     </div>
 </div>
+
+<style>
+/* Remove underline / hover highlight on day numbers */
+.fc-daygrid-day-number {
+    text-decoration: none !important;
+}
+
+/* Change hover background */
+.fc-daygrid-day:hover {
+    background-color: #f4f6f9;
+}
+
+/* Today highlight */
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+/* Event style */
+.fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+}
+
+/* Add gap between view buttons (Month / Week / Day) */
+.fc .fc-button-group {
+    gap: 6px;
+}
+
+/* Optional: make buttons slightly rounded */
+.fc .fc-button {
+    border-radius: 6px;
+}
+</style>
+
 
             <!-- TODO LIST -->
             <div class="card p-3">

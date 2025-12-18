@@ -4,6 +4,7 @@
 @section('content')
 
 <style>
+/* ===================== STATUS CARDS ===================== */
 .dashboard-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -59,49 +60,43 @@
 .card-empty { background-color: #7ccc63; }
 .card-undetected { background-color: #2c3e50; }
 
-.full-devices-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-left: 14px;
+/* ===================== CALENDAR STYLE ===================== */
+
+/* Remove underline / hover highlight on day numbers */
+.fc-daygrid-day-number {
+    text-decoration: none !important;
 }
 
-.full-device-card {
-    background-color: #6f060687;
-    border: 2px solid #ff4d4d;
-    border-radius: 12px;
-    box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
-    transition: transform 0.2s, box-shadow 0.2s;
+/* Change hover background */
+.fc-daygrid-day:hover {
+    background-color: #f4f6f9;
 }
 
-.full-device-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 18px rgba(255, 0, 0, 0.7);
+/* Today highlight */
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
 }
 
-.full-status {
-    background-color: #FF0000;
-    padding: 0.5em 1em;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    box-shadow: 0 0 8px #FF0000, 0 0 12px #FF4d4d, 0 0 18px #FF6666;
-    animation: pulse 1.5s infinite;
+/* Event style */
+.fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666; transform: scale(1); }
-    50% { box-shadow: 0 0 10px #CC0000, 0 0 14px #D93333, 0 0 20px #E06666; transform: scale(1.05); }
-    100% { box-shadow: 0 0 6px #CC0000, 0 0 10px #D93333, 0 0 14px #E06666; transform: scale(1); }
+/* Add gap between view buttons (Month / Week / Day) */
+.fc .fc-button-group {
+    gap: 6px;
 }
 
-.full-device-card .fw-bold.fs-4 {
-    font-size: 1.3rem;
-    font-weight: bold;
+/* Optional: make buttons slightly rounded */
+.fc .fc-button {
+    border-radius: 6px;
 }
 </style>
 
-<div class="d-flex flex-wrap">
+<!-- ===================== STATUS SUMMARY ===================== -->
+<div class="d-flex flex-wrap mb-4">
     <div class="status-card card-total">
         <div class="status-title">Total Devices</div>
         <div class="status-content">
@@ -117,7 +112,7 @@
         </div>
     </div>
     <div class="status-card card-half">
-        <div class="status-title ">Half Full</div>
+        <div class="status-title">Half Full</div>
         <div class="status-content">
             <i class="fas fa-exclamation-triangle status-icon"></i>
             <span class="status-number">{{ $halfDevices }}</span>
@@ -139,80 +134,77 @@
     </div>
 </div>
 
-{{-- <div class="full-devices-cards d-flex flex-wrap gap-3">
-    @foreach($fullDevicesCollection as $device)
-        <a href="{{ route('master-data.assets.details', $device->asset->id) }}" class="text-decoration-none">
-            <div class="card full-device-card position-relative p-3" style="width: 280px;">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                    <div class="badge full-status text-white fw-bold fs-5">FULL</div>
-                </div>
+<!-- ===================== 2-COLUMN LAYOUT ===================== -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-                <div class="mt-2 text-white">
-                    <i class="fas fa-map-marker-alt me-1"></i>
-                    {{ $device->asset->floor->floor_name ?? 'Unknown Floor' }}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- LEFT COLUMN: Calendar -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> My Task Calendar</h5>
                 </div>
+                <div class="card-body">
+                    <div id="staffCalendar"></div>
+                </div>
+            </div>
+        </div>
 
-                <div class="progress mt-3" style="height: 10px;">
-                    <div class="progress-bar bg-danger"
-                        style="width: {{ $device->latestSensor->capacity ?? 0 }}%;">
+        <!-- RIGHT COLUMN: Chart + To-Do -->
+        <div class="col-lg-6 mb-4">
+            <!-- BAR CHART -->
+            <div class="card card-success mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Monthly Task Status</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart" style="height:180px;">
+                        <canvas id="barChart"></canvas>
                     </div>
                 </div>
             </div>
-        </a>
-    @endforeach
-</div> --}}
 
-<!-- ===================== BAR CHART ===================== -->
-<div class="card card-success mt-4">
-    <div class="card-header">
-        <h3 class="card-title">Monthly Task Status</h3>
-        <div class="card-tools">
-            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                <i class="fas fa-minus"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <div class="chart" style="height:180px;"> 
-            <canvas id="barChart"></canvas>
+            <!-- TO DO LIST -->
+            <div class="card p-3">
+                <h5 class="mb-3">
+                    <a href="{{ route('todos.staffindex') }}" class="text-decoration-none text-dark">
+                        To Do List
+                    </a>
+                </h5>
+                <ul class="list-group list-group-flush">
+                    @foreach($todos as $todo)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ $todo->todo }}
+                            <form method="POST" action="{{ route('todos.complete', $todo->id) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success">Done</button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
-<div style="flex: 1;">
-        <div class="card p-3">
-            <h5 class="mb-3">
-                <a href="{{ route('todos.staffindex') }}" class="text-decoration-none text-dark">
-                    To Do List
-                </a>
-            </h5>
-            <ul class="list-group list-group-flush">
-                @foreach($todos as $todo)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ $todo->todo }}
-                        <form method="POST" action="{{ route('todos.complete', $todo->id) }}">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-success">Done</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-
-<!-- ===================== CHART.JS SCRIPT ===================== -->
+<!-- ===================== CHART.JS ===================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ✅ Only shows logged-in staff tasks
-    let months        = @json($months);
-    let pendingData   = @json($pendingPerMonth);
-    let completedData = @json($completedPerMonth);
-    let rejectedData  = @json($rejectedPerMonth);
+    /* ===================== BAR CHART ===================== */
+    const months        = @json($months);
+    const pendingData   = @json($pendingPerMonth);
+    const completedData = @json($completedPerMonth);
+    const rejectedData  = @json($rejectedPerMonth);
 
     const ctx = document.getElementById('barChart').getContext('2d');
 
@@ -221,31 +213,33 @@ document.addEventListener("DOMContentLoaded", function () {
         data: {
             labels: months,
             datasets: [
-                {
-                    label: 'Pending',
-                    data: pendingData,
-                    backgroundColor: 'rgba(255, 206, 86, 0.9)'
-                },
-                {
-                    label: 'Completed',
-                    data: completedData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.9)'
-                },
-                {
-                    label: 'Rejected',
-                    data: rejectedData,
-                    backgroundColor: 'rgba(255, 99, 132, 0.9)'
-                }
+                { label: 'Pending', data: pendingData, backgroundColor: 'rgba(255, 206, 86, 0.9)' },
+                { label: 'Completed', data: completedData, backgroundColor: 'rgba(75, 192, 192, 0.9)' },
+                { label: 'Rejected', data: rejectedData, backgroundColor: 'rgba(255, 99, 132, 0.9)' }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
     });
+
+    /* ===================== STAFF CALENDAR ===================== */
+    const calendarEl = document.getElementById('staffCalendar');
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 420,
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        events: [
+            @foreach($assignedTasks->where('user_id', Auth::id()) as $task)
+            {
+                title: "{{ $task->title ?? 'Task' }}",
+                start: "{{ \Carbon\Carbon::parse($task->created_at)->toDateString() }}",
+                color: "{{ $task->status === 'completed' ? '#28a745' : '#f39c12' }}"
+            },
+            @endforeach
+        ]
+    });
+
+    calendar.render();
 });
 </script>
 

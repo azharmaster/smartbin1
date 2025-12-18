@@ -84,6 +84,13 @@ class StaffController extends Controller
                      ->orderBy('id', 'desc')
                      ->get();
 
+        /* ---------------------------------------------------
+         * 🆕 STAFF CALENDAR DATA (ADDED ONLY)
+         * --------------------------------------------------- */
+        $assignedTasks = Task::where('user_id', Auth::id())
+                             ->orderBy('created_at', 'asc')
+                             ->get();
+
         return view('dashboard.staffindex', [
             'totalDevices' => $totalDevices,
             'fullDevices' => $fullDevices,
@@ -97,6 +104,9 @@ class StaffController extends Controller
             'pendingPerMonth' => $pendingPerMonth,
             'completedPerMonth' => $completedPerMonth,
             'rejectedPerMonth' => $rejectedPerMonth,
+
+            // ---- added calendar variable ----
+            'assignedTasks' => $assignedTasks,
 
             'todos' => $todos,
         ]);
