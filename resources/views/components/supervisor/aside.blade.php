@@ -1,79 +1,41 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
-    <a href="{{ route('supervisor.mainmenu') }}" class="brand-link text-center">
-        <span class="brand-text font-weight-light">{{ env('APP_NAME') }}</span>
+
+    {{-- Brand --}}
+    <a href="{{ route('supervisor.dashboard') }}" class="brand-link text-center">
+        <span class="brand-text font-weight-light">
+            {{ env('APP_NAME') }} Supervisor
+        </span>
     </a>
 
-    <!-- Sidebar -->
-<div class="sidebar">
+    {{-- Sidebar --}}
+    <div class="sidebar">
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column">
 
-    <!-- Sidebar Menu -->
-    <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column"
-            data-widget="treeview"
-            role="menu"
-            data-accordion="false">
-
-            @foreach ($routes as $route)
-                @php
-                    $isActive = request()->routeIs($route['route_active']);
-                    $iconColor = $route['color'] ?? '#6c757d'; // fallback
-                @endphp
-
-                {{-- SINGLE LINK --}}
-                @if (!$route['is_dropdown'])
+                @foreach($routes as $route)
                     <li class="nav-item">
                         <a href="{{ route($route['route_name']) }}"
-                           class="nav-link {{ $isActive ? 'active' : '' }}">
+                           class="nav-link {{ request()->routeIs($route['route_active']) ? 'active' : '' }}">
 
                             <i class="nav-icon {{ $route['icon'] }}"
-                               style="color: {{ $iconColor }};"></i>
+                               style="color: {{ $route['color'] }}"></i>
 
                             <p>{{ $route['label'] }}</p>
                         </a>
                     </li>
+                @endforeach
 
-                {{-- DROPDOWN --}}
-                @else
-                    <li class="nav-item {{ $isActive ? 'menu-open' : '' }}">
-                        <a href="#"
-                           class="nav-link {{ $isActive ? 'active' : '' }}">
+                {{-- LOGOUT --}}
+                <li class="nav-item mt-3 px-3">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+                    </form>
+                </li>
 
-                            <i class="nav-icon {{ $route['icon'] }}"
-                               style="color: {{ $iconColor }};"></i>
-
-                            <p>
-                                {{ $route['label'] }}
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-
-                        <ul class="nav nav-treeview">
-                            @foreach ($route['dropdown'] as $dropdownItem)
-                                @php
-                                    $subActive = request()->routeIs($dropdownItem['route_active']);
-                                    $subColor = $dropdownItem['color'] ?? $iconColor;
-                                @endphp
-
-                                <li class="nav-item">
-                                    <a href="{{ route($dropdownItem['route_name']) }}"
-                                       class="nav-link {{ $subActive ? 'active' : '' }}">
-
-                                        <i class="nav-icon {{ $dropdownItem['icon'] }}"
-                                           style="color: {{ $subColor }};"></i>
-
-                                        <p>{{ $dropdownItem['label'] }}</p>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </li>
-                @endif
-            @endforeach
-
-        </ul>
-    </nav>
-    <!-- /.sidebar-menu -->
-</div>
-<!-- /.sidebar -->
+            </ul>
+        </nav>
+    </div>
 </aside>

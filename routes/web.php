@@ -24,6 +24,7 @@ use App\View\Components\Admin\Aside;
 use App\View\Components\Staff\StaffAside;
 use App\Http\Controllers\AdminMainDashboardController;
 use App\Http\Controllers\SupervisorMainDashboardController;
+use App\Http\Controllers\SupervisorDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -256,14 +257,14 @@ Route::get('/admin/leave/apply', [AdminLeaveController::class, 'apply'])->name('
 Route::get('/admin/main-dashboard', [AdminMainDashboardController::class, 'index'])
     ->name('admin.main.dashboard');
 
-// Supervisor Main Menu
-Route::get('/supervisor/mainmenu', function() {
-    return view('supervisormainmenu');
-})->name('supervisor.mainmenu')->middleware('auth');
+// // Supervisor Main Menu
+// Route::get('/supervisor/mainmenu', function() {
+//     return view('supervisormainmenu');
+// })->name('supervisor.mainmenu')->middleware('auth');
 
-// Supervisor Main Dashboard
-Route::get('/supervisor/dashboard', [SupervisorMainDashboardController::class, 'index'])
-    ->name('supervisor.dashboard')->middleware('auth');
+// // Supervisor Main Dashboard
+// Route::get('/supervisor/dashboard', [SupervisorMainDashboardController::class, 'index'])
+//     ->name('supervisor.dashboard')->middleware('auth');
 
 Route::get(
     '/admin/dashboard/bin/{id}/popup',
@@ -279,3 +280,7 @@ Route::get(
 Route::get('/admin/dashboard', [AdminMainDashboardController::class, 'index'])
     ->name('admin.main.dashboard') // matches your dropdown
     ->middleware('auth');
+
+Route::get('/supervisor/dashboard', [SupervisorDashboardController::class, 'index'])
+    ->name('supervisor.dashboard');
+    
