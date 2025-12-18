@@ -17,12 +17,25 @@ class Aside extends Component
                 'label' => 'Dashboard',
                 'icon'  => 'fas fa-tachometer-alt',
                 'color' => '#4e73df',
-                'route_name' => 'supervisor.dashboard',
-                'route_active' => 'supervisor.dashboard',
-                'is_dropdown' => false,
+                'is_dropdown' => true,
+                'dropdown' => [
+                    [
+                        'label' => 'Dashboard',
+                        "icon" => "fas fa-chart-line",
+                        "color" => "#4e73df",
+                        'route_name' => 'supervisor.dashboard',
+                        'route_active' => 'supervisor.dashboard',
+                    ],
+                    [
+                        'label' => 'Live Dashboard',
+                        "icon" => "fas fa-chart-line",
+                        "color" => "#1cc88a",
+                        'route_name' => 'supervisor.main_dashboard',
+                        'route_active' => 'supervisor.main_dashboard',
+                    ],
+                ],
                 'is_logout' => false,
             ],
-            // ✅ LOGOUT BUTTON
             [
                 "label" => "Logout",
                 "icon" => "fas fa-sign-out-alt",

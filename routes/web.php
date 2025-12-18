@@ -283,4 +283,6 @@ Route::get('/admin/dashboard', [AdminMainDashboardController::class, 'index'])
 
 Route::get('/supervisor/dashboard', [SupervisorDashboardController::class, 'index'])
     ->name('supervisor.dashboard');
-    
+
+Route::get('/supervisor/main-dashboard', [SupervisorMainDashboardController::class, 'index'])
+    ->name('supervisor.main_dashboard');    
