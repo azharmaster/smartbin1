@@ -722,60 +722,124 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     //COMPLETED TASKS
-    const taskCtx = document.getElementById('tasksCompletedChart');
+const taskCtx = document.getElementById('tasksCompletedChart').getContext('2d');
 
-    new Chart(taskCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($tasksCompletedPerStaff->pluck('user.name')) !!},
-            datasets: [{
-                label: 'Completed Tasks',
-                data: {!! json_encode($tasksCompletedPerStaff->pluck('completed_count')) !!},
-                borderWidth: 1,
-                borderRadius: 8
-            }]
+const taskGradient = taskCtx.createLinearGradient(0, 0, 0, 300);
+taskGradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
+taskGradient.addColorStop(1, 'rgba(40, 167, 69, 0.3)');
+
+new Chart(taskCtx, {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($tasksCompletedPerStaff->pluck('user.name')) !!},
+        datasets: [{
+            label: 'Completed Tasks',
+            data: {!! json_encode($tasksCompletedPerStaff->pluck('completed_count')) !!},
+            backgroundColor: taskGradient,
+            borderRadius: 12,
+            barThickness: 36,
+            hoverBackgroundColor: 'rgba(40, 167, 69, 1)'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1f2933',
+                titleColor: '#fff',
+                bodyColor: '#d1d5db',
+                cornerRadius: 8
+            }
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: {
+                    color: '#6b7280',
+                    font: { size: 12 }
+                }
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    borderDash: [4, 4]
+                },
+                ticks: {
+                    stepSize: 1,
+                    color: '#6b7280'
                 }
             }
         }
-    });
+    }
+});
 
     //smartbin tracker
-    const binCtx = document.getElementById('smartBinClearChart');
+const binCtx = document.getElementById('smartBinClearChart').getContext('2d');
 
-    new Chart(binCtx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode($smartBinClearTimes->pluck('device_name')) !!},
-            datasets: [{
-                label: 'Hours to Clear',
-                data: {!! json_encode($smartBinClearTimes->pluck('hours')) !!},
-                tension: 0.4,
-                pointRadius: 4
-            }]
+const binGradient = binCtx.createLinearGradient(0, 0, 0, 300);
+binGradient.addColorStop(0, 'rgba(13, 110, 253, 0.4)');
+binGradient.addColorStop(1, 'rgba(13, 110, 253, 0.05)');
+
+new Chart(binCtx, {
+    type: 'line',
+    data: {
+        labels: {!! json_encode($smartBinClearTimes->pluck('device_name')) !!},
+        datasets: [{
+            label: 'Hours to Clear',
+            data: {!! json_encode($smartBinClearTimes->pluck('hours')) !!},
+            borderColor: '#0d6efd',
+            backgroundColor: binGradient,
+            fill: true,
+            tension: 0.45,
+            borderWidth: 3,
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            pointBackgroundColor: '#0d6efd'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1f2933',
+                titleColor: '#fff',
+                bodyColor: '#d1d5db',
+                cornerRadius: 8,
+                callbacks: {
+                    label: ctx => `${ctx.raw} hours`
+                }
+            }
         },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Minutes'
-                    }
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: {
+                    color: '#6b7280',
+                    maxRotation: 45,
+                    minRotation: 30
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    borderDash: [4, 4]
+                },
+                title: {
+                    display: true,
+                    text: 'Hours',
+                    color: '#374151'
+                },
+                ticks: {
+                    color: '#6b7280'
                 }
             }
         }
-    });
+    }
+});
 
 });
 </script>
