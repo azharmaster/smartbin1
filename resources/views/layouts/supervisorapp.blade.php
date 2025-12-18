@@ -46,7 +46,7 @@
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="{{ route('supervisor.dashboard') }}" class="nav-link">
-                        PSENSEHUB (Supervisor)
+                        PSENSEHUB
                     </a>
                 </li>
             </ul>

@@ -1,4 +1,4 @@
-@extends('layouts.nosidebar')
+<!-- @extends('layouts.nosidebar')
 
 @section('content')
 
@@ -8,4 +8,4 @@
     </a>
 </h1>
 
-@endsection
+@endsection -->

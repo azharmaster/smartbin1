@@ -2,7 +2,7 @@
 
     {{-- Brand --}}
     <a href="{{ route('supervisor.dashboard') }}" class="brand-link text-center">
-        <span class="brand-text font-weight-light">{{ env('APP_NAME') }} Supervisor</span>
+        <span class="brand-text font-weight-light">{{ env('APP_NAME') }}</span>
     </a>
 
     {{-- Sidebar --}}
