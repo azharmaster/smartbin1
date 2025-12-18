@@ -41,7 +41,7 @@ class SupervisorDashboardController extends Controller
                                  ->get();
         $todos = $this->loadTodosForUser(Auth::id());
         $latestComplaints = $this->loadLatestComplaints();
-        $users = User::all();
+        $users = User::where('role', 2)->get();
         $assignedTasks = $this->loadAssignedTasks();
         $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 

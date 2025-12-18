@@ -14,9 +14,11 @@
         </div>
         @endif
 
+        @if(auth()->user()->role == 1)
         <div class="d-flex justify-content-end mb-2">
             <x-device.form-device :assets="$assets" />
         </div>
+        @endif
 
         <div class="table-responsive">
             <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
@@ -35,17 +37,28 @@
                         <td>{{ $device->asset->asset_name ?? '-' }}</td>
                         <td>{{ $device->device_name }}</td>
                         <td>
+                            @if(auth()->user()->role == 1)
                             <div class="d-flex align-items-center justify-content-center">
-                                <x-device.form-device :id="$device->id" :device_name="$device->device_name" :asset_id="$device->asset_id" :assets="$assets"/>&nbsp;
-                                <form action="{{ route('devices.destroy', $device->id) }}" method="POST" 
+                                <x-device.form-device 
+                                    :id="$device->id" 
+                                    :device_name="$device->device_name" 
+                                    :asset_id="$device->asset_id" 
+                                    :assets="$assets"/>
+
+                                &nbsp;
+
+                                <form action="{{ route('devices.destroy', $device->id) }}" method="POST"
                                     onsubmit="return confirm('Are you sure you want to delete this device?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" data-confirm-delete="true">
+                                    <button type="submit" class="btn btn-danger btn-sm">
                                         <i class="fas fa-trash-alt text-white"></i>
                                     </button>
                                 </form>
                             </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
                         </td>
                     </tr>
                     @endforeach

@@ -564,18 +564,26 @@
                     @endforeach
                 </ul>
             </div>
-            <!--SMARTBIN TRACK-->
-            <!-- <div class="card mb-4">
-                <div class="card-header bg-primary">
-                    <h5 class="mb-0">
-                        <i class="fas fa-trash"></i> SmartBin Clear Time
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="smartBinClearChart" height="120"></canvas>
-                </div>
-            </div> -->
-
+            <!--USER-->
+            <div class="card p-3 mt-4">
+                <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
+                <ul class="list-group">
+                    @foreach($users as $user)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ $user->name }}
+                            <span class="badge bg-primary">
+                                @switch($user->role)
+                                    @case(1) Admin @break
+                                    @case(2) Staff @break
+                                    @case(3) User @break
+                                    @case(4) Supervisor @break
+                                    @default Unknown
+                                @endswitch
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
 
     </div>
