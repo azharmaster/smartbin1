@@ -259,6 +259,9 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
@@ -526,6 +529,55 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Activity Calendar -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-calendar-alt mr-2"></i>
+            Activity Calendar
+        </h5>
+    </div>
+
+    <div class="card-body p-2">
+        <div id="supervisorCalendar"></div>
+    </div>
+</div>
+
+<style>
+/* Remove underline / hover highlight on day numbers */
+.fc-daygrid-day-number {
+    text-decoration: none !important;
+}
+
+/* Change hover background */
+.fc-daygrid-day:hover {
+    background-color: #f4f6f9;
+}
+
+/* Today highlight */
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+/* Event style */
+.fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+}
+
+/* Add gap between view buttons (Month / Week / Day) */
+.fc .fc-button-group {
+    gap: 6px;
+}
+
+/* Optional: make buttons slightly rounded */
+.fc .fc-button {
+    border-radius: 6px;
+}
+</style>
+
             <!-- LATEST COMPLAINTS -->
             <div class="card mb-4">
                 <div class="card-header card-full text-white">
@@ -627,6 +679,47 @@
     </div>
 
 </div>
+
+{{-- View Task Modal --}}
+<div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks mr-2"></i> Task Details
+                </h5>
+                <button type="button" onclick="$('#viewTaskModal').modal('hide')"
+                        class="btn p-0 text-white" style="font-size: 1.5rem;">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="taskId"></span></p>
+                <p><strong>User:</strong> <span id="taskUser"></span></p>
+                <p><strong>Asset:</strong> <span id="taskAsset"></span></p>
+                <p><strong>Floor:</strong> <span id="taskFloor"></span></p>
+                <hr>
+                <p><strong>Description:</strong></p>
+                <p id="taskDescription"></p>
+                <p>
+                    <strong>Status:</strong>
+                    <span id="taskStatus" class="badge"></span>
+                </p>
+                <p><strong>Notes:</strong></p>
+                <p id="taskNotes" class="text-muted"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="$('#viewTaskModal').modal('hide')">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 <script>
@@ -843,5 +936,61 @@ new Chart(binCtx, {
 
 });
 </script>
+
+
+{{-- calender js--}}
+
+<script src="plugins/jquery/jquery.min.js"></script>
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="dist/js/adminlte.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const calendarEl = document.getElementById('supervisorCalendar');
+    if (!calendarEl) return;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 550,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        events: {!! json_encode($calendarEvents) !!},
+        eventDisplay: 'block',
+
+eventClick: function(info) {
+    const event = info.event;
+    const props = event.extendedProps;
+
+    $('#taskId').text(event.id);
+    $('#taskUser').text(props.user);
+    $('#taskAsset').text(props.asset);
+    $('#taskFloor').text(props.floor);
+    $('#taskDescription').text(event.title);
+    $('#taskNotes').text(props.notes);
+
+    $('#taskStatus')
+        .text(props.status.replace('_', ' '))
+        .removeClass()
+        .addClass('badge ' + (
+            props.status === 'completed' ? 'badge-success' :
+            props.status === 'in_progress' ? 'badge-info' :
+            props.status === 'pending' ? 'badge-warning' :
+            'badge-danger'
+        ));
+
+    $('#viewTaskModal').modal('show');
+}
+    });
+
+    calendar.render();
+
+});
+</script>
+
+
 
 @endsection

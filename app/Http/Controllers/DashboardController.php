@@ -47,6 +47,36 @@ class DashboardController extends Controller
 
         $smartBinClearTimes = $this->calculateSmartBinClearTimes();
 
+        /* ------------------------------
+         | Calendar Events (NEW)
+         |------------------------------*/
+        $calendarEvents = Task::with(['user', 'asset', 'floor'])
+    ->get()
+    ->map(function ($task) {
+        return [
+            'id'    => $task->id,
+            'title' => $task->description ?? 'Task #' . $task->id,
+
+            // Use created_at as calendar date
+            'start' => Carbon::parse($task->created_at)->toDateString(),
+
+            'extendedProps' => [
+                'user'   => $task->user->name ?? '-',
+                'asset'  => $task->asset->asset_name ?? '-',
+                'floor'  => $task->floor->floor_name ?? '-',
+                'status' => $task->status,
+                'notes'  => $task->notes ?? '-',
+            ],
+
+            'className' => match ($task->status) {
+                'completed'    => 'bg-success',
+                'in_progress'  => 'bg-info',
+                'pending'      => 'bg-warning',
+                default        => 'bg-danger',
+            },
+        ];
+    });
+
         return view('dashboard.index', compact(
             'totalDevices',
             'fullDevices',
@@ -63,7 +93,8 @@ class DashboardController extends Controller
             'assignedTasks',
             'latestComplaints',
             'tasksCompletedPerStaff',
-            'smartBinClearTimes'
+            'smartBinClearTimes',
+            'calendarEvents' // <-- added
         ));
     }
 
@@ -184,7 +215,7 @@ class DashboardController extends Controller
                         'cleared_at'  => $sensor->time,
                     ];
 
-                    $fullTimestamp = null; // reset for next cycle
+                    $fullTimestamp = null;
                 }
             }
         }
