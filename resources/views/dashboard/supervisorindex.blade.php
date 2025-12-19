@@ -629,58 +629,43 @@
 
 
 {{-- View Task Modal --}}
-<div class="modal fade" id="viewTaskModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg rounded-3">
+<div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
 
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-tasks me-2"></i> Task Details
+                    <i class="fas fa-tasks mr-2"></i> Task Details
                 </h5>
-                <button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" onclick="$('#viewTaskModal').modal('hide')"
+                        class="btn p-0 text-white" style="font-size: 1.5rem;">
+                    &times;
+                </button>
             </div>
             <div class="modal-body">
-                <div class="mb-2">
-                    <strong>ID:</strong>
-                    <span id="taskId" class="text-muted"></span>
-                </div>
-                <div class="mb-2">
-                    <strong>User:</strong>
-                    <span id="taskUser"></span>
-                </div>
-                <div class="mb-2">
-                    <strong>Asset:</strong>
-                    <span id="taskAsset"></span>
-                </div>
-                <div class="mb-2">
-                    <strong>Floor:</strong>
-                    <span id="taskFloor"></span>
-                </div>
+                <p><strong>ID:</strong> <span id="taskId"></span></p>
+                <p><strong>User:</strong> <span id="taskUser"></span></p>
+                <p><strong>Asset:</strong> <span id="taskAsset"></span></p>
+                <p><strong>Floor:</strong> <span id="taskFloor"></span></p>
                 <hr>
-                <div class="mb-2">
-                    <strong>Description:</strong>
-                    <div id="taskDescription" class="mt-1"></div>
-                </div>
-                <div class="mb-3">
+                <p><strong>Description:</strong></p>
+                <p id="taskDescription"></p>
+                <p>
                     <strong>Status:</strong>
-                    <span id="taskStatus" class="badge ms-1"></span>
-                </div>
-                <div>
-                    <strong>Notes:</strong>
-                    <div id="taskNotes" class="text-muted mt-1"></div>
-                </div>
+                    <span id="taskStatus" class="badge"></span>
+                </p>
+                <p><strong>Notes:</strong></p>
+                <p id="taskNotes" class="text-muted"></p>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary"
-                        data-bs-dismiss="modal">
+                <button class="btn btn-danger" onclick="$('#viewTaskModal').modal('hide')">
                     Close
                 </button>
             </div>
         </div>
     </div>
 </div>
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -896,8 +881,11 @@ new Chart(binCtx, {
 
 });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{{-- 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> --}}
+<script src="plugins/jquery/jquery.min.js"></script>
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="dist/js/adminlte.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -916,38 +904,33 @@ document.addEventListener('DOMContentLoaded', function () {
         events: {!! json_encode($calendarEvents) !!},
         eventDisplay: 'block',
 
-        eventClick: function(info) {
-            const event = info.event;
-            const props = event.extendedProps;
+eventClick: function(info) {
+    const event = info.event;
+    const props = event.extendedProps;
 
-            // Populate modal fields
-            document.getElementById('taskId').innerText = event.id;
-            document.getElementById('taskUser').innerText = props.user;
-            document.getElementById('taskAsset').innerText = props.asset;
-            document.getElementById('taskFloor').innerText = props.floor;
-            document.getElementById('taskDescription').innerText = event.title;
-            document.getElementById('taskNotes').innerText = props.notes;
+    $('#taskId').text(event.id);
+    $('#taskUser').text(props.user);
+    $('#taskAsset').text(props.asset);
+    $('#taskFloor').text(props.floor);
+    $('#taskDescription').text(event.title);
+    $('#taskNotes').text(props.notes);
 
-            // Status badge
-            const statusBadge = document.getElementById('taskStatus');
+    $('#taskStatus')
+        .text(props.status.replace('_', ' '))
+        .removeClass()
+        .addClass('badge ' + (
+            props.status === 'completed' ? 'badge-success' :
+            props.status === 'in_progress' ? 'badge-info' :
+            props.status === 'pending' ? 'badge-warning' :
+            'badge-danger'
+        ));
 
-            statusBadge.textContent = props.status.replace('_', ' ');
-
-            statusBadge.className = 'badge ms-1 ' + (
-                props.status === 'completed' ? 'bg-success' :
-                props.status === 'in_progress' ? 'bg-info' :
-                props.status === 'pending' ? 'bg-warning text-dark' :
-                'bg-danger'
-            );
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
-            modal.show();
-
-        }
+    $('#viewTaskModal').modal('show');
+}
     });
 
     calendar.render();
+
 });
 </script>
 
