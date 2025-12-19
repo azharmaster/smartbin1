@@ -628,6 +628,60 @@
 </div>
 
 
+{{-- View Task Modal --}}
+<div class="modal fade" id="viewTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-3">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks me-2"></i> Task Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <strong>ID:</strong>
+                    <span id="taskId" class="text-muted"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>User:</strong>
+                    <span id="taskUser"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Asset:</strong>
+                    <span id="taskAsset"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Floor:</strong>
+                    <span id="taskFloor"></span>
+                </div>
+                <hr>
+                <div class="mb-2">
+                    <strong>Description:</strong>
+                    <div id="taskDescription" class="mt-1"></div>
+                </div>
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <span id="taskStatus" class="badge ms-1"></span>
+                </div>
+                <div>
+                    <strong>Notes:</strong>
+                    <div id="taskNotes" class="text-muted mt-1"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -842,11 +896,13 @@ new Chart(binCtx, {
 
 });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const calendarEl = document.getElementById('supervisorCalendar');
-
     if (!calendarEl) return;
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -858,7 +914,37 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek'
         },
         events: {!! json_encode($calendarEvents) !!},
-        eventDisplay: 'block'
+        eventDisplay: 'block',
+
+        eventClick: function(info) {
+            const event = info.event;
+            const props = event.extendedProps;
+
+            // Populate modal fields
+            document.getElementById('taskId').innerText = event.id;
+            document.getElementById('taskUser').innerText = props.user;
+            document.getElementById('taskAsset').innerText = props.asset;
+            document.getElementById('taskFloor').innerText = props.floor;
+            document.getElementById('taskDescription').innerText = event.title;
+            document.getElementById('taskNotes').innerText = props.notes;
+
+            // Status badge
+            const statusBadge = document.getElementById('taskStatus');
+
+            statusBadge.textContent = props.status.replace('_', ' ');
+
+            statusBadge.className = 'badge ms-1 ' + (
+                props.status === 'completed' ? 'bg-success' :
+                props.status === 'in_progress' ? 'bg-info' :
+                props.status === 'pending' ? 'bg-warning text-dark' :
+                'bg-danger'
+            );
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
+            modal.show();
+
+        }
     });
 
     calendar.render();
