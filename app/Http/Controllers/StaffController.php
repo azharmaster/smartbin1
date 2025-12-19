@@ -91,6 +91,33 @@ class StaffController extends Controller
                              ->orderBy('created_at', 'asc')
                              ->get();
 
+        // Build calendar events
+    $calendarEvents = collect();
+
+    foreach ($assignedTasks as $task) {
+        $calendarEvents->push([
+            'id'    => $task->id,
+            'title' => 'Task: ' . ($task->asset->asset_name ?? 'Asset'),
+            'start' => $task->created_at->toDateString(),
+
+            'color' => match ($task->status) {
+                'completed'   => '#28a745',
+                'in_progress' => '#17a2b8',
+                'pending'     => '#ffc107',
+                'reject'      => '#dc3545',
+                default       => '#6c757d',
+            },
+
+            'extendedProps' => [
+                'user'   => $task->user->name ?? 'N/A',
+                'asset'  => $task->asset->asset_name ?? 'N/A',
+                'floor'  => $task->floor->floor_name ?? 'N/A',
+                'status' => $task->status,
+                'notes'  => $task->notes ?? '-',
+            ],
+        ]);
+    }
+
         return view('dashboard.staffindex', [
             'totalDevices' => $totalDevices,
             'fullDevices' => $fullDevices,
@@ -107,6 +134,7 @@ class StaffController extends Controller
 
             // ---- added calendar variable ----
             'assignedTasks' => $assignedTasks,
+            'calendarEvents' => $calendarEvents,
 
             'todos' => $todos,
         ]);

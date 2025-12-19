@@ -64,7 +64,8 @@
                 $roles = [
                     1 => ['Admin', 'bg-primary'],
                     2 => ['Staff', 'bg-success'],
-                    3 => ['Guest', 'bg-secondary']
+                    3 => ['Guest', 'bg-secondary'],
+                    4 => ['Supervisor', 'bg-primary'],
                 ];
 
                 $roleName = $roles[Auth::user()->role][0] ?? 'Unknown';

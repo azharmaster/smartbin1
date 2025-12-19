@@ -194,9 +194,50 @@
     </div>
 </div>
 
+{{-- View Task Modal --}}
+<div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks mr-2"></i> Task Details
+                </h5>
+                <button type="button" onclick="$('#viewTaskModal').modal('hide')"
+                        class="btn p-0 text-white" style="font-size: 1.5rem;">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="taskId"></span></p>
+                <p><strong>User:</strong> <span id="taskUser"></span></p>
+                <p><strong>Asset:</strong> <span id="taskAsset"></span></p>
+                <p><strong>Floor:</strong> <span id="taskFloor"></span></p>
+                <hr>
+                <p><strong>Description:</strong></p>
+                <p id="taskDescription"></p>
+                <p>
+                    <strong>Status:</strong>
+                    <span id="taskStatus" class="badge"></span>
+                </p>
+                <p><strong>Notes:</strong></p>
+                <p id="taskNotes" class="text-muted"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="$('#viewTaskModal').modal('hide')">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ===================== CHART.JS ===================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="plugins/jquery/jquery.min.js"></script>
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="dist/js/adminlte.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -221,26 +262,48 @@ document.addEventListener("DOMContentLoaded", function () {
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
     });
 
-    /* ===================== STAFF CALENDAR ===================== */
-    const calendarEl = document.getElementById('staffCalendar');
+        const calendarEl = document.getElementById('staffCalendar');
+        if (!calendarEl) return;
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        height: 420,
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
-        events: [
-            @foreach($assignedTasks->where('user_id', Auth::id()) as $task)
-            {
-                title: "{{ $task->title ?? 'Task' }}",
-                start: "{{ \Carbon\Carbon::parse($task->created_at)->toDateString() }}",
-                color: "{{ $task->status === 'completed' ? '#28a745' : '#f39c12' }}"
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 550,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
             },
-            @endforeach
-        ]
-    });
+            events: {!! json_encode($calendarEvents) !!},
+            eventDisplay: 'block',
 
-    calendar.render();
-});
+        eventClick: function(info) {
+            const event = info.event;
+            const props = event.extendedProps;
+
+            $('#taskId').text(event.id);
+            $('#taskUser').text(props.user);
+            $('#taskAsset').text(props.asset);
+            $('#taskFloor').text(props.floor);
+            $('#taskDescription').text(event.title);
+            $('#taskNotes').text(props.notes);
+
+            $('#taskStatus')
+                .text(props.status.replace('_', ' '))
+                .removeClass()
+                .addClass('badge ' + (
+                    props.status === 'completed' ? 'badge-success' :
+                    props.status === 'in_progress' ? 'badge-info' :
+                    props.status === 'pending' ? 'badge-warning' :
+                    'badge-danger'
+                ));
+
+            $('#viewTaskModal').modal('show');
+        }
+        });
+
+        calendar.render();
+    });
 </script>
+
 
 @endsection
