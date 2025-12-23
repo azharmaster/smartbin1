@@ -308,7 +308,7 @@
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
 
-            <div class="card card-success map-card mb-4">
+            {{-- <div class="card card-success map-card mb-4">
                 <!-- Header always visible -->
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
@@ -375,7 +375,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
            <!-- ASSIGNED TASKS -->
             <div class="card mb-4">
@@ -486,7 +486,7 @@
         <div class="col-lg-6">
 
             <!-- FULL BINS -->
-            <div class="card mb-4" style="max-height: 500px;">
+            {{-- <div class="card mb-4" style="max-height: 500px;">
 
                 <div class="p-3 border-bottom sticky-header card-full">
                     <h5 class="mb-0 text-white">
@@ -497,7 +497,7 @@
                     <div class="full-devices-cards">
 
                         {{-- FULL DEVICES --}}
-                        @foreach($fullDevicesCollection as $device)
+                        {{-- @foreach($fullDevicesCollection as $device)
                             <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                             class="text-decoration-none">
                                 <div class="full-device-card p-3" style="width: 500px;">
@@ -519,11 +519,11 @@
 
                                 </div>
                             </a>
-                        @endforeach
+                        @endforeach --}}
 
 
                         {{-- HALF-FULL DEVICES --}}
-                        @foreach($halfDevicesCollection as $device)
+                        {{-- @foreach($halfDevicesCollection as $device)
                             <a href="{{ route('master-data.assets.details', $device->asset->id) }}"
                             class="text-decoration-none">
                                 <div class="half-device-card p-3" style="width: 500px;">
@@ -548,7 +548,7 @@
                         @endforeach
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", function () {
     @endif
 
     // ✅ ZOOM SETUP
-    let scale = 1;
+    /*-- let scale = 1;
     const mapInner = document.getElementById('dashboardMapInner');   // ✅ FIXED
     const image = document.getElementById('dashboardFloorImage');    // ✅ FIXED
 
@@ -811,7 +811,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             marker.style.display = 'none';
         }
-    });
+    }); */
 
     //COMPLETED TASKS
 const taskCtx = document.getElementById('tasksCompletedChart').getContext('2d');
