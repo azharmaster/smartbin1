@@ -53,11 +53,11 @@
     font-weight: bold;
 }
 
-.card-total { background-color: #8c9195ff; }
-.card-full { background-color: #e74c3c; }
-.card-half { background-color: #f39c12; }
-.card-empty { background-color: #7ccc63; }
-.card-undetected { background-color: #2c3e50; }
+.card-total { background-color: #d2d2cf; }
+.card-full { background-color: #ff7477; }
+.card-half { background-color: #ffdc5e; }
+.card-empty { background-color: #93ff96; }
+.card-undetected { background-color: #b6cbde; }
 .card-primary { background-color: #3f44b5ff;}
 
 /* Container: tighter spacing */
@@ -450,16 +450,24 @@
                 </div>
             </div> --}}
             <!--SMARTBIN TRACK-->
-            <div class="card mb-4">
-                <div class="card-header bg-primary">
-                    <h5 class="mb-0">
-                        <i class="fas fa-trash"></i> SmartBin Clear Time
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="smartBinClearChart" height="120"></canvas>
-                </div>
-            </div>
+<div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white">
+            <i class="fas fa-trash"></i> SmartBin Clear Time
+        </h5>
+    </div>
+    <div class="card-body">
+        <canvas id="smartBinClearChart" height="120"></canvas>
+    </div>
+</div>
+
+<!-- SmartBin Gradient Style -->
+<style>
+.smartbin-gradient {
+    background: linear-gradient(135deg, #0a1f44, #1e90ff);
+}
+</style>
+
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
             <div class="card p-3 mt-4">
                 <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
