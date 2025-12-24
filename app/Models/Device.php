@@ -12,6 +12,7 @@ class Device extends Model
 
     protected $fillable = [
         'asset_id',
+        'id_device',
         'device_name',
     ];
 
@@ -24,11 +25,19 @@ class Device extends Model
     // A Device has many Sensors
     public function sensors()
     {
-        return $this->hasMany(\App\Models\Sensor::class);
+        return $this->hasMany(
+            Sensor::class,
+            'device_id',
+            'id_device'
+        );
     }
 
     public function latestSensor()
     {
-        return $this->hasOne(Sensor::class)->latestOfMany('time');
+        return $this->hasOne(
+            Sensor::class,
+            'device_id',
+            'id_device'
+        )->latestOfMany('time');
     }
 }

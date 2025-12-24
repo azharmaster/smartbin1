@@ -20,6 +20,10 @@ class Sensor extends Model
     // A Sensor belongs to a Device
     public function device()
     {
-        return $this->belongsTo(Device::class);
+        return $this->belongsTo(
+            Device::class,
+            'device_id',
+            'id_device'
+        );
     }
 }

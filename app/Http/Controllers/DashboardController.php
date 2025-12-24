@@ -56,10 +56,6 @@ class DashboardController extends Controller
         ];
 
         $totalTrend = $trend($totalDevices, $previousTotal);
-        $fullTrend = $trend($fullDevices, $previousFull);
-        $halfTrend = $trend($halfDevices, $previousHalf);
-        $emptyTrend = $trend($emptyDevices, $previousEmpty);
-        $undetectedTrend = $trend($undetectedDevices, $previousUndetected);
 
         $floors = Floor::all();
         $assetsWithCoords = Asset::whereNotNull('x')
@@ -122,21 +118,20 @@ class DashboardController extends Controller
             'smartBinClearTimes',
             'calendarEvents', // <-- added
             'totalTrend',      // <-- added
-            'fullTrend',       // <-- added
-            'halfTrend',       // <-- added
-            'emptyTrend',      // <-- added
-            'undetectedTrend'  // <-- added
         ));
     }
 
     /** Load devices with latest sensor and optional before date */
     private function loadDevicesWithLatestSensor($before = null)
     {
-        $query = Device::with('latestSensor', 'asset.floor');
-        if ($before) {
-            $query->where('created_at', '<=', $before);
-        }
-        return $query->get();
+        return Device::with([
+            'asset.floor',
+            'latestSensor' => function ($q) use ($before) {
+                if ($before) {
+                    $q->where('time', '<=', $before);
+                }
+            }
+        ])->get();
     }
 
     private function countFullDevices($devices)
@@ -221,11 +216,11 @@ class DashboardController extends Controller
 
         /** @var \Illuminate\Support\Collection<int, Device> $devices */
         $devices = Device::with([
-                'asset',
-                'sensors' => fn($q) => $q->orderBy('time', 'asc')
-            ])
-            ->whereHas('asset', fn($q) => $q->where('category', 'SmartBin'))
-            ->get();
+            'asset',
+            'sensors' => fn($q) => $q->orderBy('time', 'asc')
+        ])
+        ->whereHas('asset', fn($q) => $q->where('category', 'SmartBin'))
+        ->get();
 
         foreach ($devices as $device) {
             if (!$device->asset) continue;
