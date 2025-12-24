@@ -10,55 +10,115 @@
     gap: 20px;
 }
 
+/* === STATUS CARD CONTAINER === */
 .status-card {
+    position: relative;
+    flex: 1 1 180px;
     width: 19%;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    padding: 18px;
-    background: #fff;
+    height: 150px;
+
+    border-radius: 14px;
+    overflow: hidden;
+
     color: #fff;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    transition: transform .2s ease, box-shadow .2s ease;
     margin-left: 10px;
-    transition: 0.2s ease-in-out;
 }
 
 .status-card:hover {
-    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+}
+
+.status-body {
+    padding: 18px 20px 42px;
+    height: 100%;
+    position: relative;
 }
 
 .status-title {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 600;
-    text-align: center;
-    margin-bottom: 15px;
+    opacity: 0.9;
 }
 
 .status-content {
+    margin-top: 12px;
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: 10px;
 }
 
-.status-icon {
-    font-size: 32px;
-}
-
 .status-number {
-    font-size: 32px;
-    font-weight: bold;
+    font-size: 36px;
+    font-weight: 800;
 }
 
-.card-total { background-color: #8c9195ff; }
-.card-full { background-color: #e74c3c; }
-.card-half { background-color: #f39c12; }
-.card-empty { background-color: #7ccc63; }
-.card-undetected { background-color: #2c3e50; }
-.card-primary { background-color: #3f44b5ff;}
+.status-icon {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    font-size: 48px;
+    opacity: 0.18;
+}
+
+/* TOTAL – strong blue */
+.card-total {
+    background: linear-gradient(135deg, #90caf9, #53a5e9ff);
+}
+.card-total .status-footer {
+    background: linear-gradient(to right, #1e88e5, #1565c0);
+}
+/* FULL – strong red */
+.card-full {
+    background: linear-gradient(135deg, #ef9a9a, #ff4e4bff);
+}
+.card-full .status-footer {
+    background: linear-gradient(to right, #e53935, #b71c1c);
+}
+/* HALF – strong orange */
+.card-half {
+    background: linear-gradient(135deg, #ffcc80, #fe9515ff);
+}
+.card-half .status-footer {
+    background: linear-gradient(to right, #fb8c00, #e65100);
+}
+/* EMPTY – strong green */
+.card-empty {
+    background: linear-gradient(135deg, #a5d6a7, #59c35eff);
+}
+.card-empty .status-footer {
+    background: linear-gradient(to right, #43a047, #1b5e20);
+}
+/* UNDETECTED – dark gray */
+.card-undetected {
+    background: linear-gradient(135deg, #bdbdbd, #616161);
+}
+.card-undetected .status-footer {
+    background: linear-gradient(to right, #616161, #212121);
+}
+
+.status-trend {
+    font-size: 12px;
+    margin-top: 8px;
+    color: #000000ff;
+}
+
+.status-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+
+    background: rgba(0,0,0,0.25);
+}
+
 
 /* Container: tighter spacing */
 .full-devices-cards {
@@ -130,132 +190,6 @@
     font-size: 1.3rem;
     font-weight: bold;
 }
-
-
-.floor-frame {
-    margin-top: 40px;
-    width: 600px;
-    max-width: 100%;
-    padding: 20px;
-    border-radius: 12px;
-    border: 2px solid #ddd;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    background-color: #fff;
-}
-
-.floor-frame select {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-}
-
-.floor-frame img {
-    width: 100%;
-    height: 350px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid #aaa;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.floor-frame img:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-
-.bins-container {
-    margin-top: 40px;
-    width: 100%;
-    max-width: 100%;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    background-color: #fff;
-    padding: 20px;
-}
-
-.bins-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.bins-header h2 {
-    font-size: 1.4rem;
-}
-
-.bin-count {
-    font-weight: bold;
-}
-/*
-.collapse-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-}
-*/
-.bins-list {
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-.bin-card {
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #f5f5f5;
-}
-
-.bin-card.warning { background-color: #f8d7da; }
-.bin-card.normal { background-color: #d4edda; }
-
-.bin-progress {
-    width: 100%;
-    background-color: #e9ecef;
-    height: 10px;
-    border-radius: 6px;
-    margin-top: 5px;
-}
-
-.bin-progress-bar {
-    height: 10px;
-    border-radius: 6px;
-}
-
-.progress-warning { background-color: #e74c3c; }
-.progress-normal { background-color: #7ccc63; }
-
-.bin-details {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-}
-
-#mapAndList {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 25px;
-    margin-top: 40px;
-}
-
-.floor-frame {
-    width: 45%;
-}
-
-.bins-container {
-    width: 55%;
-}
-
-.map-card-body {
-    overflow: hidden;
-    height: 650px; /* initial height */
-    transition: height 0.3s ease; /* smooth animation */
-}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -264,66 +198,71 @@
 
 @php
 function trend($current, $previous) {
-    if ($current > $previous) return ['▲', 'text-success'];
-    if ($current < $previous) return ['▼', 'text-danger'];
+    if ($current > $previous) return ['▲'];
+    if ($current < $previous) return ['▼'];
     return ['—', 'text-muted'];
 }
 @endphp
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
-        <div class="status-title">Total Devices</div>
-        <div class="status-content">
-            <i class="fas fa-satellite-dish status-icon"></i>
-            <span class="status-number">{{ $totalDevices }}</span>
+        <div class="status-body">
+            <div class="status-title">Total Devices</div>
+            <div class="status-content">
+                <i class="fas fa-satellite-dish status-icon"></i>
+                <span class="status-number">{{ $totalDevices }}</span>
+            </div>
         </div>
-        <div class="status-trend {{ $totalTrend['class'] }}">
-            {{ $totalTrend['icon'] }} {{ $totalTrend['value'] }} <small>vs last month</small>
+        <div class="status-footer">
+            <span class="status-trend-footer">
+                {{ $totalTrend['icon'] }}
+                {{ $totalTrend['value'] }}
+            </span>
         </div>
     </div>
 
     <div class="status-card card-full">
-        <div class="status-title">Full Devices</div>
-        <div class="status-content">
-            <i class="fas fa-trash status-icon"></i>
-            <span class="status-number">{{ $fullDevices }}</span>
+        <div class="status-body">
+            <div class="status-title">Full Devices</div>
+            <div class="status-content">
+                <i class="fas fa-trash status-icon"></i>
+                <span class="status-number">{{ $fullDevices }}</span>
+            </div>
         </div>
-        <div class="status-trend {{ $fullTrend['class'] }}">
-            {{ $fullTrend['icon'] }} {{ $fullTrend['value'] }} <small>vs last month</small>
-        </div>
+        <div class="status-footer">More info</div>
     </div>
 
     <div class="status-card card-half">
-        <div class="status-title ">Half Full</div>
-        <div class="status-content">
-            <i class="fas fa-exclamation-triangle status-icon"></i>
-            <span class="status-number">{{ $halfDevices }}</span>
+        <div class="status-body">
+            <div class="status-title">Half Full</div>
+            <div class="status-content">
+                <i class="fas fa-exclamation-triangle status-icon"></i>
+                <span class="status-number">{{ $halfDevices }}</span>
+            </div>
         </div>
-        <div class="status-trend {{ $halfTrend['class'] }}">
-            {{ $halfTrend['icon'] }} {{ $halfTrend['value'] }} <small>vs last month</small>
-        </div>
+        <div class="status-footer">More info</div>
     </div>
 
     <div class="status-card card-empty">
-        <div class="status-title">Empty Devices</div>
-        <div class="status-content">
-            <i class="fas fa-recycle status-icon"></i>
-            <span class="status-number">{{ $emptyDevices }}</span>
+        <div class="status-body">
+            <div class="status-title">Empty Devices</div>
+            <div class="status-content">
+                <i class="fas fa-recycle status-icon"></i>
+                <span class="status-number">{{ $emptyDevices }}</span>
+            </div>
         </div>
-        <div class="status-trend {{ $emptyTrend['class'] }}">
-            {{ $emptyTrend['icon'] }} {{ $emptyTrend['value'] }} <small>vs last month</small>
-        </div>
+        <div class="status-footer">More info</div>
     </div>
 
     <div class="status-card card-undetected">
-        <div class="status-title">Undetected</div>
-        <div class="status-content">
-            <i class="fas fa-minus-circle status-icon"></i>
-            <span class="status-number">{{ $undetectedDevices }}</span>
+        <div class="status-body">
+            <div class="status-title">Undetected</div>
+            <div class="status-content">
+                <i class="fas fa-minus-circle status-icon"></i>
+                <span class="status-number">{{ $undetectedDevices }}</span>
+            </div>
         </div>
-        <div class="status-trend {{ $undetectedTrend['class'] }}">
-            {{ $undetectedTrend['icon'] }} {{ $undetectedTrend['value'] }} <small>vs last month</small>
-        </div>
+        <div class="status-footer">More info</div>
     </div>
 </div>
 
