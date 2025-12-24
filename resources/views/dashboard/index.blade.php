@@ -53,11 +53,11 @@
     font-weight: bold;
 }
 
-.card-total { background-color: #d2d2cf; }
-.card-full { background-color: #ff7477; }
-.card-half { background-color: #ffdc5e; }
-.card-empty { background-color: #93ff96; }
-.card-undetected { background-color: #b6cbde; }
+.card-total { background-color: #808080; }
+.card-full { background-color: #FF0000; }
+.card-half { background-color: #FFFF00; }
+.card-empty { background-color: #00FF00; }
+.card-undetected { background-color: #000080; }
 .card-primary { background-color: #3f44b5ff;}
 
 /* Container: tighter spacing */
@@ -367,38 +367,45 @@
             </div>
 
             <style>
-            /* Remove underline / hover highlight on day numbers */
-            .fc-daygrid-day-number {
-                text-decoration: none !important;
-            }
+/* Remove underline / hover highlight on day numbers */
+.fc-daygrid-day-number {
+    text-decoration: none !important;
+}
 
-            /* Change hover background */
-            .fc-daygrid-day:hover {
-                background-color: #f4f6f9;
-            }
+/* Change hover background */
+.fc-daygrid-day:hover {
+    background-color: #f4f6f9;
+}
 
-            /* Today highlight */
-            .fc-day-today {
-                background-color: rgba(0, 123, 255, 0.1) !important;
-            }
+/* Today highlight */
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
 
-            /* Event style */
-            .fc-event {
-                border-radius: 6px;
-                padding: 2px 4px;
-                font-size: 0.85rem;
-            }
+/* Event style */
+.fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+}
 
-            /* Add gap between view buttons (Month / Week / Day) */
-            .fc .fc-button-group {
-                gap: 6px;
-            }
+/* Add gap between view buttons (Month / Week / Day) */
+.fc .fc-button-group {
+    gap: 6px;
+}
 
-            /* Optional: make buttons slightly rounded */
-            .fc .fc-button {
-                border-radius: 6px;
-            }
-            </style>
+/* Optional: make buttons slightly rounded */
+.fc .fc-button {
+    border-radius: 6px;
+}
+
+/* ============================= */
+/* Gradient Header (Added Only)  */
+/* ============================= */
+.card-header.bg-primary {
+    background: linear-gradient(135deg, #0a1f44, #1e90ff) !important;
+}
+</style>
 
             <!-- TODO LIST -->
             <div class="card p-3">
