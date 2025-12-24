@@ -111,12 +111,42 @@
     left: 0;
     right: 0;
 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
     padding: 8px 14px;
     font-size: 12px;
     font-weight: 600;
-    text-align: right;
 
+    color: #fff;
     background: rgba(0,0,0,0.25);
+}
+
+/* LEFT – trend */
+.status-trend-footer {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #fff;
+}
+
+.status-trend-footer small {
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+}
+
+/* RIGHT – more info */
+.status-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+    transition: opacity .2s ease;
+}
+
+.status-card:hover .status-more {
+    opacity: 1;
 }
 
 
@@ -218,6 +248,10 @@ function trend($current, $previous) {
                 {{ $totalTrend['icon'] }}
                 {{ $totalTrend['value'] }}
             </span>
+
+            <span class="status-more">
+                More info <i class="fas fa-arrow-circle-right"></i>
+            </span>
         </div>
     </div>
 
@@ -229,7 +263,12 @@ function trend($current, $previous) {
                 <span class="status-number">{{ $fullDevices }}</span>
             </div>
         </div>
-        <div class="status-footer">More info</div>
+        <div class="status-footer">
+            <span class="status-trend-footer"></span>
+            <span class="status-more">
+                More info <i class="fas fa-arrow-circle-right"></i>
+            </span>
+        </div>
     </div>
 
     <div class="status-card card-half">
@@ -240,7 +279,12 @@ function trend($current, $previous) {
                 <span class="status-number">{{ $halfDevices }}</span>
             </div>
         </div>
-        <div class="status-footer">More info</div>
+        <div class="status-footer">
+            <span class="status-trend-footer"></span>
+            <span class="status-more">
+                More info <i class="fas fa-arrow-circle-right"></i>
+            </span>
+        </div>
     </div>
 
     <div class="status-card card-empty">
@@ -251,7 +295,12 @@ function trend($current, $previous) {
                 <span class="status-number">{{ $emptyDevices }}</span>
             </div>
         </div>
-        <div class="status-footer">More info</div>
+        <div class="status-footer">
+            <span class="status-trend-footer"></span>
+            <span class="status-more">
+                More info <i class="fas fa-arrow-circle-right"></i>
+            </span>
+        </div>
     </div>
 
     <div class="status-card card-undetected">
@@ -262,7 +311,12 @@ function trend($current, $previous) {
                 <span class="status-number">{{ $undetectedDevices }}</span>
             </div>
         </div>
-        <div class="status-footer">More info</div>
+        <div class="status-footer">
+            <span class="status-trend-footer"></span>
+            <span class="status-more">
+                More info <i class="fas fa-arrow-circle-right"></i>
+            </span>
+        </div>
     </div>
 </div>
 
