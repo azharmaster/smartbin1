@@ -342,7 +342,7 @@ function trend($current, $previous) {
 <!-- SmartBin Gradient Style -->
 <style>
 .smartbin-gradient {
-    background: linear-gradient(135deg, #0a1f44, #1e90ff);
+    background: linear-gradient(135deg, #b9e2f5, #50b8e7);
 }
 </style>
 
@@ -422,7 +422,7 @@ function trend($current, $previous) {
 /* Gradient Header (Added Only)  */
 /* ============================= */
 .card-header.bg-primary {
-    background: linear-gradient(135deg, #0a1f44, #1e90ff) !important;
+    background: linear-gradient(135deg, #50b8e7, #b9e2f5) !important;
 }
 </style>
 
