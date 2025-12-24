@@ -22,7 +22,7 @@
           rgba(0, 0, 0, 0.55),
           rgba(0, 0, 0, 0.55)
         ),
-        url("{{ asset('uploads/images/wallpaper1.png') }}") no-repeat center center fixed;
+        url("{{ asset('uploads/images/mrt-plaza-entrance-of.jpg') }}") no-repeat center center fixed;
       background-size: cover;
     }
 
