@@ -76,5 +76,96 @@
     </nav>
     <!-- /.sidebar-menu -->
 </div>
+<style>
+/* -----------------------------
+   Live Gradient Sidebar
+---------------------------------*/
+.main-sidebar {
+    position: relative;
+    overflow: hidden; /* hide overflow for animation */
+    background: linear-gradient(-45deg, #414a4c, #3b444b, #8a8583, #232b2b, #414a4c);
+    background-size: 600% 600%;
+    animation: live-gradient 10s ease infinite;
+    transition: background 0.3s;
+}
+
+/* Animate the gradient */
+@keyframes live-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* -----------------------------
+   Floating overlay shapes
+---------------------------------*/
+.main-sidebar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+    animation: flow 12s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Flowing diagonal movement */
+@keyframes flow {
+    0%   { transform: rotate(0deg) translate(0, 0); }
+    50%  { transform: rotate(15deg) translate(20%, 20%); }
+    100% { transform: rotate(0deg) translate(0, 0); }
+}
+
+/* -----------------------------
+   Active Link Glow
+---------------------------------*/
+.nav-sidebar .nav-link.active {
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.6);
+    transition: background 0.3s, box-shadow 0.3s;
+    z-index: 1;
+}
+
+.nav-sidebar .nav-link.active:hover {
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 0 20px rgba(255,255,255,0.8);
+}
+
+/* -----------------------------
+   Active Icon Pulse
+---------------------------------*/
+.nav-sidebar .nav-link.active .nav-icon {
+    animation: pulse-icon 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-icon {
+    0% { transform: scale(1); color: #ffffff; text-shadow: 0 0 0px rgba(255,255,255,0); }
+    50% { transform: scale(1.2); color: #ffffff; text-shadow: 0 0 12px rgba(255,255,255,0.6); }
+    100% { transform: scale(1); color: #ffffff; text-shadow: 0 0 0px rgba(255,255,255,0); }
+}
+
+/* -----------------------------
+   Hover effect for all links
+---------------------------------*/
+.nav-sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s;
+}
+
+.nav-sidebar .nav-link .nav-icon:hover {
+    transform: scale(1.15);
+    transition: transform 0.3s;
+}
+
+</style>
+
+
+
+
+
 <!-- /.sidebar -->
 </aside>
