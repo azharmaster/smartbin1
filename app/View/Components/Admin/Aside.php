@@ -66,42 +66,42 @@ class Aside extends Component
                         "route_active" => "users.*",
                         "is_dropdown" => false
                     ],
-                    [
-                        "label" => "Floor",
-                        "icon" => "fa-solid fas fa-building",
-                        "color" => "#f6c23e",
-                        "route_name" => "floors.index",
-                        "route_active" => "floors.*",
-                        "is_dropdown" => false
-                    ],
-                    [
-                        "label" => "Assign Tasks",
-                        "icon" => "fas fa-tasks",
-                        "color" => "#e74a3b",
-                        "route_name" => "tasks.index",
-                        "route_active" => "tasks.*",
-                        "is_dropdown" => false
-                    ],
-                    [
-                        "label" => "Schedule",
-                        "icon" => "fas fa-calendar-alt",
-                        "color" => "#858796",
-                        "route_name" => "schedules.index",
-                        "route_active" => "schedules.*",
-                        "is_dropdown" => false
-                    ],
+                    // [
+                    //     "label" => "Floor",
+                    //     "icon" => "fa-solid fas fa-building",
+                    //     "color" => "#f6c23e",
+                    //     "route_name" => "floors.index",
+                    //     "route_active" => "floors.*",
+                    //     "is_dropdown" => false
+                    // ],
+                    // [
+                    //     "label" => "Assign Tasks",
+                    //     "icon" => "fas fa-tasks",
+                    //     "color" => "#e74a3b",
+                    //     "route_name" => "tasks.index",
+                    //     "route_active" => "tasks.*",
+                    //     "is_dropdown" => false
+                    // ],
+                    // [
+                    //     "label" => "Schedule",
+                    //     "icon" => "fas fa-calendar-alt",
+                    //     "color" => "#858796",
+                    //     "route_name" => "schedules.index",
+                    //     "route_active" => "schedules.*",
+                    //     "is_dropdown" => false
+                    // ],
                 ]
             ],
 
             // Leave (UNCHANGED)
-            [
-                "label" => "Leave",
-                "icon" => "fas fa-calendar-alt",
-                "color" => "#fd7e14",
-                "route_active" => "staff.leave.*",
-                "is_dropdown" => false,
-                "route_name" => "admin.leave.index",
-            ],
+            // [
+            //     "label" => "Leave",
+            //     "icon" => "fas fa-calendar-alt",
+            //     "color" => "#fd7e14",
+            //     "route_active" => "staff.leave.*",
+            //     "is_dropdown" => false,
+            //     "route_name" => "admin.leave.index",
+            // ],
 
             // Collective (UNCHANGED)
             [
@@ -125,20 +125,20 @@ class Aside extends Component
                         "icon" => "fas fa-circle",
                         "color" => "#1cc88a",
                     ],
-                    [
-                        "label" => "Sensor",
-                        "route_active" => "sensors.*",
-                        "route_name" => "sensors.index",
-                        "icon" => "fas fa-circle",
-                        "color" => "#f6c23e",
-                    ],
-                    [
-                        "label" => "Complaints",
-                        "route_active" => "complaints.*",
-                        "route_name" => "complaints.index",
-                        "icon" => "fas fa-circle",
-                        "color" => "#e74a3b",
-                    ],
+                    // [
+                    //     "label" => "Sensor",
+                    //     "route_active" => "sensors.*",
+                    //     "route_name" => "sensors.index",
+                    //     "icon" => "fas fa-circle",
+                    //     "color" => "#f6c23e",
+                    // ],
+                    // [
+                    //     "label" => "Complaints",
+                    //     "route_active" => "complaints.*",
+                    //     "route_name" => "complaints.index",
+                    //     "icon" => "fas fa-circle",
+                    //     "color" => "#e74a3b",
+                    // ],
                 ]
             ],
 

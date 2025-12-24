@@ -378,7 +378,7 @@
             </div> --}}
 
            <!-- ASSIGNED TASKS -->
-            <div class="card mb-4">
+            {{-- <div class="card mb-4">
                 <div class="card-header card-half bg-info">
                     <h5 class="mb-0">
                         <i class="fas fa-tasks"></i> Assigned Tasks
@@ -437,9 +437,9 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div> --}}
             <!-- COMPLETED TASK GRAPH-->
-            <div class="card mb-4">
+            {{-- <div class="card mb-4">
                 <div class="card-header bg-secondary">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-bar"></i> Tasks Completed (This Month)
@@ -448,7 +448,7 @@
                 <div class="card-body">
                     <canvas id="tasksCompletedChart" height="120"></canvas>
                 </div>
-            </div>
+            </div> --}}
             <!--SMARTBIN TRACK-->
             <div class="card mb-4">
                 <div class="card-header bg-primary">
@@ -599,7 +599,7 @@
             </style>
 
             <!-- LATEST COMPLAINTS -->
-            <div class="card mb-4">
+            {{-- <div class="card mb-4">
                 <div class="card-header card-full text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-exclamation-circle"></i> Latest Complaints
@@ -652,7 +652,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div> --}}
             <!-- TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3">
@@ -814,7 +814,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }); */
 
     //COMPLETED TASKS
-const taskCtx = document.getElementById('tasksCompletedChart').getContext('2d');
+/*const taskCtx = document.getElementById('tasksCompletedChart').getContext('2d');
 
 const taskGradient = taskCtx.createLinearGradient(0, 0, 0, 300);
 taskGradient.addColorStop(0, 'rgba(40, 167, 69, 0.9)');
@@ -866,7 +866,7 @@ new Chart(taskCtx, {
         }
     }
 });
-
+*/
     //smartbin tracker
 const binCtx = document.getElementById('smartBinClearChart').getContext('2d');
 
