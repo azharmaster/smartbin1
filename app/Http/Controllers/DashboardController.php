@@ -35,6 +35,32 @@ class DashboardController extends Controller
         $emptyDevices = $this->countEmptyDevices($devices);
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
+        /* ------------------------------
+         | TREND CALCULATION
+         |------------------------------*/
+        $lastMonth = Carbon::now()->subMonth();
+
+        $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
+
+        $previousTotal = $previousDevices->count();
+        $previousFull = $this->countFullDevices($previousDevices)->count();
+        $previousHalf = $this->countHalfDevices($previousDevices)->count();
+        $previousEmpty = $this->countEmptyDevices($previousDevices);
+        $previousUndetected = $this->countUndetectedDevices($previousDevices);
+
+        // Helper function
+        $trend = fn($current, $previous) => [
+            'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
+            'value' => abs($current - $previous),
+            'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
+        ];
+
+        $totalTrend = $trend($totalDevices, $previousTotal);
+        $fullTrend = $trend($fullDevices, $previousFull);
+        $halfTrend = $trend($halfDevices, $previousHalf);
+        $emptyTrend = $trend($emptyDevices, $previousEmpty);
+        $undetectedTrend = $trend($undetectedDevices, $previousUndetected);
+
         $floors = Floor::all();
         $assetsWithCoords = Asset::whereNotNull('x')
                                  ->whereNotNull('y')
@@ -94,14 +120,23 @@ class DashboardController extends Controller
             'latestComplaints',
             'tasksCompletedPerStaff',
             'smartBinClearTimes',
-            'calendarEvents' // <-- added
+            'calendarEvents', // <-- added
+            'totalTrend',      // <-- added
+            'fullTrend',       // <-- added
+            'halfTrend',       // <-- added
+            'emptyTrend',      // <-- added
+            'undetectedTrend'  // <-- added
         ));
     }
 
-    /** Load devices with latest sensor and asset-floor relationship */
-    private function loadDevicesWithLatestSensor()
+    /** Load devices with latest sensor and optional before date */
+    private function loadDevicesWithLatestSensor($before = null)
     {
-        return Device::with('latestSensor', 'asset.floor')->get();
+        $query = Device::with('latestSensor', 'asset.floor');
+        if ($before) {
+            $query->where('created_at', '<=', $before);
+        }
+        return $query->get();
     }
 
     private function countFullDevices($devices)

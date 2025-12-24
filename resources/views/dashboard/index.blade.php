@@ -262,6 +262,13 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
+@php
+function trend($current, $previous) {
+    if ($current > $previous) return ['▲', 'text-success'];
+    if ($current < $previous) return ['▼', 'text-danger'];
+    return ['—', 'text-muted'];
+}
+@endphp
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
@@ -270,33 +277,52 @@
             <i class="fas fa-satellite-dish status-icon"></i>
             <span class="status-number">{{ $totalDevices }}</span>
         </div>
+        <div class="status-trend {{ $totalTrend['class'] }}">
+            {{ $totalTrend['icon'] }} {{ $totalTrend['value'] }} <small>vs last month</small>
+        </div>
     </div>
+
     <div class="status-card card-full">
         <div class="status-title">Full Devices</div>
         <div class="status-content">
             <i class="fas fa-trash status-icon"></i>
             <span class="status-number">{{ $fullDevices }}</span>
         </div>
+        <div class="status-trend {{ $fullTrend['class'] }}">
+            {{ $fullTrend['icon'] }} {{ $fullTrend['value'] }} <small>vs last month</small>
+        </div>
     </div>
+
     <div class="status-card card-half">
         <div class="status-title ">Half Full</div>
         <div class="status-content">
             <i class="fas fa-exclamation-triangle status-icon"></i>
             <span class="status-number">{{ $halfDevices }}</span>
         </div>
+        <div class="status-trend {{ $halfTrend['class'] }}">
+            {{ $halfTrend['icon'] }} {{ $halfTrend['value'] }} <small>vs last month</small>
+        </div>
     </div>
+
     <div class="status-card card-empty">
         <div class="status-title">Empty Devices</div>
         <div class="status-content">
             <i class="fas fa-recycle status-icon"></i>
             <span class="status-number">{{ $emptyDevices }}</span>
         </div>
+        <div class="status-trend {{ $emptyTrend['class'] }}">
+            {{ $emptyTrend['icon'] }} {{ $emptyTrend['value'] }} <small>vs last month</small>
+        </div>
     </div>
+
     <div class="status-card card-undetected">
         <div class="status-title">Undetected</div>
         <div class="status-content">
             <i class="fas fa-minus-circle status-icon"></i>
             <span class="status-number">{{ $undetectedDevices }}</span>
+        </div>
+        <div class="status-trend {{ $undetectedTrend['class'] }}">
+            {{ $undetectedTrend['icon'] }} {{ $undetectedTrend['value'] }} <small>vs last month</small>
         </div>
     </div>
 </div>
