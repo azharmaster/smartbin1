@@ -8,8 +8,30 @@
          alt="Floor Map"
          style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
     
-    <div id="marker"
-         style="position: absolute; width: 24px; height: 24px; background-color: red; border-radius: 50%; cursor: grab; left: {{ $asset->x ?? 0 }}px; top: {{ $asset->y ?? 0 }}px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
+    @php
+        $maxCapacity = $asset->devices
+            ->map(fn($d) => $d->sensors->first()->capacity ?? 0)
+            ->max();
+
+        if ($maxCapacity >= 86) {
+            $markerColor = '#e74c3c'; // red
+            $glowColor   = '#ff6b6b';
+        } elseif ($maxCapacity >= 41) {
+            $markerColor = '#f1c40f'; // yellow
+            $glowColor   = '#ffe066';
+        } else {
+            $markerColor = '#2ecc71'; // green
+            $glowColor   = '#6bff95';
+        }
+    @endphp
+    <div id="marker" data-asset-id="{{ $asset->id }}" data-floor-id="{{ $asset->floor_id }}" title="{{ $asset->asset_name ?? 'Asset' }}"
+        style="position: absolute;
+            width: 24px; height: 24px;
+            left: calc({{ $asset->x }}px - 18px);
+            top: calc({{ $asset->y }}px);">
+        <i class="fas fa-trash-alt" style="font-size: 22px; color: {{ $markerColor }}; filter: drop-shadow(0 0 6px {{ $glowColor }});"></i>
+    </div>
+
 </div>
 
     <!-- Right Column: Asset & Device Details -->

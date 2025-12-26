@@ -123,6 +123,15 @@
     background: rgba(0,0,0,0.25);
 }
 
+a.status-footer {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.status-footer:hover {
+    text-decoration: none;
+}
+
 /* LEFT – trend */
 .status-trend-footer {
     display: inline-flex;
@@ -220,6 +229,7 @@
     font-size: 1.3rem;
     font-weight: bold;
 }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -264,10 +274,12 @@ function trend($current, $previous) {
             </div>
         </div>
         <div class="status-footer">
-            <span class="status-trend-footer"></span>
-            <span class="status-more">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </span>
+            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
         </div>
     </div>
 
@@ -280,10 +292,12 @@ function trend($current, $previous) {
             </div>
         </div>
         <div class="status-footer">
-            <span class="status-trend-footer"></span>
-            <span class="status-more">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </span>
+            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
         </div>
     </div>
 
@@ -296,10 +310,12 @@ function trend($current, $previous) {
             </div>
         </div>
         <div class="status-footer">
-            <span class="status-trend-footer"></span>
-            <span class="status-more">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </span>
+            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
         </div>
     </div>
 
