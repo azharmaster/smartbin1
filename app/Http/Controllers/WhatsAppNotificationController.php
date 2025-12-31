@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsAppNotification;
-use App\Models\User; // <-- add this to fetch supervisors
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class WhatsAppNotificationController extends Controller
@@ -40,7 +40,8 @@ class WhatsAppNotificationController extends Controller
 
         WhatsAppNotification::create($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
 
-        return redirect()->route('whatsapp.index')->with('success', 'Notification created.');
+        return redirect()->route('whatsapp.index')
+                         ->with('success', 'Notification created.');
     }
 
     /**
@@ -66,7 +67,8 @@ class WhatsAppNotificationController extends Controller
 
         $notification->update($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
 
-        return redirect()->route('whatsapp.index')->with('success', 'Notification updated.');
+        return redirect()->route('whatsapp.index')
+                         ->with('success', 'Notification updated.');
     }
 
     /**
@@ -75,11 +77,13 @@ class WhatsAppNotificationController extends Controller
     public function destroy(WhatsAppNotification $notification)
     {
         $notification->delete();
-        return redirect()->route('whatsapp.index')->with('success', 'Notification deleted.');
+
+        return redirect()->route('whatsapp.index')
+                         ->with('success', 'Notification deleted.');
     }
 
     /**
-     * Manually send a WhatsApp notification.
+     * Manually send a WhatsApp notification to all supervisors.
      */
     public function sendNow(WhatsAppNotification $notification)
     {
@@ -90,18 +94,17 @@ class WhatsAppNotificationController extends Controller
     }
 
     /**
-     * Protected method to send WhatsApp to all supervisors (role = 4).
+     * Send WhatsApp to all supervisors (role = 4) using Fonnte API.
      */
     protected function sendWhatsApp(WhatsAppNotification $notification)
     {
-        $token = "PDVc#7eH-4YXkXcR5Yvn"; // Your WhatsApp token
+        $token = "PDVc#7eH-4YXkXcR5Yvn";
 
-        // Get all supervisors (role = 4)
-        $supervisors = User::where('role', 4)->get();
+        $supervisors = User::where('role', 4)
+                           ->whereNotNull('phone') // ensure phone exists
+                           ->pluck('phone');
 
-        foreach ($supervisors as $supervisor) {
-            $phone = $supervisor->mobile; // or whatsapp_number if you store it differently
-
+        foreach ($supervisors as $phone) {
             $curl = curl_init();
             curl_setopt_array($curl, [
                 CURLOPT_URL => 'https://api.fonnte.com/send',
