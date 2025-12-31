@@ -25,6 +25,7 @@ use App\View\Components\Staff\StaffAside;
 use App\Http\Controllers\AdminMainDashboardController;
 use App\Http\Controllers\SupervisorMainDashboardController;
 use App\Http\Controllers\SupervisorDashboardController;
+use App\Http\Controllers\WhatsAppNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -286,3 +287,10 @@ Route::get('/supervisor/dashboard', [SupervisorDashboardController::class, 'inde
 
 Route::get('/supervisor/main-dashboard', [SupervisorMainDashboardController::class, 'index'])
     ->name('supervisor.main_dashboard');    
+
+// WhatsApp Notification CRUD routes
+Route::resource('whatsapp', WhatsAppNotificationController::class);
+
+// Optional: Manual send route for a single notification
+Route::post('whatsapp/{notification}/send', [WhatsAppNotificationController::class, 'sendNow'])
+    ->name('whatsapp.send');

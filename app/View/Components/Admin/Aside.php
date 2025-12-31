@@ -66,6 +66,14 @@ class Aside extends Component
                         "route_active" => "users.*",
                         "is_dropdown" => false
                     ],
+                    [
+                        "label" => "Notification",
+                        "icon" => "fas fa-bell",
+                        "color" => "#f6c23e",
+                        "route_name" => "whatsapp.index",
+                        "route_active" => "whatsapp.*",
+                        "is_dropdown" => false
+                    ],
                     // [
                     //     "label" => "Floor",
                     //     "icon" => "fa-solid fas fa-building",
