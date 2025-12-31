@@ -1,44 +1,64 @@
 <?php
+
+use App\Models\WhatsAppNotification;
+use App\Models\User;
+
+// Include Laravel bootstrap if running standalone
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+// Set your WhatsApp token
 $token = "PDVc#7eH-4YXkXcR5Yvn";
-$target = "601136820907";
 
-$message = "🚀 *SPECIAL OFFER!* 🚀\n\n" .
-           "Get 50% OFF on all products this weekend!\n\n" .
-           "✨ Features:\n" .
-           "• Premium Quality\n" .
-           "• Fast Delivery\n" .
-           "• 24/7 Support\n\n" .
-           "🛒 Shop now: https://example.com\n" .
-           "📞 Contact: +1234567890\n\n" .
-           "#SpecialOffer #Discount #Sale";
+// Get the notification ID (e.g., from query string or manually set)
+$notificationId = $argv[1] ?? null;
 
-$curl = curl_init();
-curl_setopt_array($curl, array(
-    CURLOPT_URL => 'https://api.fonnte.com/send',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_ENCODING => '',
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => 'POST',
-    CURLOPT_POSTFIELDS => array(
-        'target' => $target,
-        'message' => $message,
-        'countryCode' => '60',
-    ),
-    CURLOPT_HTTPHEADER => array(
-        "Authorization: $token"
-    ),
-));
-
-$response = curl_exec($curl);
-if (curl_errno($curl)) {
-    echo "Error: " . curl_error($curl);
-} else {
-    echo "Promotion message sent successfully to $target\n";
-    echo "Response: " . $response;
+if (!$notificationId) {
+    die("Please provide a notification ID as argument.\n");
 }
 
-curl_close($curl);
-?>
+// Fetch the notification
+$notification = WhatsAppNotification::find($notificationId);
+
+if (!$notification) {
+    die("Notification ID {$notificationId} not found.\n");
+}
+
+// Fetch all supervisors (role = 4)
+$supervisors = User::where('role', 4)
+                   ->whereNotNull('mobile')
+                   ->pluck('mobile');
+
+foreach ($supervisors as $phone) {
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => 'https://api.fonnte.com/send',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => [
+            'target' => $phone,
+            'message' => $notification->message,
+            'countryCode' => '60',
+        ],
+        CURLOPT_HTTPHEADER => [
+            "Authorization: $token"
+        ],
+    ]);
+
+    $response = curl_exec($curl);
+
+    if (curl_errno($curl)) {
+        echo "Failed to send WhatsApp to {$phone}: " . curl_error($curl) . "\n";
+    } else {
+        echo "WhatsApp sent to {$phone}: {$response}\n";
+    }
+
+    curl_close($curl);
+}
+
+// Update last_sent_at
+$notification->update(['last_sent_at' => now()]);
+
+echo "Notification ID {$notificationId} sent to all supervisors.\n";
