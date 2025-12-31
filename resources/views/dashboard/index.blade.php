@@ -387,61 +387,6 @@ function trend($current, $previous) {
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
 
-            <!-- Activity Calendar -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-calendar-alt mr-2"></i>
-                        Activity Calendar
-                    </h5>
-                </div>
-
-                <div class="card-body p-2">
-                    <div id="supervisorCalendar"></div>
-                </div>
-            </div>
-
-            <style>
-/* Remove underline / hover highlight on day numbers */
-.fc-daygrid-day-number {
-    text-decoration: none !important;
-}
-
-/* Change hover background */
-.fc-daygrid-day:hover {
-    background-color: #f4f6f9;
-}
-
-/* Today highlight */
-.fc-day-today {
-    background-color: rgba(0, 123, 255, 0.1) !important;
-}
-
-/* Event style */
-.fc-event {
-    border-radius: 6px;
-    padding: 2px 4px;
-    font-size: 0.85rem;
-}
-
-/* Add gap between view buttons (Month / Week / Day) */
-.fc .fc-button-group {
-    gap: 6px;
-}
-
-/* Optional: make buttons slightly rounded */
-.fc .fc-button {
-    border-radius: 6px;
-}
-
-/* ============================= */
-/* Gradient Header (Added Only)  */
-/* ============================= */
-.card-header.bg-primary {
-    background: linear-gradient(135deg, #50b8e7, #b9e2f5) !important;
-}
-</style>
-
             <!-- TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3">
@@ -600,52 +545,6 @@ new Chart(binCtx, {
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="dist/js/adminlte.min.js"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const calendarEl = document.getElementById('supervisorCalendar');
-    if (!calendarEl) return;
-
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        height: 550,
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
-        },
-        events: {!! json_encode($calendarEvents) !!},
-        eventDisplay: 'block',
-
-eventClick: function(info) {
-    const event = info.event;
-    const props = event.extendedProps;
-
-    $('#taskId').text(event.id);
-    $('#taskUser').text(props.user);
-    $('#taskAsset').text(props.asset);
-    $('#taskFloor').text(props.floor);
-    $('#taskDescription').text(event.title);
-    $('#taskNotes').text(props.notes);
-
-    $('#taskStatus')
-        .text(props.status.replace('_', ' '))
-        .removeClass()
-        .addClass('badge ' + (
-            props.status === 'completed' ? 'badge-success' :
-            props.status === 'in_progress' ? 'badge-info' :
-            props.status === 'pending' ? 'badge-warning' :
-            'badge-danger'
-        ));
-
-    $('#viewTaskModal').modal('show');
-}
-    });
-
-    calendar.render();
-
-});
-</script>
 
 
 
