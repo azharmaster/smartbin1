@@ -23,6 +23,7 @@ use App\Http\Controllers\StaffLeaveController;
 use App\View\Components\Admin\Aside;
 use App\View\Components\Staff\StaffAside;
 use App\Http\Controllers\AdminMainDashboardController;
+use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\SupervisorMainDashboardController;
 use App\Http\Controllers\SupervisorDashboardController;
 use App\Http\Controllers\WhatsAppNotificationController;
@@ -171,6 +172,10 @@ Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assi
         Route::put('/{id}', 'update')->name('update'); 
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
+
+    Route::get('/summary', [SummaryController::class, 'index'])
+    ->middleware('auth')
+    ->name('summary');
 });
 
 // Staff dashboard routes

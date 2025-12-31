@@ -11,15 +11,8 @@ $kernel->bootstrap();
 
 $token = "PDVc#7eH-4YXkXcR5Yvn";
 
-$message = "🚀 *SPECIAL OFFER!* 🚀\n\n" .
-           "Get 50% OFF on all products this weekend!\n\n" .
-           "✨ Features:\n" .
-           "• Premium Quality\n" .
-           "• Fast Delivery\n" .
-           "• 24/7 Support\n\n" .
-           "🛒 Shop now: https://example.com\n" .
-           "📞 Contact: +1234567890\n\n" .
-           "#SpecialOffer #Discount #Sale";
+// Get the notification ID (e.g., from query string or manually set)
+$notificationId = $argv[1] ?? null;
 
 // Fetch all supervisors (role = 4) with a phone number
 $supervisors = DB::table('users')->where('role', 4)->whereNotNull('phone')->pluck('phone');
