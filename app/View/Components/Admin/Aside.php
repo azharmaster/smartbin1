@@ -42,6 +42,14 @@ class Aside extends Component
                         "route_active" => "admin.main.dashboard",
                         "is_dropdown" => false
                     ],
+                    [
+                        "label" => "Summary",
+                        "icon" => "fas fa-chart-pie",
+                        "color" => "#36b9cc",
+                        "route_name" => "summary",
+                        "route_active" => "summary",
+                        "is_dropdown" => false
+                    ],
                 ]
             ],
 
