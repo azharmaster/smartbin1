@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<!--@extends('layouts.app')
 
 @section('content')
 <div class="container">
@@ -29,10 +29,10 @@
             <textarea name="message" id="message" class="form-control" rows="4" required>{{ old('message') }}</textarea>
         </div>
 
-        <!-- <div class="mb-3">
+        <div class="mb-3">
             <label for="target" class="form-label">Target Phone Number</label>
             <input type="text" name="target" id="target" class="form-control" value="{{ old('target') }}" required>
-        </div> -->
+        </div> 
 
         <div class="mb-3 form-check">
             <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
@@ -54,4 +54,4 @@
         <button type="submit" class="btn btn-primary">Create Notification</button>
     </form>
 </div>
-@endsection
+@endsection-->

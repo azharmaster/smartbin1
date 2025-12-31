@@ -47,15 +47,15 @@ class WhatsAppNotificationController extends Controller
     /**
      * Show the form for editing a notification.
      */
-    public function edit(WhatsAppNotification $notification)
+    public function edit(WhatsAppNotification $whatsapp)
     {
-        return view('whatsapp.edit', compact('notification'));
+        return view('whatsapp.edit', compact('whatsapp'));
     }
 
     /**
      * Update the specified notification in storage.
      */
-    public function update(Request $request, WhatsAppNotification $notification)
+    public function update(Request $request, WhatsAppNotification $whatsapp)
     {
         $request->validate([
             'title' => 'required|string',
@@ -65,7 +65,7 @@ class WhatsAppNotificationController extends Controller
             'end_time' => 'nullable|date',
         ]);
 
-        $notification->update($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
+        $whatsapp->update($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
 
         return redirect()->route('whatsapp.index')
                          ->with('success', 'Notification updated.');
