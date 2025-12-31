@@ -16,43 +16,38 @@
         </div>
     @endif
 
-    <form action="{{ route('whatsapp.update', $notification->id) }}" method="POST">
-        @csrf
-        @method('PUT')
+    <form action="{{ route('whatsapp.update', $whatsapp->id) }}" method="POST">
+    @csrf
+    @method('PUT')
 
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" name="title" id="title" class="form-control" value="{{ old('title', $notification->title) }}" required>
-        </div>
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" name="title" id="title" class="form-control" value="{{ old('title', $whatsapp->title) }}" required>
+    </div>
 
-        <div class="mb-3">
-            <label for="message" class="form-label">Message</label>
-            <textarea name="message" id="message" class="form-control" rows="4" required>{{ old('message', $notification->message) }}</textarea>
-        </div>
+    <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <textarea name="message" id="message" class="form-control" rows="4" required>{{ old('message', $whatsapp->message) }}</textarea>
+    </div>
 
-        <!-- <div class="mb-3">
-            <label for="target" class="form-label">Target Phone Number</label>
-            <input type="text" name="target" id="target" class="form-control" value="{{ old('target', $notification->target) }}" required>
-        </div> -->
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1" {{ old('is_active', $whatsapp->is_active) ? 'checked' : '' }}>
+        <label class="form-check-label" for="is_active">Active (ON)</label>
+    </div>
 
-        <div class="mb-3 form-check">
-            <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1" {{ old('is_active', $notification->is_active) ? 'checked' : '' }}>
-            <label class="form-check-label" for="is_active">Active (ON)</label>
-        </div>
+    <div class="mb-3">
+        <label for="start_time" class="form-label">Start Time</label>
+        <input type="datetime-local" name="start_time" id="start_time" class="form-control" 
+               value="{{ old('start_time', $whatsapp->start_time ? $whatsapp->start_time->format('Y-m-d\TH:i') : '') }}">
+    </div>
 
-        <div class="mb-3">
-            <label for="start_time" class="form-label">Start Time</label>
-            <input type="datetime-local" name="start_time" id="start_time" class="form-control" 
-                   value="{{ old('start_time', $notification->start_time ? $notification->start_time->format('Y-m-d\TH:i') : '') }}">
-        </div>
+    <div class="mb-3">
+        <label for="end_time" class="form-label">End Time</label>
+        <input type="datetime-local" name="end_time" id="end_time" class="form-control" 
+               value="{{ old('end_time', $whatsapp->end_time ? $whatsapp->end_time->format('Y-m-d\TH:i') : '') }}">
+    </div>
 
-        <div class="mb-3">
-            <label for="end_time" class="form-label">End Time</label>
-            <input type="datetime-local" name="end_time" id="end_time" class="form-control" 
-                   value="{{ old('end_time', $notification->end_time ? $notification->end_time->format('Y-m-d\TH:i') : '') }}">
-        </div>
-
-        <button type="submit" class="btn btn-primary">Update Notification</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Update Notification</button>
+</form>
 </div>
 @endsection
