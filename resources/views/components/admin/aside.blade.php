@@ -71,19 +71,19 @@
     @endif
 @endforeach
 
-
         </ul>
     </nav>
     <!-- /.sidebar-menu -->
 </div>
+
 <style>
 /* -----------------------------
    Live Gradient Sidebar
 ---------------------------------*/
 .main-sidebar {
     position: relative;
-    overflow: hidden; /* hide overflow for animation */
-    background: linear-gradient(-45deg, #414a4c, #3b444b, #8a8583, #232b2b, #414a4c);
+    overflow: hidden;
+    background: linear-gradient(-45deg, #a1ef7a, #99eb99, #4cdc4c, #99eb99, #61ff81);
     background-size: 600% 600%;
     animation: live-gradient 10s ease infinite;
     transition: background 0.3s;
@@ -112,7 +112,6 @@
     z-index: 0;
 }
 
-/* Flowing diagonal movement */
 @keyframes flow {
     0%   { transform: rotate(0deg) translate(0, 0); }
     50%  { transform: rotate(15deg) translate(20%, 20%); }
@@ -125,14 +124,9 @@
 .nav-sidebar .nav-link.active {
     background: rgba(255,255,255,0.15);
     border-radius: 6px;
-    box-shadow: 0 0 15px rgba(255,255,255,0.6);
+    box-shadow: 0 0 15px rgba(255,255,255,0.15);
     transition: background 0.3s, box-shadow 0.3s;
     z-index: 1;
-}
-
-.nav-sidebar .nav-link.active:hover {
-    background: rgba(255,255,255,0.25);
-    box-shadow: 0 0 20px rgba(255,255,255,0.8);
 }
 
 /* -----------------------------
@@ -143,29 +137,96 @@
 }
 
 @keyframes pulse-icon {
-    0% { transform: scale(1); color: #ffffff; text-shadow: 0 0 0px rgba(255,255,255,0); }
-    50% { transform: scale(1.2); color: #ffffff; text-shadow: 0 0 12px rgba(255,255,255,0.6); }
-    100% { transform: scale(1); color: #ffffff; text-shadow: 0 0 0px rgba(255,255,255,0); }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
 /* -----------------------------
-   Hover effect for all links
+   Hover effect
 ---------------------------------*/
 .nav-sidebar .nav-link:hover {
     background: rgba(255,255,255,0.05);
-    transition: all 0.3s;
 }
 
-.nav-sidebar .nav-link .nav-icon:hover {
-    transform: scale(1.15);
-    transition: transform 0.3s;
+/* =====================================================
+   🔥 TEXT COLOR & FONT CUSTOMIZATION (NEW)
+   ✔ No existing code changed
+   ✔ Only text styling added
+===================================================== */
+
+/* Sidebar text color */
+.nav-sidebar .nav-link p,
+.nav-sidebar .nav-treeview .nav-link p {
+    color: #414a4c;              /* Change text color */
+    font-family: 'Poppins', sans-serif; /* Change font */
+    font-weight: 500;            /* Slightly bold */
+    letter-spacing: 0.3px;       /* Clean spacing */
 }
+
+/* Brand text color & font */
+.brand-text {
+    color: #ffffff !important;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+/* Active link text color */
+.nav-sidebar .nav-link.active p {
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.7);
+}
+
+/* Hover text color */
+.nav-sidebar .nav-link:hover p {
+    color: #414a4c;
+}
+
+/* Dropdown arrow color */
+.nav-sidebar .nav-link .fa-angle-left {
+    color: #ffffff;
+}
+
+/* =====================================================
+   🔴 LOGOUT BUTTON CUSTOM COLOR
+   Targets ONLY the logout button inside sidebar
+===================================================== */
+
+/* Default logout button */
+.nav-sidebar form .btn-danger {
+    background: linear-gradient #4cdc4c; /* gradient red */
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    transition: all 0.3s ease;
+}
+
+/* Logout icon color */
+.nav-sidebar form .btn-danger i {
+    color: #ffffff !important;
+}
+
+/* Hover effect */
+.nav-sidebar form .btn-danger:hover {
+    background: linear-gradient(135deg, #4cdc4c, #4cdc4c);
+    box-shadow: 0 0 15px #4cdc4c;
+    transform: translateY(-2px);
+}
+
+/* Click / active effect */
+.nav-sidebar form .btn-danger:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 8px rgba(255, 75, 43, 0.6);
+}
+
+/* Remove default bootstrap focus outline */
+.nav-sidebar form .btn-danger:focus {
+    box-shadow: none;
+}
+
 
 </style>
-
-
-
-
 
 <!-- /.sidebar -->
 </aside>
