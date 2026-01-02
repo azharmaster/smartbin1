@@ -38,7 +38,10 @@ class WhatsAppNotificationController extends Controller
             'end_time' => 'nullable|date',
         ]);
 
-        WhatsAppNotification::create($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
+        // Save notification to database
+        WhatsAppNotification::create($request->only(
+            'title', 'message', 'is_active', 'start_time', 'end_time'
+        ));
 
         return redirect()->route('whatsapp.index')
                          ->with('success', 'Notification created.');
@@ -65,7 +68,10 @@ class WhatsAppNotificationController extends Controller
             'end_time' => 'nullable|date',
         ]);
 
-        $whatsapp->update($request->only('title', 'message', 'is_active', 'start_time', 'end_time'));
+        // Update the notification record
+        $whatsapp->update($request->only(
+            'title', 'message', 'is_active', 'start_time', 'end_time'
+        ));
 
         return redirect()->route('whatsapp.index')
                          ->with('success', 'Notification updated.');
@@ -83,7 +89,7 @@ class WhatsAppNotificationController extends Controller
     }
 
     /**
-     * Manually send a WhatsApp notification to all supervisors.
+     * Manually send a WhatsApp notification to all supervisors (role = 4).
      */
     public function sendNow(WhatsAppNotification $notification)
     {
@@ -94,16 +100,20 @@ class WhatsAppNotificationController extends Controller
     }
 
     /**
-     * Send WhatsApp to all supervisors (role = 4) using Fonnte API.
+     * Protected helper to send WhatsApp messages using Fonnte API.
+     *
+     * @param WhatsAppNotification $notification
      */
     protected function sendWhatsApp(WhatsAppNotification $notification)
     {
         $token = "PDVc#7eH-4YXkXcR5Yvn";
 
+        // Get all supervisors who have a phone number
         $supervisors = User::where('role', 4)
-                           ->whereNotNull('phone') // ensure phone exists
+                           ->whereNotNull('phone')
                            ->pluck('phone');
 
+        // Loop through each supervisor and send message
         foreach ($supervisors as $phone) {
             $curl = curl_init();
             curl_setopt_array($curl, [
@@ -122,6 +132,7 @@ class WhatsAppNotificationController extends Controller
 
             $response = curl_exec($curl);
 
+            // Log result for debugging
             if (curl_errno($curl)) {
                 logger("Failed to send WhatsApp to {$phone}: " . curl_error($curl));
             } else {
@@ -131,7 +142,7 @@ class WhatsAppNotificationController extends Controller
             curl_close($curl);
         }
 
-        // Update last_sent_at timestamp
+        // Update last_sent_at timestamp for record
         $notification->update(['last_sent_at' => now()]);
     }
 }

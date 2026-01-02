@@ -26,4 +26,13 @@ class Sensor extends Model
             'id_device'
         );
     }
+
+    /**
+     * Access the Asset (bin) through the Device
+     * This allows $sensor->asset to get the bin directly
+     */
+    public function asset()
+    {
+        return $this->device ? $this->device->asset : null;
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Sensor; // ✅ ADDED (required for latestSensor)
+use App\Models\Asset;  // ✅ ADDED to link Device to Asset
 
 class Device extends Model
 {
@@ -16,7 +17,7 @@ class Device extends Model
         'device_name',
     ];
 
-    // A Device belongs to an Asset
+    // A Device belongs to an Asset (Bin)
     public function asset()
     {
         return $this->belongsTo(Asset::class);
@@ -32,6 +33,10 @@ class Device extends Model
         );
     }
 
+    /**
+     * Get the latest Sensor reading for this Device
+     * This allows $device->latestSensor to get the most recent sensor data
+     */
     public function latestSensor()
     {
         return $this->hasOne(

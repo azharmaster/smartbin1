@@ -61,7 +61,7 @@
                                     </button>
                                 </form>
 
-                                <!-- Send Now -->
+                                <!-- Send Now Form -->
                                 <form action="{{ route('whatsapp.send', $notif->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-info">
