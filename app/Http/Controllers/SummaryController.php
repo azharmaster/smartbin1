@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -12,9 +12,9 @@ class SummaryController extends Controller
     {
         $capacityStats = DB::table('sensors')
             ->selectRaw('
-                SUM(CASE WHEN capacity BETWEEN 0 AND 40 THEN 1 ELSE 0 END) as empty,
-                SUM(CASE WHEN capacity BETWEEN 41 AND 85 THEN 1 ELSE 0 END) as half,
-                SUM(CASE WHEN capacity >= 86 THEN 1 ELSE 0 END) as full
+                SUM(CASE WHEN capacity BETWEEN 0 AND 40 THEN 1 ELSE 0 END) as empty_count,
+                SUM(CASE WHEN capacity BETWEEN 41 AND 85 THEN 1 ELSE 0 END) as half_count,
+                SUM(CASE WHEN capacity >= 86 THEN 1 ELSE 0 END) as full_count
             ')
             ->first();
 
@@ -22,10 +22,10 @@ class SummaryController extends Controller
          * DEVICES BY FLOOR
          * ========================= */
         $devicesByFloor = DB::table('assets')
-            ->join('floors', 'assets.floor_id', '=', 'floors.id')
+            ->join('floor', 'assets.floor_id', '=', 'floor.id')
             ->join('devices', 'devices.asset_id', '=', 'assets.id')
-            ->select('floors.floor_name', DB::raw('count(devices.id) as total'))
-            ->groupBy('floors.floor_name')
+            ->select('floor.floor_name', DB::raw('count(devices.id) as total'))
+            ->groupBy('floor.floor_name')
             ->get();
 
         /* =========================
