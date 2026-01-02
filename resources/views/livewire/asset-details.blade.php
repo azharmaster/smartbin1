@@ -1,35 +1,73 @@
 <div style="max-width: 1200px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; gap: 20px;">
 
-    <!-- Left Column: Map Card -->
-    <!-- Map container -->
-<div style="position: relative; width: 50%; height: 600px;" x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
-    <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
- 
-         alt="Floor Map"
-         style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
-    
-    @php
-        $maxCapacity = $asset->devices
-            ->map(fn($d) => $d->sensors->first()->capacity ?? 0)
-            ->max();
+<div style="flex: 0 0 50%; display: flex; flex-direction: column; gap: 16px;">
 
-        if ($maxCapacity >= 86) {
-            $markerColor = '#e74c3c'; // red
-            $glowColor   = '#ff6b6b';
-        } elseif ($maxCapacity >= 41) {
-            $markerColor = '#f1c40f'; // yellow
-            $glowColor   = '#ffe066';
-        } else {
-            $markerColor = '#2ecc71'; // green
-            $glowColor   = '#6bff95';
-        }
-    @endphp
-    <div id="marker" data-asset-id="{{ $asset->id }}" data-floor-id="{{ $asset->floor_id }}" title="{{ $asset->asset_name ?? 'Asset' }}"
-        style="position: absolute;
-            width: 24px; height: 24px;
-            left: calc({{ $asset->x }}px - 18px);
-            top: calc({{ $asset->y }}px);">
-        <i class="fas fa-trash-alt" style="font-size: 22px; color: {{ $markerColor }}; filter: drop-shadow(0 0 6px {{ $glowColor }});"></i>
+    <!-- Map container -->
+    <div style="position: relative; width: 100%; height: 600px;"
+         x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
+
+        <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
+             alt="Floor Map"
+             style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
+
+        @php
+            $maxCapacity = $asset->devices
+                ->map(fn($d) => $d->sensors->first()->capacity ?? 0)
+                ->max();
+
+            if ($maxCapacity >= 86) {
+                $markerColor = '#e74c3c';
+                $glowColor   = '#ff6b6b';
+            } elseif ($maxCapacity >= 41) {
+                $markerColor = '#f1c40f';
+                $glowColor   = '#ffe066';
+            } else {
+                $markerColor = '#2ecc71';
+                $glowColor   = '#6bff95';
+            }
+        @endphp
+
+        <div id="marker"
+             data-asset-id="{{ $asset->id }}"
+             data-floor-id="{{ $asset->floor_id }}"
+             title="{{ $asset->asset_name ?? 'Asset' }}"
+             style="position: absolute;
+                    width: 24px; height: 24px;
+                    left: calc({{ $asset->x }}px - 18px);
+                    top: calc({{ $asset->y }}px);">
+            <i class="fas fa-trash-alt"
+               style="font-size: 22px; color: {{ $markerColor }};
+                      filter: drop-shadow(0 0 6px {{ $glowColor }});"></i>
+        </div>
+    </div>
+
+    <!-- Asset Image Card (NOW truly beneath map) -->
+    <div style="padding: 12px;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                background-color: #fff;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                text-align: center;">
+
+        <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 10px; color: #34495e;">
+            Asset Image
+        </h3>
+
+        @if($asset->picture)
+            <img src="{{ asset('storage/' . $asset->picture) }}"
+                 alt="Asset Picture"
+                 style="width: 100%;
+                        max-height: 220px;
+                        object-fit: contain;
+                        border-radius: 8px;
+                        cursor: pointer;"
+                 onclick="window.open(this.src, '_blank')">
+        @else
+            <div style="padding: 30px; color: #999;">
+                <i class="far fa-image" style="font-size: 32px; margin-bottom: 8px;"></i>
+                <p style="margin: 0;">No image uploaded</p>
+            </div>
+        @endif
     </div>
 
 </div>

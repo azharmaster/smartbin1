@@ -30,7 +30,6 @@ class Asset extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'id',
         'asset_name',
         'floor_id',
         'serialNo',
@@ -38,7 +37,7 @@ class Asset extends Model
         'model',
         'maintenance',
         'category',
-        'timestamps',
+        'picture',
     ];
 
     public function floor()

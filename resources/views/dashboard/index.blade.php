@@ -339,21 +339,21 @@ function trend($current, $previous) {
 <div class="container-fluid mt-4">
 
     <div class="row">
-
+            <!--SMARTBIN TRACK-->
+            <div class="card mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-trash"></i> SmartBin Clear Time
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="smartBinClearChart" height="120"></canvas>
+                </div>
+            </div>
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
 
-            <!--SMARTBIN TRACK-->
-<div class="card mb-4">
-    <div class="card-header smartbin-gradient">
-        <h5 class="mb-0 text-white">
-            <i class="fas fa-trash"></i> SmartBin Clear Time
-        </h5>
-    </div>
-    <div class="card-body">
-        <canvas id="smartBinClearChart" height="120"></canvas>
-    </div>
-</div>
+
 
 <!-- SmartBin Gradient Style -->
 <style>

@@ -1,7 +1,8 @@
 @props([
     'id' => null, 
     'floors' => [], 
-    'categories' => []
+    'categories' => [],
+    'picture' => null
 ])
 
 <div>
@@ -16,7 +17,7 @@
 
 
     <div class="modal fade" id="formAsset{{ $id ?? '' }}">
-        <form method="POST" action="{{ route('master-data.assets.store') }}">
+        <form method="POST" action="{{ route('master-data.assets.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="id" value="{{ $id ?? '' }}">
 
@@ -82,15 +83,29 @@
 
                         {{-- Category (Dropdown of unique previous categories) --}}
                         <div class="form-group">
-    <label>Category</label>
-    <input list="categoryList" name="category" class="form-control"
-           value="{{ $category ?? '' }}" placeholder="Select or type a category">
-    <datalist id="categoryList">
-        @foreach($categories as $cat)
-            <option value="{{ $cat }}">
-        @endforeach
-    </datalist>
-</div>
+                            <label>Category</label>
+                            <input list="categoryList" name="category" class="form-control"
+                                value="{{ $category ?? '' }}" placeholder="Select or type a category">
+                            <datalist id="categoryList">
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat }}">
+                                @endforeach
+                            </datalist>
+                        </div>
+                        {{-- Asset Picture --}}
+                        <div class="form-group">
+                            <label>Asset Picture</label>
+                            <input type="file" name="picture" class="form-control-file" accept="image/*">
+
+                            @if(isset($picture) && $picture)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $picture) }}"
+                                        alt="Asset Image"
+                                        class="img-thumbnail"
+                                        style="max-height: 120px;">
+                                </div>
+                            @endif
+                        </div>
 
                     </div>
 

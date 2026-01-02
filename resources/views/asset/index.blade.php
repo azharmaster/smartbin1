@@ -27,7 +27,7 @@
                         <th>Serial No </th>
                         <th>Description </th>
                         <th>Model </th>
-                        <th>Maintenance </th>
+                        <th>Picture</th>
                         <th>Category </th>
                         <th>Option </th>
                     </tr>
@@ -41,18 +41,27 @@
                         <td>{{ $asset->serialNo }}</td>
                         <td>{{ $asset->description }}</td>
                         <td>{{ $asset->model }}</td>
-                        <td>{{ $asset->maintenance }}</td>
+                        <td class="text-center">
+                            @if($asset->picture)
+                                <img src="{{ asset('storage/' . $asset->picture) }}"
+                                    alt="Asset Image"
+                                    class="img-thumbnail"
+                                    style="width: 60px; height: 60px; object-fit: cover;">
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td>{{ $asset->category }}</td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" />&nbsp;
+                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" :picture="$asset->picture"/>&nbsp;
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
-    <i class="fas fa-trash-alt text-white"></i>
-</a>&nbsp;
-<a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
-    <i class="far fa-eye"></i>
-</a>
-</div>
+                                <i class="fas fa-trash-alt text-white"></i>
+                            </a>&nbsp;
+                            <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
+                                <i class="far fa-eye"></i>
+                            </a>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
