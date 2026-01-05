@@ -263,14 +263,16 @@ function trend($current, $previous) {
             </div>
         </div>
         <div class="status-footer">
-            <span class="status-trend-footer">
-                {{ $totalTrend['icon'] }}
-                {{ $totalTrend['value'] }}
-            </span>
+            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer">
+                    {{ $totalTrend['icon'] }}
+                    {{ $totalTrend['value'] }}
+                </span>
 
-            <span class="status-more">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
         </div>
     </div>
 
@@ -337,10 +339,12 @@ function trend($current, $previous) {
             </div>
         </div>
         <div class="status-footer">
-            <span class="status-trend-footer"></span>
-            <span class="status-more">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </span>
+            <a href="#" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
         </div>
     </div>
 </div>
