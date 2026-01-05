@@ -2,16 +2,16 @@
    <button type="button" 
         class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
         data-toggle="modal" data-target="#formUser{{ $id ?? '' }}">
-
-    <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
-    {{ $id ? '' : 'Add' }}
-
-</button>
-
+        <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
+        {{ $id ? '' : 'Add' }}
+    </button>
 
 <div class="modal fade" id="formUser{{ $id ?? '' }}">
     <form method="POST" action="{{ route('users.store') }}">
         @csrf
+        @if($id)
+            @method('PUT')
+        @endif
         <input type="hidden" name="id" value="{{ $id ?? '' }}">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -22,7 +22,6 @@
               </button>
             </div>
             <div class="modal-body">
-
 
                 <!-- NAME -->
                 <div class="form-group">
@@ -36,16 +35,20 @@
                   <input type="email" class="form-control" name="email" id="email" value="{{ $email ?? '' }}">
                 </div>
 
+                <!-- PHONE -->
+                <div class="form-group">
+                  <label for="phone">Phone</label>
+                  <input type="text" class="form-control" name="phone" id="phone" value="{{ $phone ?? '' }}">
+                </div>
+
                 <!-- ROLE -->
                 <div class="form-group">
                   <label for="role">Role</label>
                   <select name="role" class="form-control">
-                      <option value="1" {{ isset($role) && $role == 1 ? 'selected' : '' }}>Admin</option>
-                      <option value="2" {{ isset($role) && $role == 2 ? 'selected' : '' }}>Staff</option>
-                      <option value="3" {{ isset($role) && $role == 4 ? 'selected' : '' }}>Supervisor</option>
+                      <option value="4" {{ isset($role) && $role == 4 ? 'selected' : '' }}>Supervisor</option>
+                      <!-- Add other roles if needed -->
                   </select>
                 </div>
-
 
             </div>
             <div class="modal-footer justify-content-between">

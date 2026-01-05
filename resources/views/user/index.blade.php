@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('content_title', 'Data User')
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h4 class="card-title">User</h4>
+<div class="card card-success card-outline">
+    <div class="card-header ">
+        <h5 class="mb-0 ">User</h5>
     </div>
     <div class="card-body">
         @if ($errors->any())
@@ -22,8 +22,9 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>name</th>
+                        <th>Name</th>
                         <th>Email</th>
+                        <th>Phone</th> {{-- Added Phone --}}
                         <th>Option</th>
                     </tr>
                 </thead>
@@ -33,15 +34,16 @@
                         <td>{{  $index + 1  }}</td>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
+                        <td>{{ $user->phone }}</td> {{-- Display phone --}}
                         <td>
                             <div class="d-flex align-items-center justify-content-center">
-                                <x-user.form-user :id="$user->id " />&nbsp;
-                               <a href="{{ route('users.destroy', $user->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
-    <i class="fas fa-trash-alt text-white"></i>
-</a>&nbsp;
-<a href="{{ route('users.details', $user->id) }}" class="btn btn-info btn-sm">
-    <i class="far fa-eye"></i>
-</a>
+                                <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :role="$user->role" :phone="$user->phone" />&nbsp;
+                                <a href="{{ route('users.destroy', $user->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash-alt text-white"></i>
+                                </a>&nbsp;
+                                <a href="{{ route('users.details', $user->id) }}" class="btn btn-info btn-sm">
+                                    <i class="far fa-eye"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -51,4 +53,11 @@
         </div>
     </div>
 </div>
+<!-- SmartBin Gradient Style -->
+<style>
+.smartbin-gradient {
+    background: linear-gradient(135deg, #1b5e20, #4bb352ff);
+}
+</style>
+
 @endsection
