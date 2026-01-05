@@ -5,13 +5,24 @@
 <div class="container-fluid">
 
     <!-- Month Selector + Print Button -->
-    <div class="row mb-4 align-items-end">
-        <div class="col-md-4">
-            <form method="GET" action="{{ route('summary') }}">
-                <label class="form-label fw-bold">Select Month:</label>
-                <input type="month" name="month" value="{{ $month }}" class="form-control" onchange="this.form.submit()">
-            </form>
-        </div>
+<div class="row mb-4 align-items-center">
+    <!-- Month Picker -->
+    <div class="col-md-4">
+        <form method="GET" action="{{ route('summary') }}">
+            <div class="input-group">
+                <span class="input-group-text bg-success text-white">
+                    <i class="fas fa-calendar-alt"></i>
+                </span>
+                <input type="month" 
+                       name="month" 
+                       value="{{ $month }}" 
+                       class="form-control fw-bold" 
+                       onchange="this.form.submit()"
+                       style="border-left: 0; border-radius: 0.375rem;">
+            </div>
+        </form>
+    </div>
+
 
         <div class="col-md-2 ms-auto text-end">
             <button class="btn btn-outline-primary mt-2" onclick="window.print()">
@@ -87,7 +98,7 @@
     <div class="row g-3 mt-4">
         @foreach($assets as $asset)
         <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 rounded-3 text-center p-2 h-100 asset-card">
+            <div class="card shadow-sm border-0 rounded-3 text-center p-2 h-100 asset-card ">
                 <h6 class="fw-bold mb-2">{{ $asset->asset_name }}</h6>
                 @if($asset->picture)
                     <img src="{{ asset('storage/' . $asset->picture) }}"
