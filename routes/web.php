@@ -176,6 +176,10 @@ Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assi
     Route::get('/summary', [SummaryController::class, 'index'])
     ->middleware('auth')
     ->name('summary');
+
+    Route::post('/summary/send-email', [SummaryController::class, 'sendEmail'])
+    ->name('summary.sendEmail')
+    ->middleware('auth');
 });
 
 // Staff dashboard routes
