@@ -1,114 +1,121 @@
 @extends('layouts.app')
-@section('content_title', 'Summary Reports')
+@section('content_title', 'Monthly Summary Report')
 
 @section('content')
 <div class="container-fluid">
 
-    <!-- Month Selector + Print Button -->
-<div class="row mb-4 align-items-center">
-    <!-- Month Picker -->
-    <div class="col-md-4">
-        <form method="GET" action="{{ route('summary') }}">
-            <div class="input-group">
-                <span class="input-group-text bg-success text-white">
-                    <i class="fas fa-calendar-alt"></i>
-                </span>
-                <input type="month" 
-                       name="month" 
-                       value="{{ $month }}" 
-                       class="form-control fw-bold" 
-                       onchange="this.form.submit()"
-                       style="border-left: 0; border-radius: 0.375rem;">
-            </div>
-        </form>
-    </div>
-
+    {{-- ================= HEADER ROW ================= --}}
+    <div class="row mb-4 align-items-center no-print">
+        <div class="col-md-4">
+            <form method="GET" action="{{ route('summary') }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-success text-white">
+                        <i class="fas fa-calendar-alt"></i>
+                    </span>
+                    <input type="month"
+                           name="month"
+                           value="{{ $month }}"
+                           class="form-control fw-bold"
+                           onchange="this.form.submit()">
+                </div>
+            </form>
+        </div>
 
         <div class="col-md-2 ms-auto text-end">
             <button class="btn btn-outline-primary mt-2" onclick="window.print()">
                 <i class="fas fa-print me-1"></i> Print 
             </button>
         </div>
-        
-        <div class="col-md-2 ms-2">
+
+        <div class="col-md-2">
             <form method="POST" action="{{ route('summary.sendEmail') }}">
                 @csrf
                 <input type="hidden" name="month" value="{{ $month }}">
-                <button class="btn btn-success mt-2">
+                <button class="btn btn-success mt-2 w-100">
                     <i class="fas fa-envelope me-1"></i> Send Report
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Charts Section -->
+    {{-- ================= CHART ROW 1 ================= --}}
     <div class="row g-4">
-        <!-- Capacity Distribution -->
+        {{-- Times Bin Became Full --}}
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header text-white rounded-top summary-gradient">
-                    <i class="fas fa-chart-pie me-2"></i> Device Capacity Distribution
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Number of Times Each Bin Became Full
                 </div>
-                <div class="card-body p-3" style="height: 300px;">
-                    <canvas id="capacityChart"></canvas>
+                <div class="card-body" style="height: 320px;">
+                    <canvas id="timesFullChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Devices by Floor -->
+        {{-- Average Time to Fill --}}
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header text-white rounded-top summary-gradient">
-                    <i class="fas fa-building me-2"></i> Devices by Floor
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-hourglass-half me-2"></i>
+                    Average Time for Bin to Become Full (Minutes)
                 </div>
-                <div class="card-body p-3" style="height: 300px;">
-                    <canvas id="floorChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mt-2">
-        <!-- Full Bin Trend -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header text-white rounded-top summary-gradient-red">
-                    <i class="fas fa-trash me-2"></i> Full Bin Trend (Daily)
-                </div>
-                <div class="card-body p-3" style="height: 300px;">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Full Counts per Bin -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header text-white rounded-top summary-gradient-purple">
-                    <i class="fas fa-chart-bar me-2"></i> Number of Times Each Bin Was Full
-                </div>
-                <div class="card-body p-3" style="height: 300px;">
-                    <canvas id="fullCountsChart"></canvas>
+                <div class="card-body" style="height: 320px;">
+                    <canvas id="avgFillChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Asset Images -->
+    {{-- ================= CHART ROW 2 ================= --}}
+    <div class="row g-4 mt-1">
+        {{-- Average Clear Time --}}
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-broom me-2"></i>
+                    Average Bin Clear Time (Minutes)
+                </div>
+                <div class="card-body" style="height: 320px;">
+                    <canvas id="avgClearChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {{-- Insight Box --}}
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Monthly Insights
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Bins with higher fill frequency indicate high-traffic areas.</li>
+                        <li>Long clear times suggest delayed response or inefficient routing.</li>
+                        <li>Fast fill rates may require increased collection frequency.</li>
+                        <li>All metrics are calculated based on sensor state transitions.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= ASSET IMAGES ================= --}}
     <div class="row g-3 mt-4">
         @foreach($assets as $asset)
         <div class="col-md-3 col-sm-6">
-            <div class="card shadow-sm border-0 rounded-3 text-center p-2 h-100 asset-card ">
+            <div class="card shadow-sm border-0 text-center p-2 h-100 asset-card">
                 <h6 class="fw-bold mb-2">{{ $asset->asset_name }}</h6>
+
                 @if($asset->picture)
                     <img src="{{ asset('storage/' . $asset->picture) }}"
-                         alt="Asset Picture"
                          class="img-fluid rounded asset-img"
                          onclick="window.open(this.src, '_blank')">
                 @else
-                    <div class="d-flex flex-column justify-content-center align-items-center py-5 text-muted">
-                        <i class="far fa-image fs-2 mb-2"></i>
-                        <span>No image</span>
+                    <div class="text-muted py-5">
+                        <i class="far fa-image fs-2 mb-2"></i><br>
+                        No image
                     </div>
                 @endif
             </div>
@@ -118,109 +125,78 @@
 
 </div>
 
-<!-- Charts JS -->
+{{-- ================= CHARTS ================= --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-/* Capacity Distribution */
-new Chart(document.getElementById('capacityChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Empty', 'Half Full', 'Full'],
-        datasets: [{
-            data: [{{ $capacityStats->empty_count }}, {{ $capacityStats->half_count }}, {{ $capacityStats->full_count }}],
-            backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c'],
-            borderColor: '#fff',
-            borderWidth: 2
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-});
+const labels = @json($binAnalytics->pluck('asset_name'));
 
-/* Devices by Floor */
-new Chart(document.getElementById('floorChart'), {
+/* Times Full */
+new Chart(document.getElementById('timesFullChart'), {
     type: 'bar',
     data: {
-        labels: {!! json_encode($devicesByFloor->pluck('floor_name')) !!},
+        labels: labels,
         datasets: [{
-            label: 'Total Devices',
-            data: {!! json_encode($devicesByFloor->pluck('total')) !!},
-            backgroundColor: '#3498db',
-            borderRadius: 5
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-});
-
-/* Full Bin Trend */
-new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($fullTrend->pluck('date')) !!},
-        datasets: [{
-            label: 'Full Bins',
-            data: {!! json_encode($fullTrend->pluck('total')) !!},
-            borderColor: '#e74c3c',
-            backgroundColor: 'rgba(231,76,60,0.2)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-});
-
-/* Full Counts per Bin */
-new Chart(document.getElementById('fullCountsChart'), {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($fullCounts->pluck('asset_name')) !!},
-        datasets: [{
-            label: 'Times Full',
-            data: {!! json_encode($fullCounts->pluck('total_full')) !!},
+            label: 'Times Became Full',
+            data: @json($binAnalytics->pluck('times_full')),
             backgroundColor: '#8e44ad',
-            borderRadius: 5
+            borderRadius: 6
         }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+/* Avg Fill Time */
+new Chart(document.getElementById('avgFillChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Minutes',
+            data: @json($binAnalytics->pluck('avg_fill_time')),
+            backgroundColor: '#2ecc71',
+            borderRadius: 6
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+/* Avg Clear Time */
+new Chart(document.getElementById('avgClearChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Minutes',
+            data: @json($binAnalytics->pluck('avg_clear_time')),
+            backgroundColor: '#e74c3c',
+            borderRadius: 6
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
 });
 </script>
 
-<!-- Page Styles -->
 <style>
-/* Gradient headers */
-.summary-gradient { background: linear-gradient(135deg, #1b5e20, #4bb352ff); }
-.summary-gradient-red { background: linear-gradient(135deg, #c0392b, #e74c3c); }
-.summary-gradient-purple { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
-
-/* Asset card hover */
+.summary-gradient {
+    background: linear-gradient(135deg, #1b5e20, #4caf50);
+}
+.summary-gradient-red {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+}
+.summary-gradient-purple {
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+}
 .asset-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 .asset-img {
     height: 150px;
     object-fit: cover;
-    transition: transform 0.3s ease;
 }
-.asset-img:hover {
-    transform: scale(1.05);
-}
-
-/* Responsive text for headers */
-.card-header {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-/* Print Styles */
 @media print {
-    body { -webkit-print-color-adjust: exact; }
-    .card { box-shadow: none !important; border: 1px solid #000; }
-    .card-header { color: #000 !important; background-color: #fff !important; }
-    canvas { page-break-inside: avoid; }
     .no-print { display: none !important; }
+    canvas { page-break-inside: avoid; }
 }
 </style>
 @endsection
