@@ -26,7 +26,7 @@
 
         <div class="col-md-2 ms-auto text-end">
             <button class="btn btn-outline-primary mt-2" onclick="window.print()">
-                <i class="fas fa-print me-1"></i> Print Report
+                <i class="fas fa-print me-1"></i> Print 
             </button>
         </div>
         

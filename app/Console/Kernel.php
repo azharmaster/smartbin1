@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Run bin notification check every 5 minutes
-        $schedule->command('bin:check-status')->everyFiveMinutes();
+        $schedule->command('bin:check-status')->everyTwoMinutes();
     }
 
     /**
