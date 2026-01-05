@@ -1,8 +1,8 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
+<aside class="main-sidebar sidebar-dark-primary elevation-4" style="background: linear-gradient(135deg, #103913ff, #1f6423ff)">
     <!-- Brand Logo -->
-    <a href="{{ route('admin.mainmenu') }}" class="brand-link text-center">
-        <span class="brand-text font-weight-light">{{ env('APP_NAME') }}</span>
-    </a>
+<a href="{{ route('admin.mainmenu') }}" class="brand-link brand-app text-center">
+    <span class="brand-text">{{ env('APP_NAME') }}</span>
+</a>
 
     <!-- Sidebar -->
 <div class="sidebar">
@@ -77,155 +77,180 @@
 </div>
 
 <style>
-/* -----------------------------
-   Live Gradient Sidebar
----------------------------------*/
+
 .main-sidebar {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(-45deg, #a1ef7a, #99eb99, #4cdc4c, #99eb99, #61ff81);
-    background-size: 600% 600%;
-    animation: live-gradient 10s ease infinite;
-    transition: background 0.3s;
+    background-color: #0f3d1f; /* dark green */
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.08);
 }
 
-/* Animate the gradient */
-@keyframes live-gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Fix AdminLTE stacking issues */
+.main-sidebar,
+.main-sidebar * {
+    box-sizing: border-box;
 }
 
-/* -----------------------------
-   Floating overlay shapes
----------------------------------*/
-.main-sidebar::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
-    animation: flow 12s linear infinite;
-    pointer-events: none;
-    z-index: 0;
+.brand-link {
+    background-color: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem;
 }
 
-@keyframes flow {
-    0%   { transform: rotate(0deg) translate(0, 0); }
-    50%  { transform: rotate(15deg) translate(20%, 20%); }
-    100% { transform: rotate(0deg) translate(0, 0); }
-}
-
-/* -----------------------------
-   Active Link Glow
----------------------------------*/
-.nav-sidebar .nav-link.active {
-    background: rgba(255,255,255,0.15);
-    border-radius: 6px;
-    box-shadow: 0 0 15px rgba(255,255,255,0.15);
-    transition: background 0.3s, box-shadow 0.3s;
-    z-index: 1;
-}
-
-/* -----------------------------
-   Active Icon Pulse
----------------------------------*/
-.nav-sidebar .nav-link.active .nav-icon {
-    animation: pulse-icon 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse-icon {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-/* -----------------------------
-   Hover effect
----------------------------------*/
-.nav-sidebar .nav-link:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-/* =====================================================
-   🔥 TEXT COLOR & FONT CUSTOMIZATION (NEW)
-   ✔ No existing code changed
-   ✔ Only text styling added
-===================================================== */
-
-/* Sidebar text color */
-.nav-sidebar .nav-link p,
-.nav-sidebar .nav-treeview .nav-link p {
-    color: #414a4c;              /* Change text color */
-    font-family: 'Poppins', sans-serif; /* Change font */
-    font-weight: 500;            /* Slightly bold */
-    letter-spacing: 0.3px;       /* Clean spacing */
-}
-
-/* Brand text color & font */
 .brand-text {
     color: #ffffff !important;
-    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    font-size: 1.05rem;
+}
+
+.nav-sidebar .nav-link {
+    color: rgba(255,255,255,0.85);
+    border-radius: 8px;
+    margin: 4px 10px;
+    padding: 10px 14px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.nav-sidebar .nav-link p {
+    margin: 0;
+    font-size: 1.0rem;
+    font-weight: 500;
+}
+
+.nav-sidebar .nav-icon {
+    opacity: 0.9;
+    margin-right: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon {
+    opacity: 1;
+}
+
+/* =====================================================
+   HOVER
+===================================================== */
+
+.nav-sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateX(3px);
+}
+
+/* =====================================================
+   ACTIVE STATE
+===================================================== */
+
+.nav-sidebar .nav-link.active {
+    background: rgba(255,255,255,0.15);
     font-weight: 600;
+    box-shadow: inset 3px 0 0 #4ade80; /* green indicator */
 }
 
-/* Active link text color */
 .nav-sidebar .nav-link.active p {
-    color: #ffffff;
-    text-shadow: 0 0 8px rgba(255,255,255,0.7);
-}
-
-/* Hover text color */
-.nav-sidebar .nav-link:hover p {
-    color: #414a4c;
-}
-
-/* Dropdown arrow color */
-.nav-sidebar .nav-link .fa-angle-left {
     color: #ffffff;
 }
 
 /* =====================================================
-   🔴 LOGOUT BUTTON CUSTOM COLOR
-   Targets ONLY the logout button inside sidebar
+   DROPDOWN
 ===================================================== */
 
-/* Default logout button */
-.nav-sidebar form .btn-danger {
-    background: linear-gradient #4cdc4c; /* gradient red */
-    border: none;
+.nav-treeview {
+    padding-left: 10px;
+}
+
+.nav-treeview .nav-link {
+    font-size: 0.88rem;
+    opacity: 0.8;
+}
+
+.nav-treeview .nav-link.active {
+    opacity: 1;
+}
+
+/* Dropdown arrow */
+.nav-sidebar .nav-link .fa-angle-left {
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+}
+
+.menu-open > .nav-link .fa-angle-left {
+    transform: rotate(-90deg);
+    opacity: 1;
+}
+
+
+//sidebar title
+.brand-app {
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 16px 12px;
+    background: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.brand-app:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+/* App name text */
+.brand-app .brand-text {
     color: #ffffff;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    transition: all 0.3s ease;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase; /* optional, looks clean */
+    text-decoration: none !important;
 }
 
-/* Logout icon color */
-.nav-sidebar form .btn-danger i {
-    color: #ffffff !important;
+/* Remove AdminLTE underline edge cases */
+.brand-link,
+.brand-link:hover,
+.brand-link:focus {
+    text-decoration: none !important;
 }
 
-/* Hover effect */
-.nav-sidebar form .btn-danger:hover {
-    background: linear-gradient(135deg, #4cdc4c, #4cdc4c);
-    box-shadow: 0 0 15px #4cdc4c;
-    transform: translateY(-2px);
+/* Neutralize ALL active states */
+.nav-sidebar .nav-link.active,
+.nav-sidebar .menu-open > .nav-link,
+.nav-sidebar .nav-treeview .nav-link.active {
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-/* Click / active effect */
-.nav-sidebar form .btn-danger:active {
-    transform: scale(0.97);
-    box-shadow: 0 0 8px rgba(255, 75, 43, 0.6);
+/* Active text = same as normal text */
+.nav-sidebar .nav-link.active p,
+.nav-sidebar .nav-treeview .nav-link.active p {
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
 }
 
-/* Remove default bootstrap focus outline */
-.nav-sidebar form .btn-danger:focus {
-    box-shadow: none;
+/* =====================================================
+   HOVER EFFECT ONLY (DARKEN)
+===================================================== */
+
+.nav-sidebar .nav-link:hover {
+    background: rgba(0,0,0,0.25);
 }
 
+/* Child hover slightly lighter */
+.nav-sidebar .nav-treeview .nav-link:hover {
+    background: rgba(0,0,0,0.35);
+}
 
+/* Icons follow text */
+.nav-sidebar .nav-link:hover .nav-icon {
+    opacity: 1;
+}
+
+/* =====================================================
+   KEEP DROPDOWN OPEN WITHOUT STYLING
+===================================================== */
+
+.menu-open > .nav-link {
+    background: transparent !important;
+}
 </style>
 
 <!-- /.sidebar -->

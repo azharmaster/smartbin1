@@ -17,18 +17,24 @@
     width: 19%;
     height: 150px;
 
+    background: #ffffff;
+    color: #111;
     border-radius: 14px;
     overflow: hidden;
 
-    color: #fff;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+    transition: background .25s ease, color .25s ease,
+                transform .2s ease, box-shadow .2s ease;
+
     margin-left: 10px;
 }
 
 .status-card:hover {
+    background: #1b5e20; /* DARK GREEN */
+    color: #ffffff;
+
     transform: translateY(-4px);
-    box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
 }
 
 .status-body {
@@ -41,6 +47,7 @@
     font-size: 14px;
     font-weight: 600;
     opacity: 0.9;
+    color: #111;
 }
 
 .status-content {
@@ -53,6 +60,7 @@
 .status-number {
     font-size: 36px;
     font-weight: 800;
+    color: #111;
 }
 
 .status-icon {
@@ -60,43 +68,38 @@
     right: 14px;
     top: 14px;
     font-size: 48px;
-    opacity: 0.18;
+    opacity: 0.30;
+    color: #111;
 }
 
-/* TOTAL – strong blue */
-.card-total {
-    background: linear-gradient(135deg, #90caf9, #53a5e9ff);
+.status-card:hover .status-title,
+.status-card:hover .status-number,
+.status-card:hover .status-icon,
+.status-card:hover .status-footer,
+.status-card:hover .status-trend-footer,
+.status-card:hover .status-more {
+    color: #ffffff;
 }
-.card-total .status-footer {
-    background: linear-gradient(to right, #1e88e5, #1565c0);
+
+/* ICON COLORS */
+.card-total .status-icon {
+    color: #1e88e5;
 }
-/* FULL – strong red */
-.card-full {
-    background: linear-gradient(135deg, #ef9a9a, #ff4e4bff);
+
+.card-full .status-icon {
+    color: #e53935; /* strong red */
 }
-.card-full .status-footer {
-    background: linear-gradient(to right, #e53935, #b71c1c);
+
+.card-half .status-icon {
+    color: #fb8c00;
 }
-/* HALF – strong orange */
-.card-half {
-    background: linear-gradient(135deg, #ffcc80, #fe9515ff);
+
+.card-empty .status-icon {
+    color: #43a047;
 }
-.card-half .status-footer {
-    background: linear-gradient(to right, #fb8c00, #e65100);
-}
-/* EMPTY – strong green */
-.card-empty {
-    background: linear-gradient(135deg, #a5d6a7, #59c35eff);
-}
-.card-empty .status-footer {
-    background: linear-gradient(to right, #43a047, #1b5e20);
-}
-/* UNDETECTED – dark gray */
-.card-undetected {
-    background: linear-gradient(135deg, #bdbdbd, #616161);
-}
-.card-undetected .status-footer {
-    background: linear-gradient(to right, #616161, #212121);
+
+.card-undetected .status-icon {
+    color: #616161;
 }
 
 .status-trend {
@@ -119,7 +122,13 @@
     font-size: 12px;
     font-weight: 600;
 
-    color: #fff;
+    background: rgba(0,0,0,0.04);
+    color: #111;
+
+    transition: background .25s ease, color .25s ease;
+}
+
+.status-card:hover .status-footer {
     background: rgba(0,0,0,0.25);
 }
 
@@ -358,7 +367,7 @@ function trend($current, $previous) {
 <!-- SmartBin Gradient Style -->
 <style>
 .smartbin-gradient {
-    background: linear-gradient(135deg, #b9e2f5, #50b8e7);
+    background: linear-gradient(135deg, #1b5e20, #4bb352ff);
 }
 </style>
 
@@ -473,8 +482,8 @@ document.addEventListener("DOMContentLoaded", function () {
 const binCtx = document.getElementById('smartBinClearChart').getContext('2d');
 
 const binGradient = binCtx.createLinearGradient(0, 0, 0, 300);
-binGradient.addColorStop(0, 'rgba(13, 110, 253, 0.4)');
-binGradient.addColorStop(1, 'rgba(13, 110, 253, 0.05)');
+binGradient.addColorStop(0, 'rgba(33, 60, 17, 0.79)');
+binGradient.addColorStop(1, 'rgba(21, 68, 20, 0.05)');
 
 new Chart(binCtx, {
     type: 'line',
@@ -483,14 +492,14 @@ new Chart(binCtx, {
         datasets: [{
             label: 'Hours to Clear',
             data: {!! json_encode($smartBinClearTimes->pluck('hours')) !!},
-            borderColor: '#0d6efd',
+            borderColor: '#1b5e20',
             backgroundColor: binGradient,
             fill: true,
             tension: 0.45,
             borderWidth: 3,
             pointRadius: 6,
             pointHoverRadius: 9,
-            pointBackgroundColor: '#0d6efd'
+            pointBackgroundColor: '#1b5e20'
         }]
     },
     options: {
