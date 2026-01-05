@@ -4,72 +4,41 @@
     <meta charset="utf-8">
     <title>Summary Report - {{ $month }}</title>
     <style>
-        body { font-family: sans-serif; font-size: 14px; line-height: 1.4; }
-        h2 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        body { font-family: sans-serif; }
+        h2, h5 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         table, th, td { border: 1px solid #333; }
         th, td { padding: 8px; text-align: center; }
-        th { background-color: #1b5e20; color: white; }
-        .section-title { font-weight: bold; margin-top: 20px; }
+        .chart { page-break-inside: avoid; margin-bottom: 25px; }
+        .asset-img { height: 120px; object-fit: cover; }
     </style>
 </head>
 <body>
-    <h2>SmartBin Summary Report - {{ $month }}</h2>
 
-    <p class="section-title">Capacity Stats</p>
-    <table>
-        <tr>
-            <th>Empty</th>
-            <th>Half Full</th>
-            <th>Full</th>
-        </tr>
-        <tr>
-            <td>{{ $capacityStats->empty_count }}</td>
-            <td>{{ $capacityStats->half_count }}</td>
-            <td>{{ $capacityStats->full_count }}</td>
-        </tr>
-    </table>
+<h2>SmartBin Summary Report</h2>
+<p style="text-align:center;">Month: {{ $month }}</p>
 
-    <p class="section-title">Devices by Floor</p>
-    <table>
-        <tr>
-            <th>Floor</th>
-            <th>Total Devices</th>
-        </tr>
-        @foreach($devicesByFloor as $floor)
-        <tr>
-            <td>{{ $floor->floor_name }}</td>
-            <td>{{ $floor->total }}</td>
-        </tr>
-        @endforeach
-    </table>
+<h5>Device Capacity Distribution</h5>
+<img src="data:image/png;base64,{{ $capacityChart }}" class="chart">
 
-    <p class="section-title">Full Bin Trend</p>
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Full Bins</th>
-        </tr>
-        @foreach($fullTrend as $trend)
-        <tr>
-            <td>{{ $trend->date }}</td>
-            <td>{{ $trend->total }}</td>
-        </tr>
-        @endforeach
-    </table>
+<h5>Devices by Floor</h5>
+<img src="data:image/png;base64,{{ $floorChart }}" class="chart">
 
-    <p class="section-title">Full Counts per Bin</p>
-    <table>
-        <tr>
-            <th>Asset</th>
-            <th>Times Full</th>
-        </tr>
-        @foreach($fullCounts as $bin)
-        <tr>
-            <td>{{ $bin->asset_name }}</td>
-            <td>{{ $bin->total_full }}</td>
-        </tr>
-        @endforeach
-    </table>
+<h5>Full Bin Trend (Daily)</h5>
+<img src="data:image/png;base64,{{ $trendChart }}" class="chart">
+
+<h5>Full Counts per Bin</h5>
+<img src="data:image/png;base64,{{ $fullCountsChart }}" class="chart">
+
+<h5>Assets</h5>
+@foreach($assets as $asset)
+    <p>{{ $asset->asset_name }}</p>
+    @if($asset->picture)
+        <img src="{{ public_path('storage/' . $asset->picture) }}" class="asset-img">
+    @else
+        <p>No image</p>
+    @endif
+@endforeach
+
 </body>
 </html>

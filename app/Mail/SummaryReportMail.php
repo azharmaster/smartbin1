@@ -3,39 +3,33 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SummaryReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $month, $capacityStats, $devicesByFloor, $fullTrend, $fullCounts, $assets;
+    public $pdf;
 
-    public function __construct($month, $capacityStats, $devicesByFloor, $fullTrend, $fullCounts, $assets)
+    /**
+     * Create a new message instance.
+     */
+    public function __construct($pdf)
     {
-        $this->month = $month;
-        $this->capacityStats = $capacityStats;
-        $this->devicesByFloor = $devicesByFloor;
-        $this->fullTrend = $fullTrend;
-        $this->fullCounts = $fullCounts;
-        $this->assets = $assets;
+        $this->pdf = $pdf;
     }
 
+    /**
+     * Build the message.
+     */
     public function build()
     {
-        return $this->subject("Summary Report for {$this->month}")
-                    ->view('emails.summary_report')
-                    ->with([
-                        'month' => $this->month,
-                        'capacityStats' => $this->capacityStats,
-                        'devicesByFloor' => $this->devicesByFloor,
-                        'fullTrend' => $this->fullTrend,
-                        'fullCounts' => $this->fullCounts,
-                        'assets' => $this->assets,
-                    ]);
+        return $this->subject('SmartBin Monthly Summary Report')
+                    ->attachData($this->pdf->output(), 'SummaryReport.pdf', [
+                        'mime' => 'application/pdf',
+                    ])
+                    ->view('emails.blank'); // We can use a minimal empty view
     }
 }
