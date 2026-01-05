@@ -134,6 +134,8 @@ class DashboardController extends Controller
         ])->get();
     }
 
+
+    //to set the capasity of the bin
     private function countFullDevices($devices)
     {
         return $devices->filter(fn($d) =>
