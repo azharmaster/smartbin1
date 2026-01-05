@@ -33,9 +33,9 @@
                     <td>{{ $notification->start_time ? $notification->start_time->format('Y-m-d H:i') : '-' }}</td>
                     <td>{{ $notification->end_time ? $notification->end_time->format('Y-m-d H:i') : '-' }}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editNotificationModal">
-                            <i class="fas fa-toggle-on"></i> Toggle
-                        </button>
+                       <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editNotificationModal">
+    <i class="fas fa-bell"></i> 
+</button>
                     </td>
                 </tr>
                 @else
@@ -61,10 +61,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" name="is_active" class="form-check-input" value="1" {{ $notification->is_active ? 'checked' : '' }}>
-                        <label class="form-check-label">Notification ON</label>
-                    </div>
+                       
                     <div class="mb-3">
                         <label>Start Date & Time</label>
                         <input type="datetime-local" name="start_time" class="form-control"
@@ -75,6 +72,23 @@
                         <input type="datetime-local" name="end_time" class="form-control"
                                value="{{ $notification->end_time ? $notification->end_time->format('Y-m-d\TH:i') : '' }}">
                     </div>
+
+                    <div class="mb-3 d-flex align-items-center gap-3">
+                    <span class="fw-semibold">OFF</span>
+
+                    <div class="form-check form-switch m-0">
+                    <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    name="is_active" 
+                    value="1"
+                    {{ $notification->is_active ? 'checked' : '' }}
+                    >
+                    </div>
+
+                   <span class="fw-semibold">ON</span>
+                   </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
