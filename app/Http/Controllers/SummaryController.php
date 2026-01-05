@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Asset;
+use App\Models\Sensor;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SummaryReportMail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,7 +20,7 @@ class SummaryController extends Controller
     $end = Carbon::parse($month . '-01')->endOfMonth();
 
     return DB::table('sensors')
-        ->whereBetween('created_at', [$start, $end])
+        ->whereBetween('time', [$start, $end])
         ->selectRaw('
             SUM(CASE WHEN capacity BETWEEN 0 AND 40 THEN 1 ELSE 0 END) as empty_count,
             SUM(CASE WHEN capacity BETWEEN 41 AND 85 THEN 1 ELSE 0 END) as half_count,
@@ -28,15 +29,12 @@ class SummaryController extends Controller
         ->first();
 }
 
-private function getDevicesByFloor($month)
+private function getDevicesByFloor()
 {
-    $start = Carbon::parse($month . '-01')->startOfMonth();
-    $end = Carbon::parse($month . '-01')->endOfMonth();
-
     return DB::table('assets')
         ->join('floor', 'assets.floor_id', '=', 'floor.id')
         ->join('devices', 'devices.asset_id', '=', 'assets.id')
-        ->select('floor.floor_name', DB::raw('count(devices.id) as total'))
+        ->select('floor.floor_name', DB::raw('COUNT(devices.id) as total'))
         ->groupBy('floor.floor_name')
         ->get();
 }
@@ -47,9 +45,9 @@ private function getFullTrend($month)
     $end = Carbon::parse($month . '-01')->endOfMonth();
 
     return DB::table('sensors')
-        ->whereBetween('created_at', [$start, $end])
+        ->whereBetween('sensors.time', [$start, $end])
         ->where('capacity', '>=', 86)
-        ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+        ->selectRaw('DATE(time) as date, COUNT(*) as total')
         ->groupBy('date')
         ->orderBy('date')
         ->get();
@@ -63,7 +61,7 @@ private function getFullCounts($month)
     return DB::table('sensors')
         ->join('devices', 'sensors.device_id', '=', 'devices.id')
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
-        ->whereBetween('sensors.created_at', [$start, $end])
+        ->whereBetween('sensors.time', [$start, $end])
         ->where('sensors.capacity', '>=', 86)
         ->select('assets.asset_name', DB::raw('COUNT(*) as total_full'))
         ->groupBy('assets.asset_name')
@@ -71,62 +69,117 @@ private function getFullCounts($month)
         ->get();
 }
 
-private function getAssets($month)
+private function getAssets()
 {
     return Asset::with('floor')->get();
 }
+
+private function getMonthlySensorData($month)
+{
+    $start = Carbon::parse("$month-01")->startOfMonth();
+    $end = Carbon::parse("$month-01")->endOfMonth();
+
+    return DB::table('sensors')
+        ->join('devices', 'sensors.device_id', '=', 'devices.id')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->whereBetween('sensors.time', [$start, $end])
+        ->orderBy('assets.id')
+        ->orderBy('sensors.time')
+        ->select(
+            'assets.id as asset_id',
+            'assets.asset_name',
+            'sensors.capacity',
+            'sensors.time'
+        )
+        ->get()
+        ->groupBy('asset_id');
+}
+
+private function computeBinAnalytics($month)
+{
+    $start = Carbon::parse("$month-01")->startOfMonth();
+    $end   = Carbon::parse("$month-01")->endOfMonth();
+
+    // Get all sensors for the month, ordered by asset and time
+    $sensors = DB::table('sensors')
+        ->join('devices', 'sensors.device_id', '=', 'devices.id')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->whereBetween('sensors.time', [$start, $end])
+        ->orderBy('assets.id')
+        ->orderBy('sensors.time')
+        ->select('assets.id as asset_id', 'assets.asset_name', 'sensors.capacity', 'sensors.time')
+        ->get()
+        ->groupBy('asset_id'); // group by asset
+
+    $results = [];
+
+    foreach ($sensors as $rows) {
+        $timesFull = 0;
+        $fillDurations = [];
+        $clearDurations = [];
+
+        $prevCapacity = null;
+        $lastEmptyAt = null;
+        $lastFullAt = null;
+
+        foreach ($rows as $row) {
+            $currentCapacity = $row->capacity;
+            $currentTime = Carbon::parse($row->time);
+
+            // If first reading of the month is already full, count it
+            if ($prevCapacity === null && $currentCapacity >= 86) {
+                $timesFull++;
+                $lastFullAt = $currentTime;
+            }
+
+            // EMPTY → FULL
+            if ($prevCapacity !== null && $prevCapacity < 86 && $currentCapacity >= 86) {
+                $timesFull++;
+                $lastFullAt = $currentTime;
+
+                if ($lastEmptyAt) {
+                    $fillDurations[] = $lastFullAt->diffInMinutes($lastEmptyAt);
+                }
+            }
+
+            // FULL → EMPTY
+            if ($prevCapacity !== null && $prevCapacity >= 86 && $currentCapacity < 41) {
+                $lastEmptyAt = $currentTime;
+
+                if ($lastFullAt) {
+                    $clearDurations[] = $lastEmptyAt->diffInMinutes($lastFullAt);
+                }
+            }
+
+            $prevCapacity = $currentCapacity;
+        }
+
+        $results[] = [
+            'asset_name'     => $rows->first()->asset_name,
+            'times_full'     => $timesFull,
+            'avg_fill_time'  => count($fillDurations)
+                ? round(array_sum($fillDurations) / count($fillDurations))
+                : 0,
+            'avg_clear_time' => count($clearDurations)
+                ? round(array_sum($clearDurations) / count($clearDurations))
+                : 0,
+        ];
+    }
+
+    return collect($results);
+}
+
     public function index(Request $request)
     {
-        // Determine selected month (default: current month)
-        $month = $request->input('month') ?? Carbon::now()->format('Y-m');
-        $start = Carbon::parse($month . '-01')->startOfMonth();
-        $end = Carbon::parse($month . '-01')->endOfMonth();
+        $month = $request->input('month') ?? now()->format('Y-m');
 
-        // ========================
-        // CAPACITY STATS
-        // ========================
-        $capacityStats = DB::table('sensors')
-            ->whereBetween('created_at', [$start, $end])
-            ->selectRaw('
-                SUM(CASE WHEN capacity BETWEEN 0 AND 40 THEN 1 ELSE 0 END) as empty_count,
-                SUM(CASE WHEN capacity BETWEEN 41 AND 85 THEN 1 ELSE 0 END) as half_count,
-                SUM(CASE WHEN capacity >= 86 THEN 1 ELSE 0 END) as full_count
-            ')
-            ->first();
+        $capacityStats  = $this->getCapacityStats($month);
+        $devicesByFloor = $this->getDevicesByFloor();
+        $fullTrend      = $this->getFullTrend($month);
+        $fullCounts     = $this->getFullCounts($month);
 
-        // ========================
-        // DEVICES BY FLOOR
-        // ========================
-        $devicesByFloor = DB::table('assets')
-            ->join('floor', 'assets.floor_id', '=', 'floor.id')
-            ->join('devices', 'devices.asset_id', '=', 'assets.id')
-            ->select('floor.floor_name', DB::raw('count(devices.id) as total'))
-            ->groupBy('floor.floor_name')
-            ->get();
-
-        // ========================
-        // FULL BIN TREND (daily)
-        // ========================
-        $fullTrend = DB::table('sensors')
-            ->whereBetween('created_at', [$start, $end])
-            ->where('capacity', '>=', 86)
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        // ========================
-        // FULL COUNTS PER BIN
-        // ========================
-        $fullCounts = DB::table('sensors')
-            ->join('devices', 'sensors.device_id', '=', 'devices.id')
-            ->join('assets', 'devices.asset_id', '=', 'assets.id')
-            ->whereBetween('sensors.created_at', [$start, $end])
-            ->where('sensors.capacity', '>=', 86)
-            ->select('assets.asset_name', DB::raw('COUNT(*) as total_full'))
-            ->groupBy('assets.asset_name')
-            ->orderBy('assets.asset_name')
-            ->get();
+        $groupedSensors = $this->computeBinAnalytics($month);
+        $binAnalytics   = $groupedSensors;
 
         // All assets (for images)
         $assets = Asset::with('floor')->get();
@@ -137,6 +190,7 @@ private function getAssets($month)
             'devicesByFloor',
             'fullTrend',
             'fullCounts',
+            'binAnalytics',
             'assets'
         ));
     }
@@ -148,10 +202,10 @@ public function sendEmail(Request $request)
 
     // --- Prepare report data ---
     $capacityStats = $this->getCapacityStats($month);
-    $devicesByFloor = $this->getDevicesByFloor($month);
+    $devicesByFloor = $this->getDevicesByFloor();
     $fullTrend = $this->getFullTrend($month);
     $fullCounts = $this->getFullCounts($month);
-    $assets = $this->getAssets($month);
+    $assets = $this->getAssets();
 
     // --- Generate chart images using QuickChart ---
     $charts = [];
@@ -162,67 +216,6 @@ public function sendEmail(Request $request)
         $chart->setConfig(json_encode($config));
         return file_get_contents($chart->getUrl());
     };
-
-    // 1. Capacity Distribution
-    $charts['capacityChart'] = $getChartImage([
-        'type' => 'doughnut',
-        'data' => [
-            'labels' => ['Empty', 'Half Full', 'Full'],
-            'datasets' => [[
-                'data' => [
-                    $capacityStats->empty_count,
-                    $capacityStats->half_count,
-                    $capacityStats->full_count
-                ],
-                'backgroundColor' => ['#2ecc71', '#f1c40f', '#e74c3c']
-            ]]
-        ],
-        'options' => ['plugins' => ['legend' => ['position' => 'bottom']]]
-    ]);
-
-    // 2. Devices by Floor
-    $charts['floorChart'] = $getChartImage([
-        'type' => 'bar',
-        'data' => [
-            'labels' => $devicesByFloor->pluck('floor_name'),
-            'datasets' => [[
-                'label' => 'Total Devices',
-                'data' => $devicesByFloor->pluck('total'),
-                'backgroundColor' => '#3498db',
-                'borderRadius' => 5
-            ]]
-        ]
-    ]);
-
-    // 3. Full Bin Trend
-    $charts['trendChart'] = $getChartImage([
-        'type' => 'line',
-        'data' => [
-            'labels' => $fullTrend->pluck('date'),
-            'datasets' => [[
-                'label' => 'Full Bins',
-                'data' => $fullTrend->pluck('total'),
-                'borderColor' => '#e74c3c',
-                'backgroundColor' => 'rgba(231,76,60,0.2)',
-                'fill' => true,
-                'tension' => 0.3
-            ]]
-        ]
-    ]);
-
-    // 4. Full Counts per Bin
-    $charts['fullCountsChart'] = $getChartImage([
-        'type' => 'bar',
-        'data' => [
-            'labels' => $fullCounts->pluck('asset_name'),
-            'datasets' => [[
-                'label' => 'Times Full',
-                'data' => $fullCounts->pluck('total_full'),
-                'backgroundColor' => '#8e44ad',
-                'borderRadius' => 5
-            ]]
-        ]
-    ]);
 
     // --- Generate PDF ---
     $pdf = Pdf::loadView('emails.summary_report', [
