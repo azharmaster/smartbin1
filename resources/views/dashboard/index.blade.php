@@ -347,8 +347,9 @@ function trend($current, $previous) {
 
 <div class="container-fluid mt-4">
 
+    <!-- ROW 1: SMARTBIN CHART -->
     <div class="row">
-            <!--SMARTBIN TRACK-->
+        <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white">
@@ -359,10 +360,8 @@ function trend($current, $previous) {
                     <canvas id="smartBinClearChart" height="120"></canvas>
                 </div>
             </div>
-        <!-- LEFT COLUMN: MAP -->
-        <div class="col-lg-6">
-
-
+        </div>
+    </div>
 
 <!-- SmartBin Gradient Style -->
 <style>
@@ -371,8 +370,12 @@ function trend($current, $previous) {
 }
 </style>
 
+    <!-- ROW 2: USERS + TODO -->
+    <div class="row">
+        <!-- LEFT COLUMN: MAP -->
+        <div class="col-lg-6">
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
-            <div class="card p-3 mt-4">
+            <div class="card p-3">
                 <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
                 <ul class="list-group">
                     @foreach($users as $user)
