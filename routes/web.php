@@ -176,6 +176,10 @@ Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assi
     Route::get('/summary', [SummaryController::class, 'index'])
     ->middleware('auth')
     ->name('summary');
+
+    Route::post('/summary/send-email', [SummaryController::class, 'sendEmail'])
+    ->name('summary.sendEmail')
+    ->middleware('auth');
 });
 
 // Staff dashboard routes
@@ -293,9 +297,6 @@ Route::get('/supervisor/dashboard', [SupervisorDashboardController::class, 'inde
 Route::get('/supervisor/main-dashboard', [SupervisorMainDashboardController::class, 'index'])
     ->name('supervisor.main_dashboard');    
 
-// WhatsApp Notification CRUD routes
-Route::resource('whatsapp', WhatsAppNotificationController::class);
-
-// Optional: Manual send route for a single notification
-Route::post('whatsapp/{notification}/send', [WhatsAppNotificationController::class, 'sendNow'])
-    ->name('whatsapp.send');
+// Only one notification setting
+Route::get('whatsapp', [WhatsAppNotificationController::class, 'index'])->name('whatsapp.index');
+Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'update'])->name('whatsapp.update');

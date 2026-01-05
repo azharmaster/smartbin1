@@ -146,7 +146,7 @@ a.status-footer:hover {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: #fff;
+    color: #000000ff;
 }
 
 .status-trend-footer small {

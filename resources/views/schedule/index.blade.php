@@ -1,9 +1,9 @@
 @extends($layout)
 @section('content_title', 'Schedule')
 @section('content')
-<div class="card">
+<div class="card card-success card-outline">
     <div class="card-header">
-        <h4 class="card-title">Schedules</h4>
+        <h5 class="mb-0">Schedules</h5>
     </div>
     <div class="card-body">
 

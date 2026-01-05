@@ -1,9 +1,9 @@
 @extends($layout)
 @section('content_title', 'Devices')
 @section('content')
-<div class="card">
+<div class="card card-success card-outline">
     <div class="card-header">
-        <h4 class="card-title">Devices</h4>
+        <h5 class="mb-0">Devices</h5>
     </div>
     <div class="card-body">
         @if ($errors->any())
