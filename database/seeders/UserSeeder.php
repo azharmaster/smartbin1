@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class UserSeeder extends Seeder
 {
@@ -33,7 +32,7 @@ class UserSeeder extends Seeder
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],,
+            ],
             [
                 'name' => 'Supervisor',
                 'email' => 'supervisor@gmail.com',
