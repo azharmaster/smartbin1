@@ -1,86 +1,119 @@
 <?php
-require_once 'WhatsAppSender.php'; // Your WAHA class
+class WhatsAppSender {
+    private $apiUrl;
+    private $apiKey;
 
-// DB connection
-$host = 'localhost';
-$db   = 'smartbin1';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
+    public function __construct($apiUrl, $apiKey) {
+        $this->apiUrl = rtrim($apiUrl, '/');
+        $this->apiKey = $apiKey;
+    }
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+    public function sendTextMessage($phone, $message, $sessionName = "default") {
+        $url = $this->apiUrl . '/api/sendText';
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    die("DB Connection failed: " . $e->getMessage());
+        $data = [
+            "chatId" => $phone . '@c.us',
+            "text"   => $message,
+            "session"=> $sessionName
+        ];
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'X-Api-Key: ' . $this->apiKey
+            ]
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return ($httpCode >= 200 && $httpCode < 300);
+    }
 }
 
-// WAHA Config
-$apiUrl = "https://beta-waha.txfdw3.easypanel.host";
-$apiKey = "admin";
-$whatsapp = new WhatsAppSender($apiUrl, $apiKey);
-$phone = "60198036196"; // WhatsApp recipient
+$pdo = new PDO(
+    "mysql:host=localhost;dbname=smartbin1;charset=utf8mb4",
+    "root",
+    "",
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
 
-// Run continuously
-echo "Starting fake bin simulator...\n";
+$whatsapp = new WhatsAppSender(
+    "https://beta-waha.txfdw3.easypanel.host",
+    "admin"
+);
+
+$supervisors = $pdo
+    ->query("SELECT phone FROM users WHERE role = 4 AND phone IS NOT NULL")
+    ->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($supervisors)) {
+    die("❌ No supervisors found.\n");
+}
+
+echo "🚀 SmartBin simulator started...\n";
 
 while (true) {
 
-    // Fetch all devices
-    $stmt = $pdo->query("SELECT d.id_device, d.device_name, a.asset_name
-                         FROM devices d
-                         JOIN assets a ON d.asset_id = a.id");
-    $devices = $stmt->fetchAll();
+    $devices = $pdo->query("
+        SELECT d.id_device, d.device_name, a.asset_name
+        FROM devices d
+        JOIN assets a ON d.asset_id = a.id
+    ")->fetchAll();
 
     foreach ($devices as $device) {
-        // Generate fake capacity
+
         $capacity = rand(0, 100);
 
-        // Insert new sensor reading
-        $stmtInsert = $pdo->prepare("INSERT INTO sensors (device_id, battery, capacity, time, network) 
-                                     VALUES (:device_id, :battery, :capacity, NOW(), :network)");
-        $stmtInsert->execute([
-            ':device_id' => $device['id_device'],
-            ':battery'   => rand(20, 100),
-            ':capacity'  => $capacity,
-            ':network'   => 'LTE'
+        // Insert sensor reading
+        $stmt = $pdo->prepare("
+            INSERT INTO sensors (device_id, battery, capacity, time, network)
+            VALUES (?, ?, ?, NOW(), 'LTE')
+        ");
+        $stmt->execute([
+            $device['id_device'],
+            rand(30, 100),
+            $capacity
         ]);
 
-        echo date('H:i:s') . " - {$device['device_name']} ({$device['asset_name']}) capacity: $capacity%\n";
+        echo date('H:i:s') . " {$device['device_name']} → {$capacity}%\n";
 
-        // Check if capacity just crossed into full (86-100)
+        // FULL = 86–100
         if ($capacity >= 86) {
-            // Get last sensor reading before this one
-            $stmtLast = $pdo->prepare("SELECT capacity FROM sensors 
-                                       WHERE device_id = :device_id 
-                                       ORDER BY time DESC 
-                                       LIMIT 1 OFFSET 1"); // OFFSET 1 = previous reading
-            $stmtLast->execute([':device_id' => $device['id_device']]);
-            $last = $stmtLast->fetch();
 
-            $wasFullBefore = $last && $last['capacity'] >= 86;
+            // Check previous reading
+            $prev = $pdo->prepare("
+                SELECT capacity FROM sensors
+                WHERE device_id = ?
+                ORDER BY time DESC
+                LIMIT 1 OFFSET 1
+            ");
+            $prev->execute([$device['id_device']]);
+            $last = $prev->fetch();
 
-            if (!$wasFullBefore) {
-                // Send WhatsApp alert
-                $message = "⚠️ ALERT! {$device['device_name']} ({$device['asset_name']}) is FULL ({$capacity}%). Please clear it ASAP!";
-                $result = $whatsapp->sendTextMessage($phone, $message);
+            // Only alert on transition
+            if (!$last || $last['capacity'] < 86) {
 
-                if ($result['success']) {
-                    echo "✅ Alert sent for {$device['device_name']}\n";
-                } else {
-                    echo "❌ Failed to send alert for {$device['device_name']}. HTTP code: {$result['http_code']}\n";
+                $message =
+                    "🚨 *SMARTBIN ALERT*\n\n" .
+                    "Bin: {$device['device_name']}\n" .
+                    "Asset: {$device['asset_name']}\n" .
+                    "Status: FULL ({$capacity}%)\n\n" .
+                    "Please clear immediately.";
+
+                foreach ($supervisors as $phone) {
+                    $whatsapp->sendTextMessage($phone, $message);
+                    echo "📲 Alert sent to $phone\n";
                 }
-            } else {
-                echo "⏱ Already full before, no new alert.\n";
             }
         }
     }
 
-    // Wait before next simulation
-    sleep(60); // 60 seconds
+    sleep(60); // 1 minute
 }
