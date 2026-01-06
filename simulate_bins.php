@@ -62,7 +62,7 @@ echo "🚀 SmartBin simulator started...\n";
 while (true) {
 
     $devices = $pdo->query("
-        SELECT d.id_device, d.device_name, a.asset_name
+        SELECT d.id_device, d.device_name, a.asset_name, a.location
         FROM devices d
         JOIN assets a ON d.asset_id = a.id
     ")->fetchAll();
@@ -100,12 +100,24 @@ while (true) {
             // Only alert on transition
             if (!$last || $last['capacity'] < 86) {
 
+                $nowDate = date('d-m-Y');
+                $nowTime = date('H:i');
+                $nowFull = date('d-m-Y H:i:s');
+
                 $message =
-                    "🚨 *SMARTBIN ALERT*\n\n" .
-                    "Bin: {$device['device_name']}\n" .
-                    "Asset: {$device['asset_name']}\n" .
-                    "Status: FULL ({$capacity}%)\n\n" .
-                    "Please clear immediately.";
+                "🚨 *NOTIFIKASI TONG SAMPAH PENUH* 🚨\n\n" .
+                "📍 Lokasi: {$device['location']}\n" .
+                "🗑️ Status: Tong sampah telah penuh\n\n" .
+                "📅 Tarikh: {$nowDate}\n" .
+                "⏰ Masa: {$nowTime}\n" .
+                "📋 Waktu Notifikasi Dihantar: {$nowFull}\n\n" .
+                "⚠️ *Tindakan Segera Diperlukan:*\n" .
+                "1. Sila kosongkan tong sampah di {$device['location']}\n" .
+                "2. Bersihkan kawasan sekeliling\n" .
+                "3. Pastikan tong diletakkan semula di tempat asal\n\n" .
+                "📞 Untuk maklumat lanjut:\n" .
+                "Ketua Fasiliti: 03-XXXX XXXX\n\n" .
+                "Terima kasih atas kerjasama anda.";
 
                 foreach ($supervisors as $phone) {
                     $whatsapp->sendTextMessage($phone, $message);
@@ -115,5 +127,5 @@ while (true) {
         }
     }
 
-    sleep(60); // 1 minute
+    sleep(120); // 1 minute
 }
