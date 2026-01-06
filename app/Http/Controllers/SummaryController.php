@@ -47,7 +47,6 @@ class SummaryController extends Controller
         $sensors = DB::table('sensors')
             ->join('devices', 'sensors.device_id', '=', 'devices.id_device')
             ->join('assets', 'devices.asset_id', '=', 'assets.id')
-            ->where('assets.category', 'SmartBin')
             ->whereBetween('sensors.time', [
                 $carbonMonth->copy()->startOfMonth(),
                 $carbonMonth->copy()->endOfMonth()
