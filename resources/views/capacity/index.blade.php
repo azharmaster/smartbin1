@@ -124,26 +124,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const form = document.getElementById('capacityForm');
 
-    // Prevent form submission on Enter key
+    // Prevent form submission on Enter key inside inputs
     form.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') e.preventDefault();
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+            e.preventDefault();
+        }
     });
 
     function liveUpdate() {
         const emptyTo = parseInt(emptyToInput.value) || 0;
         let halfTo = parseInt(halfToInput.value) || 0;
 
-        // Ensure half-to > empty-to
+        // Ensure half-to is always greater than empty-to
         if (halfTo <= emptyTo) {
             halfTo = emptyTo + 1;
             halfToInput.value = halfTo;
         }
 
-        // Update half-from and full-from
+        // Update Half-Full "From" and Full "From" live
         halfFromInput.value = emptyTo + 1;
         fullFromInput.value = halfTo + 1;
 
-        // Full to is always 100
+        // Full "To" always 100
         fullToInput.value = 100;
     }
 
@@ -151,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
     emptyToInput.addEventListener('input', liveUpdate);
     halfToInput.addEventListener('input', liveUpdate);
 
-    // Initialize values on page load
+    // Initialize on page load
     liveUpdate();
 });
 </script>
