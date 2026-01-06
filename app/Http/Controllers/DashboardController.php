@@ -180,45 +180,55 @@ class DashboardController extends Controller
     }
 
     /** Calculate SmartBin clear times in hours */
-    private function calculateSmartBinClearTimes()
-    {
-        $smartBinClearTimes = [];
+private function calculateSmartBinClearTimes()
+{
+    $smartBinClearTimes = [];
 
-        /** @var \Illuminate\Support\Collection<int, Device> $devices */
-        $devices = Device::with([
-            'asset',
-            'sensors' => fn($q) => $q->orderBy('time', 'asc')
-        ])
-        ->get();
+    $devices = Device::with([
+        'asset',
+        'sensors' => fn($q) => $q->orderBy('time', 'asc')
+    ])->get();
 
-        foreach ($devices as $device) {
-            if (!$device->asset) continue;
+    foreach ($devices as $device) {
+        if (!$device->asset) continue;
 
-            $fullTimestamp = null;
+        $fullTimestamp = null;
+        $latestClear   = null; // ✅ store only the latest
 
-            foreach ($device->sensors as $sensor) {
-                if ($sensor->capacity > 85 && $fullTimestamp === null) {
-                    $fullTimestamp = $sensor->time;
-                    continue;
-                }
+        foreach ($device->sensors as $sensor) {
 
-                if ($fullTimestamp && $sensor->capacity <= 40) {
-                    $minutes = Carbon::parse($fullTimestamp)
-                                     ->diffInMinutes(Carbon::parse($sensor->time));
+            // Bin becomes FULL
+            if ($sensor->capacity > 85 && $fullTimestamp === null) {
+                $fullTimestamp = $sensor->time;
+                continue;
+            }
 
-                    $smartBinClearTimes[] = [
-                        'asset_name'  => $device->asset->asset_name,
-                        'device_name' => $device->device_name,
-                        'minutes'     => $minutes,
-                        'hours'       => round($minutes / 60, 2),
-                        'cleared_at'  => $sensor->time,
-                    ];
+            // Bin is CLEARED
+            if ($fullTimestamp && $sensor->capacity <= 40) {
 
-                    $fullTimestamp = null;
-                }
+                $minutes = Carbon::parse($fullTimestamp)
+                    ->diffInMinutes(Carbon::parse($sensor->time));
+
+                // 🔁 overwrite → keeps ONLY latest clear
+                $latestClear = [
+                    'asset_name'  => $device->asset->asset_name,
+                    'device_name' => $device->device_name,
+                    'minutes'     => $minutes,
+                    'hours'       => round($minutes / 60, 2),
+                    'cleared_at'  => $sensor->time,
+                ];
+
+                $fullTimestamp = null;
             }
         }
 
-        return collect($smartBinClearTimes);
+        // ✅ push only ONE record per device
+        if ($latestClear) {
+            $smartBinClearTimes[] = $latestClear;
+        }
     }
+
+    return collect($smartBinClearTimes);
+}
+
 }

@@ -112,7 +112,7 @@ while (true) {
                 "⏰ Masa: {$nowTime}\n" .
                 "📋 Waktu Notifikasi Dihantar: {$nowFull}\n\n" .
                 "⚠️ *Tindakan Segera Diperlukan:*\n" .
-                "1. Sila kosongkan tong sampah di {$device['location']}\n" .
+                "1. Sila kosongkan tong sampah di '{$device['location']}'\n" .
                 "2. Bersihkan kawasan sekeliling\n" .
                 "3. Pastikan tong diletakkan semula di tempat asal\n\n" .
                 "📞 Untuk maklumat lanjut:\n" .
