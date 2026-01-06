@@ -55,7 +55,7 @@ $apiKey = "admin";                                    // Ganti dengan API key ya
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
 // Contoh mesej promosi, ganti phone number dan message ikut keperluan
-$phone = "601136820907"; // Nombor WhatsApp dengan country code (tanpa +, ganti ikut anda)
+$phone = ""; // Nombor WhatsApp dengan country code (tanpa +, ganti ikut anda)
 $message = "🚀 *SPECIAL OFFER!* 🚀\n\n" .
             "Get 50% OFF on all products this weekend!\n\n" .
             "✨ Features:\n" .

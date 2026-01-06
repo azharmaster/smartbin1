@@ -5,20 +5,21 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class SummaryReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $pdf;
+    public $data; // This will hold all the variables for the view
+    public $pdfOutput; // This will hold the generated PDF bytes
 
     /**
      * Create a new message instance.
      */
-    public function __construct($pdf)
+    public function __construct(array $data, string $pdfOutput)
     {
-        $this->pdf = $pdf;
+        $this->data = $data;
+        $this->pdfOutput = $pdfOutput;
     }
 
     /**
@@ -27,10 +28,15 @@ class SummaryReportMail extends Mailable
     public function build()
     {
         return $this->subject('Monthly SmartBin Summary')
-            ->view('emails.summary_report')
+            // You can include a simple plain text or html view if you want
+            ->view('emails.blank') 
+            ->with($this->data)
             ->attachData(
-                $this->pdf->output(),
-                'summary-report.pdf'
+                $this->pdfOutput,
+                'summary-report.pdf',
+                [
+                    'mime' => 'application/pdf',
+                ]
             );
     }
 }

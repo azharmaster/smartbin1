@@ -14,7 +14,7 @@
                     </span>
                     <input type="month"
                            name="month"
-                           value="{{ $month }}"
+                           value="{{ $monthInput }}"
                            class="form-control fw-bold"
                            onchange="this.form.submit()">
                 </div>
@@ -30,7 +30,7 @@
         <div class="col-md-2">
             <form method="POST" action="{{ route('summary.sendEmail') }}">
                 @csrf
-                <input type="hidden" name="month" value="{{ $month }}">
+                <input type="hidden" name="month" value="{{  $monthInput }}">
                 <button class="btn btn-success mt-2 w-100">
                     <i class="fas fa-envelope me-1"></i> Send Report
                 </button>
@@ -58,7 +58,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-hourglass-half me-2"></i>
-                    Average Time for Bin to Become Full (Minutes)
+                    Average Time for Bin to Become Full (Hours)
                 </div>
                 <div class="card-body" style="height: 320px;">
                     <canvas id="avgFillChart"></canvas>
@@ -74,7 +74,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-broom me-2"></i>
-                    Average Bin Clear Time (Minutes)
+                    Average Bin Clear Time (Hours)
                 </div>
                 <div class="card-body" style="height: 320px;">
                     <canvas id="avgClearChart"></canvas>
@@ -126,53 +126,86 @@
 </div>
 
 {{-- ================= CHARTS ================= --}}
+<script src="//unpkg.com/alpinejs" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const labels = @json($binAnalytics->pluck('asset_name'));
+window.addEventListener('DOMContentLoaded', () => {
+    const labels = @json($binAnalytics->pluck('device_name'));
 
-/* Times Full */
-new Chart(document.getElementById('timesFullChart'), {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Times Became Full',
-            data: @json($binAnalytics->pluck('times_full')),
-            backgroundColor: '#8e44ad',
-            borderRadius: 6
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-});
+    /* Times Full */
+    new Chart(document.getElementById('timesFullChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Times Became Full',
+                data: @json($binAnalytics->pluck('times_full')),
+                borderColor: '#8e44ad',
+                backgroundColor: 'rgba(142,68,173,0.2)',
+                fill: true,
+                tension: 0.3,       // smooth curve
+                pointRadius: 5,
+                pointBackgroundColor: '#8e44ad'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, min: 0 }
+            }
+        }
+    });
 
-/* Avg Fill Time */
-new Chart(document.getElementById('avgFillChart'), {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Minutes',
-            data: @json($binAnalytics->pluck('avg_fill_time')),
-            backgroundColor: '#2ecc71',
-            borderRadius: 6
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-});
+    /* Avg Fill Time */
+    new Chart(document.getElementById('avgFillChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Fill Time (Hours)',
+                data: @json($binAnalytics->pluck('avg_fill_time')),
+                borderColor: '#2ecc71',
+                backgroundColor: 'rgba(46,204,113,0.2)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: '#2ecc71'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, min: 0 }
+            }
+        }
+    });
 
-/* Avg Clear Time */
-new Chart(document.getElementById('avgClearChart'), {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Minutes',
-            data: @json($binAnalytics->pluck('avg_clear_time')),
-            backgroundColor: '#e74c3c',
-            borderRadius: 6
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
+    /* Avg Clear Time */
+    new Chart(document.getElementById('avgClearChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Clear Time (Hours)',
+                data: @json($binAnalytics->pluck('avg_clear_time')),
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231,76,60,0.2)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: '#e74c3c'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, min: 0 }
+            }
+        }
+    });
 });
 </script>
 
