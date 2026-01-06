@@ -15,7 +15,7 @@
         @endif
 
         <div class="d-flex justify-content-end mb-2">
-            <x-asset.form-asset :floors="$floors" :categories="$categories" />
+            <x-asset.form-asset :floors="$floors" />
         </div>
         <div class="table-responsive">
              <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
@@ -25,10 +25,9 @@
                         <th>Name </th>
                         <th>Floor </th>
                         <th>Serial No </th>
-                        <th>Description </th>
+                        <th>Location </th>
                         <th>Model </th>
                         <th>Picture</th>
-                        <th>Category </th>
                         <th>Option </th>
                     </tr>
                 </thead>
@@ -39,7 +38,7 @@
                         <td>{{ $asset->asset_name }}</td>
                         <td>{{ $asset->floor->floor_name ?? '—' }}</td>
                         <td>{{ $asset->serialNo }}</td>
-                        <td>{{ $asset->description }}</td>
+                        <td>{{ $asset->location }}</td>
                         <td>{{ $asset->model }}</td>
                         <td class="text-center">
                             @if($asset->picture)
@@ -51,10 +50,9 @@
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
-                        <td>{{ $asset->category }}</td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :categories="$categories" :picture="$asset->picture"/>&nbsp;
+                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :picture="$asset->picture"/>&nbsp;
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt text-white"></i>
                             </a>&nbsp;

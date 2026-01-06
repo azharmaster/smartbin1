@@ -14,10 +14,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $asset_name
  * @property int $floor_id
  * @property string $serialNo
- * @property string $description
+ * @property string $location
  * @property string $model
  * @property Carbon $maintenance
- * @property string $category
+ * @property string $picture
+ * @property decimal $x
+ * @property decimal $y
  *
  * @package App\Models
  */
@@ -33,11 +35,12 @@ class Asset extends Model
         'asset_name',
         'floor_id',
         'serialNo',
-        'description',
+        'location',
         'model',
         'maintenance',
-        'category',
         'picture',
+        'x',
+        'y',
     ];
 
     public function floor()
@@ -53,4 +56,3 @@ class Asset extends Model
         return $this->hasMany(Complaint::class);
     }
 }
-

@@ -12,7 +12,8 @@ class FormAsset extends Component
     /**
      * Create a new component instance.
      */
-    public $id, $asset_name, $floor_id, $serialNo, $description, $model, $maintenance, $category;
+    public $id, $asset_name, $floor_id, $serialNo, $location, $model, $maintenance;
+
     public function __construct($id = null)
     {
         if($id) {
@@ -21,10 +22,9 @@ class FormAsset extends Component
             $this->asset_name = $assets->asset_name;
             $this->floor_id = $assets->floor_id;
             $this->serialNo = $assets->serialNo;
-            $this->description = $assets->description;
+            $this->location = $assets->location;
             $this->model = $assets->model;
             $this->maintenance = $assets->maintenance;
-            $this->category = $assets->category;
         }
     }
 

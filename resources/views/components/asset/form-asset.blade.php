@@ -1,7 +1,6 @@
 @props([
     'id' => null, 
-    'floors' => [], 
-    'categories' => [],
+    'floors' => [],
     'picture' => null
 ])
 
@@ -61,10 +60,10 @@
                                    value="{{ $serialNo ?? '' }}">
                         </div>
 
-                        {{-- Description --}}
+                        {{-- Location (was Description) --}}
                         <div class="form-group">
-                            <label>Description</label>
-                            <textarea class="form-control" name="description" rows="3">{{ $description ?? '' }}</textarea>
+                            <label>Location</label>
+                            <textarea class="form-control" name="location" rows="3">{{ $location ?? '' }}</textarea>
                         </div>
 
                         {{-- Model --}}
@@ -81,17 +80,6 @@
                                    value="{{ isset($maintenance) ? date('Y-m-d\TH:i', strtotime($maintenance)) : '' }}">
                         </div>
 
-                        {{-- Category (Dropdown of unique previous categories) --}}
-                        <div class="form-group">
-                            <label>Category</label>
-                            <input list="categoryList" name="category" class="form-control"
-                                value="{{ $category ?? '' }}" placeholder="Select or type a category">
-                            <datalist id="categoryList">
-                                @foreach($categories as $cat)
-                                    <option value="{{ $cat }}">
-                                @endforeach
-                            </datalist>
-                        </div>
                         {{-- Asset Picture --}}
                         <div class="form-group">
                             <label>Asset Picture</label>
