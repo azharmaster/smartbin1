@@ -47,7 +47,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/dashboard" class="nav-link">PSENSEHUB</a>
+                    <a href="/dashboard" class="nav-link">SMARTBIN</a>
                 </li>
             </ul>
 
@@ -123,7 +123,7 @@
 
         <footer class="main-footer">
             <div class="float-right d-none d-sm-inline">Anything you want</div>
-            <strong>Copyright &copy; 2014-2021 PSENSEHUB/SmartBin.</strong>
+            <strong>Copyright &copy; 2014-2021 SmartBin.</strong>
             All rights reserved.
         </footer>
     </div>

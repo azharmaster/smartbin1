@@ -356,7 +356,7 @@ function trend($current, $previous) {
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white">
+                    <h5 class="mb-0 text-white fs-6">
                         <i class="fas fa-trash"></i> SmartBin Clear Time
                     </h5>
                 </div>
@@ -380,7 +380,7 @@ function trend($current, $previous) {
         <div class="col-lg-6">
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
             <div class="card p-3">
-                <h5 class="mb-3"><i class="fas fa-users"></i> Users</h5>
+                <h5 class="mb-3 fs-6"><i class="fas fa-users"></i> Users</h5>
                 <ul class="list-group">
                     @foreach($users as $user)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -405,7 +405,7 @@ function trend($current, $previous) {
 
             <!-- TODO LIST -->
             <div class="card p-3">
-                <h5 class="mb-3">
+                <h5 class="mb-3 fs-6">
                     <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
                         <i class="fas fa-list-check"></i> To Do List
                     </a>
