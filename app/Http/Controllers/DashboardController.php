@@ -73,31 +73,31 @@ class DashboardController extends Controller
          | Calendar Events (NEW)
          |------------------------------*/
         $calendarEvents = Task::with(['user', 'asset', 'floor'])
-    ->get()
-    ->map(function ($task) {
-        return [
-            'id'    => $task->id,
-            'title' => $task->description ?? 'Task #' . $task->id,
+            ->get()
+            ->map(function ($task) {
+                return [
+                    'id'    => $task->id,
+                    'title' => $task->description ?? 'Task #' . $task->id,
 
-            // Use created_at as calendar date
-            'start' => Carbon::parse($task->created_at)->toDateString(),
+                    // Use created_at as calendar date
+                    'start' => Carbon::parse($task->created_at)->toDateString(),
 
-            'extendedProps' => [
-                'user'   => $task->user->name ?? '-',
-                'asset'  => $task->asset->asset_name ?? '-',
-                'floor'  => $task->floor->floor_name ?? '-',
-                'status' => $task->status,
-                'notes'  => $task->notes ?? '-',
-            ],
+                    'extendedProps' => [
+                        'user'   => $task->user->name ?? '-',
+                        'asset'  => $task->asset->asset_name ?? '-',
+                        'floor'  => $task->floor->floor_name ?? '-',
+                        'status' => $task->status,
+                        'notes'  => $task->notes ?? '-',
+                    ],
 
-            'className' => match ($task->status) {
-                'completed'    => 'bg-success',
-                'in_progress'  => 'bg-info',
-                'pending'      => 'bg-warning',
-                default        => 'bg-danger',
-            },
-        ];
-    });
+                    'className' => match ($task->status) {
+                        'completed'    => 'bg-success',
+                        'in_progress'  => 'bg-info',
+                        'pending'      => 'bg-warning',
+                        default        => 'bg-danger',
+                    },
+                ];
+            });
 
         return view('dashboard.index', compact(
             'totalDevices',
@@ -133,7 +133,6 @@ class DashboardController extends Controller
             }
         ])->get();
     }
-
 
     //to set the capasity of the bin
     private function countFullDevices($devices)
@@ -221,7 +220,7 @@ class DashboardController extends Controller
             'asset',
             'sensors' => fn($q) => $q->orderBy('time', 'asc')
         ])
-        ->whereHas('asset', fn($q) => $q->where('category', 'SmartBin'))
+        ->whereHas('asset', fn($q) => $q->where('location', 'SmartBin')) // updated to location
         ->get();
 
         foreach ($devices as $device) {
