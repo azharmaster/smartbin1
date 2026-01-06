@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 class WhatsAppSender {
     private $apiUrl;
     private $apiKey;
