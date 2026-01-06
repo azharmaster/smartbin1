@@ -82,6 +82,14 @@ class Aside extends Component
                         "route_active" => "whatsapp.*",
                         "is_dropdown" => false
                     ],
+                    [
+                        "label" => "Set Capacity",
+                        "icon" => "fas fa-sliders-h",
+                        "color" => "#36b9cc",
+                        "route_name" => "capacity.index",
+                        "route_active" => "capacity.*",
+                        "is_dropdown" => false
+                    ],
                     // [
                     //     "label" => "Floor",
                     //     "icon" => "fa-solid fas fa-building",

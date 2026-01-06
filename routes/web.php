@@ -27,6 +27,7 @@ use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\SupervisorMainDashboardController;
 use App\Http\Controllers\SupervisorDashboardController;
 use App\Http\Controllers\WhatsAppNotificationController;
+use App\Http\Controllers\CapacityController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('tasks', TaskController::class);
@@ -300,3 +301,10 @@ Route::get('/supervisor/main-dashboard', [SupervisorMainDashboardController::cla
 // Only one notification setting
 Route::get('whatsapp', [WhatsAppNotificationController::class, 'index'])->name('whatsapp.index');
 Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'update'])->name('whatsapp.update');
+
+//Set Capacity Page
+ Route::get('/capacity', [CapacityController::class, 'index'])
+        ->name('capacity.index');
+
+    Route::put('/capacity/{id}', [CapacityController::class, 'update'])
+        ->name('capacity.update');
