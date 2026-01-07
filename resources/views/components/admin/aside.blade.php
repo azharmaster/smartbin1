@@ -1,6 +1,8 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4" style="background: linear-gradient(135deg, #103913ff, #1f6423ff)">
     <!-- Brand Logo -->
-<a href="{{ route('admin.mainmenu') }}" class="brand-link brand-app text-center">
+<!-- <a href="{{ route('admin.mainmenu') }}" class="brand-link brand-app text-center"> -->
+    <a href="{{ route('admin.dashboard') }}" class="brand-link brand-app text-center">
+
     <span class="brand-text">{{ env('APP_NAME') }}</span>
 </a>
 

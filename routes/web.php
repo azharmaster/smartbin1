@@ -308,3 +308,5 @@ Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'u
 
     Route::put('/capacity/{id}', [CapacityController::class, 'update'])
         ->name('capacity.update');
+
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
