@@ -99,7 +99,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="{{ asset('adminlte') }}/index2.html"><b>POS</b>SYSTEM</a>
+    <a href="{{ asset('adminlte') }}/index2.html"><b>SMARTBIN</b>TRXSYSTEM</a>
   </div>
   <!-- /.login-logo -->
   <div class="card">
