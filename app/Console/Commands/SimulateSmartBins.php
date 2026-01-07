@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Sensor;
 use App\Services\WhatsAppSender;
 
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 class SimulateSmartBins extends Command
 {
     protected $signature = 'smartbin:simulate';

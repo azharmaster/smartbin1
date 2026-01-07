@@ -8,6 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('smartbin:simulate')
-    ->everyThirtyMinutes()
-    ->withoutOverlapping();
+Artisan::command('smartbin:simulate', function () {
+    $this->call('App\Console\Commands\SimulateSmartBins');
+})->describe('Simulate SmartBin sensor data and send notifications');
