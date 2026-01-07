@@ -58,8 +58,9 @@ class SimulateSmartBins extends Command
         //send to sv only
 
         $phones = User::where('role', 4)
-                      ->whereNotNull('phone')
-                      ->pluck('phone');
+                    ->whereNotNull('phone')
+                    ->pluck('phone')               // get all phone numbers
+                    ->map(fn($phone) => '6' . ltrim($phone, '0')); 
 
         if ($phones->isEmpty()) {
             $this->warn('⚠️ No supervisors found.');
@@ -114,7 +115,7 @@ class SimulateSmartBins extends Command
         $now = Carbon::now();
 
         return
-        "🚨 *NOTIFIKASI TONG SAMPAH PENUH* 🚨\n\n" .
+        "🚨 *TONG SAMPAH PENUH* 🚨\n\n" .
         "📍 Lokasi: {$device->asset->location}\n" .
         "🗑️ Status: Tong sampah telah penuh\n\n" .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
