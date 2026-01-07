@@ -11,8 +11,6 @@ use App\Models\User;
 use App\Models\Sensor;
 use App\Services\WhatsAppSender;
 
-date_default_timezone_set('Asia/Kuala_Lumpur');
-
 class SimulateSmartBins extends Command
 {
     protected $signature = 'smartbin:simulate';
@@ -58,56 +56,63 @@ class SimulateSmartBins extends Command
         //send to sv only
 
         $phones = User::where('role', 4)
-                    ->whereNotNull('phone')
-                    ->pluck('phone')               // get all phone numbers
-                    ->map(fn($phone) => '6' . ltrim($phone, '0')); 
+            ->whereNotNull('phone')
+            ->pluck('phone')
+            ->map(function ($phone) {
+                // Remove spaces, dashes, etc
+                $phone = preg_replace('/\D+/', '', $phone);
 
-        if ($phones->isEmpty()) {
-            $this->warn('⚠️ No supervisors found.');
-            return;
-        }
+                // Remove leading 0
+                $phone = ltrim($phone, '0');
+
+                // Add Malaysia country code
+                return '60' . $phone;
+            })
+            ->unique()
+            ->values();
+
 
         $whatsapp = new WhatsAppSender();
 
         
         $devices = Device::with('asset')->get();
 
-        foreach ($devices as $device) {
+foreach ($devices as $device) {
 
-            $capacityValue = rand(0, 100);
+    // 👈 get PREVIOUS reading FIRST
+    $prev = Sensor::where('device_id', $device->id_device)
+                  ->latest('time')
+                  ->first();
 
-            // Insert sensor reading
-            Sensor::create([
-                'device_id' => $device->id_device,
-                'battery'   => rand(30, 100),
-                'capacity'  => $capacityValue,
-                'time'      => now(),
-                'network'   => 'LTE'
-            ]);
+    $capacityValue = rand(0, 100);
 
-            $this->info("{$device->device_name} → {$capacityValue}%");
+    // Insert NEW sensor reading
+    Sensor::create([
+        'device_id' => $device->id_device,
+        'battery'   => rand(30, 100),
+        'capacity'  => $capacityValue,
+        'time'      => now(),
+        'network'   => 'LTE'
+    ]);
 
-            //detect when bin is full
-            
-            if ($capacityValue >= $fullMin) {
+    $this->info("{$device->device_name} → {$capacityValue}%");
 
-                $prev = Sensor::where('device_id', $device->id_device)
-                              ->orderBy('time', 'desc')
-                              ->skip(1)
-                              ->first();
+    // 🔔 FULL detection
+    if ($capacityValue >= $fullMin) {
 
-                if (!$prev || $prev->capacity < $fullMin) {
+        // Send only if previous was NOT full
+        if (!$prev || $prev->capacity < $fullMin) {
 
-                    $message = $this->buildMessage($device);
+            $message = $this->buildMessage($device);
 
-                    foreach ($phones as $phone) {
-                        $whatsapp->send($phone, $message);
-                    }
-
-                    $this->info('📲 WhatsApp alert sent.');
-                }
+            foreach ($phones as $phone) {
+                $whatsapp->send($phone, $message);
             }
+
+            $this->info('📲 WhatsApp alert sent.');
         }
+    }
+}
     }
 
     private function buildMessage($device)
