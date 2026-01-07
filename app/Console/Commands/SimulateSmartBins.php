@@ -122,6 +122,7 @@ foreach ($devices as $device) {
         return
         "🚨 *TONG SAMPAH PENUH* 🚨\n\n" .
         "📍 Lokasi: {$device->asset->location}\n" .
+        "🆔 Peranti: {$device->device_name}\n" .
         "🗑️ Status: Tong sampah telah penuh\n\n" .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
         "⏰ Masa: {$now->format('H:i')}\n" .
