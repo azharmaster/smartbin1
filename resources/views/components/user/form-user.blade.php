@@ -1,3 +1,5 @@
+@props(['id' => null, 'name' => null, 'email' => null, 'role' => null, 'phone' => null])
+
 <div>
    <button type="button" 
         class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
@@ -37,7 +39,7 @@
 
                 <!-- PHONE -->
                 <div class="form-group">
-                  <label for="phone">Phone</label>
+                  <label for="phone">Phone | Ex: 60101234567</label>
                   <input type="text" class="form-control" name="phone" id="phone" value="{{ $phone ?? '' }}">
                 </div>
 
@@ -45,6 +47,7 @@
                 <div class="form-group">
                   <label for="role">Role</label>
                   <select name="role" class="form-control">
+                      <option value="1" {{ isset($role) && $role == 1 ? 'selected' : '' }}>Admin</option>
                       <option value="4" {{ isset($role) && $role == 4 ? 'selected' : '' }}>Supervisor</option>
                       <!-- Add other roles if needed -->
                   </select>
