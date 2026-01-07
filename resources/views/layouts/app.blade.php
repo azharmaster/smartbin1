@@ -32,6 +32,9 @@
 
     <!-- LIVEWIRE STYLES -->
     @livewireStyles
+
+    @stack('styles')
+    
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -204,6 +207,8 @@
 
     <!-- LIVEWIRE SCRIPTS -->
     @livewireScripts
+
+     @stack('scripts')
 
 </body>
 

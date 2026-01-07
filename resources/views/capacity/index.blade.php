@@ -6,8 +6,8 @@
     <div class="col-md-6 col-lg-5">
 
         <div class="card card-success card-outline">
-            <div class="card-header text-center">
-                <h5 class="mb-0 fw-bold">Bin Capacity Settings</h5>
+            <div class="card-header text-center bg-white border-bottom-0">
+                <h5 class="mb-1 fw-bold">Bin Capacity Settings</h5>
                 <small class="text-muted">Configure Empty, Half-Full & Full thresholds</small>
             </div>
 
@@ -15,7 +15,7 @@
 
                 {{-- Success alert --}}
                 @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
                         <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -27,72 +27,79 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- EMPTY -->
+                    <!-- EMPTY SLIDER (GREEN) -->
                     <div class="mb-4">
-                        <label class="form-label text-muted">Set Empty Range</label>
-                        <div class="row g-2 align-items-center">
-                            <div class="col">
-                                <input type="number" class="form-control" value="1" readonly>
-                            </div>
-                            <div class="col">
-                                <input type="number" 
-                                       name="empty_to" 
-                                       id="empty_to"
-                                       class="form-control"
-                                       min="1" max="99"
-                                       value="{{ $capacity->empty_to }}">
+                        <label class="form-label fw-semibold text-success">Empty Range</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="range"
+                                   name="empty_to"
+                                   id="empty_to"
+                                   class="form-range slider-green flex-grow-1"
+                                   min="0" max="100"
+                                   value="{{ $capacity->empty_to }}">
+                            <div class="d-flex flex-column gap-1">
+                                <button type="button" class="btn btn-success btn-sm" id="empty_plus">+</button>
+                                <button type="button" class="btn btn-success btn-sm" id="empty_minus">-</button>
                             </div>
                         </div>
-                        <small class="text-muted">Example: 1 - 39</small>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <small class="text-muted">0</small>
+                            <strong id="empty_display" class="text-success">{{ $capacity->empty_to }}</strong>
+                            <span id="empty_percent" class="badge bg-success ms-2"></span>
+                        </div>
+                        <small class="text-muted">Example: 0 - 39</small>
                     </div>
 
-                    <!-- HALF FULL -->
+                    <!-- HALF FULL SLIDER (YELLOW) -->
                     <div class="mb-4">
-                        <label class="form-label text-muted">Set Half-Full Range</label>
-                        <div class="row g-2 align-items-center">
-                            <div class="col">
-                                <input type="number" 
-                                       id="half_from"
-                                       class="form-control"
-                                       value="{{ $capacity->empty_to + 1 }}" 
-                                       readonly>
+                        <label class="form-label fw-semibold text-warning">Half-Full Range</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="range"
+                                   name="half_to"
+                                   id="half_to"
+                                   class="form-range slider-yellow flex-grow-1"
+                                   min="0" max="100"
+                                   value="{{ $capacity->half_to }}">
+                            <div class="d-flex flex-column gap-1">
+                                <button type="button" class="btn btn-warning btn-sm" id="half_plus">+</button>
+                                <button type="button" class="btn btn-warning btn-sm" id="half_minus">-</button>
                             </div>
-                            <div class="col">
-                                <input type="number" 
-                                       name="half_to" 
-                                       id="half_to"
-                                       class="form-control"
-                                       min="1" max="99"
-                                       value="{{ $capacity->half_to }}">
-                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <strong id="half_from_display">{{ $capacity->empty_to + 1 }}</strong>
+                            <strong id="half_to_display">{{ $capacity->half_to }}</strong>
+                            <span id="half_percent" class="badge bg-warning text-dark ms-2"></span>
                         </div>
                         <small class="text-muted">Example: 40 - 79</small>
                     </div>
 
-                    <!-- FULL -->
+                    <!-- FULL SLIDER (RED) -->
                     <div class="mb-4">
-                        <label class="form-label text-muted">Set Full Range</label>
-                        <div class="row g-2 align-items-center">
-                            <div class="col">
-                                <input type="number" 
-                                       id="full_from"
-                                       class="form-control"
-                                       value="{{ $capacity->half_to + 1 }}" 
-                                       readonly>
+                        <label class="form-label fw-semibold text-danger">Full Range</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="range"
+                                   name="full_to"
+                                   id="full_to"
+                                   class="form-range slider-red flex-grow-1"
+                                   min="0" max="100"
+                                   value="100"
+                                   readonly>
+                            <div class="d-flex flex-column gap-1">
+                                <button type="button" class="btn btn-danger btn-sm" disabled>+</button>
+                                <button type="button" class="btn btn-danger btn-sm" disabled>-</button>
                             </div>
-                            <div class="col">
-                                <input type="number" 
-                                       id="full_to"
-                                       class="form-control"
-                                       value="100" readonly>
-                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <strong id="full_from_display" class="text-danger">{{ $capacity->half_to + 1 }}</strong>
+                            <strong class="text-danger">100</strong>
+                            <span id="full_percent" class="badge bg-danger ms-2"></span>
                         </div>
                         <small class="text-muted">Example: 80 - 100</small>
                     </div>
 
                     <!-- Save Button -->
                     <div class="text-end">
-                        <button type="submit" class="btn btn-primary px-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-3">
                             <i class="fas fa-save"></i> Save Capacity Settings
                         </button>
                     </div>
@@ -100,7 +107,7 @@
                 </form>
 
                 @else
-                    <div class="alert alert-warning text-center">
+                    <div class="alert alert-warning text-center rounded-3">
                         No capacity configuration found.
                     </div>
                 @endif
@@ -113,48 +120,132 @@
 
 @endsection
 
+@push('styles')
+<style>
+/* Modern slider with colored track */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  background: transparent;
+  transition: background 0.3s ease;
+}
+input[type=range]:focus { outline: none; }
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #888;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+input[type=range]:active::-webkit-slider-thumb {
+  border-color: #555;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #888;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Remove default track background */
+input[type=range]::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 6px;
+  background: transparent;
+}
+input[type=range]::-moz-range-track {
+  height: 12px;
+  border-radius: 6px;
+  background: transparent;
+}
+
+/* Button styling */
+button.btn-sm {
+    width: 36px;
+    height: 24px;
+    font-weight: bold;
+    padding: 0;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const emptyToInput = document.getElementById('empty_to');
-    const halfFromInput = document.getElementById('half_from');
-    const halfToInput = document.getElementById('half_to');
-    const fullFromInput = document.getElementById('full_from');
-    const fullToInput = document.getElementById('full_to');
+    const emptyInput = document.getElementById('empty_to');
+    const halfInput = document.getElementById('half_to');
+    const fullInput = document.getElementById('full_to');
+
+    const emptyDisplay = document.getElementById('empty_display');
+    const emptyPercent = document.getElementById('empty_percent');
+
+    const halfFromDisplay = document.getElementById('half_from_display');
+    const halfToDisplay = document.getElementById('half_to_display');
+    const halfPercent = document.getElementById('half_percent');
+
+    const fullFromDisplay = document.getElementById('full_from_display');
+    const fullPercent = document.getElementById('full_percent');
+
+    const emptyPlus = document.getElementById('empty_plus');
+    const emptyMinus = document.getElementById('empty_minus');
+    const halfPlus = document.getElementById('half_plus');
+    const halfMinus = document.getElementById('half_minus');
 
     const form = document.getElementById('capacityForm');
 
-    // Prevent form submission on Enter key inside inputs
-    form.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
-            e.preventDefault();
-        }
-    });
+    function updateValues(){
+        let empty = parseInt(emptyInput.value) || 0;
+        let half = parseInt(halfInput.value) || 0;
 
-    function liveUpdate() {
-        const emptyTo = parseInt(emptyToInput.value) || 0;
-        let halfTo = parseInt(halfToInput.value) || 0;
-
-        // Ensure half-to is always greater than empty-to
-        if (halfTo <= emptyTo) {
-            halfTo = emptyTo + 1;
-            halfToInput.value = halfTo;
+        if(half <= empty){
+            half = empty + 1;
+            halfInput.value = half;
         }
 
-        // Update Half-Full "From" and Full "From" live
-        halfFromInput.value = emptyTo + 1;
-        fullFromInput.value = halfTo + 1;
+        // Update numbers
+        emptyDisplay.textContent = empty;
+        halfFromDisplay.textContent = empty + 1;
+        halfToDisplay.textContent = half;
+        fullFromDisplay.textContent = half + 1;
 
-        // Full "To" always 100
-        fullToInput.value = 100;
+        // Update percentages
+        emptyPercent.textContent = `${empty}%`;
+        halfPercent.textContent = `${half - empty}%`;
+        fullPercent.textContent = `${100 - half}%`;
+
+        // Colored track
+        emptyInput.style.background = `linear-gradient(to right, #28a745 0%, #28a745 ${empty}%, #d3d3d3 ${empty}% 100%)`;
+        halfInput.style.background = `linear-gradient(to right, #d3d3d3 0%, #d3d3d3 ${empty}%, #ffc107 ${empty}% , #ffc107 ${half}%, #d3d3d3 ${half}% 100%)`;
+        fullInput.style.background = `linear-gradient(to right, #d3d3d3 0%, #d3d3d3 ${half}%, #dc3545 ${half}% , #dc3545 100%)`;
     }
 
-    // Listen to input events for live preview before saving
-    emptyToInput.addEventListener('input', liveUpdate);
-    halfToInput.addEventListener('input', liveUpdate);
+    // Slider events
+    emptyInput.addEventListener('input', updateValues);
+    halfInput.addEventListener('input', updateValues);
 
-    // Initialize on page load
-    liveUpdate();
+    // Buttons events
+    emptyPlus.addEventListener('click', () => { emptyInput.value = Math.min(parseInt(emptyInput.value)+1, 99); updateValues(); });
+    emptyMinus.addEventListener('click', () => { emptyInput.value = Math.max(parseInt(emptyInput.value)-1, 0); updateValues(); });
+    halfPlus.addEventListener('click', () => { halfInput.value = Math.min(parseInt(halfInput.value)+1, 99); updateValues(); });
+    halfMinus.addEventListener('click', () => { halfInput.value = Math.max(parseInt(halfInput.value)-1, parseInt(emptyInput.value)+1); updateValues(); });
+
+    // Prevent Enter from submitting
+    form.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); } });
+
+    // Initialize
+    updateValues();
 });
 </script>
 @endpush
