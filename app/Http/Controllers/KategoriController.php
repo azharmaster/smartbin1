@@ -10,7 +10,7 @@ class KategoriController extends Controller
 {
     public function index(){
         $kat = Kategori::all();
-        confirmDelete('Hapus Data','Apakah abda yakin nak menghapus data ini?');
+        confirmDelete('Hapus Data','Apakah anda yakin ingin menghapus data ini?');
 
         return view('kategori.index', compact('kat'));
     }
