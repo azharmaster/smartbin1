@@ -143,8 +143,7 @@ foreach ($devices as $device) {
         }
 
         return
-        "🚨 *TONG SAMPAH PENUH* 🚨\n\n" .
-        "Jumlah tong sampah penuh: *{$totalFull}*\n\n" .   // ✅ SHOW TOTAL
+        "🚨 *{$totalFull}* *TONG SAMPAH PENUH* 🚨\n\n" .
         "Berikut adalah senarai tong sampah yang telah penuh:\n\n" .
         $deviceList .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
