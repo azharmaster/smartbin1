@@ -321,6 +321,7 @@ Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'u
 
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+// Users create and update route
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 
 // Holidays Routes
