@@ -15,6 +15,9 @@
             @endforeach
         </div>
         @endif
+         <div class="d-flex justify-content-end mb-2">
+            <x-user.form-user />
+        </div>
 
         {{-- USERS TABLE --}}
         <div class="table-responsive">
