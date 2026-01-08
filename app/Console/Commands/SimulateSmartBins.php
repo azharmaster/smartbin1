@@ -23,8 +23,8 @@ class SimulateSmartBins extends Command
         $now = Carbon::now();
 
         //Whatsapp on or not
-
         $notification = WhatsAppNotification::first();
+        $canSendWhatsApp = true;
 
         if (
             !$notification ||
@@ -32,88 +32,70 @@ class SimulateSmartBins extends Command
             $now->lt($notification->start_time) ||
             $now->gt($notification->end_time)
         ) {
+            $canSendWhatsApp = false;
             $this->info('🔕 WhatsApp notifications disabled.');
-            return;
         }
 
-        //set work hours
-
-        $workStart = Carbon::createFromTime(7, 0);   // 08:00
-        $workEnd   = Carbon::createFromTime(19, 0);  // 18:00
+        // Work hours
+        $workStart = Carbon::createFromTime(7, 0);
+        $workEnd   = Carbon::createFromTime(19, 0);
 
         if (!$now->between($workStart, $workEnd)) {
+            $canSendWhatsApp = false;
             $this->info('⏰ Outside work hours.');
-            return;
         }
 
-        //capacity range
 
         $capacity = CapacitySetting::first();
         $emptyMax = $capacity->empty_to;
         $halfMax  = $capacity->half_to;
         $fullMin  = $halfMax + 1;
 
-        //send to sv only
-
         $phones = User::where('role', 4)
             ->whereNotNull('phone')
             ->pluck('phone')
             ->map(function ($phone) {
-                // Remove spaces, dashes, etc
                 $phone = preg_replace('/\D+/', '', $phone);
-
-                // Remove leading 0
                 $phone = ltrim($phone, '0');
-
-                // Add Malaysia country code
                 return '60' . $phone;
             })
             ->unique()
             ->values();
 
-
         $whatsapp = new WhatsAppSender();
 
-        
         $devices = Device::with('asset')->get();
-
-        // ✅ Collect full bins here
         $fullDevices = [];
 
-foreach ($devices as $device) {
+        foreach ($devices as $device) {
 
-    // 👈 get PREVIOUS reading FIRST
-    $prev = Sensor::where('device_id', $device->id_device)
-                  ->latest('time')
-                  ->first();
+            // Previous reading
+            $prev = Sensor::where('device_id', $device->id_device)
+                        ->latest('time')
+                        ->first();
 
-    $capacityValue = rand(0, 100);
+            $capacityValue = rand(0, 100);
 
-    // Insert NEW sensor reading
-    Sensor::create([
-        'device_id' => $device->id_device,
-        'battery'   => rand(30, 100),
-        'capacity'  => $capacityValue,
-        'time'      => now(),
-        'network'   => 'LTE'
-    ]);
+            //Insert sensor data REGARDLESS of WhatsApp state
+            Sensor::create([
+                'device_id' => $device->id_device,
+                'battery'   => rand(30, 100),
+                'capacity'  => $capacityValue,
+                'time'      => now(),
+                'network'   => 'LTE'
+            ]);
 
-    $this->info("{$device->device_name} → {$capacityValue}%");
+            $this->info("{$device->device_name} → {$capacityValue}%");
 
-    // 🔔 FULL detection
-    if ($capacityValue >= $fullMin) {
-
-        // Send only if previous was NOT full
-        if (!$prev || $prev->capacity < $fullMin) {
-
-            // ✅ Store device instead of sending immediately
-            $fullDevices[] = $device;
+            // Full-bin detection
+            if ($capacityValue >= $fullMin) {
+                if (!$prev || $prev->capacity < $fullMin) {
+                    $fullDevices[] = $device;
+                }
+            }
         }
-    }
-}
 
-        // ✅ Send ONE notification if any bins are full
-        if (!empty($fullDevices)) {
+        if ($canSendWhatsApp && !empty($fullDevices)) {
 
             $message = $this->buildMessage($fullDevices);
 
@@ -122,6 +104,8 @@ foreach ($devices as $device) {
             }
 
             $this->info('📲 WhatsApp alert sent.');
+        } else {
+            $this->info('🔕 WhatsApp alert not sent.');
         }
     }
 
