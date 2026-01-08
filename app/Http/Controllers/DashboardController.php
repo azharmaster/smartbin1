@@ -81,22 +81,12 @@ class DashboardController extends Controller
 
         $calendarHolidays = $holidays->map(function ($holiday) {
 
-            // Multi-day holiday
-            if ($holiday->start_date && $holiday->end_date) {
-                return [
-                    'title' => '🎉 ' . $holiday->name,
-                    'start' => $holiday->start_date,
-                    // FullCalendar end date is EXCLUSIVE → add 1 day
-                    'end'   => Carbon::parse($holiday->end_date)->addDay()->toDateString(),
-                    'allDay'=> true,
-                    'color' => '#dc3545', // red
-                ];
-            }
-
-            // Single-day holiday
             return [
                 'title' => '🎉 ' . $holiday->name,
-                'start' => $holiday->holiday_date,
+                'start' => $holiday->start_date,
+                'end'   => $holiday->end_date
+                    ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
+                    : null,
                 'allDay'=> true,
                 'color' => '#dc3545',
             ];
