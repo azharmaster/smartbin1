@@ -22,7 +22,8 @@ class Aside extends Component
                 "route_active" => [
                     "dashboard",
                     "dashboard.map",
-                    "dashboard.report"
+                    "dashboard.report",
+                    "summary"
                 ],
                 "is_dropdown" => true,
                 "dropdown" => [
@@ -62,6 +63,8 @@ class Aside extends Component
                     "users.*",
                     "floors.*",
                     "tasks.*",
+                    "whatsapp.*",
+                    "capacity.*",
                     "schedules.*"
                 ],
                 "is_dropdown" => true,
@@ -129,26 +132,29 @@ class Aside extends Component
 
             // Collective (UNCHANGED)
             [
-                "label" => "Collective",
-                "icon" => "fas fa-database",
-                "color" => "#6f42c1",
-                "route_active" => "master-data.*",
-                "is_dropdown" => true,
-                "dropdown" => [
-                    [
-                        "label" => "Asset",
-                        "route_active" => "master-data.assets.*",
-                        "route_name" => "master-data.assets.index",
-                        "icon" => "fas fa-circle",
-                        "color" => "#4e73df",
-                    ],
-                    [
-                        "label" => "Devices",
-                        "route_active" => "devices.*",
-                        "route_name" => "devices.index",
-                        "icon" => "fas fa-circle",
-                        "color" => "#1cc88a",
-                    ],
+    "label" => "Collective",
+    "icon" => "fas fa-database",
+    "color" => "#6f42c1",
+    "route_active" => [
+        "master-data.*",
+        "devices.*"
+    ],
+    "is_dropdown" => true,
+    "dropdown" => [
+        [
+            "label" => "Asset",
+            "route_active" => "master-data.assets.*",
+            "route_name" => "master-data.assets.index",
+            "icon" => "fas fa-circle",
+            "color" => "#4e73df",
+        ],
+        [
+            "label" => "Devices",
+            "route_active" => "devices.*",
+            "route_name" => "devices.index",
+            "icon" => "fas fa-circle",
+            "color" => "#1cc88a",
+        ],
                     // [
                     //     "label" => "Sensor",
                     //     "route_active" => "sensors.*",

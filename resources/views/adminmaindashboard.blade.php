@@ -1,6 +1,6 @@
 @extends('layouts.nosidebaradmin')
 
-@section('content_title', 'Main Dashboard')
+
 
 @section('content')
 
