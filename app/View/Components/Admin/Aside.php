@@ -65,6 +65,7 @@ class Aside extends Component
                     "tasks.*",
                     "whatsapp.*",
                     "capacity.*",
+                    "holidays.*",
                     "schedules.*"
                 ],
                 "is_dropdown" => true,
