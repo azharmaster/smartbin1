@@ -137,9 +137,17 @@ foreach ($devices as $device) {
         foreach ($devices as $index => $device) {
             $no = $index + 1;
 
+            // 🔎 Get latest sensor reading for this device
+            $latestSensor = Sensor::where('device_id', $device->id_device)
+                                   ->latest('time')
+                                   ->first();
+
+            $capacityValue = $latestSensor ? $latestSensor->capacity : 'N/A';
+
             $deviceList .= 
             "🆔 : {$device->device_name}\n".
-            "📍 Lokasi: {$device->asset->location}\n\n" ;
+            "📍 Lokasi: {$device->asset->location}\n".
+            "📊 Kapasiti: {$capacityValue}%\n\n" ;
         }
 
         return
