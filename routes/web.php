@@ -28,6 +28,7 @@ use App\Http\Controllers\SupervisorMainDashboardController;
 use App\Http\Controllers\SupervisorDashboardController;
 use App\Http\Controllers\WhatsAppNotificationController;
 use App\Http\Controllers\CapacityController;
+use App\Http\Controllers\HolidayController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -321,3 +322,12 @@ Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'u
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
+
+// Holidays Routes
+// Holidays routes
+Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
+Route::get('/holidays/create', [HolidayController::class, 'create'])->name('holidays.create');
+Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.store'); // Add holiday
+Route::get('/holidays/{holiday}/edit', [HolidayController::class, 'edit'])->name('holidays.edit');
+Route::put('/holidays/{holiday}', [HolidayController::class, 'update'])->name('holidays.update'); // Edit holiday
+Route::delete('/holidays/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy'); // Delete holiday
