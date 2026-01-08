@@ -135,9 +135,8 @@ foreach ($devices as $device) {
             $no = $index + 1;
 
             $deviceList .= 
-            "🔹 *Tong {$no}*\n" .
-            "📍 Lokasi: {$device->asset->location}\n" .
-            "🆔 Peranti: {$device->device_name}\n\n";
+            "🆔 : {$device->device_name}\n".
+            "📍 Lokasi: {$device->asset->location}\n\n" ;
         }
 
         return
