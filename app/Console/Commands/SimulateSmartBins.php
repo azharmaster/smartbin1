@@ -77,6 +77,9 @@ class SimulateSmartBins extends Command
         
         $devices = Device::with('asset')->get();
 
+        // ✅ Collect full bins here
+        $fullDevices = [];
+
 foreach ($devices as $device) {
 
     // 👈 get PREVIOUS reading FIRST
@@ -103,7 +106,16 @@ foreach ($devices as $device) {
         // Send only if previous was NOT full
         if (!$prev || $prev->capacity < $fullMin) {
 
-            $message = $this->buildMessage($device);
+            // ✅ Store device instead of sending immediately
+            $fullDevices[] = $device;
+        }
+    }
+}
+
+        // ✅ Send ONE notification if any bins are full
+        if (!empty($fullDevices)) {
+
+            $message = $this->buildMessage($fullDevices);
 
             foreach ($phones as $phone) {
                 $whatsapp->send($phone, $message);
@@ -112,18 +124,26 @@ foreach ($devices as $device) {
             $this->info('📲 WhatsApp alert sent.');
         }
     }
-}
-    }
 
-    private function buildMessage($device)
+    private function buildMessage($devices)
     {
         $now = Carbon::now();
 
+        $deviceList = "";
+
+        foreach ($devices as $index => $device) {
+            $no = $index + 1;
+
+            $deviceList .= 
+            "🔹 *Tong {$no}*\n" .
+            "📍 Lokasi: {$device->asset->location}\n" .
+            "🆔 Peranti: {$device->device_name}\n\n";
+        }
+
         return
         "🚨 *TONG SAMPAH PENUH* 🚨\n\n" .
-        "📍 Lokasi: {$device->asset->location}\n" .
-        "🆔 Peranti: {$device->device_name}\n" .
-        "🗑️ Status: Tong sampah telah penuh\n\n" .
+        "Berikut adalah senarai tong sampah yang telah penuh:\n\n" .
+        $deviceList .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
         "⏰ Masa: {$now->format('H:i')}\n" .
         "📋 Waktu Notifikasi Dihantar: {$now->format('d-m-Y H:i:s')}\n\n" .
