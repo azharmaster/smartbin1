@@ -412,7 +412,7 @@ function trend($current, $previous) {
                 </div>
 
                 <div class="card-body p-2">
-                    <div id="supervisorCalendar"></div>
+                    <div id="holidaycalendar"></div>
                 </div>
             </div>
 
@@ -548,7 +548,7 @@ new Chart(binCtx, {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const calendarEl = document.getElementById('supervisorCalendar');
+    const calendarEl = document.getElementById('holidaycalendar');
     if (!calendarEl) return;
 
     const holidays = @json($calendarHolidays);
