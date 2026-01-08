@@ -18,7 +18,21 @@
 
            @foreach ($routes as $route)
     @php
-        $isActive = request()->routeIs($route['route_active'] ?? '');
+        // ✅ FIX: Support both string and array for route_active
+        $isActive = false;
+        if (!empty($route['route_active'])) {
+            if (is_array($route['route_active'])) {
+                foreach ($route['route_active'] as $pattern) {
+                    if (request()->routeIs($pattern)) {
+                        $isActive = true;
+                        break;
+                    }
+                }
+            } else {
+                $isActive = request()->routeIs($route['route_active']);
+            }
+        }
+
         $iconColor = $route['color'] ?? '#6c757d';
     @endphp
 
