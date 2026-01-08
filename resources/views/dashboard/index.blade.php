@@ -403,73 +403,57 @@ function trend($current, $previous) {
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
 
-            <!-- TODO LIST -->
-            <div class="card p-3">
-                <h5 class="mb-3 fs-6">
-                    <a href="{{ route('todos.index') }}" class="text-decoration-none text-dark">
-                        <i class="fas fa-list-check"></i> To Do List
-                    </a>
-                </h5>
+            <!-- Activity Calendar -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-calendar-alt mr-2"></i> Activity Calendar
+                    </h5>
+                </div>
 
-                <ul class="list-group list-group-flush">
-                    @foreach($todos as $todo)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ $todo->todo }}
-                            <form method="POST" action="{{ route('todos.complete', $todo->id) }}">
-                                @csrf
-                                <button class="btn btn-sm btn-success">Done</button>
-                            </form>
-                        </li>
-                    @endforeach
-                </ul>
+                <div class="card-body p-2">
+                    <div id="supervisorCalendar"></div>
+                </div>
             </div>
+
+            <style>
+            /* Remove underline / hover highlight on day numbers */
+            .fc-daygrid-day-number {
+                text-decoration: none !important;
+            }
+
+            /* Change hover background */
+            .fc-daygrid-day:hover {
+                background-color: #f4f6f9;
+            }
+
+            /* Today highlight */
+            .fc-day-today {
+                background-color: rgba(0, 123, 255, 0.1) !important;
+            }
+
+            /* Event style */
+            .fc-event {
+                border-radius: 6px;
+                padding: 2px 4px;
+                font-size: 0.85rem;
+            }
+
+            /* Add gap between view buttons (Month / Week / Day) */
+            .fc .fc-button-group {
+                gap: 6px;
+            }
+
+            /* Optional: make buttons slightly rounded */
+            .fc .fc-button {
+                border-radius: 6px;
+            }
+            </style>
         </div>
 
     </div>
 
 </div>
-
-{{-- View Task Modal --}}
-<div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-tasks mr-2"></i> Task Details
-                </h5>
-                <button type="button" onclick="$('#viewTaskModal').modal('hide')"
-                        class="btn p-0 text-white" style="font-size: 1.5rem;">
-                    &times;
-                </button>
-            </div>
-            <div class="modal-body">
-                <p><strong>ID:</strong> <span id="taskId"></span></p>
-                <p><strong>User:</strong> <span id="taskUser"></span></p>
-                <p><strong>Asset:</strong> <span id="taskAsset"></span></p>
-                <p><strong>Floor:</strong> <span id="taskFloor"></span></p>
-                <hr>
-                <p><strong>Description:</strong></p>
-                <p id="taskDescription"></p>
-                <p>
-                    <strong>Status:</strong>
-                    <span id="taskStatus" class="badge"></span>
-                </p>
-                <p><strong>Notes:</strong></p>
-                <p id="taskNotes" class="text-muted"></p>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-danger" onclick="$('#viewTaskModal').modal('hide')">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -561,7 +545,26 @@ new Chart(binCtx, {
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="dist/js/adminlte.min.js"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
+    const calendarEl = document.getElementById('supervisorCalendar');
+    if (!calendarEl) return;
 
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 550,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        eventDisplay: 'block',
+    });
+
+    calendar.render();
+
+});
+</script>
 
 @endsection
