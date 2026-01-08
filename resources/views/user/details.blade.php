@@ -1,94 +1,143 @@
-@extends('layouts.app')
+@extends($layout)
 @section('content_title', 'User Profile')
 @section('content')
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@php
+    $photo = $user->profile_photo 
+        ? asset('uploads/profile/' . $user->profile_photo)
+        : 'https://via.placeholder.com/150';
 
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
+    $roles = [
+        1 => ['Admin', 'bg-primary'],
+        4 => ['Supervisor', 'bg-info'],
+    ];
 
-<div class="d-flex justify-content-center mt-4">
-    <div class="card shadow-lg border-0 p-4"
-         style="width: 85%; max-width: 850px; border-radius: 20px;">
+    $roleName = $roles[$user->role][0] ?? 'Unknown';
+    $roleColor = $roles[$user->role][1] ?? 'bg-dark';
+@endphp
 
-        <div class="text-center">
+<style>
+    /* Soft shadow cards */
+    .card-shadow {
+        background-color: #fff;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        transition: 0.3s;
+    }
 
-            @php
-                $photo = $user->profile_photo
-                    ? asset('uploads/profile/' . $user->profile_photo)
-                    : 'https://via.placeholder.com/150';
-            @endphp
+    .profile-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: stretch; /* equal height cards */
+    }
+    .profile-col {
+        display: flex;
+        flex-direction: column;
+    }
+    .profile-col .card-shadow {
+        flex: 1; /* fill height */
+    }
 
-            <!-- Profile Picture -->
-            <div class="position-relative d-inline-block mb-3">
-                <img src="{{ $photo }}"
-                     alt="Profile Picture"
-                     class="rounded-circle shadow-lg"
-                     style="width:170px;height:170px;object-fit:cover;border:5px solid #fff;">
-            </div>
+    /* Left card styling */
+    .profile-card .profile-user-img {
+        width: 150px;
+        height: 150px;
+        border: 4px solid #fff;
+    }
+    .profile-card h2 { font-size: 1.6rem; }
+    .profile-card p { font-size: 0.9rem; }
+    .profile-card .badge { font-size: 0.85rem; padding: 5px 14px; border-radius: 8px; }
 
-            <!-- Name + Email -->
-            <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
-            <p class="text-muted mb-2">{{ $user->email }}</p>
+    /* Right card alignment */
+    .right-card-wrapper .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
 
-            <hr style="opacity: 0.2;">
+    /* Form read-only styles */
+    .right-card-wrapper .form-group {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    .right-card-wrapper label {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    .right-card-wrapper .form-control, 
+    .right-card-wrapper select {
+        border: none;
+        background-color: transparent;
+        padding-left: 0;
+        font-weight: 500;
+        color: #333;
+        cursor: default;
+        pointer-events: none;
+    }
+</style>
 
-            <!-- Role -->
-            @php
-                $roles = [
-                    1 => ['Admin', 'bg-primary'],
-                    2 => ['Staff', 'bg-success'],
-                    3 => ['Guest', 'bg-secondary']
-                ];
+<div class="container-fluid mt-4">
+    <div class="profile-row justify-content-center">
 
-                $roleName = $roles[$user->role][0] ?? 'Unknown';
-                $roleColor = $roles[$user->role][1] ?? 'bg-dark';
-            @endphp
+        <!-- LEFT COLUMN -->
+        <div class="col-md-3 profile-col">
+            <div class="card card-success card-outline card-shadow profile-card text-center p-4">
 
-            <p class="mt-2">
-                <strong>Role:</strong>
-                <span class="badge {{ $roleColor }}"
-                      style="font-size: 1rem; padding: 8px 15px; border-radius: 12px;">
-                    {{ $roleName }}
-                </span>
-            </p>
-
-            <!-- ADMIN ACTION -->
-            @if(auth()->user()->role === 1)
-                <div class="mt-4">
-                    <button class="btn btn-danger btn-sm"
-                            onclick="confirmReset()">
-                        Reset Password to Default
-                    </button>
+                <div class="position-relative d-inline-block mb-3">
+                    <img class="rounded-circle shadow-lg profile-user-img"
+                         src="{{ $photo }}"
+                         alt="Profile Picture">
                 </div>
-            @endif
 
+                <h2 class="fw-bold mb-1">{{ $user->name }}</h2>
+                <p class="text-muted mb-2">{{ $user->email }}</p>
+
+                <hr style="opacity: 0.2;">
+
+                <p class="mt-2">
+                    <strong>Role:</strong>
+                    <span class="badge {{ $roleColor }}">
+                        {{ $roleName }}
+                    </span>
+                </p>
+
+            </div>
         </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-md-6 profile-col right-card-wrapper">
+            <div class="card card-success card-outline card-shadow w-100 p-4">
+                <div class="card-body">
+
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control" value="{{ $user->name }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" value="{{ $user->email }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" class="form-control" value="{{ $user->phone ?? '-' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role</label>
+                        <input type="text" class="form-control" value="{{ $roleName }}">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
-<script>
-function confirmReset() {
-    Swal.fire({
-        title: 'Reset Password?',
-        text: 'Password will be reset to default: 12345678',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, reset',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('reset-password-form').submit();
-        }
-    });
-}
-</script>
-
-<form id="reset-password-form"
-      action="{{ route('users.reset-password', $user->id) }}"
-      method="POST" style="display:none;">
-    @csrf
-</form>
-
 @endsection
+
+

@@ -30,6 +30,14 @@ use App\Http\Controllers\WhatsAppNotificationController;
 use App\Http\Controllers\CapacityController;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware(['auth'])->group(function () {
+    // Show profile page
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+
+    // Update profile
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
 Route::resource('tasks', TaskController::class);
 
 Route::get('/', function () {
@@ -310,3 +318,5 @@ Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'u
         ->name('capacity.update');
 
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+Route::post('/users', [UserController::class, 'store'])->name('users.store');

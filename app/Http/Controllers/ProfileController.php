@@ -66,6 +66,15 @@ public function updatePassword(Request $request)
     return back()->with('success', 'Password updated successfully!');
 }
 
+public function update(Request $request)
+{
+    $user = Auth::user();
+    $user->name = $request->name;
+    $user->email = $request->email;
+    $user->save();
+
+    return redirect()->route('profile.index')->with('success', 'Profile updated successfully!');
+}
 
 }
 
