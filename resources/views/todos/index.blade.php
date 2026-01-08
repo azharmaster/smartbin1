@@ -1,7 +1,7 @@
 @extends($layout)
 @section('content_title', 'To-Do')
 @section('content')
-<div class="card">
+<div class="card card-success card-outline">
     <div class="card-header">
         <h4 class="card-title">To-Do</h4>
     </div>
