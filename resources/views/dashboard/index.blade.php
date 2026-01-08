@@ -404,19 +404,19 @@ function trend($current, $previous) {
         <div class="col-lg-6">
 
             <!-- Activity Calendar -->
-            <a href="{{ route('holidays.index') }}" class="text-decoration-none">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header smartbin-gradient">
-            <h5 class="mb-0 text-white fs-6">
-                <i class="fas fa-calendar-alt mr-2"></i> Calendar
-            </h5>
-        </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 fs-6">
+                        <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-calendar-alt me-2"></i> Calendar
+                        </a>
+                    </h5>
+                </div>
 
-        <div class="card-body p-2">
-            <div id="holidaycalendar"></div>
-        </div>
-    </div>
-</a>
+                <div class="card-body p-2">
+                    <div id="holidaycalendar"></div>
+                </div>
+            </div>
 
             <style>
             /* Remove underline / hover highlight on day numbers */
