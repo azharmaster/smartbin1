@@ -10,6 +10,7 @@ use App\Models\Complaint;
 use App\Models\User; 
 use App\Models\Task; 
 use App\Models\CapacitySetting;
+use App\Models\Holiday;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -75,6 +76,32 @@ class DashboardController extends Controller
 
         $smartBinClearTimes = $this->calculateSmartBinClearTimes($emptyMax, $halfMax);
 
+        // 📅 Load holidays for calendar
+        $holidays = Holiday::where('is_active', true)->get();
+
+        $calendarHolidays = $holidays->map(function ($holiday) {
+
+            // Multi-day holiday
+            if ($holiday->start_date && $holiday->end_date) {
+                return [
+                    'title' => '🎉 ' . $holiday->name,
+                    'start' => $holiday->start_date,
+                    // FullCalendar end date is EXCLUSIVE → add 1 day
+                    'end'   => Carbon::parse($holiday->end_date)->addDay()->toDateString(),
+                    'allDay'=> true,
+                    'color' => '#dc3545', // red
+                ];
+            }
+
+            // Single-day holiday
+            return [
+                'title' => '🎉 ' . $holiday->name,
+                'start' => $holiday->holiday_date,
+                'allDay'=> true,
+                'color' => '#dc3545',
+            ];
+        });
+
 
         return view('dashboard.index', compact(
             'totalDevices',
@@ -93,6 +120,7 @@ class DashboardController extends Controller
             'latestComplaints',
             'smartBinClearTimes',
             'totalTrend',      // <-- added
+            'calendarHolidays',
         ));
     }
 

@@ -385,7 +385,7 @@ function trend($current, $previous) {
                     @foreach($users as $user)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             {{ $user->name }}
-                            <span class="badge bg-primary">
+                            <span class="badge bg-success">
                                 @switch($user->role)
                                     @case(1) Admin @break
                                     @case(2) Staff @break
@@ -551,6 +551,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('supervisorCalendar');
     if (!calendarEl) return;
 
+    const holidays = @json($calendarHolidays);
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         height: 550,
@@ -560,10 +562,16 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek'
         },
         eventDisplay: 'block',
+
+        events: holidays, // ✅ holidays from DB
+
+        eventDidMount: function(info) {
+            // Optional tooltip
+            info.el.setAttribute('title', info.event.title);
+        }
     });
 
     calendar.render();
-
 });
 </script>
 
