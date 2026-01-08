@@ -3,13 +3,15 @@
 @section('content')
 
 <div class="card card-success card-outline">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex align-items-center">
         <h5 class="mb-0">Holiday List</h5>
-        <!-- Add Holiday Button -->
-        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHolidayModal">
-            <i class="fas fa-plus"></i> Add Holiday
-        </button>
+        <div class="ms-auto">
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHolidayModal">
+                <i class="fas fa-plus"></i> Add Holiday
+            </button>
+        </div>
     </div>
+
     <div class="card-body">
 
         <!-- Validation Errors -->
@@ -38,14 +40,12 @@
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $holiday->name }}</td>
                             <td>
-                                @if($holiday->holiday_date)
-                                    {{ \Carbon\Carbon::parse($holiday->holiday_date)->format('Y-m-d') }}
-                                @elseif($holiday->start_date && $holiday->end_date)
+                                @if($holiday->end_date)
                                     {{ \Carbon\Carbon::parse($holiday->start_date)->format('Y-m-d') }}
                                     &rarr;
                                     {{ \Carbon\Carbon::parse($holiday->end_date)->format('Y-m-d') }}
                                 @else
-                                    -
+                                    {{ \Carbon\Carbon::parse($holiday->start_date)->format('Y-m-d') }}
                                 @endif
                             </td>
                             <td>{{ $holiday->is_active ? 'Yes' : 'No' }}</td>
@@ -91,6 +91,7 @@
                                             <div class="mb-3">
                                                 <label for="end_date{{ $holiday->id }}" class="form-label">End Date</label>
                                                 <input type="date" class="form-control" id="end_date{{ $holiday->id }}" name="end_date" value="{{ $holiday->end_date }}">
+                                                <small class="text-muted">Leave empty if single-day holiday</small>
                                             </div>
                                             <div class="form-check mb-3">
                                                 <input type="checkbox" class="form-check-input" id="is_active{{ $holiday->id }}" name="is_active" value="1" {{ $holiday->is_active ? 'checked' : '' }}>
@@ -130,11 +131,12 @@
                     </div>
                     <div class="mb-3">
                         <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date">
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
                     </div>
                     <div class="mb-3">
                         <label for="end_date" class="form-label">End Date</label>
                         <input type="date" class="form-control" id="end_date" name="end_date">
+                        <small class="text-muted">Leave empty if single-day holiday</small>
                     </div>
                     <div class="form-check mb-3">
                         <input type="checkbox" class="form-check-input" id="is_active" name="is_active" value="1" checked>

@@ -12,8 +12,8 @@ class HolidayController extends Controller
      */
     public function index()
     {
-        // Fetch all holidays, ordered by holiday_date descending
-        $holidays = Holiday::orderBy('holiday_date', 'desc')->get();
+        // Fetch all holidays, ordered by start_date descending
+        $holidays = Holiday::orderBy('start_date', 'asc')->get();
 
         return view('holidays.index', compact('holidays'));
     }
@@ -31,14 +31,14 @@ class HolidayController extends Controller
         ]);
 
         Holiday::create([
-            'name'         => $request->name,
-            'holiday_date' => $request->start_date, // first day of holiday
-            'start_date'   => $request->start_date,
-            'end_date'     => $request->end_date ?? $request->start_date, // fallback to start_date
-            'is_active'    => $request->has('is_active') ? 1 : 0,
+            'name'       => $request->name,
+            'start_date' => $request->start_date,
+            'end_date'   => $request->end_date, // can be null
+            'is_active'  => $request->has('is_active') ? 1 : 0,
         ]);
 
-        return redirect()->route('holidays.index')->with('success', 'Holiday added successfully.');
+        return redirect()->route('holidays.index')
+                         ->with('success', 'Holiday added successfully.');
     }
 
     /**
@@ -54,13 +54,24 @@ class HolidayController extends Controller
         ]);
 
         $holiday->update([
-            'name'         => $request->name,
-            'holiday_date' => $request->start_date, // ensure main holiday_date is updated
-            'start_date'   => $request->start_date,
-            'end_date'     => $request->end_date ?? $request->start_date,
-            'is_active'    => $request->has('is_active') ? 1 : 0,
+            'name'       => $request->name,
+            'start_date' => $request->start_date,
+            'end_date'   => $request->end_date, // can be null
+            'is_active'  => $request->has('is_active') ? 1 : 0,
         ]);
 
-        return redirect()->route('holidays.index')->with('success', 'Holiday updated successfully.');
+        return redirect()->route('holidays.index')
+                         ->with('success', 'Holiday updated successfully.');
+    }
+
+    /**
+     * Optionally, you can add destroy() to delete holidays
+     */
+    public function destroy(Holiday $holiday)
+    {
+        $holiday->delete();
+
+        return redirect()->route('holidays.index')
+                         ->with('success', 'Holiday deleted successfully.');
     }
 }
