@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(){
         $users = User::all();
-        confirmDelete('Hapus Data','Apakah abda yakin nak menghapus data ini?');
+        confirmDelete('Hapus Data','Apakah anda yakin ingin menghapus data ini?');
 
         return view('user.index', compact('users'));
     }
