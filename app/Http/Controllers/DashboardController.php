@@ -9,6 +9,7 @@ use App\Models\Todo;
 use App\Models\Complaint;
 use App\Models\User; 
 use App\Models\Task; 
+use App\Models\CapacitySetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -27,12 +28,17 @@ class DashboardController extends Controller
         /** @var \Illuminate\Support\Collection<int, Device> $devices */
         $devices = $this->loadDevicesWithLatestSensor();
 
+        // ✅ Load capacity settings from DB
+        $capacity = CapacitySetting::first();
+        $emptyMax = $capacity->empty_to;
+        $halfMax  = $capacity->half_to;
+
         $totalDevices = $devices->count();
-        $fullDevicesCollection = $this->countFullDevices($devices);
+        $fullDevicesCollection = $this->countFullDevices($devices, $halfMax);
         $fullDevices = $fullDevicesCollection->count();
-        $halfDevicesCollection = $this->countHalfDevices($devices);
+        $halfDevicesCollection = $this->countHalfDevices($devices, $emptyMax, $halfMax);
         $halfDevices = $halfDevicesCollection->count();
-        $emptyDevices = $this->countEmptyDevices($devices);
+        $emptyDevices = $this->countEmptyDevices($devices, $emptyMax);
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
         /* ------------------------------
@@ -43,9 +49,9 @@ class DashboardController extends Controller
         $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
 
         $previousTotal = $previousDevices->count();
-        $previousFull = $this->countFullDevices($previousDevices)->count();
-        $previousHalf = $this->countHalfDevices($previousDevices)->count();
-        $previousEmpty = $this->countEmptyDevices($previousDevices);
+        $previousFull = $this->countFullDevices($previousDevices, $halfMax)->count();
+        $previousHalf = $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count();
+        $previousEmpty = $this->countEmptyDevices($previousDevices, $emptyMax);
         $previousUndetected = $this->countUndetectedDevices($previousDevices);
 
         // Helper function
@@ -67,7 +73,7 @@ class DashboardController extends Controller
         $assignedTasks = $this->loadAssignedTasks();
         $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 
-        $smartBinClearTimes = $this->calculateSmartBinClearTimes();
+        $smartBinClearTimes = $this->calculateSmartBinClearTimes($emptyMax, $halfMax);
 
 
         return view('dashboard.index', compact(
@@ -104,31 +110,31 @@ class DashboardController extends Controller
     }
 
     //to set the capasity of the bin
-    private function countFullDevices($devices)
+    private function countFullDevices($devices, $halfMax)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > 85
+            $d->latestSensor->capacity > $halfMax
         );
     }
 
-    private function countHalfDevices($devices)
+    private function countHalfDevices($devices, $emptyMax, $halfMax)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > 40 &&
-            $d->latestSensor->capacity <= 85
+            $d->latestSensor->capacity > $emptyMax &&
+            $d->latestSensor->capacity <= $halfMax
         );
     }
 
-    private function countEmptyDevices($devices)
+    private function countEmptyDevices($devices, $emptyMax)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity <= 40
+            $d->latestSensor->capacity <= $emptyMax
         )->count();
     }
 
@@ -180,7 +186,7 @@ class DashboardController extends Controller
     }
 
     /** Calculate SmartBin clear times in hours */
-private function calculateSmartBinClearTimes()
+private function calculateSmartBinClearTimes($emptyMax, $halfMax)
 {
     $smartBinClearTimes = [];
 
@@ -198,13 +204,13 @@ private function calculateSmartBinClearTimes()
         foreach ($device->sensors as $sensor) {
 
             // Bin becomes FULL
-            if ($sensor->capacity > 85 && $fullTimestamp === null) {
+            if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
                 $fullTimestamp = $sensor->time;
                 continue;
             }
 
             // Bin is CLEARED
-            if ($fullTimestamp && $sensor->capacity <= 40) {
+            if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
 
                 $minutes = Carbon::parse($fullTimestamp)
                     ->diffInMinutes(Carbon::parse($sensor->time));
