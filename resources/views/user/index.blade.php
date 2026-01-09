@@ -41,17 +41,16 @@
                         <td>
                             <div class="d-flex gap-1 align-items-start">
 
-                                {{-- PENCIL EDIT FORM --}}
-                                <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :phone="$user->phone" :role="$user->role" />
+                    {{-- PENCIL EDIT FORM --}}
+                    <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :phone="$user->phone" :role="$user->role" />
 
-                                {{-- DELETE USER --}}
-                                <form method="POST" action="{{ route('users.destroy', $user->id) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash-alt text-white"></i>
-                                    </button>
-                                </form>
+                    {{-- DELETE USER --}}
+                    {{-- Notification warning delete user --}}
+                     <a href="{{ route('users.destroy', $user->id) }}"class="btn btn-danger btn-sm" data-confirm-delete="true">
+                    <i class="fas fa-trash-alt text-white"></i></a>
+                    @csrf
+                     @method('DELETE')
+                        </form>
 
                                 {{-- VIEW DETAILS --}}
                                 <a href="{{ route('users.details', $user->id) }}" class="btn btn-info btn-sm">
