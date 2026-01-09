@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(){
         $users = User::all();
-        confirmDelete('Hapus Data','Apakah anda yakin ingin menghapus data ini?');
+        confirmDelete('Delete','Are you sure you want to delete this data?');
 
         return view('user.index', compact('users'));
     }
@@ -43,14 +43,14 @@ class UserController extends Controller
             $data
         );
 
-        toast()->success('Data berhasil disimpan');
+        toast()->success('Data has been successfully saved');
         return redirect()->route('users.index');
     }
 
     public function destroy(String $id){ 
         $user = User::findOrFail($id);
         $user->delete();
-        toast()->success('Data berhasil dihapus');
+        toast()->success('Data has been successfully deleted');
         return redirect()->route('users.index');
     }
 
