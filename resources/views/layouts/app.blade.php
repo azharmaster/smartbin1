@@ -37,7 +37,7 @@
     
 </head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini text-sm">
     @include('sweetalert::alert')
 
     <div class="wrapper">
