@@ -239,6 +239,64 @@ a.status-footer:hover {
     font-weight: bold;
 }
 
+.notification-timeline {
+    position: relative;
+    margin-left: 20px;
+}
+
+.notification-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    padding-bottom: 20px;
+}
+
+.timeline-dot {
+    width: 14px;
+    height: 14px;
+    background: #198754; /* success green */
+    border-radius: 50%;
+    margin-right: 15px;
+    margin-top: 4px;
+    z-index: 1;
+}
+
+.timeline-content {
+    width: 100%;
+}
+
+.timeline-button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: 500;
+    color: #212529; /* normal black text */
+    cursor: pointer;
+    text-align: left;
+}
+
+.timeline-button:hover {
+    text-decoration: underline;
+}
+
+pre {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-family: inherit;
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -378,34 +436,43 @@ function trend($current, $previous) {
     <div class="row">
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
-            <div class="card card-info card-outline">
-                <div class="card-header">
-                    <h5 class="mb-0">
+        <!-- NOTIFICATION LOGS-->
+            <div class="card mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
                         📤 Notification Sent
                         <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
                     </h5>
                 </div>
 
-                <div class="card-body p-0">
-                    @forelse($todayNotifications as $log)
-                        <div class="border-bottom">
-                            <button
-                                class="btn btn-link text-left w-100"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#notif{{ $log->id }}"
-                            >
-                                🕒 {{ $log->sent_at->format('H:i:s') }}
-                            </button>
+                <div class="card-body p-3">
+                    <div class="notification-timeline">
 
-                            <div id="notif{{ $log->id }}" class="collapse px-3 pb-3">
-                                <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                        @forelse($todayNotifications as $log)
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+
+                                <div class="timeline-content">
+                                    <button
+                                        class="timeline-button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#notif{{ $log->id }}"
+                                    >
+                                        🕒 {{ $log->sent_at->format('H:i:s') }}
+                                    </button>
+
+                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
+                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="p-3 text-muted text-center">
-                            No notifications sent today
-                        </div>
-                    @endforelse
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No notifications sent today
+                            </div>
+                        @endforelse
+
+                    </div>
                 </div>
             </div>
             <!-- SIMPLE USER LIST BELOW TODO LIST -->

@@ -13,5 +13,9 @@ class NotificationLog extends Model
         'sent_at',
     ];
 
+    protected $casts = [
+        'sent_at' => 'datetime',
+    ];
+
     protected $dates = ['sent_at'];
 }
