@@ -71,16 +71,62 @@
             <ul class="nav nav-treeview">
                 @foreach ($route['dropdown'] as $dropdownItem)
                     @php
-                        $subActive = request()->routeIs($dropdownItem['route_active'] ?? '');
+                        $subActive = false;
+
+                        if (!empty($dropdownItem['route_active'])) {
+                            if (is_array($dropdownItem['route_active'])) {
+                                foreach ($dropdownItem['route_active'] as $pattern) {
+                                    if (request()->routeIs($pattern)) {
+                                        $subActive = true;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                $subActive = request()->routeIs($dropdownItem['route_active']);
+                            }
+                        }
+
                         $subColor = $dropdownItem['color'] ?? $iconColor;
                     @endphp
-                    <li class="nav-item">
-                        <a href="{{ route($dropdownItem['route_name']) }}"
-                           class="nav-link {{ $subActive ? 'active' : '' }}">
-                            <i class="nav-icon {{ $dropdownItem['icon'] }}" style="color: {{ $subColor }}"></i>
-                            <p>{{ $dropdownItem['label'] }}</p>
-                        </a>
-                    </li>
+
+                    {{-- 🔹 NESTED DROPDOWN (Collective) --}}
+                    @if (!empty($dropdownItem['is_dropdown']) && $dropdownItem['is_dropdown'])
+                        <li class="nav-item {{ $subActive ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ $subActive ? 'active' : '' }}">
+                                <i class="nav-icon {{ $dropdownItem['icon'] }}" style="color: {{ $subColor }}"></i>
+                                <p>
+                                    {{ $dropdownItem['label'] }}
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+
+                            <ul class="nav nav-treeview">
+                                @foreach ($dropdownItem['dropdown'] as $child)
+                                    @php
+                                        $childActive = request()->routeIs($child['route_active'] ?? '');
+                                    @endphp
+                                    <li class="nav-item">
+                                        <a href="{{ route($child['route_name']) }}"
+                                        class="nav-link {{ $childActive ? 'active' : '' }}">
+                                            <i class="nav-icon {{ $child['icon'] }}"
+                                            style="color: {{ $child['color'] ?? $subColor }}"></i>
+                                            <p>{{ $child['label'] }}</p>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </li>
+
+                    {{-- 🔹 NORMAL DROPDOWN ITEM --}}
+                    @else
+                        <li class="nav-item">
+                            <a href="{{ route($dropdownItem['route_name']) }}"
+                            class="nav-link {{ $subActive ? 'active' : '' }}">
+                                <i class="nav-icon {{ $dropdownItem['icon'] }}" style="color: {{ $subColor }}"></i>
+                                <p>{{ $dropdownItem['label'] }}</p>
+                            </a>
+                        </li>
+                    @endif
                 @endforeach
             </ul>
         </li>

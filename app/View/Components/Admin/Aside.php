@@ -118,6 +118,36 @@ class Aside extends Component
                         "route_active" => "schedules.*",
                         "is_dropdown" => false
                     ],
+
+                    // --- COLLECTIVE (NESTED DROPDOWN) ---
+                    [
+                        "label" => "AssetHub",
+                        "icon" => "fas fa-database",
+                        "color" => "#6f42c1",
+                        "route_active" => [
+                            "master-data.*",
+                            "devices.*"
+                        ],
+                        "is_dropdown" => true,
+                        "dropdown" => [
+                            [
+                                "label" => "Asset",
+                                "icon" => "fas fa-circle",
+                                "color" => "#4e73df",
+                                "route_name" => "master-data.assets.index",
+                                "route_active" => "master-data.assets.*",
+                                "is_dropdown" => false
+                            ],
+                            [
+                                "label" => "Devices",
+                                "icon" => "fas fa-circle",
+                                "color" => "#1cc88a",
+                                "route_name" => "devices.index",
+                                "route_active" => "devices.*",
+                                "is_dropdown" => false
+                            ],
+                        ]
+                    ],
                 ]
             ],
 
@@ -132,30 +162,30 @@ class Aside extends Component
             // ],
 
             // Collective (UNCHANGED)
-            [
-    "label" => "Collective",
-    "icon" => "fas fa-database",
-    "color" => "#6f42c1",
-    "route_active" => [
-        "master-data.*",
-        "devices.*"
-    ],
-    "is_dropdown" => true,
-    "dropdown" => [
-        [
-            "label" => "Asset",
-            "route_active" => "master-data.assets.*",
-            "route_name" => "master-data.assets.index",
-            "icon" => "fas fa-circle",
-            "color" => "#4e73df",
-        ],
-        [
-            "label" => "Devices",
-            "route_active" => "devices.*",
-            "route_name" => "devices.index",
-            "icon" => "fas fa-circle",
-            "color" => "#1cc88a",
-        ],
+    //         [
+    // "label" => "Collective",
+    // "icon" => "fas fa-database",
+    // "color" => "#6f42c1",
+    // "route_active" => [
+    //     "master-data.*",
+    //     "devices.*"
+    // ],
+    // "is_dropdown" => true,
+    // "dropdown" => [
+    //     [
+    //         "label" => "Asset",
+    //         "route_active" => "master-data.assets.*",
+    //         "route_name" => "master-data.assets.index",
+    //         "icon" => "fas fa-circle",
+    //         "color" => "#4e73df",
+    //     ],
+    //     [
+    //         "label" => "Devices",
+    //         "route_active" => "devices.*",
+    //         "route_name" => "devices.index",
+    //         "icon" => "fas fa-circle",
+    //         "color" => "#1cc88a",
+    //     ],
                     // [
                     //     "label" => "Sensor",
                     //     "route_active" => "sensors.*",
@@ -170,8 +200,8 @@ class Aside extends Component
                     //     "icon" => "fas fa-circle",
                     //     "color" => "#e74a3b",
                     // ],
-                ]
-            ],
+            //     ]
+            // ],
 
             // ✅ LOGOUT BUTTON
             [
