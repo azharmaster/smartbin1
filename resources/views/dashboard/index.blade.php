@@ -73,7 +73,7 @@
     right: 14px;
     top: 14px;
     font-size: 48px;
-    opacity: 0.30;
+    opacity: 0.40;
     color: #111;
 }
 
@@ -381,7 +381,7 @@ function trend($current, $previous) {
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
         <div class="status-body">
-            <div class="status-title">Total Devices</div>
+            <div class="status-title">Total Sensors</div>
             <div class="status-content">
                 <i class="fas fa-satellite-dish status-icon"></i>
                 <span class="status-number">{{ $totalDevices }}</span>
@@ -403,9 +403,9 @@ function trend($current, $previous) {
 
     <div class="status-card card-full">
         <div class="status-body">
-            <div class="status-title">Full Devices</div>
+            <div class="status-title">Full Sensors</div>
             <div class="status-content">
-            <i class="fas fa-trash status-icon"></i>   <!-- full -->
+            <i class="fas fa-trash status-icon"></i>
                 <span class="status-number">{{ $fullDevices }}</span>
             </div>
         </div>
@@ -421,9 +421,9 @@ function trend($current, $previous) {
 
     <div class="status-card card-half">
         <div class="status-body">
-            <div class="status-title">Half Full</div>
+            <div class="status-title">Half-Full Sensors</div>
             <div class="status-content">
-            <i class="fas fa-trash status-icon half"></i>   <!-- half full -->
+                <i class="fas fa-trash status-icon"></i>
                 <span class="status-number">{{ $halfDevices }}</span>
             </div>
         </div>
@@ -439,9 +439,9 @@ function trend($current, $previous) {
 
     <div class="status-card card-empty">
         <div class="status-body">
-            <div class="status-title">Empty Devices</div>
+            <div class="status-title">Empty Sensors</div>
             <div class="status-content">
-            <i class="fas fa-trash status-icon empty"></i> <!-- empty -->
+                <i class="fas fa-trash status-icon"></i>
                 <span class="status-number">{{ $emptyDevices }}</span>
             </div>
         </div>
