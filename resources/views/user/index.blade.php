@@ -39,7 +39,7 @@
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->phone }}</td>
                         <td>
-                            <div class="d-flex gap-1 align-items-start">
+                            <div class="d-flex gap-1 align-items-center justify-content-center">
 
                     {{-- PENCIL EDIT FORM --}}
                     <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :phone="$user->phone" :role="$user->role" />
