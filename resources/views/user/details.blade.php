@@ -82,10 +82,10 @@
     <div class="profile-row justify-content-center">
 
         <!-- LEFT COLUMN -->
-        <div class="col-md-3 profile-col">
+        <div class="col-md-4 profile-col">
             <div class="card card-success card-outline card-shadow profile-card text-center p-4">
 
-                <div class="position-relative d-inline-block mb-3">
+                <div class="position-relative d-inline-block mb-5">
                     <img class="rounded-circle shadow-lg profile-user-img"
                          src="{{ $photo }}"
                          alt="Profile Picture">
@@ -107,7 +107,7 @@
         </div>
 
         <!-- RIGHT COLUMN -->
-        <div class="col-md-6 profile-col right-card-wrapper">
+        <div class="col-md-7 profile-col right-card-wrapper">
             <div class="card card-success card-outline card-shadow w-100 p-4">
                 <div class="card-body">
 
