@@ -2,61 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Device;
 use App\Models\Floor;
 use App\Models\Asset;
-use App\Models\Device;
+use Illuminate\Support\Collection;
+use App\Models\CapacitySetting;
+
 
 class AdminMainDashboardController extends Controller
 {
+    /**
+     * Display Admin Main Dashboard
+     */
     public function index()
     {
-        // Load devices with their latest sensor & asset-floor relationship
-        $devices = Device::with('latestSensor', 'asset.floor')->get();
+        /** @var Collection<int, Device> $devices */
+        $devices = $this->loadDevicesWithLatestSensor();
 
-        // Total devices
+        // ✅ Load capacity settings from DB
+        $capacity = CapacitySetting::first();
+        $emptyMax = $capacity->empty_to;
+        $halfMax  = $capacity->half_to;
+
         $totalDevices = $devices->count();
 
-        // FULL > 85%
-        $fullDevicesCollection = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity > 85;
-        });
+        $totalDevices = $devices->count();
+        $fullDevicesCollection = $this->countFullDevices($devices, $halfMax);
         $fullDevices = $fullDevicesCollection->count();
-
-        // HALF 40–85%
-        $halfDevicesCollection = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity > 40 &&
-                   $d->latestSensor->capacity <= 85;
-        });
+        $halfDevicesCollection = $this->countHalfDevices($devices, $emptyMax, $halfMax);
         $halfDevices = $halfDevicesCollection->count();
-
-        // EMPTY <= 40%
-        $emptyDevicesCollection = $devices->filter(function ($d) {
-            return $d->latestSensor &&
-                   is_numeric($d->latestSensor->capacity) &&
-                   $d->latestSensor->capacity <= 40;
-        });
+        $emptyDevicesCollection = $this->countEmptyDevicesCollection($devices, $emptyMax);
         $emptyDevices = $emptyDevicesCollection->count();
+        $undetectedDevices = $this->countUndetectedDevices($devices);
 
-        // UNDETECTED (no sensor or capacity null)
-        $undetectedDevicesCollection = $devices->filter(function ($d) {
-            return !$d->latestSensor || !is_numeric($d->latestSensor->capacity);
-        });
-        $undetectedDevices = $undetectedDevicesCollection->count();
-
-        // Get all floors
+        /* ------------------------------
+         | MAP DATA
+         |------------------------------*/
         $floors = Floor::all();
-
-        // Get assets that have coordinates (for map markers)
-        $assetsWithCoords = Asset::whereNotNull('x')
-            ->whereNotNull('y')
-            ->get();
+        $assetsWithCoords = $this->loadAssetsWithCoordinates();
 
         return view('adminmaindashboard', compact(
-            'devices',  
+            'devices',
             'floors',
             'assetsWithCoords',
             'totalDevices',
@@ -65,15 +51,17 @@ class AdminMainDashboardController extends Controller
             'halfDevices',
             'halfDevicesCollection',
             'emptyDevices',
-            'emptyDevicesCollection',
-            'undetectedDevices'
+            'emptyDevicesCollection', 
+            'undetectedDevices',
         ));
     }
 
-    // ✅ NEW METHOD (ADDED ONLY – NOTHING ELSE TOUCHED)
+    /**
+     * Popup modal for bin details
+     */
     public function binPopup($id)
     {
-        $asset = Asset::with(['floor'])->findOrFail($id);
+        $asset = Asset::with('floor')->findOrFail($id);
 
         $devices = Device::with(['latestSensor', 'asset.floor'])
             ->where('asset_id', $id)
@@ -83,5 +71,68 @@ class AdminMainDashboardController extends Controller
             'admin.dashboardpopupview.dashboard_bin_modal',
             compact('asset', 'devices')
         );
+    }
+
+    private function countEmptyDevicesCollection($devices, $emptyMax)
+{
+    return $devices->filter(fn($d) =>
+        $d->latestSensor &&
+        is_numeric($d->latestSensor->capacity) &&
+        $d->latestSensor->capacity <= $emptyMax
+    );
+}
+
+    private function loadDevicesWithLatestSensor(): Collection
+    {
+        return Device::with([
+            'latestSensor',
+            'asset.floor'
+        ])->get();
+    }
+
+    /** Capacity > 85% */
+    private function countFullDevices($devices, $halfMax)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity > $halfMax
+        );
+    }
+
+    private function countHalfDevices($devices, $emptyMax, $halfMax)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity > $emptyMax &&
+            $d->latestSensor->capacity <= $halfMax
+        );
+    }
+
+    private function countEmptyDevices($devices, $emptyMax)
+    {
+        return $devices->filter(fn($d) =>
+            $d->latestSensor &&
+            is_numeric($d->latestSensor->capacity) &&
+            $d->latestSensor->capacity <= $emptyMax
+        )->count();
+    }
+
+    /** No sensor or invalid capacity */
+    private function countUndetectedDevices(Collection $devices): int
+    {
+        return $devices->filter(fn ($d) =>
+            !$d->latestSensor ||
+            !is_numeric($d->latestSensor->capacity)
+        )->count();
+    }
+
+    /** Assets for map markers */
+    private function loadAssetsWithCoordinates()
+    {
+        return Asset::whereNotNull('x')
+            ->whereNotNull('y')
+            ->get();
     }
 }

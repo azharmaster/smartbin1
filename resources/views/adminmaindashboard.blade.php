@@ -341,28 +341,28 @@
 
 <div class="d-flex flex-wrap">
     <div class="status-card card-total" style="color: #4cd964;">
-        <div class="status-title">Total Devices</div>
+        <div class="status-title">Total Sensors</div>
         <div class="status-content" style="color: #fff">
             <i class="fas fa-satellite-dish status-icon"></i>
             <span class="status-number">{{ $totalDevices }}</span>
         </div>
     </div>
     <div class="status-card card-full" style="color: #4cd964;">
-        <div class="status-title">Full Devices</div>
+        <div class="status-title">Full Sensors</div>
         <div class="status-content" style="color: #fff">
             <i class="fas fa-trash status-icon"></i>
             <span class="status-number">{{ $fullDevices }}</span>
         </div>
     </div>
     <div class="status-card card-half" style="color: #4cd964;">
-        <div class="status-title ">Half Full</div>
+        <div class="status-title ">Half-Full Sensors</div>
         <div class="status-content" style="color: #fff">
             <i class="fas fa-exclamation-triangle status-icon"></i>
             <span class="status-number">{{ $halfDevices }}</span>
         </div>
     </div>
     <div class="status-card card-empty" style="color: #4cd964;">
-        <div class="status-title">Empty Devices</div>
+        <div class="status-title">Empty Sensors</div>
         <div class="status-content" style="color: #fff">
             <i class="fas fa-recycle status-icon"></i>
             <span class="status-number">{{ $emptyDevices }}</span>
@@ -395,81 +395,40 @@
             <div class="devices-grid">
 
                 {{-- FULL DEVICES --}}
-                @foreach($fullDevicesCollection as $device)
-                    <a href="#" class="text-decoration-none device-link open-bin-modal"
-                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
-                    <!-- class="text-decoration-none device-link"> -->
-
-                        <div class="device-card full-device-card" data-status="full">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                <div class="badge full-status text-white">FULL</div>
-                            </div>
-
-                            <div class="mt-1 text-white">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                            </div>
-
-                            <div class="progress mt-2" style="height: 12px; border-radius: 999px; ">
-                                <div class="progress-bar bg-danger"
-                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                            </div>
-                        </div>
-                    </a>
+                @foreach ($fullDevicesCollection as $device)
+                    @include('partials.device-card', [
+                        'device' => $device,
+                        'status' => 'full',
+                        'badge'  => 'FULL',
+                        'badgeClass' => 'full-status text-white',
+                        'cardClass'  => 'full-device-card',
+                        'barClass'   => 'bg-danger',
+                    ])
                 @endforeach
 
                 {{-- HALF DEVICES --}}
-                @foreach($halfDevicesCollection as $device)
-                    <a href="#" class="text-decoration-none device-link open-bin-modal"
-                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
-
-                    <!-- class="text-decoration-none device-link"> -->
-
-                        <div class="device-card half-device-card" data-status="half">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                <div class="badge half-status text-dark">HALF</div>
-                            </div>
-
-                            <div class="mt-1 text-white">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                            </div>
-
-                            <div class="progress mt-2" style="height: 12px; border-radius: 999px;">
-                                <div class="progress-bar bg-warning"
-                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                            </div>
-                        </div>
-                    </a>
+                @foreach ($halfDevicesCollection as $device)
+                    @include('partials.device-card', [
+                        'device' => $device,
+                        'status' => 'half',
+                        'badge'  => 'HALF',
+                        'badgeClass' => 'half-status text-dark',
+                        'cardClass'  => 'half-device-card',
+                        'barClass'   => 'bg-warning',
+                    ])
                 @endforeach
 
                 {{-- EMPTY DEVICES --}}
-                @foreach($emptyDevicesCollection as $device)
-                    <a href="#" class="text-decoration-none device-link open-bin-modal"
-                     data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
-                    <!-- class="text-decoration-none device-link"> -->
-
-                        <div class="device-card empty-device-card" data-status="empty">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="fw-bold fs-4 text-white">{{ $device->device_name }}</div>
-                                <div class="badge empty-status text-dark">EMPTY</div>
-                            </div>
-
-                            <div class="mt-1 text-white">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                            </div>
-
-                            <div class="progress mt-2" style="height: 12px; border-radius: 999px;">
-                                <div class="progress-bar bg-success"
-                                    style="width: {{ $device->latestSensor->capacity ?? 0 }}%;"></div>
-                            </div>
-                        </div>
-                    </a>
+                @foreach ($emptyDevicesCollection as $device)
+                    @include('partials.device-card', [
+                        'device' => $device,
+                        'status' => 'empty',
+                        'badge'  => 'EMPTY',
+                        'badgeClass' => 'empty-status text-dark',
+                        'cardClass'  => 'empty-device-card',
+                        'barClass'   => 'bg-success',
+                    ])
                 @endforeach
-
             </div>
         </div>
     </div>
