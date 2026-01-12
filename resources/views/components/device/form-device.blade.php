@@ -3,6 +3,7 @@
     'assets' => [], 
     'device_name' => null,
     'asset_id' => null,
+    'id_device' => null,
 ])
 
 <div>
@@ -34,6 +35,13 @@
                     </div>
 
                     <div class="modal-body">
+
+                        {{-- Device ID --}}
+                        <div class="form-group">
+                            <label>Device ID</label>
+                            <input type="text" class="form-control" name="id_device"
+                                   value="{{ $id_device }}">
+                        </div>
 
                         {{-- Device Name --}}
                         <div class="form-group">

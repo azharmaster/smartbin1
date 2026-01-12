@@ -26,6 +26,7 @@
                     <tr>
                         <th>#</th>
                         <th>Asset Name</th>
+                        <th>Device ID</th>
                         <th>Device Name</th>
                         <th>Option</th>
                     </tr>
@@ -35,6 +36,7 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $device->asset->asset_name ?? '-' }}</td>
+                        <td>{{ $device->id_device }}</td>
                         <td>{{ $device->device_name }}</td>
                         <td>
                             @if(auth()->user()->role == 1)

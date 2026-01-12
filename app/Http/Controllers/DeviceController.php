@@ -26,9 +26,10 @@ class DeviceController extends Controller
         $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'device_name' => 'nullable|string|max:255',
+            'id_device' => 'nullable|string|max:255',
         ]);
 
-        Device::create($request->only('asset_id', 'device_name'));
+        Device::create($request->only('asset_id', 'device_name', 'id_device'));
 
         return redirect()->route('devices.index')->with('success', 'Device created.');
     }
@@ -49,9 +50,10 @@ class DeviceController extends Controller
         $request->validate([
             'asset_id' => 'required|exists:assets,id',
             'device_name' => 'nullable|string|max:255',
+            'id_device' => 'nullable|string|max:255',
         ]);
 
-        $device->update($request->only('asset_id', 'device_name'));
+        $device->update($request->only('asset_id', 'device_name', 'id_device'));
 
         return redirect()->route('devices.index')->with('success', 'Device updated.');
     }
