@@ -168,7 +168,7 @@ input:checked + .slider:before {
     <!-- RIGHT COLUMN: Bins & Devices Notification -->
     <div class="col-md-6">
 
-        <div class="card card-info card-outline mb-4">
+        <div class="card card-success card-outline mb-4">
             <div class="card-header text-center">
                 <h5 class="mb-0 fw-bold">Bins Notification</h5>
                 <small class="text-muted">Click a bin to manage its devices</small>
