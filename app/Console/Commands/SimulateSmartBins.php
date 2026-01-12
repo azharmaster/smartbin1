@@ -71,13 +71,13 @@ class SimulateSmartBins extends Command
 
         $whatsapp = new WhatsAppSender();
 
-        $devices = Device::with('asset')->where('status', 1)->get(); // Only active devices
+        $devices = Device::with('asset')->where('is_active', 1)->get(); // Only active devices
         $fullDevices = [];
 
         foreach ($devices as $device) {
 
             // Skip if asset is not active
-            if (!$device->asset || $device->asset->status != 1) {
+            if (!$device->asset || $device->asset->is_active != 1) {
                 $this->info("⚠️ Skipping {$device->device_name} (Asset inactive)");
                 continue;
             }

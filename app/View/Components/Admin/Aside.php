@@ -110,14 +110,14 @@ class Aside extends Component
                     //     "route_active" => "tasks.*",
                     //     "is_dropdown" => false
                     // ],
-                    [
-                        "label" => "Schedule",
-                        "icon" => "fas fa-calendar-alt",
-                        "color" => "#858796",
-                        "route_name" => "schedules.index",
-                        "route_active" => "schedules.*",
-                        "is_dropdown" => false
-                    ],
+                    // [
+                    //     "label" => "Schedule",
+                    //     "icon" => "fas fa-calendar-alt",
+                    //     "color" => "#858796",
+                    //     "route_name" => "schedules.index",
+                    //     "route_active" => "schedules.*",
+                    //     "is_dropdown" => false
+                    // ],
 
                     // --- COLLECTIVE (NESTED DROPDOWN) ---
                     [
