@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\WhatsAppNotification;
+use App\Models\Asset;   // ✅ Added to fetch bins/assets
+use App\Models\Device;  // ✅ Added to toggle device notifications
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -37,7 +39,10 @@ class WhatsAppNotificationController extends Controller
             $notification->end_date = Carbon::parse($notification->end_date);
         }
 
-        return view('whatsapp.index', compact('notification'));
+        // ✅ Fetch all bins (assets) and eager load devices
+        $bins = Asset::with('devices')->get();
+
+        return view('whatsapp.index', compact('notification', 'bins'));
     }
 
     /**
@@ -63,5 +68,29 @@ class WhatsAppNotificationController extends Controller
 
         return redirect()->route('whatsapp.index')
                          ->with('success', 'Notification settings updated.');
+    }
+
+    /**
+     * Toggle the ON/OFF status of a Bin (Asset)
+     */
+    public function toggleBin(Asset $bin)
+    {
+        $bin->is_active = !$bin->is_active;
+        $bin->save();
+
+        return redirect()->route('whatsapp.index')
+                         ->with('success', "Bin '{$bin->asset_name}' notification toggled.");
+    }
+
+    /**
+     * Toggle the ON/OFF status of a Device
+     */
+    public function toggleDevice(Device $device)
+    {
+        $device->is_active = !$device->is_active;
+        $device->save();
+
+        return redirect()->route('whatsapp.index')
+                         ->with('success', "Device '{$device->device_name}' notification toggled.");
     }
 }

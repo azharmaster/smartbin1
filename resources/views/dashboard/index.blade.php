@@ -405,7 +405,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Full Sensors</div>
             <div class="status-content">
-            <i class="fas fa-trash status-icon"></i>
+            <i class="fas fa-trash status-icon full"></i>
                 <span class="status-number">{{ $fullDevices }}</span>
             </div>
         </div>
@@ -423,7 +423,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Half-Full Sensors</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon"></i>
+                <i class="fas fa-trash status-icon half"></i>
                 <span class="status-number">{{ $halfDevices }}</span>
             </div>
         </div>
@@ -441,7 +441,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Empty Sensors</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon"></i>
+                <i class="fas fa-trash status-icon empty"></i>
                 <span class="status-number">{{ $emptyDevices }}</span>
             </div>
         </div>
