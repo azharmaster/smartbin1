@@ -211,7 +211,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <style>
 .summary-gradient {
-    background: linear-gradient(135deg, #1b5e20, #4caf50);
+     background: linear-gradient(270deg, #1b5e20, #4bb352ff, #1b5e20);
+    background-size: 400% 400%;
+    animation: smartbinGradient 8s ease infinite;
+}
+
+/* Animation */
+@keyframes smartbinGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 .summary-gradient-red {
     background: linear-gradient(135deg, #c0392b, #e74c3c);
