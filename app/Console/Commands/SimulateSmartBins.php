@@ -10,6 +10,8 @@ use App\Models\WhatsAppNotification;
 use App\Models\User;
 use App\Models\Sensor;
 use App\Services\WhatsAppSender;
+use App\Models\NotificationLog;
+use Illuminate\Support\Str;
 
 class SimulateSmartBins extends Command
 {
@@ -97,19 +99,28 @@ class SimulateSmartBins extends Command
 
         if ($canSendWhatsApp && !empty($fullDevices)) {
 
-            $message = $this->buildMessage($fullDevices);
+            $deviceList = '';
+            $message = $this->buildMessage($fullDevices, $deviceList);
 
             foreach ($phones as $phone) {
                 $whatsapp->send($phone, $message);
             }
 
-            $this->info('📲 WhatsApp alert sent.');
+            // ✅ Save notification log
+            NotificationLog::create([
+                'channel'         => 'whatsapp',
+                'message_preview' => Str::limit($deviceList, 200),
+                'message_full'    => $deviceList,
+                'sent_at'         => now(),
+            ]);
+
+            $this->info('📲 WhatsApp alert sent and logged.');
         } else {
             $this->info('🔕 WhatsApp alert not sent.');
         }
     }
 
-    private function buildMessage($devices)
+    private function buildMessage($devices, &$deviceList = null)
     {
         $now = Carbon::now();
 
@@ -119,19 +130,16 @@ class SimulateSmartBins extends Command
         $deviceList = "";
 
         foreach ($devices as $index => $device) {
-            $no = $index + 1;
-
-            // 🔎 Get latest sensor reading for this device
             $latestSensor = Sensor::where('device_id', $device->id_device)
-                                   ->latest('time')
-                                   ->first();
+                                ->latest('time')
+                                ->first();
 
             $capacityValue = $latestSensor ? $latestSensor->capacity : 'N/A';
 
             $deviceList .= 
-            "🆔 : {$device->device_name}\n".
-            "📍 Lokasi: {$device->asset->location}\n".
-            "📊 Kapasiti: {$capacityValue}%\n\n" ;
+                "🆔 : {$device->device_name}\n".
+                "📍 Lokasi: {$device->asset->location}\n".
+                "📊 Kapasiti: {$capacityValue}%\n\n";
         }
 
         return

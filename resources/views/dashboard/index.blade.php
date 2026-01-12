@@ -378,6 +378,36 @@ function trend($current, $previous) {
     <div class="row">
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        📤 Notification Sent
+                        <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
+                    </h5>
+                </div>
+
+                <div class="card-body p-0">
+                    @forelse($todayNotifications as $log)
+                        <div class="border-bottom">
+                            <button
+                                class="btn btn-link text-left w-100"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#notif{{ $log->id }}"
+                            >
+                                🕒 {{ $log->sent_at->format('H:i:s') }}
+                            </button>
+
+                            <div id="notif{{ $log->id }}" class="collapse px-3 pb-3">
+                                <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-3 text-muted text-center">
+                            No notifications sent today
+                        </div>
+                    @endforelse
+                </div>
+            </div>
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
             <div class="card p-3">
                 <h5 class="mb-3 fs-6"><i class="fas fa-users"></i> Users</h5>

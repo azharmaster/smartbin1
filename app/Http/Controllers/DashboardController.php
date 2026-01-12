@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use App\Models\NotificationLog;
 
 class DashboardController extends Controller
 {
@@ -79,6 +80,11 @@ class DashboardController extends Controller
         // 📅 Load holidays for calendar
         $holidays = Holiday::where('is_active', true)->get();
 
+        $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
+            ->orderBy('sent_at', 'desc')
+            ->get();
+
+
         $calendarHolidays = $holidays->map(function ($holiday) {
 
             return [
@@ -111,6 +117,7 @@ class DashboardController extends Controller
             'smartBinClearTimes',
             'totalTrend',      // <-- added
             'calendarHolidays',
+            'todayNotifications',
         ));
     }
 
