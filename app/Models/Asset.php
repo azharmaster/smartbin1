@@ -41,16 +41,23 @@ class Asset extends Model
         'picture',
         'x',
         'y',
+        'is_active', // Added for notification ON/OFF
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean', // Cast to boolean for convenience
     ];
 
     public function floor()
     {
         return $this->belongsTo(Floor::class, 'floor_id', 'id');
     }
+
     public function devices()
     {
         return $this->hasMany(Device::class);
     }
+
     public function complaint()
     {
         return $this->hasMany(Complaint::class);

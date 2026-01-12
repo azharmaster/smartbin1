@@ -15,6 +15,11 @@ class Device extends Model
         'asset_id',
         'id_device',
         'device_name',
+        'is_active', // ✅ Added for device-level ON/OFF
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean', // Cast to boolean for Blade ON/OFF switch
     ];
 
     // A Device belongs to an Asset (Bin)

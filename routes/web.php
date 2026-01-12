@@ -312,6 +312,10 @@ Route::get('/supervisor/main-dashboard', [SupervisorMainDashboardController::cla
 Route::get('whatsapp', [WhatsAppNotificationController::class, 'index'])->name('whatsapp.index');
 Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'update'])->name('whatsapp.update');
 
+Route::put('whatsapp/bin/{bin}/toggle', [WhatsAppNotificationController::class, 'toggleBin'])->name('whatsapp.bin.toggle');
+Route::put('whatsapp/device/{device}/toggle', [WhatsAppNotificationController::class, 'toggleDevice'])->name('whatsapp.device.toggle');
+
+
 //Set Capacity Page
  Route::get('/capacity', [CapacityController::class, 'index'])
         ->name('capacity.index');
