@@ -36,6 +36,11 @@
     transform: translateY(-4px);
     box-shadow: 0 12px 28px rgba(0,0,0,0.35);
 }
+.status-card:hover::before {
+    opacity: 0;            /* disappear on hover */
+    transform: translateY(0); /* optional slight movement */
+    box-shadow: none;       /* remove glow if any */
+}
 
 .status-body {
     padding: 18px 20px 42px;
@@ -82,22 +87,84 @@
 }
 
 /* ICON COLORS */
+.card-total:hover .status-icon {
+color: rgb(0, 209, 251);
+    transform: scale(1.2);      /* POP size */
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease,
+        filter 0.25s ease;
+}
 .card-total .status-icon {
     color: #1e88e5;
 }
 
+.card-full:hover .status-icon {
+    color: #ff0000; /* strong red */
+    transform: scale(1.2);      /* POP size */
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease,
+        filter 0.25s ease;
+ 
+}
+
 .card-full .status-icon {
-    color: #e53935; /* strong red */
+    color: #e23532; /* strong red */
+}
+
+.card-half:hover .status-icon {
+    color: #fb8c00;
+    transform: scale(1.2);      /* POP size */
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease,
+        filter 0.25s ease;
+ 
+}
+.status-icon.half {
+    background: linear-gradient(to top, #fc9c00 50%, #c26b00 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .card-half .status-icon {
     color: #fb8c00;
 }
 
+.card-empty:hover .status-icon{
+    color: #2bff00; 
+    transform: scale(1.2);      /* POP size */
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease,
+        filter 0.25s ease;
+ 
+}
+
+.status-icon.empty {
+    color: #43a047;
+    background: linear-gradient(to top, #43a047 10%, #007506 10%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 .card-empty .status-icon {
     color: #43a047;
 }
 
+.card-undetected:hover .status-icon{
+color: rgb(255, 255, 255);
+    transform: scale(1.2);      /* POP size */
+    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
+    transition:
+        color 0.25s ease,
+        transform 0.25s ease,
+        filter 0.25s ease;
+}
 .card-undetected .status-icon {
     color: #616161;
 }
@@ -338,7 +405,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Full Sensors</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon"></i>
+            <i class="fas fa-trash status-icon"></i>   <!-- full -->
                 <span class="status-number">{{ $fullDevices }}</span>
             </div>
         </div>
@@ -356,7 +423,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Half-Full Sensors</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon"></i>
+                <i class="fas fa-exclamation-triangle status-icon"></i>
                 <span class="status-number">{{ $halfDevices }}</span>
             </div>
         </div>
@@ -374,7 +441,7 @@ function trend($current, $previous) {
         <div class="status-body">
             <div class="status-title">Empty Sensors</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon"></i>
+                <i class="fas fa-recycle status-icon"></i>
                 <span class="status-number">{{ $emptyDevices }}</span>
             </div>
         </div>
