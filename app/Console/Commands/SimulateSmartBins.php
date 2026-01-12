@@ -153,7 +153,6 @@ class SimulateSmartBins extends Command
         $deviceList .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
         "⏰ Masa: {$now->format('H:i')}\n" .
-        "📋 Waktu Notifikasi Dihantar: {$now->format('d-m-Y H:i:s')}\n\n" .
         "⚠️ *Tindakan Segera Diperlukan:*\n" .
         "1. Sila kosongkan tong sampah\n" .
         "2. Bersihkan kawasan sekeliling\n" .
