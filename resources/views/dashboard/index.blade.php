@@ -503,7 +503,7 @@ function trend($current, $previous) {
     <div class="row">
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
-        <!-- NOTIFICATION LOGS-->
+            <!-- NOTIFICATION LOGS-->
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6">
@@ -543,25 +543,67 @@ function trend($current, $previous) {
                 </div>
             </div>
             <!-- SIMPLE USER LIST BELOW TODO LIST -->
-            <div class="card p-3">
-                <h5 class="mb-3 fs-6"><i class="fas fa-users"></i> Users</h5>
-                <ul class="list-group">
-                    @foreach($users as $user)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ $user->name }}
-                            <span class="badge bg-success">
-                                @switch($user->role)
-                                    @case(1) Admin @break
-                                    @case(2) Staff @break
-                                    @case(3) User @break
-                                    @case(4) Supervisor @break
-                                    @default Unknown
-                                @endswitch
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-users"></i> Users
+                    </h5>
+                </div>
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:5%;">#</th>
+                                <th style="width:30%;">Name</th>
+                                <th style="width:15%;">Role</th>
+                                <th style="width:20%;">Phone</th>
+                                <th style="width:30%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($users as $index => $user)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $user->name }}</td>
+                                    <td>
+                                        @switch($user->role)
+                                            @case(1) <span class="badge bg-danger">Admin</span> @break
+                                            @case(2) <span class="badge bg-primary">Staff</span> @break
+                                            @case(3) <span class="badge bg-secondary">User</span> @break
+                                            @case(4) <span class="badge bg-success">Supervisor</span> @break
+                                            @default <span class="badge bg-dark">Unknown</span>
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        @if($user->phone)
+                                            @php
+                                                $cleanPhone = preg_replace('/\D+/', '', $user->phone);
+                                                $cleanPhone = ltrim($cleanPhone, '0');
+                                                $fullPhone = '60' . $cleanPhone;
+                                            @endphp
+                                            <a href="tel:{{ $fullPhone }}" class="text-decoration-none me-2">
+                                                {{ $user->phone }}
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($user->phone)
+                                            <a href="tel:{{ $fullPhone }}" class="btn btn-sm btn-outline-primary me-1" title="Call">
+                                                <i class="fas fa-phone"></i>
+                                            </a>
+                                            <a href="https://wa.me/{{ $fullPhone }}" target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
         </div>
 
         <!-- RIGHT COLUMN -->
