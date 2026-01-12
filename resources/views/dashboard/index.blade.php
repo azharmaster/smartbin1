@@ -492,12 +492,28 @@ function trend($current, $previous) {
         </div>
     </div>
 
-<!-- SmartBin Gradient Style -->
+<!-- SmartBin Animated Gradient Style -->
 <style>
 .smartbin-gradient {
-    background: linear-gradient(135deg, #1b5e20, #4bb352ff);
+    background: linear-gradient(270deg, #1b5e20, #4bb352ff, #1b5e20);
+    background-size: 400% 400%;
+    animation: smartbinGradient 8s ease infinite;
+}
+
+/* Animation */
+@keyframes smartbinGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 </style>
+
 
     <!-- ROW 2: USERS + TODO -->
     <div class="row">
