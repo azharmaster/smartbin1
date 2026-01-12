@@ -140,7 +140,179 @@
 
 <style>
 
+.main-sidebar {
+    background-color: #0f3d1f; /* dark green */
+    box-shadow: inset -1px 0 0 rgba(255,255,255,0.08);
+}
 
+/* Fix AdminLTE stacking issues */
+.main-sidebar,
+.main-sidebar * {
+    box-sizing: border-box;
+}
+
+.brand-link {
+    background-color: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem;
+}
+
+.brand-text {
+    color: #ffffff !important;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    font-size: 1.05rem;
+}
+
+.nav-sidebar .nav-link {
+    color: rgba(255,255,255,0.85);
+    border-radius: 8px;
+    margin: 4px 10px;
+    padding: 10px 14px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.nav-sidebar .nav-link p {
+    margin: 0;
+    font-size: 1.0rem;
+    font-weight: 500;
+}
+
+.nav-sidebar .nav-icon {
+    opacity: 0.9;
+    margin-right: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon {
+    opacity: 1;
+}
+
+/* =====================================================
+   HOVER
+===================================================== */
+
+.nav-sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateX(3px);
+}
+
+/* =====================================================
+   ACTIVE STATE
+===================================================== */
+
+.nav-sidebar .nav-link.active {
+    background: rgba(255,255,255,0.15);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #4ade80; /* green indicator */
+}
+
+.nav-sidebar .nav-link.active p {
+    color: #ffffff;
+}
+
+/* =====================================================
+   DROPDOWN
+===================================================== */
+
+.nav-treeview {
+    padding-left: 10px;
+}
+
+.nav-treeview .nav-link {
+    font-size: 0.88rem;
+    opacity: 0.8;
+}
+
+.nav-treeview .nav-link.active {
+    opacity: 1;
+}
+
+/* Dropdown arrow */
+.nav-sidebar .nav-link .fa-angle-left {
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+}
+
+.menu-open > .nav-link .fa-angle-left {
+    transform: rotate(-90deg);
+    opacity: 1;
+}
+
+
+//sidebar title
+.brand-app {
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 16px 12px;
+    background: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.brand-app:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+/* App name text */
+.brand-app .brand-text {
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase; /* optional, looks clean */
+    text-decoration: none !important;
+}
+
+/* Remove AdminLTE underline edge cases */
+.brand-link,
+.brand-link:hover,
+.brand-link:focus {
+    text-decoration: none !important;
+}
+
+/* Neutralize ALL active states */
+.nav-sidebar .nav-link.active,
+.nav-sidebar .menu-open > .nav-link,
+.nav-sidebar .nav-treeview .nav-link.active {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Active text = same as normal text */
+.nav-sidebar .nav-link.active p,
+.nav-sidebar .nav-treeview .nav-link.active p {
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+}
+
+/* =====================================================
+   HOVER EFFECT ONLY (DARKEN)
+===================================================== */
+
+.nav-sidebar .nav-link:hover {
+    background: rgba(0,0,0,0.25);
+}
+
+/* Child hover slightly lighter */
+.nav-sidebar .nav-treeview .nav-link:hover {
+    background: rgba(0,0,0,0.35);
+}
+
+/* Icons follow text */
+.nav-sidebar .nav-link:hover .nav-icon {
+    opacity: 1;
+}
+
+/* =====================================================
+   KEEP DROPDOWN OPEN WITHOUT STYLING
+===================================================== */
+
+.menu-open > .nav-link {
+    background: transparent !important;
+}
 </style>
 
 <!-- /.sidebar -->
