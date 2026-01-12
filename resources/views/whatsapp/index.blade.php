@@ -176,14 +176,27 @@ input:checked + .slider:before {
 
             <div class="card-body">
 
+                {{-- 🔍 Search Bar (Name & Location) --}}
+                <div class="mb-3">
+                    <input type="text" 
+                           id="binSearch" 
+                           class="form-control" 
+                           placeholder="Search by bin name or location...">
+                </div>
+
                 @if($bins ?? false)
                     @foreach($bins as $bin)
                         {{-- Bin row with custom toggle --}}
-                        <div class="d-flex justify-content-between align-items-center border p-2 mb-2 rounded">
+                        <div class="bin-item d-flex justify-content-between align-items-center border p-2 mb-2 rounded"
+                             data-name="{{ strtolower($bin->asset_name) }}"
+                             data-location="{{ strtolower($bin->location ?? '') }}">
                             
                             {{-- Bin Name opens modal --}}
                             <span class="fw-semibold" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#binModal{{ $bin->id }}">
                                 {{ $bin->asset_name }}
+                                @if(!empty($bin->location))
+                                    <small class="text-muted d-block">{{ $bin->location }}</small>
+                                @endif
                             </span>
 
                             {{-- Bin ON/OFF toggle using custom style --}}
@@ -256,5 +269,24 @@ input:checked + .slider:before {
     </div>
 
 </div>
+
+{{-- 🔎 Client-side Search Script --}}
+<script>
+document.getElementById('binSearch').addEventListener('keyup', function () {
+    let searchValue = this.value.toLowerCase();
+    let bins = document.querySelectorAll('.bin-item');
+
+    bins.forEach(function (bin) {
+        let name = bin.getAttribute('data-name');
+        let location = bin.getAttribute('data-location');
+
+        if (name.includes(searchValue) || location.includes(searchValue)) {
+            bin.style.display = '';
+        } else {
+            bin.style.display = 'none';
+        }
+    });
+});
+</script>
 
 @endsection
