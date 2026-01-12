@@ -31,8 +31,14 @@ class SimulateSmartBins extends Command
         if (
             !$notification ||
             !$notification->is_active ||
-            $now->lt($notification->start_time) ||
-            $now->gt($notification->end_time)
+            !$notification->start_date ||
+            !$notification->end_date ||
+            !$notification->start_time ||
+            !$notification->end_time ||
+            $now->toDateString() < $notification->start_date ||
+            $now->toDateString() > $notification->end_date ||
+            Carbon::parse($now->format('H:i'))->lt(Carbon::parse($notification->start_time)) ||
+            Carbon::parse($now->format('H:i'))->gt(Carbon::parse($notification->end_time))
         ) {
             $canSendWhatsApp = false;
             $this->info('🔕 WhatsApp notifications disabled.');
@@ -46,7 +52,6 @@ class SimulateSmartBins extends Command
             $canSendWhatsApp = false;
             $this->info('⏰ Outside work hours.');
         }
-
 
         $capacity = CapacitySetting::first();
         $emptyMax = $capacity->empty_to;

@@ -13,6 +13,13 @@
 
             <div class="card-body">
 
+                {{-- Success Message --}}
+                @if(session('success'))
+                    <div class="alert alert-success text-center">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 @if(isset($notification))
 
                 <form action="{{ route('whatsapp.update', $notification->id) }}" method="POST">
@@ -41,20 +48,38 @@
 
                     <!-- Start Date -->
                     <div class="mb-3">
-                        <label class="form-label">Start Date & Time</label>
-                        <input type="datetime-local" 
-                               name="start_time" 
+                        <label class="form-label">Start Date</label>
+                        <input type="date" 
+                               name="start_date" 
                                class="form-control"
-                               value="{{ $notification->start_time ? $notification->start_time->format('Y-m-d\TH:i') : '' }}">
+                               value="{{ old('start_date', $notification->start_date ? $notification->start_date->format('Y-m-d') : '') }}">
                     </div>
 
                     <!-- End Date -->
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" 
+                               name="end_date" 
+                               class="form-control"
+                               value="{{ old('end_date', $notification->end_date ? $notification->end_date->format('Y-m-d') : '') }}">
+                    </div>
+
+                    <!-- Start Time -->
+                    <div class="mb-3">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" 
+                               name="start_time" 
+                               class="form-control"
+                               value="{{ old('start_time', $notification->start_time ?? '') }}">
+                    </div>
+
+                    <!-- End Time -->
                     <div class="mb-4">
-                        <label class="form-label">End Date & Time</label>
-                        <input type="datetime-local" 
+                        <label class="form-label">End Time</label>
+                        <input type="time" 
                                name="end_time" 
                                class="form-control"
-                               value="{{ $notification->end_time ? $notification->end_time->format('Y-m-d\TH:i') : '' }}">
+                               value="{{ old('end_time', $notification->end_time ?? '') }}">
                     </div>
 
                     <!-- ON / OFF Switch -->
