@@ -130,7 +130,7 @@
             <div class="card card-success card-outline card-shadow profile-card text-center">
 
                 <!-- Profile Picture -->
-                <div class="position-relative d-inline-block mb-3">
+                <div class="position-relative d-inline-block mb-2">
                     <img class="rounded-circle shadow-lg profile-user-img"
                          src="{{ $photo }}"
                          alt="Profile Picture"
@@ -165,7 +165,7 @@
                 <!-- Reset Password Button -->
                 <div class="d-flex justify-content-center align-items-center mt-4">
                     <a href="{{ route('profile.editPassword') }}" class="btn btn-danger btn-sm">
-                        Reset Password
+                        Change Password
                     </a>
                 </div>
 

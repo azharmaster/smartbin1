@@ -1,5 +1,5 @@
 @extends($layout)
-@section('content_title', 'Reset Password')
+@section('content_title', 'Change Password')
 @section('content')
 
 <div class="d-flex justify-content-center mt-4">
