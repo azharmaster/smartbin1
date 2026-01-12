@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (filter === 'all') {
                 show = true;
             } else if (filter === 'critical') {
-                show = (status === 'full' || status === 'half');
+                show = (status === 'full' || status === 'half' || status === 'empty');
             } else {
                 show = (status === filter);
             }
