@@ -315,6 +315,8 @@ Route::put('whatsapp/{notification}', [WhatsAppNotificationController::class, 'u
 Route::put('whatsapp/bin/{bin}/toggle', [WhatsAppNotificationController::class, 'toggleBin'])->name('whatsapp.bin.toggle');
 Route::put('whatsapp/device/{device}/toggle', [WhatsAppNotificationController::class, 'toggleDevice'])->name('whatsapp.device.toggle');
 
+Route::post('/whatsapp/notification/off', [WhatsAppController::class, 'notificationOff'])->name('whatsapp.notification.off');
+
 
 //Set Capacity Page
  Route::get('/capacity', [CapacityController::class, 'index'])

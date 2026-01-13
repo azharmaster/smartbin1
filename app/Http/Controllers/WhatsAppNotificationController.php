@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WhatsAppNotification;
 use App\Models\Asset;   // ✅ Added to fetch bins/assets
 use App\Models\Device;  // ✅ Added to toggle device notifications
+use App\Models\NotificationOff; // ✅ Added for notification off schedules
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -42,7 +43,16 @@ class WhatsAppNotificationController extends Controller
         // ✅ Fetch all bins (assets) and eager load devices
         $bins = Asset::with('devices')->get();
 
-        return view('whatsapp.index', compact('notification', 'bins'));
+        // ✅ Fetch all devices separately for the "optional" select list
+        $devices = Device::all();
+
+        // ✅ Fetch all currently active notification off schedules
+        $notificationOffs = NotificationOff::with(['asset', 'device'])
+                                ->where('active', true)
+                                ->get();
+
+        // Pass all variables to the view
+        return view('whatsapp.index', compact('notification', 'bins', 'devices', 'notificationOffs'));
     }
 
     /**
@@ -92,5 +102,53 @@ class WhatsAppNotificationController extends Controller
 
         return redirect()->route('whatsapp.index')
                          ->with('success', "Device '{$device->device_name}' notification toggled.");
+    }
+
+    /**
+     * Create a notification off schedule for bins/devices
+     */
+    public function notificationOff(Request $request)
+    {
+        $request->validate([
+            'start_at'  => 'required|date',
+            'end_at'    => 'required|date|after:start_at',
+            'asset_ids' => 'required|array',
+            'device_ids'=> 'nullable|array',
+        ]);
+
+        // Save for bins
+        foreach ($request->asset_ids as $assetId) {
+            NotificationOff::create([
+                'asset_id'  => $assetId,
+                'device_id' => null,
+                'start_at'  => $request->start_at,
+                'end_at'    => $request->end_at,
+            ]);
+        }
+
+        // Save for devices (if any)
+        if ($request->device_ids) {
+            foreach ($request->device_ids as $deviceId) {
+                NotificationOff::create([
+                    'asset_id'  => null,
+                    'device_id' => $deviceId,
+                    'start_at'  => $request->start_at,
+                    'end_at'    => $request->end_at,
+                ]);
+            }
+        }
+
+        return redirect()->route('whatsapp.index')
+                         ->with('success', 'Notification off schedule saved!');
+    }
+
+    /**
+     * Optional: Deactivate expired notification off schedules
+     * Can be called via cron or included in sending logic
+     */
+    public function deactivateExpiredSchedules()
+    {
+        NotificationOff::where('end_at', '<', Carbon::now())
+                       ->update(['active' => false]);
     }
 }
