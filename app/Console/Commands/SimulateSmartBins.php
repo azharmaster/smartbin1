@@ -120,7 +120,7 @@ class SimulateSmartBins extends Command
             // ✅ Save notification log
             NotificationLog::create([
                 'channel'         => 'whatsapp',
-                'message_preview' => Str::limit($deviceList, 200),
+                'message_preview' => Str::limit($deviceList, 300),
                 'message_full'    => $deviceList,
                 'sent_at'         => now(),
             ]);

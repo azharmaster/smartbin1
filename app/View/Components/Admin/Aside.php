@@ -102,6 +102,14 @@ class Aside extends Component
                         "route_active" => "holidays.*",
                         "is_dropdown" => false
                     ],
+                    [
+                        "label" => "Floor",
+                        "icon" => "fa-solid fas fa-building",
+                        "color" => "#5f80d3ff",
+                        "route_name" => "floors.index",
+                        "route_active" => "floors.*",
+                        "is_dropdown" => false
+                    ],
                     // [
                     //     "label" => "Assign Tasks",
                     //     "icon" => "fas fa-tasks",
