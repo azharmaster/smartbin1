@@ -9,13 +9,28 @@ class NotificationOff extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['asset_id', 'device_id', 'start_at', 'end_at', 'active'];
+    protected $table = 'notification_offs';
 
-    public function asset() {
-        return $this->belongsTo(Asset::class);
+    protected $fillable = [
+        'asset_id',   // ✅ Updated from bin_id to asset_id
+        'start_at',
+        'end_at',
+        'created_by',
+    ];
+
+    /**
+     * Relation to the bin/asset
+     */
+    public function bin()
+    {
+        return $this->belongsTo(\App\Models\Asset::class, 'asset_id', 'id');
     }
 
-    public function device() {
-        return $this->belongsTo(Device::class);
+    /**
+     * Relation to the user who created the notification off
+     */
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
     }
 }

@@ -53,62 +53,6 @@ input:checked + .slider:before {
     <!-- LEFT COLUMN: General Full Bin Notification -->
     <div class="col-md-6">
 
-    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#notifOffModal">
-    <i class="fas fa-bell-slash"></i> Notification Off
-</button>
-
-<div class="modal fade" id="notifOffModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <form method="POST" action="{{ route('whatsapp.notification.off') }}">
-      @csrf
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Turn Off Notifications</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label>Start Date & Time</label>
-              <input type="datetime-local" class="form-control" name="start_at" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label>End Date & Time</label>
-              <input type="datetime-local" class="form-control" name="end_at" required>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label>Select Bins (Assets)</label>
-            <select class="form-select" name="asset_ids[]" multiple required>
-              @foreach($bins as $bin)
-                <option value="{{ $bin->id }}">{{ $bin->asset_name }}</option>
-              @endforeach
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label>Select Devices (Optional)</label>
-            <select class="form-select" name="device_ids[]" multiple>
-              @foreach($devices as $device)
-                <option value="{{ $device->id }}">{{ $device->device_name }}</option>
-              @endforeach
-            </select>
-            <small class="text-muted">Devices are optional. Leave empty if not needed.</small>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Save</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-
         <div class="card card-success card-outline mb-4">
             <div class="card-header text-center">
                 <h5 class="mb-0 fw-bold">Full Bin Notification</h5>
