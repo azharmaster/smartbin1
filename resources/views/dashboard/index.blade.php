@@ -479,21 +479,20 @@ function trend($current, $previous) {
     <!-- ROW 1: SMARTBIN CHART -->
     <div class="row">
         <div class="col-12">
-            <div class="col-12 d-flex justify-content-end mb-2">
-                <select id="assetFilter" class="form-select form-select-sm w-auto">
-                    @foreach($smartBinClearTimes as $assetName => $devices)
-                        <option value="{{ $assetName }}">{{ $assetName }}</option>
-                    @endforeach
-                </select>
-            </div>
             <div class="card mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-trash"></i> SmartBin Clear Time
+                <div class="card-header smartbin-gradient d-flex align-items-center">
+                    <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
+                        <i class="fas fa-trash me-2"></i> SmartBin Clear Time
                     </h5>
+
+                    <select id="assetFilter" class="form-select form-select-sm w-auto ms-auto">
+                        @foreach($smartBinClearTimes as $assetName => $devices)
+                            <option value="{{ $assetName }}">{{ $assetName }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="card-body">
-                    <canvas id="smartBinClearChart" height="120"></canvas>
+                    <canvas id="smartBinClearChart" height="100"></canvas>
                 </div>
             </div>
         </div>
@@ -629,7 +628,79 @@ function trend($current, $previous) {
 
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-trash-alt me-2"></i> Sensor Lists
+                    </h5>
+                </div>
 
+                <div class="card-body p-2">
+                    <div class="accordion" id="assetAccordion">
+
+                        @forelse($assetsWithDevices as $asset)
+                            <div class="accordion-item mb-2">
+                                <h2 class="accordion-header" id="heading{{ $asset->id }}">
+                                    <button
+                                        class="accordion-button collapsed fw-semibold"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#asset{{ $asset->id }}">
+
+                                        🗑️ {{ $asset->name }}
+                                        <span class="badge bg-secondary ms-2">
+                                            {{ $asset->devices->count() }} Sensors
+                                        </span>
+                                    </button>
+                                </h2>
+
+                                <div
+                                    id="asset{{ $asset->id }}"
+                                    class="accordion-collapse collapse"
+                                    data-bs-parent="#assetAccordion">
+
+                                    <div class="accordion-body p-2">
+                                        <ul class="list-group list-group-flush">
+
+                                            @foreach($asset->devices as $device)
+                                                @php
+                                                    $latest = $device->sensors->last();
+                                                    $level = $latest->capacity ?? null;
+
+                                                    $badge = match (true) {
+                                                        $level === null => 'secondary',
+                                                        $level >= 86 => 'danger',
+                                                        $level >= 41 => 'warning',
+                                                        default => 'success',
+                                                    };
+                                                @endphp
+
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ $device->device_name }}</strong><br>
+                                                        <small class="text-muted">
+                                                        </small>
+                                                    </div>
+
+                                                    <span class="badge bg-{{ $badge }}">
+                                                        {{ $level !== null ? $level.'%' : 'Undetected' }}
+                                                    </span>
+                                                </li>
+                                            @endforeach
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No assets found
+                            </div>
+                        @endforelse
+
+                    </div>
+                </div>
+            </div>
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
@@ -679,9 +750,7 @@ function trend($current, $previous) {
             }
             </style>
         </div>
-
     </div>
-
 </div>
 
 <script>

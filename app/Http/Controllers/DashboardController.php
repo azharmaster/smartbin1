@@ -77,6 +77,11 @@ class DashboardController extends Controller
 
         $smartBinClearTimes = $this->calculateSmartBinClearTimes($emptyMax, $halfMax);
 
+        $assetsWithDevices = Asset::with(['devices.sensors'])
+            ->whereHas('devices')
+            ->orderBy('asset_name')
+            ->get();
+
         // 📅 Load holidays for calendar
         $holidays = Holiday::where('is_active', true)->get();
 
@@ -118,6 +123,7 @@ class DashboardController extends Controller
             'totalTrend',      // <-- added
             'calendarHolidays',
             'todayNotifications',
+            'assetsWithDevices',
         ));
     }
 

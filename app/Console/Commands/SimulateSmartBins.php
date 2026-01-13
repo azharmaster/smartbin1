@@ -158,7 +158,7 @@ class SimulateSmartBins extends Command
         "Berikut adalah senarai tong sampah yang telah penuh:\n\n" .
         $deviceList .
         "📅 Tarikh: {$now->format('d-m-Y')}\n" .
-        "⏰ Masa: {$now->format('H:i')}\n" .
+        "⏰ Masa: {$now->format('H:i')}\n\n" .
         "⚠️ *Tindakan Segera Diperlukan:*\n" .
         "1. Sila kosongkan tong sampah\n" .
         "2. Bersihkan kawasan sekeliling\n" .
