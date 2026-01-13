@@ -24,7 +24,7 @@
         @endif
 
         <div class="table-responsive">
-            <table id="holidayTable" class="table table-bordered table-striped dataTable dtr-inline">
+            <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
                 <thead>
                     <tr>
                         <th>#</th>

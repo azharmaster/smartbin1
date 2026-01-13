@@ -3,8 +3,12 @@
 @section('content')
 
 <div class="card card-success card-outline">
-    <div class="card-header">
+    <div class="card-header d-flex align-items-center">
         <h5 class="mb-0">User</h5>
+
+        <div class="ms-auto">
+            <x-user.form-user/>
+        </div>
     </div>
     <div class="card-body">
 
@@ -15,13 +19,10 @@
             @endforeach
         </div>
         @endif
-         <div class="d-flex justify-content-end mb-2">
-            <x-user.form-user />
-        </div>
 
         {{-- USERS TABLE --}}
         <div class="table-responsive">
-            <table id="table1" class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped datatable datatable-buttons">
                 <thead>
                     <tr>
                         <th>#</th>

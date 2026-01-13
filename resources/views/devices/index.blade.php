@@ -2,8 +2,12 @@
 @section('content_title', 'Devices')
 @section('content')
 <div class="card card-success card-outline">
-    <div class="card-header">
+    <div class="card-header d-flex align-items-center">
         <h5 class="mb-0">Devices</h5>
+
+        <div class="ms-auto">
+        <x-device.form-device :assets="$assets" />
+        </div>
     </div>
     <div class="card-body">
         @if ($errors->any())
@@ -15,13 +19,11 @@
         @endif
 
         @if(auth()->user()->role == 1)
-        <div class="d-flex justify-content-end mb-2">
-            <x-device.form-device :assets="$assets" />
-        </div>
+            
         @endif
 
         <div class="table-responsive">
-            <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
+        <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
                 <thead>
                     <tr>
                         <th>#</th>
