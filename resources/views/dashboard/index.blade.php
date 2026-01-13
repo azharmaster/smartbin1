@@ -189,7 +189,7 @@ color: rgb(255, 255, 255);
     font-size: 12px;
     font-weight: 600;
 
-    background: rgba(0,0,0,0.04);
+    background: rgba(0,0,0,0.04);+
     color: #111;
 
     transition: background .25s ease, color .25s ease;
