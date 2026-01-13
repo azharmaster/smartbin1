@@ -34,7 +34,100 @@
     @livewireStyles
 
     @stack('styles')
-    
+   <style>
+/* Top container: left = entries + buttons, right = search */
+.dataTables_wrapper .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+/* Left block: entries + buttons */
+.dataTables_wrapper .top .left-block {
+    display: flex;
+    flex-direction: column; /* buttons below entries */
+}
+
+/* Show entries dropdown wider */
+.dataTables_length select {
+    width: 150px;
+    display: inline-block;
+    height: auto;          /* optional: lets it scale with font-size */
+    padding: 0.3rem 1.2rem; /* optional: more spacing inside */
+    font-size: 0.9rem;     /* optional: bigger font */
+}
+
+/* Buttons styling */
+.dt-buttons .btn-custom {
+    background-color: #ffffff;  /* white background */
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25); /* heavy shadow */
+    font-weight: 600;
+    margin-top: 6px;    /* spacing below entries */
+    margin-right: 6px;
+    transition: all 0.2s ease; /* smooth hover */
+    color: #000000;     /* default text color */
+}
+
+/* Icon default colors (only when NOT hovered) */
+.dt-buttons .btn-custom.copy i { color: #f39c12; }   /* orange */
+.dt-buttons .btn-custom.csv i { color: #3498db; }    /* blue */
+.dt-buttons .btn-custom.excel i { color: #27ae60; }  /* green */
+.dt-buttons .btn-custom.pdf i { color: #e74c3c; }    /* red */
+.dt-buttons .btn-custom.print i { color: #8e44ad; }  /* purple */
+.dt-buttons .btn-custom.filter i { color: #2c3e50; } /* dark accent */
+
+/* Hover: button background = icon color, icon + text white */
+.dt-buttons .btn-custom.copy:hover {
+    background-color: #f39c12;
+    color: #ffffff;
+}
+.dt-buttons .btn-custom.csv:hover {
+    background-color: #3498db;
+    color: #ffffff;
+}
+.dt-buttons .btn-custom.excel:hover {
+    background-color: #27ae60;
+    color: #ffffff;
+}
+.dt-buttons .btn-custom.pdf:hover {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+.dt-buttons .btn-custom.print:hover {
+    background-color: #8e44ad;
+    color: #ffffff;
+}
+.dt-buttons .btn-custom.filter:hover {
+    background-color: #2c3e50;
+    color: #ffffff;
+}
+
+/* Force icon white on hover */
+.dt-buttons .btn-custom:hover i {
+    color: #ffffff;
+}
+
+/* Spacing between buttons */
+.dt-buttons .btn-custom + .btn-custom {
+    margin-left: 6px;
+}
+
+/* Right block: search bar */
+.dataTables_wrapper .right-block {
+    margin-top: 4px;
+}
+
+/* Optional: ensure search input width looks good */
+.dataTables_wrapper .dataTables_filter input {
+    width: 180px;
+    display: inline-block;
+}
+
+    </style>
+
 </head>
 
 <body class="hold-transition sidebar-mini text-sm">
@@ -182,13 +275,43 @@
         'overflow-x': 'hidden'
     });
 });
-        $(function () {
+        /*$(function () {
             $("#table1").DataTable({
                 responsive: true,
                 lengthChange: false,
                 autoWidth: true,
                 buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
             }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
+*/
+
+$(document).ready(function () { 
+    $('.datatable').each(function() { 
+    if (!$.fn.DataTable.isDataTable(this)) { 
+    const hasButtons = $(this).hasClass('datatable-buttons'); 
+
+     $(this).DataTable({ 
+        responsive: true, 
+        autoWidth: false, 
+        lengthChange: true, 
+        dom: hasButtons ? '<"top"<"left-block"lB><"right-block"f>>rtip' : 'lfrtip', 
+
+        buttons: hasButtons ? [ 
+            { extend: 'copyHtml5',
+         className: 'btn btn-custom copy',
+          text: '<i class="fas fa-copy"></i> Copy' },
+           { extend: 'csvHtml5', className: 'btn btn-custom csv', text: '<i class="fas fa-file-csv"></i> CSV' }, 
+           { extend: 'excelHtml5', className: 'btn btn-custom excel', text: '<i class="far fa-file-excel"></i> Excel' },
+            { extend: 'pdfHtml5', className: 'btn btn-custom pdf', text: '<i class="far fa-file-pdf"></i> PDF' },
+             { extend: 'print', className: 'btn btn-custom print', text: '<i class="fas fa-print"></i> Print' },
+              { extend: 'colvis', className: 'btn btn-custom filter', text: '<i class="fas fa-sort"></i> Filter' } 
+            ] : [] 
+        }); 
+        if (hasButtons) { 
+            $(this).DataTable().buttons().container().appendTo($(this).closest('.left-block').find('.dt-buttons')); 
+
+            } 
+        } 
+    });
 
             $('#table2').DataTable({
                 paging: true,

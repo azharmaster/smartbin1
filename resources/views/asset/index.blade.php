@@ -2,9 +2,13 @@
 @section('content_title', 'Asset')
 @section('content')
 <div class="card card-success card-outline">
-    <div class="card-header">
-        <h5 class="mb-0">Assets</h5>
+   <div class="card-header d-flex align-items-center">
+    <h5 class="mb-0">Assets</h5>
+
+    <div class="ms-auto">
+        <x-asset.form-asset :floors="$floors" />
     </div>
+</div>
     <div class="card-body">
         @if ($errors->any())
         <div class="alert alert-danger d-flex flex-column">
@@ -15,10 +19,9 @@
         @endif
 
         <div class="d-flex justify-content-end mb-2">
-            <x-asset.form-asset :floors="$floors" />
         </div>
         <div class="table-responsive">
-             <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
+             <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
                 <thead>
                     <tr>
                         <th>#</th>
