@@ -647,10 +647,7 @@ function trend($current, $previous) {
                                         data-bs-toggle="collapse"
                                         data-bs-target="#asset{{ $asset->id }}">
 
-                                        🗑️ {{ $asset->name }}
-                                        <span class="badge bg-secondary ms-2">
-                                            {{ $asset->devices->count() }} Sensors
-                                        </span>
+                                        {{ $asset->asset_name }}
                                     </button>
                                 </h2>
 
