@@ -479,6 +479,13 @@ function trend($current, $previous) {
     <!-- ROW 1: SMARTBIN CHART -->
     <div class="row">
         <div class="col-12">
+            <div class="col-12 d-flex justify-content-end mb-2">
+                <select id="assetFilter" class="form-select form-select-sm w-auto">
+                    @foreach($smartBinClearTimes as $assetName => $devices)
+                        <option value="{{ $assetName }}">{{ $assetName }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6">
@@ -530,8 +537,7 @@ function trend($current, $previous) {
 
                 <div class="card-body p-3">
                     <div class="notification-timeline">
-
-                        @forelse($todayNotifications as $log)
+                        @forelse($todayNotifications->take(10) as $log)
                             <div class="timeline-item">
                                 <div class="timeline-dot"></div>
 
@@ -539,8 +545,8 @@ function trend($current, $previous) {
                                     <button
                                         class="timeline-button"
                                         data-bs-toggle="collapse"
-                                        data-bs-target="#notif{{ $log->id }}"
-                                    >
+                                        data-bs-target="#notif{{ $log->id }}">
+
                                         🕒 {{ $log->sent_at->format('H:i:s') }}
                                     </button>
 
@@ -554,7 +560,6 @@ function trend($current, $previous) {
                                 No notifications sent today
                             </div>
                         @endforelse
-
                     </div>
                 </div>
             </div>
@@ -694,71 +699,80 @@ document.addEventListener("DOMContentLoaded", function () {
     @endif
 
     //smartbin tracker
-const binCtx = document.getElementById('smartBinClearChart').getContext('2d');
 
-const binGradient = binCtx.createLinearGradient(0, 0, 0, 300);
-binGradient.addColorStop(0, 'rgba(33, 60, 17, 0.79)');
-binGradient.addColorStop(1, 'rgba(21, 68, 20, 0.05)');
+    const smartBinData = @json($smartBinClearTimes);
 
-new Chart(binCtx, {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($smartBinClearTimes->pluck('device_name')) !!},
-        datasets: [{
-            label: 'Hours to Clear',
-            data: {!! json_encode($smartBinClearTimes->pluck('hours')) !!},
-            borderColor: '#1b5e20',
-            backgroundColor: binGradient,
-            fill: true,
-            tension: 0.45,
-            borderWidth: 3,
-            pointRadius: 6,
-            pointHoverRadius: 9,
-            pointBackgroundColor: '#1b5e20'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#1f2933',
-                titleColor: '#fff',
-                bodyColor: '#d1d5db',
-                cornerRadius: 8,
-                callbacks: {
-                    label: ctx => `${ctx.raw} hours`
-                }
-            }
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: {
-                    color: '#6b7280',
-                    maxRotation: 45,
-                    minRotation: 30
-                }
+    const ctx = document.getElementById('smartBinClearChart').getContext('2d');
+    let chart;
+
+    function renderChart(assetName) {
+        const devices = smartBinData[assetName];
+
+        // collect all unique dates
+        const labels = Array.from(
+            { length: Math.max(...Object.values(devices).map(d => d.length)) },
+            (_, i) => `Clear #${i + 1}`
+        );
+
+        const datasets = Object.entries(devices).map(([deviceName, records]) => {
+            const dataMap = {};
+            records.forEach(r => dataMap[r.date] = r.hours);
+
+            return {
+                label: deviceName,
+                data: labels.map((_, i) => records[i]?.hours ?? null),
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 5,
+                spanGaps: true
+            };
+        });
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets
             },
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                    borderDash: [4, 4]
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.raw} hours`
+                        }
+                    }
                 },
-                title: {
-                    display: true,
-                    text: 'Hours',
-                    color: '#374151'
-                },
-                ticks: {
-                    color: '#6b7280'
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Latest Bin is Cleared (10)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours to Clear'
+                        }
+                    }
                 }
             }
-        }
+        });
     }
-});
 
+    // initial load
+    const assetSelect = document.getElementById('assetFilter');
+    renderChart(assetSelect.value);
+
+    // filter change
+    assetSelect.addEventListener('change', e => {
+        renderChart(e.target.value);
+    });
 });
 </script>
 

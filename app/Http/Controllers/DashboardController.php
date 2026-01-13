@@ -209,22 +209,20 @@ class DashboardController extends Controller
                    ->with('user:id,name')
                    ->get();
     }
-
-    /** Calculate SmartBin clear times in hours */
 private function calculateSmartBinClearTimes($emptyMax, $halfMax)
 {
-    $smartBinClearTimes = [];
+    $result = [];
 
     $devices = Device::with([
         'asset',
-        'sensors' => fn($q) => $q->orderBy('time', 'asc')
+        'sensors' => fn ($q) => $q->orderBy('time', 'asc')
     ])->get();
 
     foreach ($devices as $device) {
         if (!$device->asset) continue;
 
         $fullTimestamp = null;
-        $latestClear   = null; // ✅ store only the latest
+        $clears = [];
 
         foreach ($device->sensors as $sensor) {
 
@@ -240,26 +238,22 @@ private function calculateSmartBinClearTimes($emptyMax, $halfMax)
                 $minutes = Carbon::parse($fullTimestamp)
                     ->diffInMinutes(Carbon::parse($sensor->time));
 
-                // 🔁 overwrite → keeps ONLY latest clear
-                $latestClear = [
-                    'asset_name'  => $device->asset->asset_name,
-                    'device_name' => $device->device_name,
-                    'minutes'     => $minutes,
-                    'hours'       => round($minutes / 60, 2),
-                    'cleared_at'  => $sensor->time,
+                $clears[] = [
+                    'date'  => Carbon::parse($sensor->time)->format('Y-m-d H:i'),
+                    'hours' => round($minutes / 60, 2),
                 ];
 
                 $fullTimestamp = null;
             }
         }
 
-        // ✅ push only ONE record per device
-        if ($latestClear) {
-            $smartBinClearTimes[] = $latestClear;
+        $clears = collect($clears)->take(-10)->values();
+
+        if ($clears->isNotEmpty()) {
+            $result[$device->asset->asset_name][$device->device_name] = $clears;
         }
     }
 
-    return collect($smartBinClearTimes);
+    return collect($result);
 }
-
 }
