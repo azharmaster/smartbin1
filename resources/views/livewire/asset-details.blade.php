@@ -4,7 +4,7 @@
     }
 
     .bin-fill:hover {
-        fill-opacity: 0.85;
+        fill-opacity: 1.0;
         filter: brightness(1.15);
     }
 
@@ -161,7 +161,7 @@
                             class="bin-fill"
                             points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
                             fill="{{ $comp['color'] }}"
-                            fill-opacity="0.6"
+                            fill-opacity="0.8"
                             stroke="none"
                         />
                         <text
