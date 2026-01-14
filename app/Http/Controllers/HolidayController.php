@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Holiday;
+use App\Models\Event;
 
 class HolidayController extends Controller
 {
     /**
-     * Display a listing of the holidays.
+     * Display a listing of the holidays and events.
      */
     public function index()
     {
-        // Fetch all holidays, ordered by start_date descending
+        // Fetch all holidays, ordered by start_date ascending
         $holidays = Holiday::orderBy('start_date', 'asc')->get();
 
-        return view('holidays.index', compact('holidays'));
+        // Fetch all events, ordered by start_date ascending
+        $events = Event::orderBy('start_date', 'asc')->get();
+
+        return view('holidays.index', compact('holidays', 'events'));
     }
 
     /**
@@ -65,7 +69,7 @@ class HolidayController extends Controller
     }
 
     /**
-     * Optionally, you can add destroy() to delete holidays
+     * Delete a holiday.
      */
     public function destroy(Holiday $holiday)
     {

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Task; 
 use App\Models\CapacitySetting;
 use App\Models\Holiday;
+use App\Models\Event; // <-- ensure Event is imported
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -85,24 +86,40 @@ class DashboardController extends Controller
         // 📅 Load holidays for calendar
         $holidays = Holiday::where('is_active', true)->get();
 
-        $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
-            ->orderBy('sent_at', 'desc')
-            ->get();
+        // 📅 Load events for calendar
+        $events = Event::all();
 
-
-        $calendarHolidays = $holidays->map(function ($holiday) {
-
+        // Map events for FullCalendar (no Carbon parsing, just ISO concat)
+        $calendarEvents = $events->map(function($e) {
             return [
-                'title' => '🎉 ' . $holiday->name,
-                'start' => $holiday->start_date,
-                'end'   => $holiday->end_date
-                    ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
-                    : null,
-                'allDay'=> true,
-                'color' => '#dc3545',
+                'id'      => $e->id,
+                'title'   => $e->event_name,
+                'start'   => $e->start_date . 'T' . $e->start_time, // e.g. 2026-01-13T20:00:00
+                'end'     => $e->end_date . 'T' . $e->end_time,     // e.g. 2026-01-13T22:00:00
+                'color'   => '#28a745', // green for events
+                'allDay'  => false,
+            ];
+        })->toArray();
+
+        // Map holidays for FullCalendar
+        $calendarHolidays = $holidays->map(function ($holiday) {
+            return [
+                'title'  => '🎉 ' . $holiday->name,
+                'start'  => $holiday->start_date,
+                'end'    => $holiday->end_date
+                            ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
+                            : null,
+                'allDay' => true,
+                'color'  => '#dc3545',
             ];
         });
 
+        // ✅ Combine events + holidays (events first)
+        $calendarCombined = array_merge($calendarEvents, $calendarHolidays->toArray());
+
+        $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
+            ->orderBy('sent_at', 'desc')
+            ->get();
 
         return view('dashboard.index', compact(
             'totalDevices',
@@ -120,8 +137,8 @@ class DashboardController extends Controller
             'assignedTasks',
             'latestComplaints',
             'smartBinClearTimes',
-            'totalTrend',      // <-- added
-            'calendarHolidays',
+            'totalTrend',
+            'calendarCombined', // <-- pass combined calendar array
             'todayNotifications',
             'assetsWithDevices',
         ));
@@ -140,7 +157,6 @@ class DashboardController extends Controller
         ])->get();
     }
 
-    //to set the capasity of the bin
     private function countFullDevices($devices, $halfMax)
     {
         return $devices->filter(fn($d) =>
@@ -215,51 +231,52 @@ class DashboardController extends Controller
                    ->with('user:id,name')
                    ->get();
     }
-private function calculateSmartBinClearTimes($emptyMax, $halfMax)
-{
-    $result = [];
 
-    $devices = Device::with([
-        'asset',
-        'sensors' => fn ($q) => $q->orderBy('time', 'asc')
-    ])->get();
+    private function calculateSmartBinClearTimes($emptyMax, $halfMax)
+    {
+        $result = [];
 
-    foreach ($devices as $device) {
-        if (!$device->asset) continue;
+        $devices = Device::with([
+            'asset',
+            'sensors' => fn ($q) => $q->orderBy('time', 'asc')
+        ])->get();
 
-        $fullTimestamp = null;
-        $clears = [];
+        foreach ($devices as $device) {
+            if (!$device->asset) continue;
 
-        foreach ($device->sensors as $sensor) {
+            $fullTimestamp = null;
+            $clears = [];
 
-            // Bin becomes FULL
-            if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
-                $fullTimestamp = $sensor->time;
-                continue;
+            foreach ($device->sensors as $sensor) {
+
+                // Bin becomes FULL
+                if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
+                    $fullTimestamp = $sensor->time;
+                    continue;
+                }
+
+                // Bin is CLEARED
+                if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
+
+                    $minutes = Carbon::parse($fullTimestamp)
+                        ->diffInMinutes(Carbon::parse($sensor->time));
+
+                    $clears[] = [
+                        'date'  => Carbon::parse($sensor->time)->format('Y-m-d H:i'),
+                        'hours' => round($minutes / 60, 2),
+                    ];
+
+                    $fullTimestamp = null;
+                }
             }
 
-            // Bin is CLEARED
-            if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
+            $clears = collect($clears)->take(-10)->values();
 
-                $minutes = Carbon::parse($fullTimestamp)
-                    ->diffInMinutes(Carbon::parse($sensor->time));
-
-                $clears[] = [
-                    'date'  => Carbon::parse($sensor->time)->format('Y-m-d H:i'),
-                    'hours' => round($minutes / 60, 2),
-                ];
-
-                $fullTimestamp = null;
+            if ($clears->isNotEmpty()) {
+                $result[$device->asset->asset_name][$device->device_name] = $clears;
             }
         }
 
-        $clears = collect($clears)->take(-10)->values();
-
-        if ($clears->isNotEmpty()) {
-            $result[$device->asset->asset_name][$device->device_name] = $clears;
-        }
+        return collect($result);
     }
-
-    return collect($result);
-}
 }

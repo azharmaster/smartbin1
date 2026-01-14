@@ -626,6 +626,7 @@ function trend($current, $previous) {
                 </div>
         </div>
 
+<<<<<<< Updated upstream
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
             <div class="card shadow-sm mb-4">
@@ -748,6 +749,64 @@ function trend($current, $previous) {
             </style>
         </div>
     </div>
+=======
+       <!-- RIGHT COLUMN -->
+<div class="col-lg-6">
+
+    <!-- Activity Calendar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header smartbin-gradient">
+            <h5 class="mb-0 fs-6">
+                <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
+                    <i class="fas fa-calendar-alt me-2"></i> Calendar
+                </a>
+            </h5>
+        </div>
+
+        <div class="card-body p-2">
+            <div id="holidaycalendar"></div>
+        </div>
+    </div>
+
+    <style>
+    /* Remove underline / hover highlight on day numbers */
+    .fc-daygrid-day-number {
+        text-decoration: none !important;
+    }
+
+    /* Change hover background */
+    .fc-daygrid-day:hover {
+        background-color: #f4f6f9;
+    }
+
+    /* Today highlight */
+    .fc-day-today {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
+
+    /* Event style */
+    .fc-event {
+        border-radius: 6px;
+        padding: 2px 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    /* Add gap between view buttons (Month / Week / Day) */
+    .fc .fc-button-group {
+        gap: 6px;
+    }
+
+    /* Optional: make buttons slightly rounded */
+    .fc .fc-button {
+        border-radius: 6px;
+    }
+    </style>
+</div>
+
+</div>
+
+>>>>>>> Stashed changes
 </div>
 
 <script>
@@ -765,7 +824,6 @@ document.addEventListener("DOMContentLoaded", function () {
     @endif
 
     //smartbin tracker
-
     const smartBinData = @json($smartBinClearTimes);
 
     const ctx = document.getElementById('smartBinClearChart').getContext('2d');
@@ -842,12 +900,38 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
 {{-- calender js--}}
 
 <script src="plugins/jquery/jquery.min.js"></script>
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="dist/js/adminlte.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <!-- Bootstrap 4 -->
+            <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Name:</strong> <span id="eventName"></span></p>
+        <p><strong>Location:</strong> <span id="eventLocation"></span></p>
+        <p><strong>PIC Phone:</strong> <span id="eventPic"></span></p>
+        <p><strong>Start:</strong> <span id="eventStart"></span></p>
+        <p><strong>End:</strong> <span id="eventEnd"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> <!-- Bootstrap 4 -->
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -855,7 +939,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('holidaycalendar');
     if (!calendarEl) return;
 
-    const holidays = @json($calendarHolidays);
+    // 🔥 Full calendar combined (events first)
+    const calendarEvents = @json($calendarCombined);
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -867,16 +952,51 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         eventDisplay: 'block',
 
-        events: holidays, // ✅ holidays from DB
+        events: calendarEvents,
 
         eventDidMount: function(info) {
             // Optional tooltip
             info.el.setAttribute('title', info.event.title);
+        },
+
+        // 🔥 OPEN event modal on click (Bootstrap 4)
+        eventClick: function(info) {
+            const eventId = info.event.extendedProps.id;
+
+            if(eventId){
+                fetch(`/events/${eventId}`)
+                    .then(res => res.json())
+                    .then(event => {
+                        // Format dates & times separately
+                        const startDate = new Date(event.start_date + 'T' + event.start_time);
+                        const endDate = new Date(event.end_date + 'T' + event.end_time);
+
+                        const formatDate = dt => dt.toISOString().split('T')[0];
+                        const formatTime = dt => dt.toTimeString().split(' ')[0].slice(0,5); // HH:MM
+
+                        $('#eventName').text(event.event_name);
+                        $('#eventLocation').text(event.location);
+                        $('#eventPic').text(event.pic_phone);
+                        $('#eventStart').text(formatDate(startDate) + ' ' + formatTime(startDate));
+                        $('#eventEnd').text(formatDate(endDate) + ' ' + formatTime(endDate));
+
+                        // Show modal
+                        $('#eventDetailsModal').modal('show');
+                    });
+            }
+
+            info.jsEvent.preventDefault();
         }
+
     });
 
     calendar.render();
 });
 </script>
+
+
+
+
+
 
 @endsection

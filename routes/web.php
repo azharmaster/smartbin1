@@ -29,6 +29,7 @@ use App\Http\Controllers\SupervisorDashboardController;
 use App\Http\Controllers\WhatsAppNotificationController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -340,3 +341,7 @@ Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.st
 Route::get('/holidays/{holiday}/edit', [HolidayController::class, 'edit'])->name('holidays.edit');
 Route::put('/holidays/{holiday}', [HolidayController::class, 'update'])->name('holidays.update'); // Edit holiday
 Route::delete('/holidays/{holiday}', [HolidayController::class, 'destroy'])->name('holidays.destroy'); // Delete holiday
+
+
+Route::resource('events', EventController::class)->except(['create']);
+

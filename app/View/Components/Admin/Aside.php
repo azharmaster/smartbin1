@@ -66,6 +66,7 @@ class Aside extends Component
                     "whatsapp.*",
                     "capacity.*",
                     "holidays.*",
+                    "events.*",
                     "schedules.*"
                 ],
                 "is_dropdown" => true,
@@ -102,6 +103,7 @@ class Aside extends Component
                         "route_active" => "holidays.*",
                         "is_dropdown" => false
                     ],
+<<<<<<< Updated upstream
                     // [
                     //     "label" => "Floor",
                     //     "icon" => "fa-solid fas fa-building",
@@ -110,6 +112,24 @@ class Aside extends Component
                     //     "route_active" => "floors.*",
                     //     "is_dropdown" => false
                     // ],
+=======
+                    [
+                        "label" => "Event",
+                        "icon" => "fa-solid fas fa-calendar-alt",
+                        "color" => "#4e73df", // optional: choose a different color for calendar
+                        "route_name" => "events.index", // change to your new events page
+                        "route_active" => "events.*",   // highlights active menu items for all event routes
+                        "is_dropdown" => false
+                    ],
+                    [
+                        "label" => "Floor",
+                        "icon" => "fa-solid fas fa-building",
+                        "color" => "#5f80d3ff",
+                        "route_name" => "floors.index",
+                        "route_active" => "floors.*",
+                        "is_dropdown" => false
+                    ],
+>>>>>>> Stashed changes
                     // [
                     //     "label" => "Assign Tasks",
                     //     "icon" => "fas fa-tasks",
