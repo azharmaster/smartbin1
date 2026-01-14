@@ -231,46 +231,58 @@
                 </div>
             @endif
                 @foreach($asset->devices as $device)
-                    @php
-                        $sensor = $device->sensors->sortByDesc('time')->first();
-                    @endphp
-                    <div style="
-                        padding: 14px;
-                        border-radius: 12px;
-                        background: #ffffff;
-                        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-                        border-left: 5px solid
-                            {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
-                            (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
-                    ">
-                        <!-- Header -->
-                        <div style="margin-bottom: 8px;">
-                            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
-                                {{ $device->device_name }}
-                            </h3>
-                            <span style="font-size: 12px; color: #777;">
-                                Last updated: {{ $sensor?->time ?? 'N/A' }}
-                            </span>
-                        </div>
+@php
+    $sensor = $device->sensors->sortByDesc('time')->first();
+@endphp
 
-                        <!-- Info rows -->
-                        <div style="
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 6px;
-                            font-size: 14px;
-                            color: #000;
-                        ">
-                            <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
-                            <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
-                            <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
-                            <div>⚙️ <strong>
-                                {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
-                                (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
-                            </strong></div>
-                        </div>
-                    </div>
-                @endforeach
+<div style="
+    position: relative; /* for positioning the edit button */
+    padding: 14px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    border-left: 5px solid
+        {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
+           (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
+">
+
+    <!-- Use the form-device component's button but style it tiny -->
+    <x-device.form-device 
+        :id="$device->id"
+        :assets="$assets"
+        :device_name="$device->device_name"
+        :asset_id="$asset->id"
+        :id_device="$device->id_device"
+        class="edit-device-button" />
+
+    <!-- Header -->
+    <div style="margin-bottom: 8px;">
+        <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
+            {{ $device->device_name }}
+        </h3>
+        <span style="font-size: 12px; color: #777;">
+            Last updated: {{ $sensor?->time ?? 'N/A' }}
+        </span>
+    </div>
+
+    <!-- Info rows -->
+    <div style="
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        font-size: 14px;
+        color: #000;
+    ">
+        <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
+        <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
+        <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
+        <div>⚙️ <strong>
+            {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
+               (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
+        </strong></div>
+    </div>
+</div>
+@endforeach
             </div>
         </div>
     </div>
