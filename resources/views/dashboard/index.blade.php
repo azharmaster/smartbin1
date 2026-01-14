@@ -626,80 +626,10 @@ function trend($current, $previous) {
                 </div>
         </div>
 
+       <!-- RIGHT COLUMN -->
+<div class="col-lg-6">
+
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        <!-- RIGHT COLUMN -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-trash-alt me-2"></i> Sensor Lists
-                    </h5>
-                </div>
-
-                <div class="card-body p-2">
-                    <div class="accordion" id="assetAccordion">
-
-                        @forelse($assetsWithDevices as $asset)
-                            <div class="accordion-item mb-2">
-                                <h2 class="accordion-header" id="heading{{ $asset->id }}">
-                                    <button
-                                        class="accordion-button collapsed fw-semibold"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#asset{{ $asset->id }}">
-
-                                        {{ $asset->asset_name }}
-                                    </button>
-                                </h2>
-
-                                <div
-                                    id="asset{{ $asset->id }}"
-                                    class="accordion-collapse collapse"
-                                    data-bs-parent="#assetAccordion">
-
-                                    <div class="accordion-body p-2">
-                                        <ul class="list-group list-group-flush">
-
-                                            @foreach($asset->devices as $device)
-                                                @php
-                                                    $latest = $device->sensors->last();
-                                                    $level = $latest->capacity ?? null;
-
-                                                    $badge = match (true) {
-                                                        $level === null => 'secondary',
-                                                        $level >= 86 => 'danger',
-                                                        $level >= 41 => 'warning',
-                                                        default => 'success',
-                                                    };
-                                                @endphp
-
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <strong>{{ $device->device_name }}</strong><br>
-                                                        <small class="text-muted">
-                                                        </small>
-                                                    </div>
-
-                                                    <span class="badge bg-{{ $badge }}">
-                                                        {{ $level !== null ? $level.'%' : 'Undetected' }}
-                                                    </span>
-                                                </li>
-                                            @endforeach
-
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No assets found
-                            </div>
-                        @endforelse
-
-                    </div>
-                </div>
-            </div>
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
@@ -710,38 +640,39 @@ function trend($current, $previous) {
                     </h5>
                 </div>
 
-                <div class="card-body p-2">
-                    <div id="holidaycalendar"></div>
-                </div>
-            </div>
+        <div class="card-body p-2">
+            <div id="holidaycalendar"></div>
+        </div>
+    </div>
 
-            <style>
-            /* Remove underline / hover highlight on day numbers */
-            .fc-daygrid-day-number {
-                text-decoration: none !important;
-            }
+    <style>
+    /* Remove underline / hover highlight on day numbers */
+    .fc-daygrid-day-number {
+        text-decoration: none !important;
+    }
 
-            /* Change hover background */
-            .fc-daygrid-day:hover {
-                background-color: #f4f6f9;
-            }
+    /* Change hover background */
+    .fc-daygrid-day:hover {
+        background-color: #f4f6f9;
+    }
 
-            /* Today highlight */
-            .fc-day-today {
-                background-color: rgba(0, 123, 255, 0.1) !important;
-            }
+    /* Today highlight */
+    .fc-day-today {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
 
-            /* Event style */
-            .fc-event {
-                border-radius: 6px;
-                padding: 2px 4px;
-                font-size: 0.85rem;
-            }
+    /* Event style */
+    .fc-event {
+        border-radius: 6px;
+        padding: 2px 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
 
-            /* Add gap between view buttons (Month / Week / Day) */
-            .fc .fc-button-group {
-                gap: 6px;
-            }
+    /* Add gap between view buttons (Month / Week / Day) */
+    .fc .fc-button-group {
+        gap: 6px;
+    }
 
             /* Optional: make buttons slightly rounded */
             .fc .fc-button {
@@ -749,9 +680,6 @@ function trend($current, $previous) {
             }
             </style>
 =======
-       <!-- RIGHT COLUMN -->
-<div class="col-lg-6">
-
     <!-- Activity Calendar -->
     <div class="card shadow-sm mb-4">
         <div class="card-header smartbin-gradient">
@@ -762,22 +690,13 @@ function trend($current, $previous) {
             </h5>
 >>>>>>> Stashed changes
         </div>
+
+        <div class="card-body p-2">
+            <div id="holidaycalendar"></div>
+        </div>
     </div>
-=======
-       <!-- RIGHT COLUMN -->
-<div class="col-lg-6">
 
 <<<<<<< Updated upstream
-    <!-- Activity Calendar -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header smartbin-gradient">
-            <h5 class="mb-0 fs-6">
-                <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
-                    <i class="fas fa-calendar-alt me-2"></i> Calendar
-                </a>
-            </h5>
-        </div>
-
 =======
 >>>>>>> Stashed changes
         <div class="card-body p-2">
@@ -785,6 +704,8 @@ function trend($current, $previous) {
         </div>
     </div>
 
+=======
+>>>>>>> Stashed changes
     <style>
     /* Remove underline / hover highlight on day numbers */
     .fc-daygrid-day-number {
@@ -824,6 +745,9 @@ function trend($current, $previous) {
 </div>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
