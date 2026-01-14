@@ -145,7 +145,11 @@
             <p style="margin: 2px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Location:</strong> {{ $asset->location ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Model:</strong> {{ $asset->model ?? '-' }}</p>
-            <p style="margin: 2px 0;"><strong>Date Added:</strong> {{ $asset->created_at?->format('Y-m-d') ?? '-' }}</p>
+            <x-asset.form-asset
+                :id="$asset->id"
+                :floors="$floors"
+                :picture="$asset->picture"
+            />
         </div>
 
         <!-- Bin + Device Cards -->

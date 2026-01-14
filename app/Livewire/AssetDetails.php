@@ -5,10 +5,12 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Asset;
 use App\Models\CapacitySetting;
+use App\Models\Floor;
 
 class AssetDetails extends Component
 {
     public $asset;
+    public $floors;
     public $allAssets;
     public $compartments = [];
     public $capacitySetting;
@@ -26,7 +28,8 @@ class AssetDetails extends Component
 
         // Load capacity settings
         $this->capacitySetting = CapacitySetting::first();
-        $this->allAssets = Asset::all(); 
+        $this->allAssets = Asset::all();
+        $this->floors = Floor::orderBy('floor_name')->get();
 
         // Prepare SVG data
         $this->prepareCompartments();
