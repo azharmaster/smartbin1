@@ -1,9 +1,9 @@
 @extends($layout)
-@section('content_title', 'Devices')
+@section('content_title', 'Sensors')
 @section('content')
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h5 class="mb-0">Devices</h5>
+        <h6 class="mb-0">List of Sensors</h6>
 
         <div class="ms-auto">
         <x-device.form-device :assets="$assets" />
@@ -28,8 +28,8 @@
                     <tr>
                         <th>#</th>
                         <th>Asset Name</th>
-                        <th>Device ID</th>
-                        <th>Device Name</th>
+                        <th>Sensor ID</th>
+                        <th>Sensor Name</th>
                         <th>Option</th>
                     </tr>
                 </thead>
