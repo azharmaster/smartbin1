@@ -627,6 +627,7 @@ function trend($current, $previous) {
         </div>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
             <div class="card shadow-sm mb-4">
@@ -747,8 +748,6 @@ function trend($current, $previous) {
                 border-radius: 6px;
             }
             </style>
-        </div>
-    </div>
 =======
        <!-- RIGHT COLUMN -->
 <div class="col-lg-6">
@@ -761,8 +760,26 @@ function trend($current, $previous) {
                     <i class="fas fa-calendar-alt me-2"></i> Calendar
                 </a>
             </h5>
+>>>>>>> Stashed changes
+        </div>
+    </div>
+=======
+       <!-- RIGHT COLUMN -->
+<div class="col-lg-6">
+
+<<<<<<< Updated upstream
+    <!-- Activity Calendar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header smartbin-gradient">
+            <h5 class="mb-0 fs-6">
+                <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
+                    <i class="fas fa-calendar-alt me-2"></i> Calendar
+                </a>
+            </h5>
         </div>
 
+=======
+>>>>>>> Stashed changes
         <div class="card-body p-2">
             <div id="holidaycalendar"></div>
         </div>
@@ -806,6 +823,9 @@ function trend($current, $previous) {
 
 </div>
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 </div>
 
