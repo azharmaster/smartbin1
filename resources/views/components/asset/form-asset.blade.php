@@ -74,11 +74,11 @@
                         </div>
 
                         {{-- Maintenance Date --}}
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             <label>Maintenance Date</label>
                             <input type="datetime-local" class="form-control" name="maintenance"
                                    value="{{ isset($maintenance) ? date('Y-m-d\TH:i', strtotime($maintenance)) : '' }}">
-                        </div>
+                        </div> --}}
 
                         {{-- Asset Picture --}}
                         <div class="form-group">

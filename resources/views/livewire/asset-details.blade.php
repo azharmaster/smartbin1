@@ -225,36 +225,35 @@
                 $deviceCount = $asset->devices->count();
             @endphp
 
-            @if($deviceCount < 3)
+            @if($asset->devices->count() < 3)
                 <div class="ms-auto">
-                    <x-device.form-device :assets="$assets" :asset_id="$asset->id" />
+                    <x-device.form-device 
+                        :assets="$assets"
+                        :asset_id="$asset->id"
+                    />
                 </div>
             @endif
-                @foreach($asset->devices as $device)
+            
+@foreach($asset->devices as $device)
 @php
     $sensor = $device->sensors->sortByDesc('time')->first();
 @endphp
 
-<div style="
-    position: relative; /* for positioning the edit button */
-    padding: 14px;
-    border-radius: 12px;
-    background: #ffffff;
+<div style="position: relative; padding: 14px; border-radius: 12px; background: #fff;
     box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     border-left: 5px solid
         {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
-           (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
-">
-
-    <!-- Use the form-device component's button but style it tiny -->
-    <x-device.form-device 
-        :id="$device->id"
-        :assets="$assets"
-        :device_name="$device->device_name"
-        :asset_id="$asset->id"
-        :id_device="$device->id_device"
-        class="edit-device-button" />
-
+           (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};">
+    
+    {{-- Edit button in corner --}}
+    <x-device.form-device
+            :id="$device->id"
+            :assets="$assets"
+            :device_name="$device->device_name"
+            :asset_id="$asset->id"
+            :id_device="$device->id_device"
+        />
+    
     <!-- Header -->
     <div style="margin-bottom: 8px;">
         <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">

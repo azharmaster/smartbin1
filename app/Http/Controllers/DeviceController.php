@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
+    public $allAssets;
     public function index()
     {
         $devices = Device::with('asset')->get();

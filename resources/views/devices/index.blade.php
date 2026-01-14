@@ -42,13 +42,14 @@
                         <td>{{ $device->device_name }}</td>
                         <td>
                             @if(auth()->user()->role == 1)
-                            <div class="d-flex align-items-center justify-content-center">
-                                <x-device.form-device 
-                                    :id="$device->id" 
-                                    :device_name="$device->device_name" 
-                                    :asset_id="$device->asset_id" 
-                                    :assets="$assets"/>
-
+                            <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+                                <x-device.form-device
+                                    :id="$device->id"
+                                    :assets="$assets"
+                                    :device_name="$device->device_name"
+                                    :asset_id="$device->asset_id"
+                                    :id_device="$device->id_device"
+                                />
                                 &nbsp;
 
                                 <form action="{{ route('devices.destroy', $device->id) }}" method="POST"

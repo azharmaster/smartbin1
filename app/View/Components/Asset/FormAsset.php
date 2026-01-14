@@ -24,7 +24,7 @@ class FormAsset extends Component
             $this->serialNo = $assets->serialNo;
             $this->location = $assets->location;
             $this->model = $assets->model;
-            $this->maintenance = $assets->maintenance;
+            
         }
     }
 
