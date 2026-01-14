@@ -86,18 +86,147 @@
             <p style="margin: 2px 0;"><strong>Date Added:</strong> {{ $asset->created_at?->format('Y-m-d') ?? '-' }}</p>
         </div>
 
-        <!-- Devices / Sensors Cards -->
-        @foreach($asset->devices as $device)
-        <div style="padding: 12px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-            <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 6px; color: #34495e;">{{ $device->device_name }}</h3>
-            <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; color: #000000ff">
-                <li><i class="fas fa-battery-three-quarters" style="color:#f39c12;"></i> {{ $device->sensors->first()->battery ?? 'N/A' }}%</li>
-                <li><i class="fas fa-trash" style="color:#e74c3c;"></i> {{ $device->sensors->first()->capacity ?? 'N/A' }}%</li>
-                <li><i class="fas fa-history" style="color:#3498db;"></i> {{ $device->sensors->first()->time ?? 'N/A' }}</li>
-                <li><i class="fas fa-signal" style="color:#2ecc71;"></i> {{ $device->sensors->first()->network ?? 'N/A' }}</li>
-            </ul>
+@php
+use App\Models\CapacitySetting;
+
+// Get capacity settings (assumes only one row)
+$capacitySetting = CapacitySetting::first();
+
+// Helper function for color coding
+function capacityColor($capacityPercent, $setting) {
+    if ($capacityPercent <= $setting->empty_to) return 'green';
+    if ($capacityPercent <= $setting->half_to)  return 'yellow';
+    return 'red';
+}
+
+function fillRatioFromCategory($category) {
+    return match ($category) {
+        'empty' => 0.15,   // slight visible fill
+        'half'  => 0.55,
+        'full'  => 0.95,
+    };
+}
+
+function capacityCategory($capacity, $setting) {
+    if ($capacity <= $setting->empty_to) return 'empty';
+    if ($capacity <= $setting->half_to)  return 'half';
+    return 'full';
+}
+
+
+// Bin corners
+$topLeft = [50, 30];
+$topRight = [305, 20];
+$bottomLeft = [70, 210];
+$bottomRight = [300, 210];
+
+// Prepare devices safely
+$devices = $asset->devices ?? collect();
+$devices = $asset->devices->map(function ($device) {
+    $sensor = $device->sensors
+        ->sortByDesc('time')
+        ->first();
+
+    return [
+        'name'     => $device->device_name,
+        'capacity' => $sensor?->capacity ?? 0,
+        'battery'  => $sensor?->battery,
+    ];
+});
+
+// Number of compartments = number of devices
+$n = $devices->count();
+
+// Linear interpolation helper
+function lerp($a, $b, $t) { return $a + ($b - $a) * $t; }
+
+// Build compartment polygons and partial fills
+$compartments = [];
+for ($i = 0; $i < $n; $i++) {
+    $t0 = $i / $n;
+    $t1 = ($i + 1) / $n;
+
+    // Compartment corners
+    $topCompLeft  = [lerp($topLeft[0], $topRight[0], $t0), lerp($topLeft[1], $topRight[1], $t0)];
+    $topCompRight = [lerp($topLeft[0], $topRight[0], $t1), lerp($topLeft[1], $topRight[1], $t1)];
+    $bottomCompLeft  = [lerp($bottomLeft[0], $bottomRight[0], $t0), lerp($bottomLeft[1], $bottomRight[1], $t0)];
+    $bottomCompRight = [lerp($bottomLeft[0], $bottomRight[0], $t1), lerp($bottomLeft[1], $bottomRight[1], $t1)];
+
+    $device = $devices[$i];
+
+    // capacity %
+    $capacityValue = min(100, max(0, $device['capacity']));
+
+    $capacityPercent = min(100, max(0, $device['capacity']));
+    $fillRatio = $capacityPercent / 100;
+
+    $color = capacityColor($capacityPercent, $capacitySetting);
+
+    // Interpolate top line for partial fill
+    $fillTopLeft = [
+        lerp($bottomCompLeft[0], $topCompLeft[0], $fillRatio),
+        lerp($bottomCompLeft[1], $topCompLeft[1], $fillRatio),
+    ];
+
+    $fillTopRight = [
+        lerp($bottomCompRight[0], $topCompRight[0], $fillRatio),
+        lerp($bottomCompRight[1], $topCompRight[1], $fillRatio),
+    ];
+
+    $compartments[] = [
+        'outline' => [$topCompLeft, $topCompRight, $bottomCompRight, $bottomCompLeft],
+        'fill'    => [$fillTopLeft, $fillTopRight, $bottomCompRight, $bottomCompLeft],
+        'color'   => $color,
+    ];
+}
+@endphp
+
+<!-- Smart Bin Visualization -->
+<div style="
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #111;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: center;
+">
+@if($n > 0)
+<svg viewBox="0 0 320 240" width="300">
+    <!-- Partial fills -->
+    @foreach($compartments as $comp)
+        <polygon
+            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
+            fill="{{ $comp['color'] }}"
+            fill-opacity="0.6"
+            stroke="none"
+        />
+    @endforeach
+
+    <!-- Compartment outlines -->
+    @foreach($compartments as $comp)
+        <polygon
+            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['outline'])) }}"
+            fill="none"
+            stroke="#ffffff"
+            stroke-width="1"
+        />
+    @endforeach
+
+    <!-- Outer bin outline -->
+    <polygon
+        points="{{ $topLeft[0] }},{{ $topLeft[1] }} {{ $topRight[0] }},{{ $topRight[1] }} {{ $bottomRight[0] }},{{ $bottomRight[1] }} {{ $bottomLeft[0] }},{{ $bottomLeft[1] }}"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="3"
+        stroke-linejoin="round"
+    />
+</svg>
+@else
+<p style="color: #fff;">No devices found for this asset.</p>
+@endif
+</div>
         </div>
-        @endforeach
 
     </div>
 
