@@ -146,6 +146,22 @@ class Aside extends Component
                         "is_dropdown" => false
                     ],
                     [
+                        "label" => "Event",
+                        "icon" => "fa-solid fas fa-calendar-alt",
+                        "color" => "#4e73df", // optional: choose a different color for calendar
+                        "route_name" => "events.index", // change to your new events page
+                        "route_active" => "events.*",   // highlights active menu items for all event routes
+                        "is_dropdown" => false
+                    ],
+                    [
+                        "label" => "Event",
+                        "icon" => "fa-solid fas fa-calendar-alt",
+                        "color" => "#4e73df", // optional: choose a different color for calendar
+                        "route_name" => "events.index", // change to your new events page
+                        "route_active" => "events.*",   // highlights active menu items for all event routes
+                        "is_dropdown" => false
+                    ],
+                    [
                         "label" => "Floor",
                         "icon" => "fa-solid fas fa-building",
                         "color" => "#5f80d3ff",
