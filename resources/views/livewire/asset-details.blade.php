@@ -1,3 +1,64 @@
+<style>
+    .bin-fill {
+        transition: fill-opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .bin-fill:hover {
+        fill-opacity: 0.85;
+        filter: brightness(1.15);
+    }
+
+    .device-card {
+        margin-left: 16px;
+        width: 240px;
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        display: none;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .card-header h4 {
+        margin: 0;
+        font-size: 15px;
+    }
+
+    .status-pill {
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pill.empty { background: #d4f5dc; color: #1b4f1f; }
+    .status-pill.half  { background: #fff3c4; color: #8a6d00; }
+    .status-pill.full  { background: #ffd6d6; color: #8b0000; }
+
+    .card-body {
+        font-size: 13px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .info-row.muted {
+        margin-top: 10px;
+        font-size: 11px;
+        color: #777;
+    }
+</style>
 <div style="max-width: 1200px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; gap: 20px;">
 
 <div style="flex: 0 0 50%; display: flex; flex-direction: column; gap: 16px;">
@@ -72,161 +133,147 @@
 
 </div>
 
-    <!-- Right Column: Asset & Device Details -->
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+<!-- Right Column: Asset + Bin + Devices -->
+<div style="flex: 1; display: flex; flex-direction: column;">
 
-        <!-- Asset Card -->
-        <div style="padding: 12px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: #000000ff"">
-            <h2 style="font-weight: 700; font-size: 18px; margin-bottom: 6px; color: #2c3e50;">{{ $asset->asset_name }}</h2>
+    <!-- Entire right section in a card -->
+    <div style=" border-radius: 12px; background: #00000000; display: flex; flex-direction: column; gap: 12px;">
+
+        <!-- Asset Info Card -->
+        <div style="padding: 12px; border: 1px solid #362e2e; border-radius: 10px;">
             <p style="margin: 2px 0;"><strong>Floor:</strong> {{ $asset->floor->floor_name ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Location:</strong> {{ $asset->location ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Model:</strong> {{ $asset->model ?? '-' }}</p>
-            <p style="margin: 2px 0;"><strong>Maintenance:</strong> {{ $asset->maintenance ?? '-' }}</p>
             <p style="margin: 2px 0;"><strong>Date Added:</strong> {{ $asset->created_at?->format('Y-m-d') ?? '-' }}</p>
         </div>
 
-@php
-use App\Models\CapacitySetting;
+        <!-- Bin + Device Cards -->
+        <div style="display: flex; gap: 12px; align-items: stretch;">
 
-// Get capacity settings (assumes only one row)
-$capacitySetting = CapacitySetting::first();
+            <!-- Bin -->
+            <div style="flex: 0 0 320px; display: flex; justify-content: center; align-items: center; background: #dcdbdb; border-radius: 10px; padding: 12px;">
+                <svg viewBox="0 0 320 240" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
+                    <!-- ... your SVG polygons and texts here ... -->
+                    <!-- Partial fills -->
+                    @foreach($compartments as $comp)
+                        <polygon
+                            class="bin-fill"
+                            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
+                            fill="{{ $comp['color'] }}"
+                            fill-opacity="0.6"
+                            stroke="none"
+                        />
+                        <text
+                            x="{{ $comp['labelPos'][0] }}"
+                            y="{{ $comp['capacityTextY'] }}"
+                            text-anchor="middle"
+                            fill="#000"
+                            font-size="13"
+                            font-weight="600"
+                            pointer-events="none"
+                        >
+                            {{ $comp['capacity'] }}%
+                        </text>
+                    @endforeach
 
-// Helper function for color coding
-function capacityColor($capacityPercent, $setting) {
-    if ($capacityPercent <= $setting->empty_to) return 'green';
-    if ($capacityPercent <= $setting->half_to)  return 'yellow';
-    return 'red';
-}
+                    <!-- Compartment outlines and device names -->
+                    @foreach($compartments as $comp)
+                        <polygon
+                            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['outline'])) }}"
+                            fill="none"
+                            stroke="#000000"
+                            stroke-width="1"
+                        />
+                        <text
+                            x="{{ $comp['labelPos'][0] }}"
+                            y="{{ $comp['deviceNameY'] }}"
+                            text-anchor="middle"
+                            fill="#000"
+                            font-size="12"
+                            font-weight="600"
+                            pointer-events="none"
+                        >
+                            {{ $comp['label'] }}
+                        </text>
+                    @endforeach
 
-function fillRatioFromCategory($category) {
-    return match ($category) {
-        'empty' => 0.15,   // slight visible fill
-        'half'  => 0.55,
-        'full'  => 0.95,
-    };
-}
+                    <!-- Outer bin outline -->
+                    <polygon
+                        points="{{ implode(' ', [
+                            $compartments[0]['outline'][0][0].','.$compartments[0]['outline'][0][1],
+                            $compartments[count($compartments)-1]['outline'][1][0].','.$compartments[count($compartments)-1]['outline'][1][1],
+                            $compartments[count($compartments)-1]['outline'][2][0].','.$compartments[count($compartments)-1]['outline'][2][1],
+                            $compartments[0]['outline'][3][0].','.$compartments[0]['outline'][3][1],
+                        ]) }}"
+                        fill="none"
+                        stroke="#000000"
+                        stroke-width="3"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </div>
+            <!-- Device cards -->
+            <div style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 8px;
+                flex: 1; /* take remaining space */
+                align-content: start; /* remove extra vertical gap */
+            ">
+            @php
+                $deviceCount = $asset->devices->count();
+            @endphp
 
-function capacityCategory($capacity, $setting) {
-    if ($capacity <= $setting->empty_to) return 'empty';
-    if ($capacity <= $setting->half_to)  return 'half';
-    return 'full';
-}
+            @if($deviceCount < 3)
+                <div class="ms-auto">
+                    <x-device.form-device :assets="$assets" :asset_id="$asset->id" />
+                </div>
+            @endif
+                @foreach($asset->devices as $device)
+                    @php
+                        $sensor = $device->sensors->sortByDesc('time')->first();
+                    @endphp
+                    <div style="
+                        padding: 14px;
+                        border-radius: 12px;
+                        background: #ffffff;
+                        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+                        border-left: 5px solid
+                            {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
+                            (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
+                    ">
+                        <!-- Header -->
+                        <div style="margin-bottom: 8px;">
+                            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
+                                {{ $device->device_name }}
+                            </h3>
+                            <span style="font-size: 12px; color: #777;">
+                                Last updated: {{ $sensor?->time ?? 'N/A' }}
+                            </span>
+                        </div>
 
-
-// Bin corners
-$topLeft = [50, 30];
-$topRight = [305, 20];
-$bottomLeft = [70, 210];
-$bottomRight = [300, 210];
-
-// Prepare devices safely
-$devices = $asset->devices ?? collect();
-$devices = $asset->devices->map(function ($device) {
-    $sensor = $device->sensors
-        ->sortByDesc('time')
-        ->first();
-
-    return [
-        'name'     => $device->device_name,
-        'capacity' => $sensor?->capacity ?? 0,
-        'battery'  => $sensor?->battery,
-    ];
-});
-
-// Number of compartments = number of devices
-$n = $devices->count();
-
-// Linear interpolation helper
-function lerp($a, $b, $t) { return $a + ($b - $a) * $t; }
-
-// Build compartment polygons and partial fills
-$compartments = [];
-for ($i = 0; $i < $n; $i++) {
-    $t0 = $i / $n;
-    $t1 = ($i + 1) / $n;
-
-    // Compartment corners
-    $topCompLeft  = [lerp($topLeft[0], $topRight[0], $t0), lerp($topLeft[1], $topRight[1], $t0)];
-    $topCompRight = [lerp($topLeft[0], $topRight[0], $t1), lerp($topLeft[1], $topRight[1], $t1)];
-    $bottomCompLeft  = [lerp($bottomLeft[0], $bottomRight[0], $t0), lerp($bottomLeft[1], $bottomRight[1], $t0)];
-    $bottomCompRight = [lerp($bottomLeft[0], $bottomRight[0], $t1), lerp($bottomLeft[1], $bottomRight[1], $t1)];
-
-    $device = $devices[$i];
-
-    // capacity %
-    $capacityValue = min(100, max(0, $device['capacity']));
-
-    $capacityPercent = min(100, max(0, $device['capacity']));
-    $fillRatio = $capacityPercent / 100;
-
-    $color = capacityColor($capacityPercent, $capacitySetting);
-
-    // Interpolate top line for partial fill
-    $fillTopLeft = [
-        lerp($bottomCompLeft[0], $topCompLeft[0], $fillRatio),
-        lerp($bottomCompLeft[1], $topCompLeft[1], $fillRatio),
-    ];
-
-    $fillTopRight = [
-        lerp($bottomCompRight[0], $topCompRight[0], $fillRatio),
-        lerp($bottomCompRight[1], $topCompRight[1], $fillRatio),
-    ];
-
-    $compartments[] = [
-        'outline' => [$topCompLeft, $topCompRight, $bottomCompRight, $bottomCompLeft],
-        'fill'    => [$fillTopLeft, $fillTopRight, $bottomCompRight, $bottomCompLeft],
-        'color'   => $color,
-    ];
-}
-@endphp
-
-<!-- Smart Bin Visualization -->
-<div style="
-    padding: 16px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background: #111;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    display: flex;
-    justify-content: center;
-">
-@if($n > 0)
-<svg viewBox="0 0 320 240" width="300">
-    <!-- Partial fills -->
-    @foreach($compartments as $comp)
-        <polygon
-            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
-            fill="{{ $comp['color'] }}"
-            fill-opacity="0.6"
-            stroke="none"
-        />
-    @endforeach
-
-    <!-- Compartment outlines -->
-    @foreach($compartments as $comp)
-        <polygon
-            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['outline'])) }}"
-            fill="none"
-            stroke="#ffffff"
-            stroke-width="1"
-        />
-    @endforeach
-
-    <!-- Outer bin outline -->
-    <polygon
-        points="{{ $topLeft[0] }},{{ $topLeft[1] }} {{ $topRight[0] }},{{ $topRight[1] }} {{ $bottomRight[0] }},{{ $bottomRight[1] }} {{ $bottomLeft[0] }},{{ $bottomLeft[1] }}"
-        fill="none"
-        stroke="#ffffff"
-        stroke-width="3"
-        stroke-linejoin="round"
-    />
-</svg>
-@else
-<p style="color: #fff;">No devices found for this asset.</p>
-@endif
-</div>
+                        <!-- Info rows -->
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 6px;
+                            font-size: 14px;
+                            color: #000;
+                        ">
+                            <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
+                            <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
+                            <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
+                            <div>⚙️ <strong>
+                                {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
+                                (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
+                            </strong></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         </div>
+    </div>
 
     </div>
 
@@ -279,4 +326,5 @@ function draggableMarker(assetId, startX, startY) {
         }
     }
 }
+
 </script>

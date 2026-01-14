@@ -1,11 +1,7 @@
 @extends($layout)
-@section('content_title', 'Asset Details')
+@section('content_title', $asset->asset_name)
 
 @section('content')
-    @if(isset($asset_id))
-        {{-- Render the Livewire component --}}
-        @livewire('asset-details', ['asset' => $asset_id])
-    @else
-        <p style="color:red;">Asset ID not provided.</p>
-    @endif
+    {{-- Render the Livewire component, passing the full asset --}}
+    @livewire('asset-details', ['asset' => $asset])
 @endsection

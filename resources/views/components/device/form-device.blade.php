@@ -28,7 +28,7 @@
                 <div class="modal-content">
 
                     <div class="modal-header">
-                        <h4 class="modal-title">{{ $id ? 'Form Edit Asset' : 'Form Add Asset' }}</h4>
+                        <h4 class="modal-title">{{ $id ? 'Form Edit Device' : 'Form Add Device' }}</h4>
                         <button type="button" class="close" data-dismiss="modal">
                             <span>&times;</span>
                         </button>

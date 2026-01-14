@@ -158,7 +158,11 @@ Route::middleware('auth')->group(function(){
         Route::prefix('assets')->as('assets.')->controller(AssetController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/{asset}/details', function ($asset) {
-                return view('asset.details', ['asset_id' => $asset]);
+                // Load the full asset with devices and sensors
+                $assetModel = \App\Models\Asset::with(['devices.sensors'])->findOrFail($asset);
+
+                // Pass it to the Blade
+                return view('asset.details', ['asset' => $assetModel]);
             })->name('details');
             Route::post('/', 'store')->name('store');
             Route::delete('/{id}/destroy', 'destroy')->name('destroy');

@@ -31,7 +31,8 @@ class DeviceController extends Controller
 
         Device::create($request->only('asset_id', 'device_name', 'id_device'));
 
-        return redirect()->route('devices.index')->with('success', 'Device created.');
+        // Redirect back to the previous page (where the form was submitted)
+        return redirect()->back()->with('success', 'Device created.');
     }
 
     public function show(Device $device)
