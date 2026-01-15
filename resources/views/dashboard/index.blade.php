@@ -908,14 +908,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <!-- Event Details Modal -->
 <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <!-- Bootstrap 4 -->
-            <span aria-hidden="true">&times;</span>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded shadow-sm">
+      
+      <!-- Header -->
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title" id="eventDetailsModalLabel">
+          <i class="fas fa-calendar-alt me-2"></i> Event Details
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
         </button>
       </div>
+      
+      <!-- Body -->
       <div class="modal-body">
         <p><strong>Name:</strong> <span id="eventName"></span></p>
         <p><strong>Location:</strong> <span id="eventLocation"></span></p>
@@ -923,12 +929,17 @@ document.addEventListener("DOMContentLoaded", function () {
         <p><strong>Start:</strong> <span id="eventStart"></span></p>
         <p><strong>End:</strong> <span id="eventEnd"></span></p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button> <!-- Bootstrap 4 -->
-      </div>
+      
+      <!-- Footer -->
+        <div class="modal-footer border-top">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            Close
+        </button>
+        </div>
     </div>
   </div>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -972,6 +983,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
     console.log(@json($calendarCombined));
+
+    $(document).on('click', '.modal .close', function() {
+        $(this).closest('.modal').modal('hide');
+    });
 });
 </script>
 
