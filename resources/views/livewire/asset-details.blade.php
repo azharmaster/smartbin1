@@ -301,34 +301,17 @@
                 @foreach($asset->devices as $device)
                 @php
                     $sensor = $device->sensors->sortByDesc('time')->first();
-  
-                    $capacity = $sensor?->capacity ?? 0;
-
-                    if ($capacity <= $capacitySetting->empty_to) {
-                        $statusBorder = '#1b4f1f';
-                        $statusBg = 'rgba(27, 79, 31, 0.3)'; // green tint
-                    } elseif ($capacity <= $capacitySetting->half_to) {
-                        $statusBorder = '#f2c224';
-                        $statusBg = 'rgba(242, 194, 36, 0.08)'; // yellow tint
-                    } else {
-                        $statusBorder = '#e74c3c';
-                        $statusBg = 'rgba(231, 77, 60, 0.26)'; // red tint
-                    }
                 @endphp
 
                 <div style="
                     position: relative;
                     padding: 14px;
                     border-radius: 14px;
-                    background:
-                        linear-gradient(
-                            to right,
-                            {{ $statusBg }},
-                            #ffffff 35%
-                        );
+                    background: #ffffff;
                     box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-                    border-left: 5px solid {{ $statusBorder }};
-                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                    border-left: 5px solid
+                        {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
+                        (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
                 ">
 
                     <!-- Edit device -->
