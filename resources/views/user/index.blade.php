@@ -4,7 +4,7 @@
 
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h5 class="mb-0">User</h5>
+        <h5 class="mb-0">User List</h5>
 
         <div class="ms-auto">
             <x-user.form-user/>

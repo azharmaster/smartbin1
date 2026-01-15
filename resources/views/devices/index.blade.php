@@ -3,7 +3,7 @@
 @section('content')
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h6 class="mb-0">List of Sensors</h6>
+        <h6 class="mb-0">Sensors List</h6>
 
         <div class="ms-auto">
         <x-device.form-device :assets="$assets" />
