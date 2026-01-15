@@ -768,17 +768,6 @@ function trend($current, $previous) {
             </style>
         </div>
 
-        <div class="card-body p-2">
-            <div id="holidaycalendar"></div>
-        </div>
-    </div>
-
-
-    <div class="card-body p-2">
-        <div id="holidaycalendar"></div>
-    </div>
-</div>
-
 
 <style>
 /* Remove underline / hover highlight on day numbers */
