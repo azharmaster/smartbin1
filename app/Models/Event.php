@@ -15,8 +15,6 @@ class Event extends Model
         'location',
         'start_date',
         'end_date',
-        'start_time',
-        'end_time',
     ];
 
     /**
@@ -25,7 +23,5 @@ class Event extends Model
     protected $casts = [
         'start_date' => 'date:Y-m-d',
         'end_date'   => 'date:Y-m-d',
-        'start_time' => 'string',
-        'end_time'   => 'string',
     ];
 }

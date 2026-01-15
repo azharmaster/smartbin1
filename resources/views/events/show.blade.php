@@ -26,22 +26,12 @@
 
         <div class="mb-3 d-flex">
             <strong style="width: 120px;">Start Date:</strong>
-            <span>{{ $event->start_date->format('Y-m-d') }}</span>
+            <span>{{ \Carbon\Carbon::parse($event->start_date)->format('Y-m-d') }}</span>
         </div>
 
         <div class="mb-3 d-flex">
             <strong style="width: 120px;">End Date:</strong>
-            <span>{{ $event->end_date->format('Y-m-d') }}</span>
-        </div>
-
-        <div class="mb-3 d-flex">
-            <strong style="width: 120px;">Start Time:</strong>
-            <span>{{ \Carbon\Carbon::parse($event->start_time)->format('H:i') }}</span>
-        </div>
-
-        <div class="mb-3 d-flex">
-            <strong style="width: 120px;">End Time:</strong>
-            <span>{{ \Carbon\Carbon::parse($event->end_time)->format('H:i') }}</span>
+            <span>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</span>
         </div>
     </div>
 

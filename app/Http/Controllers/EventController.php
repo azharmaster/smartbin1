@@ -27,8 +27,6 @@ class EventController extends Controller
             'location'   => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
-            'start_time' => 'required',
-            'end_time'   => 'required',
         ]);
 
         Event::create($request->only([
@@ -37,8 +35,6 @@ class EventController extends Controller
             'location',
             'start_date',
             'end_date',
-            'start_time',
-            'end_time'
         ]));
 
         return redirect()->back()->with('success', 'Event added successfully!');
@@ -75,8 +71,6 @@ class EventController extends Controller
             'location'   => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
-            'start_time' => 'required',
-            'end_time'   => 'required',
         ]);
 
         $event->update($request->only([
@@ -85,8 +79,6 @@ class EventController extends Controller
             'location',
             'start_date',
             'end_date',
-            'start_time',
-            'end_time'
         ]));
 
         return redirect()->route('events.index')->with('success', 'Event updated successfully!');

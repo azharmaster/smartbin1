@@ -31,8 +31,6 @@
                         <th>Location</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
                         <th>Option</th>
                     </tr>
                 </thead>
@@ -43,10 +41,8 @@
                         <td>{{ $event->event_name }}</td>
                         <td>{{ $event->pic_phone }}</td>
                         <td>{{ $event->location }}</td>
-                        <td>{{ $event->start_date->format('Y-m-d') }}</td>
-                        <td>{{ $event->end_date->format('Y-m-d') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($event->start_time)->format('H:i') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($event->end_time)->format('H:i') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($event->start_date)->format('Y-m-d') }}</td>
+                        <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
                         <td>
                             <!-- VIEW -->
                             <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#showEventModal{{ $event->id }}">

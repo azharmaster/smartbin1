@@ -29,17 +29,7 @@
 
             <div class="form-group">
                 <label>End Date</label>
-                <input type="date" name="end_date" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label>Start Time</label>
-                <input type="time" name="start_time" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label>End Time</label>
-                <input type="time" name="end_time" class="form-control" required>
+                <input type="date" name="end_date" class="form-control">
             </div>
         </div>
 
