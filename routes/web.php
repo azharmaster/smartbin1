@@ -141,18 +141,10 @@ Route::middleware('auth')->group(function(){
 
     // Master Data Modules
     Route::prefix('master-data')->as('master-data.')->group(function () {
-        // Kategori
-        Route::prefix('kategori')->as('kategori.')->controller(KategoriController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
-        }); 
 
-        // Product
-        Route::prefix('product')->as('product.')->controller(ProductController::class)->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-            Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+        //Event modal
+        Route::get('/events/{event}', function (App\Models\Event $event) {
+            return response()->json($event);
         });
 
         // Assets
