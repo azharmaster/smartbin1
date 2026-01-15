@@ -367,8 +367,17 @@ pre {
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- FullCalendar (CSS + JS) -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
 
 @php
 function trend($current, $previous) {
@@ -477,10 +486,10 @@ function trend($current, $previous) {
 <div class="container-fluid mt-4">
 
     <div class="d-flex justify-content-end mb-3">
-    <a href="{{ route('admin.main.dashboard') }}" class="btn btn-success">
-        <i class="fas fa-chart-line"></i> Live Dashboard
-    </a>
-</div>
+        <a href="{{ route('admin.main.dashboard') }}" class="btn btn-success">
+            <i class="fas fa-chart-line"></i> Live Dashboard
+        </a>
+    </div>
 
 
     <!-- ROW 1: SMARTBIN CHART -->
@@ -718,39 +727,39 @@ function trend($current, $previous) {
                     </h5>
                 </div>
 
-        <div class="card-body p-2">
-            <div id="holidaycalendar"></div>
-        </div>
-    </div>
+                <div class="card-body p-2">
+                    <div id="holidaycalendar"></div>
+                </div>
+            </div>
 
-    <style>
-    /* Remove underline / hover highlight on day numbers */
-    .fc-daygrid-day-number {
-        text-decoration: none !important;
-    }
+            <style>
+            /* Remove underline / hover highlight on day numbers */
+            .fc-daygrid-day-number {
+                text-decoration: none !important;
+            }
 
-    /* Change hover background */
-    .fc-daygrid-day:hover {
-        background-color: #f4f6f9;
-    }
+            /* Change hover background */
+            .fc-daygrid-day:hover {
+                background-color: #f4f6f9;
+            }
 
-    /* Today highlight */
-    .fc-day-today {
-        background-color: rgba(0, 123, 255, 0.1) !important;
-    }
+            /* Today highlight */
+            .fc-day-today {
+                background-color: rgba(0, 123, 255, 0.1) !important;
+            }
 
-    /* Event style */
-    .fc-event {
-        border-radius: 6px;
-        padding: 2px 4px;
-        font-size: 0.85rem;
-        cursor: pointer;
-    }
+            /* Event style */
+            .fc-event {
+                border-radius: 6px;
+                padding: 2px 4px;
+                font-size: 0.85rem;
+                cursor: pointer;
+            }
 
-    /* Add gap between view buttons (Month / Week / Day) */
-    .fc .fc-button-group {
-        gap: 6px;
-    }
+            /* Add gap between view buttons (Month / Week / Day) */
+            .fc .fc-button-group {
+                gap: 6px;
+            }
 
             /* Optional: make buttons slightly rounded */
             .fc .fc-button {
@@ -765,47 +774,46 @@ function trend($current, $previous) {
     </div>
 
 
-        <div class="card-body p-2">
-            <div id="holidaycalendar"></div>
-        </div>
+    <div class="card-body p-2">
+        <div id="holidaycalendar"></div>
     </div>
-
-
-    <style>
-    /* Remove underline / hover highlight on day numbers */
-    .fc-daygrid-day-number {
-        text-decoration: none !important;
-    }
-
-    /* Change hover background */
-    .fc-daygrid-day:hover {
-        background-color: #f4f6f9;
-    }
-
-    /* Today highlight */
-    .fc-day-today {
-        background-color: rgba(0, 123, 255, 0.1) !important;
-    }
-
-    /* Event style */
-    .fc-event {
-        border-radius: 6px;
-        padding: 2px 4px;
-        font-size: 0.85rem;
-        cursor: pointer;
-    }
-
-    /* Add gap between view buttons (Month / Week / Day) */
-    .fc .fc-button-group {
-        gap: 6px;
-    }
-
-    /* Optional: make buttons slightly rounded */
-    .fc .fc-button {
-        border-radius: 6px;
-    }
-    </style>
 </div>
+
+
+<style>
+/* Remove underline / hover highlight on day numbers */
+.fc-daygrid-day-number {
+    text-decoration: none !important;
+}
+
+/* Change hover background */
+.fc-daygrid-day:hover {
+    background-color: #f4f6f9;
+}
+
+/* Today highlight */
+.fc-day-today {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+/* Event style */
+.fc-event {
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* Add gap between view buttons (Month / Week / Day) */
+.fc .fc-button-group {
+    gap: 6px;
+}
+
+/* Optional: make buttons slightly rounded */
+.fc .fc-button {
+    border-radius: 6px;
+}
+</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -898,15 +906,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-{{-- calender js--}}
-
-<script src="plugins/jquery/jquery.min.js"></script>
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="dist/js/adminlte.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-
 <!-- Event Details Modal -->
 <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -958,38 +957,35 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         // 🔥 OPEN event modal on click (Bootstrap 4)
-
         eventClick: function(info) {
+    if (info.event.extendedProps.type !== 'event') return;
 
-        if (info.event.extendedProps.type !== 'event') {
-            return;
+    const eventId = info.event.id;
+
+    fetch(`/events/${eventId}`)
+        .then(res => res.json())
+        .then(event => {
+            // Format dates (ignore times)
+            const startDate = event.start_date;
+            const endDate   = event.end_date ?? startDate;
+
+            $('#eventName').text(event.event_name);
+            $('#eventLocation').text(event.location);
+            $('#eventPic').text(event.pic_phone);
+            $('#eventStart').text(startDate);
+            $('#eventEnd').text(endDate);
+
+            // Show modal
+            $('#eventDetailsModal').modal('show'); // Works with Bootstrap 4 + jQuery
+        });
+
+    info.jsEvent.preventDefault(); // prevent default link behavior
+
         }
-
-        const eventId = info.event.id;
-
-        fetch(`/events/${eventId}`)
-            .then(res => res.json())
-            .then(event => {
-                const startDate = new Date(event.start_date + 'T' + event.start_time);
-                const endDate   = new Date(event.end_date + 'T' + event.end_time);
-
-                const formatDate = d => d.toISOString().split('T')[0];
-                const formatTime = d => d.toTimeString().slice(0,5);
-
-                $('#eventName').text(event.event_name);
-                $('#eventLocation').text(event.location);
-                $('#eventPic').text(event.pic_phone);
-                $('#eventStart').text(`${formatDate(startDate)} ${formatTime(startDate)}`);
-                $('#eventEnd').text(`${formatDate(endDate)} ${formatTime(endDate)}`);
-
-                $('#eventDetailsModal').modal('show');
-            });
-
-        info.jsEvent.preventDefault();
-    }
     });
 
     calendar.render();
+    console.log(@json($calendarCombined));
 });
 </script>
 

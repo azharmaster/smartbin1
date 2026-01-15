@@ -85,39 +85,46 @@ class DashboardController extends Controller
 
         //Holidays
         $holidays = Holiday::where('is_active', true)->get();
-
-        $calendarHolidays = $holidays->map(function ($holiday) {
-            return [
-                'title'  => '🎉 ' . $holiday->name,
-                'start'  => $holiday->start_date,
-                'end'    => $holiday->end_date
-                    ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
-                    : null,
-                'allDay' => true,
-                'color'  => '#dc3545',
-                'type'   => 'holiday',
-            ];
-        });
-
-        // 📅 Events
         $events = Event::all();
 
-        $calendarEvents = $events->map(function ($e) {
+        $calendarHolidays = $holidays->map(function ($holiday) {
+            $start = Carbon::parse($holiday->start_date)->format('Y-m-d');
+            $end = $holiday->end_date
+                ? Carbon::parse($holiday->end_date)->addDay()->format('Y-m-d') // FullCalendar expects end-exclusive
+                : $start;
+
             return [
-                'id'     => $e->id,
-                'title'  => $e->event_name,
-                'start'  => $e->start_date . 'T' . $e->start_time,
-                'end'    => $e->end_date . 'T' . $e->end_time,
-                'color'  => '#28a745',
-                'allDay' => false,
-                'type'   => 'event',
+                'title' => '🎉 ' . $holiday->name,
+                'start' => $start,
+                'end'   => $end,
+                'allDay' => true,
+                'color' => '#dc3545',
+                'type' => 'holiday',
             ];
         });
 
-        // 🔥 Combine both
-        $calendarCombined = $calendarEvents
-            ->merge($calendarHolidays)
-            ->values();
+        // Events — ignore start_time / end_time
+        $calendarEvents = $events->map(function ($e) {
+            $start = Carbon::parse($e->start_date)->format('Y-m-d');
+            $end   = $e->end_date
+                ? Carbon::parse($e->end_date)->addDay()->format('Y-m-d')
+                : $start;
+
+            return [
+                'id' => $e->id,
+                'title' => $e->event_name,
+                'start' => $e->start_date,
+                'end' => $e->end_date ?? $e->start_date,
+                'allDay' => true,
+                'color' => '#28a745',
+                'type' => 'event',
+                'pic_phone' => $e->pic_phone,
+                'location' => $e->location,
+            ];
+        });
+
+        // Combine both
+        $calendarCombined = $calendarEvents->merge($calendarHolidays)->values();
 
         $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
             ->orderBy('sent_at', 'desc')
