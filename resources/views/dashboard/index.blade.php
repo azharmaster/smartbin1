@@ -936,7 +936,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('holidaycalendar');
     if (!calendarEl) return;
 
-    // 🔥 Full calendar combined (events first)
     const calendarEvents = @json($calendarCombined);
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -952,35 +951,22 @@ document.addEventListener('DOMContentLoaded', function () {
         events: calendarEvents,
 
         eventDidMount: function(info) {
-            // Optional tooltip
             info.el.setAttribute('title', info.event.title);
         },
 
-        // 🔥 OPEN event modal on click (Bootstrap 4)
         eventClick: function(info) {
-    if (info.event.extendedProps.type !== 'event') return;
+            if (info.event.extendedProps.type !== 'event') return;
 
-    const eventId = info.event.id;
+            // Pull info directly from the calendarCombined extendedProps
+            $('#eventName').text(info.event.title);
+            $('#eventLocation').text(info.event.extendedProps.location);
+            $('#eventPic').text(info.event.extendedProps.pic_phone);
+            $('#eventStart').text(info.event.startStr);
+            $('#eventEnd').text(info.event.endStr || info.event.startStr);
 
-    fetch(`/events/${eventId}`)
-        .then(res => res.json())
-        .then(event => {
-            // Format dates (ignore times)
-            const startDate = event.start_date;
-            const endDate   = event.end_date ?? startDate;
+            $('#eventDetailsModal').modal('show');
 
-            $('#eventName').text(event.event_name);
-            $('#eventLocation').text(event.location);
-            $('#eventPic').text(event.pic_phone);
-            $('#eventStart').text(startDate);
-            $('#eventEnd').text(endDate);
-
-            // Show modal
-            $('#eventDetailsModal').modal('show'); // Works with Bootstrap 4 + jQuery
-        });
-
-    info.jsEvent.preventDefault(); // prevent default link behavior
-
+            info.jsEvent.preventDefault();
         }
     });
 
