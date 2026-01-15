@@ -106,54 +106,118 @@
 <!-- Right Column: Asset + Bin + Devices -->
 <div style="flex: 1; display: flex; flex-direction: column;">
 
-    <!-- Entire right section in a card -->
-    <div style=" border-radius: 12px; background: #00000000; display: flex; flex-direction: column; gap: 12px;">
+    <!-- Section container -->
+    <div style="
+        background: #f8f9fb;
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    ">
 
-        <!-- Asset Card: Image + Info Side by Side -->
-        <div style="display: flex; gap: 16px; padding: 12px; border: 1px solid #362e2e; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: flex-start;">
+        <!-- ASSET CARD -->
+        <div style="
+            display: flex;
+            gap: 16px;
+            padding: 14px;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            align-items: flex-start;
+        ">
 
             <!-- Asset Image -->
-            <div style="flex: 0 0 220px; text-align: center;">
+            <div style="flex: 0 0 220px;">
                 @if($asset->picture)
                     <img src="{{ asset('storage/' . $asset->picture) }}"
                         alt="Asset Picture"
-                        style="width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; cursor: pointer;"
+                        style="
+                            width: 100%;
+                            max-height: 220px;
+                            object-fit: contain;
+                            border-radius: 10px;
+                            background: #f1f3f5;
+                            cursor: pointer;
+                        "
                         onclick="window.open(this.src, '_blank')">
                 @else
-                    <div style="padding: 30px; color: #999;">
-                        <i class="far fa-image" style="font-size: 32px; margin-bottom: 8px;"></i>
-                        <p style="margin: 0;">No image uploaded</p>
+                    <div style="
+                        height: 220px;
+                        border-radius: 10px;
+                        background: #f1f3f5;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        color: #999;
+                    ">
+                        <i class="far fa-image" style="font-size: 32px;"></i>
+                        <p style="margin: 6px 0 0;">No image</p>
                     </div>
                 @endif
             </div>
 
-            <!-- Asset Info + Edit Button -->
+            <!-- Asset Info -->
             <div style="flex: 1; position: relative;">
-                <!-- Edit Button at top-right -->
+
+                <!-- Edit asset -->
                 <div style="position: absolute; top: 0; right: 0;">
                     <x-asset.form-asset
                         :id="$asset->id"
                         :floors="$floors"
                         :picture="$asset->picture"
-                        style="font-size: 12px; padding: 4px 8px;" 
+                        style="font-size: 11px; padding: 4px 8px;"
                     />
                 </div>
 
-                <!-- Asset Details -->
-                <div style="padding-top: 28px;"> <!-- spacing to avoid overlap with button -->
-                    <p style="margin: 4px 0;"><strong>Floor:</strong> {{ $asset->floor->floor_name ?? '-' }}</p>
-                    <p style="margin: 4px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
-                    <p style="margin: 4px 0;"><strong>Location:</strong> {{ $asset->location ?? '-' }}</p>
-                    <p style="margin: 4px 0;"><strong>Model:</strong> {{ $asset->model ?? '-' }}</p>
+                <div style="
+                    padding-top: 26px;
+                    display: grid;
+                    grid-template-columns: 110px 1fr;
+                    row-gap: 8px;
+                    column-gap: 12px;
+                    font-size: 14px;
+                ">
+
+                    <span style="color: #6b7280;">Floor</span>
+                    <span style="font-weight: 600; color: #111827;">
+                        {{ $asset->floor->floor_name ?? '-' }}
+                    </span>
+
+                    <span style="color: #6b7280;">Serial No</span>
+                    <span style="font-weight: 600; color: #111827;">
+                        {{ $asset->serialNo ?? '-' }}
+                    </span>
+
+                    <span style="color: #6b7280;">Location</span>
+                    <span style="font-weight: 600; color: #111827;">
+                        {{ $asset->location ?? '-' }}
+                    </span>
+
+                    <span style="color: #6b7280;">Model</span>
+                    <span style="font-weight: 600; color: #111827;">
+                        {{ $asset->model ?? '-' }}
+                    </span>
+
                 </div>
             </div>
-
         </div>
-        <!-- Bin + Device Cards -->
-        <div style="display: flex; gap: 12px; align-items: stretch;">
 
-            <!-- Bin -->
-            <div style="flex: 0 0 320px; display: flex; justify-content: center; align-items: center; background: #dcdbdb; border-radius: 10px; padding: 12px;">
+        <!-- BIN + DEVICES -->
+        <div style="display: flex; gap: 14px; align-items: stretch;">
+
+            <!-- BIN CARD -->
+            <div style="
+                flex: 0 0 320px;
+                background: #f7f7f7;
+                border-radius: 14px;
+                padding: 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            ">
                 <svg viewBox="0 0 320 240" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
                     <!-- ... your SVG polygons and texts here ... -->
                     <!-- Partial fills -->
@@ -214,65 +278,83 @@
                     />
                 </svg>
             </div>
-            <!-- Device cards -->
+
+            <!-- DEVICES -->
             <div style="
+                flex: 1;
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 8px;
-                flex: 1; /* take remaining space */
-                align-content: start; /* remove extra vertical gap */
+                gap: 12px;
+                align-content: start;
             ">
-                @php
-                    $deviceCount = $asset->devices->count();
-                @endphp
 
                 @if($asset->devices->count() < 3)
-                    <div class="ms-auto">
-                        <x-device.form-device 
+                    <div style="text-align: right;">
+                        <x-device.form-device
                             :assets="$assets"
                             :asset_id="$asset->id"
-                            style="font-size: 10px;"
+                            style="font-size: 11px; padding: 4px 8px;"
                         />
                     </div>
                 @endif
-                
+
                 @foreach($asset->devices as $device)
                 @php
                     $sensor = $device->sensors->sortByDesc('time')->first();
+  
+                    $capacity = $sensor?->capacity ?? 0;
+
+                    if ($capacity <= $capacitySetting->empty_to) {
+                        $statusBorder = '#1b4f1f';
+                        $statusBg = 'rgba(27, 79, 31, 0.3)'; // green tint
+                    } elseif ($capacity <= $capacitySetting->half_to) {
+                        $statusBorder = '#f2c224';
+                        $statusBg = 'rgba(242, 194, 36, 0.08)'; // yellow tint
+                    } else {
+                        $statusBorder = '#e74c3c';
+                        $statusBg = 'rgba(231, 77, 60, 0.26)'; // red tint
+                    }
                 @endphp
 
-                <div style="position: relative; padding: 14px; border-radius: 12px; background: #fff;
-                    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-                    border-left: 5px solid
-                        {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
-                        (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};">
-                    
-                    {{-- Edit button in corner --}}
-                    <x-device.form-device
+                <div style="
+                    position: relative;
+                    padding: 14px;
+                    border-radius: 14px;
+                    background:
+                        linear-gradient(
+                            to right,
+                            {{ $statusBg }},
+                            #ffffff 35%
+                        );
+                    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                    border-left: 5px solid {{ $statusBorder }};
+                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                ">
+
+                    <!-- Edit device -->
+                    <div style="position: absolute; top: 0px; right: 10px;">
+                        <x-device.form-device
                             :id="$device->id"
                             :assets="$assets"
                             :device_name="$device->device_name"
                             :asset_id="$asset->id"
                             :id_device="$device->id_device"
+                            style="font-size: 10px;"
                         />
-                    
-                    <!-- Header -->
-                    <div style="margin-bottom: 8px;">
-                        <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
-                            {{ $device->device_name }}
-                        </h3>
-                        <span style="font-size: 12px; color: #777;">
-                            Last updated: {{ $sensor?->time ?? 'N/A' }}
-                        </span>
                     </div>
 
-                    <!-- Info rows -->
+                    <h3 style="margin: 0; font-size: 15px; font-weight: 600;">
+                        {{ $device->device_name }}
+                    </h3>
+                    <p style="margin: 2px 0 10px; font-size: 12px; color: #777;">
+                        Last updated: {{ $sensor?->time ?? 'N/A' }}
+                    </p>
+
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
                         gap: 6px;
-                        font-size: 14px;
-                        color: #000;
+                        font-size: 13px;
                     ">
                         <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
                         <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
@@ -287,8 +369,7 @@
             </div>
         </div>
     </div>
-
-    </div>
+</div>
 
 </div>
 
