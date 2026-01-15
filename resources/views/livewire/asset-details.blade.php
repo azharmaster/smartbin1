@@ -13,7 +13,7 @@
         width: 240px;
         background: #ffffff;
         border-radius: 12px;
-        padding: 14px;
+        padding: 38px 14px 14px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         display: none;
         font-family: system-ui, -apple-system, sans-serif;
@@ -89,16 +89,33 @@
         @endphp
 
         <div id="marker"
-             data-asset-id="{{ $asset->id }}"
-             data-floor-id="{{ $asset->floor_id }}"
-             title="{{ $asset->asset_name ?? 'Asset' }}"
-             style="position: absolute;
-                    width: 24px; height: 24px;
-                    left: calc({{ $asset->x }}px - 18px);
-                    top: calc({{ $asset->y }}px);">
+            data-asset-id="{{ $asset->id }}"
+            data-floor-id="{{ $asset->floor_id }}"
+            title="{{ $asset->asset_name ?? 'Asset' }}"
+            style="
+                position: absolute;
+                width: 34px;
+                height: 34px;
+                left: calc({{ $asset->x }}px - 17px);
+                top: calc({{ $asset->y }}px - 17px);
+                background: #ffffff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 
+                    0 4px 12px rgba(0,0,0,0.25),
+                    0 0 0 3px rgba(255,255,255,0.85);
+                cursor: pointer;
+                z-index: 10;
+            ">
             <i class="fas fa-trash-alt"
-               style="font-size: 22px; color: {{ $markerColor }};
-                      filter: drop-shadow(0 0 6px {{ $glowColor }});"></i>
+            style="
+                    font-size: 18px;
+                    color: {{ $markerColor }};
+                    filter: drop-shadow(0 0 6px {{ $glowColor }});
+            ">
+            </i>
         </div>
     </div>
 </div>
@@ -203,6 +220,15 @@
                 </div>
             </div>
         </div>
+                @if($asset->devices->count() < 3)
+                    <div style="text-align: right;">
+                        <x-device.form-device
+                            :assets="$assets"
+                            :asset_id="$asset->id"
+                            style="font-size: 11px; padding: 4px 8px;"
+                        />
+                    </div>
+                @endif
 
         <!-- BIN + DEVICES -->
         <div style="display: flex; gap: 14px; align-items: stretch;">
@@ -288,16 +314,6 @@
                 align-content: start;
             ">
 
-                @if($asset->devices->count() < 3)
-                    <div style="text-align: right;">
-                        <x-device.form-device
-                            :assets="$assets"
-                            :asset_id="$asset->id"
-                            style="font-size: 11px; padding: 4px 8px;"
-                        />
-                    </div>
-                @endif
-
                 @foreach($asset->devices as $device)
                 @php
                     $sensor = $device->sensors->sortByDesc('time')->first();
@@ -314,18 +330,47 @@
                         (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};
                 ">
 
-                    <!-- Edit device -->
-                    <div style="position: absolute; top: 0px; right: 10px;">
-                        <x-device.form-device
-                            :id="$device->id"
-                            :assets="$assets"
-                            :device_name="$device->device_name"
-                            :asset_id="$asset->id"
-                            :id_device="$device->id_device"
-                            style="font-size: 10px;"
-                        />
-                    </div>
+                    <div style="
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+">
 
+    <!-- Edit -->
+    <x-device.form-device
+        :id="$device->id"
+        :assets="$assets"
+        :device_name="$device->device_name"
+        :asset_id="$asset->id"
+        :id_device="$device->id_device"
+    />
+
+    <!-- Delete -->
+    <form method="POST"
+          action="{{ route('devices.destroy', $device->id) }}"
+          onsubmit="return confirm('Delete this device?')">
+        @csrf
+        @method('DELETE')
+
+        <button type="submit"
+            style="
+                width: 26px;
+                height: 26px;
+                border-radius: 8px;
+                border: none;
+                background: #fee2e2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            ">
+            <i class="fas fa-trash-alt" style="font-size: 12px; color: #dc2626;"></i>
+        </button>
+    </form>
+</div>
                     <h3 style="margin: 0; font-size: 15px; font-weight: 600;">
                         {{ $device->device_name }}
                     </h3>

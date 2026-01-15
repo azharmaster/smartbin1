@@ -6,8 +6,9 @@
 
 <div>
     <button type="button" 
-        class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
-        data-toggle="modal" data-target="#formAsset{{ $id ?? '' }}">
+        class="btn btn-lg {{ $id ? 'btn-outline-secondary' : 'btn-secondary' }}"
+        data-toggle="modal" data-target="#formAsset{{ $id ?? '' }}"
+        style="padding: 2px 6px; font-size: 10px; border-radius: 6px;">
 
     <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
     {{ $id ? '' : 'Add' }}

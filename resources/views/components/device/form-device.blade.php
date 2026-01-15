@@ -13,10 +13,10 @@
 
 {{-- Button --}}
 <button type="button"
-    class="{{ $isEdit ? 'btn btn-sm btn-outline-secondary' : 'btn btn-primary' }} {{ $attributes->get('class') }}"
+    class="btn btn-sm {{ $isEdit ? 'btn-outline-secondary' : 'btn-secondary' }} {{ $attributes->get('class') }}"
     data-toggle="modal"
     data-target="#{{ $modalId }}"
-    style="{{ $isEdit ? 'position:absolute; top:6px; right:6px; padding:2px 6px; font-size:10px; border-radius:6px;' : '' }}">
+    style="padding: 2px 6px; font-size: 10px; border-radius: 6px;">
     <i class="fas {{ $isEdit ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
     {{ $isEdit ? '' : 'Add' }}
 </button>
@@ -30,7 +30,7 @@
             @method('PUT')
         @endif
         <div class="modal-dialog">
-            <div class="modal-content">
+            <div class="modal-content text-left">
                 <div class="modal-header">
                     <h4 class="modal-title">{{ $isEdit ? 'Edit Device' : 'Add Device' }}</h4>
                     <button type="button" class="close" data-dismiss="modal">

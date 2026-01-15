@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Asset;
 use App\Models\CapacitySetting;
 use App\Models\Floor;
+use App\Modes\Device;
 
 class AssetDetails extends Component
 {
@@ -113,6 +114,12 @@ class AssetDetails extends Component
         }
 
         $this->asset->refresh();
+    }
+
+    public function destroy(Device $device)
+    {
+        $device->delete();
+        return redirect()->route('devices.index')->with('success', 'Device deleted.');
     }
 
     public function render()

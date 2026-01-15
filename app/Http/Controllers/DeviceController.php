@@ -63,6 +63,6 @@ class DeviceController extends Controller
     public function destroy(Device $device)
     {
         $device->delete();
-        return redirect()->route('devices.index')->with('success', 'Device deleted.');
+        return redirect()->back()->with('success', 'Device created.');
     }
 }
