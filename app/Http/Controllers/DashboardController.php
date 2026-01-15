@@ -28,69 +28,117 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        /** @var \Illuminate\Support\Collection<int, Device> $devices */
+        // Load devices and capacity settings
         $devices = $this->loadDevicesWithLatestSensor();
-
-        // ✅ Load capacity settings from DB
         $capacity = CapacitySetting::first();
         $emptyMax = $capacity->empty_to;
         $halfMax  = $capacity->half_to;
 
-        $totalDevices = $devices->count();
-        $fullDevicesCollection = $this->countFullDevices($devices, $halfMax);
-        $fullDevices = $fullDevicesCollection->count();
-        $halfDevicesCollection = $this->countHalfDevices($devices, $emptyMax, $halfMax);
-        $halfDevices = $halfDevicesCollection->count();
-        $emptyDevices = $this->countEmptyDevices($devices, $emptyMax);
-        $undetectedDevices = $this->countUndetectedDevices($devices);
+        // Device statistics
+        $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
 
-        /* ------------------------------
-         | TREND CALCULATION
-         |------------------------------*/
-        $lastMonth = Carbon::now()->subMonth();
+        // Trend calculation
+        $trendStats = $this->getTrendStats($devices, $emptyMax, $halfMax);
 
-        $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
-
-        $previousTotal = $previousDevices->count();
-        $previousFull = $this->countFullDevices($previousDevices, $halfMax)->count();
-        $previousHalf = $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count();
-        $previousEmpty = $this->countEmptyDevices($previousDevices, $emptyMax);
-        $previousUndetected = $this->countUndetectedDevices($previousDevices);
-
-        // Helper function
-        $trend = fn($current, $previous) => [
-            'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
-            'value' => abs($current - $previous),
-            'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
-        ];
-
-        $totalTrend = $trend($totalDevices, $previousTotal);
-
+        // Floors and assets
         $floors = Floor::all();
         $assetsWithCoords = Asset::whereNotNull('x')
-                                 ->whereNotNull('y')
-                                 ->get();
+                                ->whereNotNull('y')
+                                ->get();
+        $assetsWithDevices = Asset::with(['devices.sensors'])
+            ->whereHas('devices')
+            ->orderBy('asset_name')
+            ->get();
+
+        // Todos and tasks
         $todos = $this->loadTodosForUser(Auth::id());
         $latestComplaints = $this->loadLatestComplaints();
         $users = User::all();
         $assignedTasks = $this->loadAssignedTasks();
         $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 
+        // Smart bin clear times
         $smartBinClearTimes = $this->calculateSmartBinClearTimes($emptyMax, $halfMax);
 
-        $assetsWithDevices = Asset::with(['devices.sensors'])
-            ->whereHas('devices')
-            ->orderBy('asset_name')
-            ->get();
+        // Calendar
+        $calendarCombined = $this->getCalendarEvents();
 
-        //Holidays
+        // Today's notifications
+        $todayNotifications = $this->getTodayNotifications();
+
+        $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
+        $trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
+
+        return view('dashboard.index', array_merge($deviceStats, [
+            'totalTrend' => $trendStats['totalTrend'],
+            'todos' => $this->loadTodosForUser(Auth::id()),
+            'floors' => Floor::all(),
+            'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
+            'devices' => $devices,
+            'users' => User::all(),
+            'assignedTasks' => $this->loadAssignedTasks(),
+            'latestComplaints' => $this->loadLatestComplaints(),
+            'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
+            'smartBinClearTimes' => $this->calculateSmartBinClearTimes($emptyMax, $halfMax),
+            'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
+            'calendarCombined' => $this->getCalendarEvents(),
+            'todayNotifications' => $this->getTodayNotifications(),
+        ]));
+    }
+
+    /** Device statistics */
+private function getDeviceStats($devices, $emptyMax, $halfMax): array
+{
+    return [
+        'totalDevices' => $devices->count(),
+        'fullDevicesCollection' => $this->countFullDevices($devices, $halfMax),
+        'fullDevices' => $this->countFullDevices($devices, $halfMax)->count(),
+        'halfDevicesCollection' => $this->countHalfDevices($devices, $emptyMax, $halfMax),
+        'halfDevices' => $this->countHalfDevices($devices, $emptyMax, $halfMax)->count(),
+        'emptyDevices' => $this->countEmptyDevices($devices, $emptyMax),
+        'undetectedDevices' => $this->countUndetectedDevices($devices),
+    ];
+}
+
+    /** Trend calculation */
+    private function getTrendStats($currentDevices, $emptyMax, $halfMax): array
+    {
+        $lastMonth = Carbon::now()->subMonth();
+        $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
+
+        $trend = fn($current, $previous) => [
+            'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
+            'value' => abs($current - $previous),
+            'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
+        ];
+
+        $totalTrend = $trend($currentDevices->count(), $previousDevices->count());
+
+        return [
+            'totalTrend' => $totalTrend,
+            'currentTotal' => $currentDevices->count(),
+            'previousTotal' => $previousDevices->count(),
+            'currentFull' => $this->countFullDevices($currentDevices, $halfMax)->count(),
+            'previousFull' => $this->countFullDevices($previousDevices, $halfMax)->count(),
+            'currentHalf' => $this->countHalfDevices($currentDevices, $emptyMax, $halfMax)->count(),
+            'previousHalf' => $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count(),
+            'currentEmpty' => $this->countEmptyDevices($currentDevices, $emptyMax),
+            'previousEmpty' => $this->countEmptyDevices($previousDevices, $emptyMax),
+            'currentUndetected' => $this->countUndetectedDevices($currentDevices),
+            'previousUndetected' => $this->countUndetectedDevices($previousDevices),
+        ];
+    }
+
+    /** Combine holidays and events for calendar */
+    private function getCalendarEvents()
+    {
         $holidays = Holiday::where('is_active', true)->get();
         $events = Event::all();
 
         $calendarHolidays = $holidays->map(function ($holiday) {
             $start = Carbon::parse($holiday->start_date)->format('Y-m-d');
             $end = $holiday->end_date
-                ? Carbon::parse($holiday->end_date)->addDay()->format('Y-m-d') // FullCalendar expects end-exclusive
+                ? Carbon::parse($holiday->end_date)->addDay()->format('Y-m-d')
                 : $start;
 
             return [
@@ -103,13 +151,7 @@ class DashboardController extends Controller
             ];
         });
 
-        // Events — ignore start_time / end_time
         $calendarEvents = $events->map(function ($e) {
-            $start = Carbon::parse($e->start_date)->format('Y-m-d');
-            $end   = $e->end_date
-                ? Carbon::parse($e->end_date)->addDay()->format('Y-m-d')
-                : $start;
-
             return [
                 'id' => $e->id,
                 'title' => $e->event_name,
@@ -123,34 +165,15 @@ class DashboardController extends Controller
             ];
         });
 
-        // Combine both
-        $calendarCombined = $calendarEvents->merge($calendarHolidays)->values();
+        return $calendarEvents->merge($calendarHolidays)->values();
+    }
 
-        $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
+    /** Today's notifications */
+    private function getTodayNotifications()
+    {
+        return NotificationLog::whereDate('sent_at', now()->toDateString())
             ->orderBy('sent_at', 'desc')
             ->get();
-
-        return view('dashboard.index', compact(
-            'totalDevices',
-            'fullDevices',
-            'fullDevicesCollection',
-            'halfDevices',
-            'halfDevicesCollection',
-            'emptyDevices',
-            'undetectedDevices',
-            'todos',
-            'floors',
-            'assetsWithCoords',
-            'devices',
-            'users',
-            'assignedTasks',
-            'latestComplaints',
-            'smartBinClearTimes',
-            'totalTrend',
-            'todayNotifications',
-            'assetsWithDevices',
-            'calendarCombined',
-        ));
     }
 
     /** Load devices with latest sensor and optional before date */
