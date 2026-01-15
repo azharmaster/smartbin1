@@ -47,19 +47,19 @@ class Aside extends Component
                 "route_active" => "users.*"
             ],
             [
-                "label" => "Holiday",
-                "icon" => "fas fa-building",
+                "label" => "Holiday and Event",
+                "icon" => "fas fa-calendar-alt",
                 "color" => "#f6c23e",
                 "route_name" => "holidays.index",
                 "route_active" => "holidays.*"
             ],
-            [
-                "label" => "Event",
-                "icon" => "fas fa-calendar-alt",
-                "color" => "#4e73df",
-                "route_name" => "events.index",
-                "route_active" => "events.*"
-            ],
+            // [
+            //     "label" => "Event",
+            //     "icon" => "fas fa-calendar-alt",
+            //     "color" => "#4e73df",
+            //     "route_name" => "events.index",
+            //     "route_active" => "events.*"
+            // ],
             
             // SETTINGS
             [
