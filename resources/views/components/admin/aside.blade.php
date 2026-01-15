@@ -1,23 +1,20 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4" style="background: linear-gradient(135deg, #103913ff, #1f6423ff)">
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="" class="brand-link brand-app text-center">
-
-    <span class="brand-text">{{ env('APP_NAME') }}</span>
-</a>
+        <span class="brand-text">{{ env('APP_NAME') }}</span>
+    </a>
 
     <!-- Sidebar -->
-<div class="sidebar">
-
-    <!-- Sidebar Menu -->
-    <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+    <nav class="mt-2 sidebar">
+        <ul class="nav nav-pills nav-sidebar flex-column"
+            role="menu"
+            data-widget="treeview"
+            data-accordion="false">
 
             @foreach ($routes as $route)
-
                 @php
                     $iconColor = $route['color'] ?? '#6c757d';
 
-                    // Active state 
                     $isActive = false;
                     if (!empty($route['route_active'])) {
                         if (is_array($route['route_active'])) {
@@ -34,14 +31,10 @@
                 @endphp
 
                 @if(($route['type'] ?? null) === 'section')
-                    <li class="nav-header text-uppercase">
-                        {{ $route['label'] }}
-                    </li>
+                    <li class="nav-header text-uppercase">{{ $route['label'] }}</li>
 
                 @elseif(($route['type'] ?? null) === 'divider')
-                    <li class="nav-item">
-                        <hr class="my-2">
-                    </li>
+                    <li class="nav-item"><hr class="my-2"></li>
 
                 @elseif(!empty($route['is_logout']))
                     <li class="nav-item mt-3">
@@ -56,31 +49,35 @@
 
                 @else
                     <li class="nav-item">
-                        <a href="{{ route($route['route_name']) }}"
-                           class="nav-link {{ $isActive ? 'active' : '' }}">
-                            <i class="nav-icon {{ $route['icon'] }}"
-                               style="color: {{ $iconColor }}"></i>
+                        <a href="{{ route($route['route_name']) }}" class="nav-link {{ $isActive ? 'active' : '' }}">
+                            <i class="nav-icon {{ $route['icon'] }}" style="color: {{ $iconColor }}"></i>
                             <p>{{ $route['label'] }}</p>
                         </a>
                     </li>
                 @endif
 
             @endforeach
-
         </ul>
     </nav>
+</aside>
     <!-- /.sidebar-menu -->
-</div>
 
 <style>
+/* Base sidebar */
+.main-sidebar {
+    background: linear-gradient(135deg, #103913ff, #1f6423ff);
+    transition: width 0.25s ease-in-out;
+}
+
+/* Links */
 .nav-sidebar .nav-link {
-    margin: 3px 8px;          /* tighter spacing */
-    padding: 7px 10px;        /* smaller click area */
+    margin: 3px 8px;
+    padding: 7px 10px;
 }
 
 .nav-sidebar .nav-link p {
-    font-size: 0.90rem;       /* smaller text */
-    font-weight: 400;         /* normal (not bold) */
+    font-size: 0.90rem;
+    font-weight: 400;
 }
 
 .nav-sidebar .nav-icon {
@@ -88,10 +85,7 @@
     margin-right: 8px;
 }
 
-.nav-sidebar .nav-link.active {
-    font-weight: 400;
-}
-
+/* Nav header */
 .nav-header {
     font-size: 0.7rem;
     font-weight: 500;
@@ -101,40 +95,54 @@
     color: rgba(255,255,255,0.6);
 }
 
+/* Brand text */
 .brand-app .brand-text {
     font-size: 0.9rem;
     font-weight: 600;
-    letter-spacing: 0.4px;
-    text-transform: none;
 }
 
-/* Remove blue highlight for active sidebar item */
-.nav-sidebar .nav-link.active {
-    background: transparent !important;
-    color: rgba(255,255,255,0.85) !important;
-    box-shadow: none !important;
-}
-
-/* Ensure text is not bold when active */
+/* Remove active highlight */
+.nav-sidebar .nav-link.active,
 .nav-sidebar .nav-link.active p {
-    font-weight: 400 !important;
+    background: transparent !important;
 }
 
-/* Icons also stay normal */
-.nav-sidebar .nav-link.active .nav-icon {
-    opacity: 0.9;
+/* Collapsed sidebar */
+body.sidebar-collapse .main-sidebar {
+    width: 4.6rem !important;
 }
 
+body.sidebar-collapse .nav-sidebar .nav-link p,
+body.sidebar-collapse .nav-header,
+body.sidebar-collapse .brand-text,
+body.sidebar-collapse .sidebar hr {
+    display: none !important;
+}
+
+body.sidebar-collapse .nav-sidebar .nav-link {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+body.sidebar-collapse .nav-sidebar .nav-icon {
+    margin-right: 0;
+    font-size: 1rem;
+}
+
+/* Page Indicator */
 .nav-sidebar .nav-link.active::before {
     content: '';
-    width: 3px;
-    height: 100%;
-    background: rgba(255,255,255,0.25);
     position: absolute;
     left: 0;
     top: 0;
+    height: 100%;
+    width: 4px; /* slightly thicker */
+    background: #717b75; /* brighter green for visibility */
+    border-radius: 0 4px 4px 0; /* rounded edges on the right */
+    transition: background 0.3s ease, height 0.3s ease;
 }
+
+
 </style>
 
 <!-- /.sidebar -->
-</aside>

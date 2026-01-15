@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Models\Task; 
 use App\Models\CapacitySetting;
 use App\Models\Holiday;
-use App\Models\Event; // <-- ensure Event is imported
+use App\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -83,39 +83,41 @@ class DashboardController extends Controller
             ->orderBy('asset_name')
             ->get();
 
-        // 📅 Load holidays for calendar
+        //Holidays
         $holidays = Holiday::where('is_active', true)->get();
 
-        // 📅 Load events for calendar
-        $events = Event::all();
-
-        // Map events for FullCalendar (no Carbon parsing, just ISO concat)
-        $calendarEvents = $events->map(function($e) {
-            return [
-                'id'      => $e->id,
-                'title'   => $e->event_name,
-                'start'   => $e->start_date . 'T' . $e->start_time, // e.g. 2026-01-13T20:00:00
-                'end'     => $e->end_date . 'T' . $e->end_time,     // e.g. 2026-01-13T22:00:00
-                'color'   => '#28a745', // green for events
-                'allDay'  => false,
-            ];
-        })->toArray();
-
-        // Map holidays for FullCalendar
         $calendarHolidays = $holidays->map(function ($holiday) {
             return [
                 'title'  => '🎉 ' . $holiday->name,
                 'start'  => $holiday->start_date,
                 'end'    => $holiday->end_date
-                            ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
-                            : null,
+                    ? Carbon::parse($holiday->end_date)->addDay()->toDateString()
+                    : null,
                 'allDay' => true,
                 'color'  => '#dc3545',
+                'type'   => 'holiday',
             ];
         });
 
-        // ✅ Combine events + holidays (events first)
-        $calendarCombined = array_merge($calendarEvents, $calendarHolidays->toArray());
+        // 📅 Events
+        $events = Event::all();
+
+        $calendarEvents = $events->map(function ($e) {
+            return [
+                'id'     => $e->id,
+                'title'  => $e->event_name,
+                'start'  => $e->start_date . 'T' . $e->start_time,
+                'end'    => $e->end_date . 'T' . $e->end_time,
+                'color'  => '#28a745',
+                'allDay' => false,
+                'type'   => 'event',
+            ];
+        });
+
+        // 🔥 Combine both
+        $calendarCombined = $calendarEvents
+            ->merge($calendarHolidays)
+            ->values();
 
         $todayNotifications = NotificationLog::whereDate('sent_at', now()->toDateString())
             ->orderBy('sent_at', 'desc')
@@ -138,9 +140,9 @@ class DashboardController extends Controller
             'latestComplaints',
             'smartBinClearTimes',
             'totalTrend',
-            'calendarCombined', // <-- pass combined calendar array
             'todayNotifications',
             'assetsWithDevices',
+            'calendarCombined',
         ));
     }
 

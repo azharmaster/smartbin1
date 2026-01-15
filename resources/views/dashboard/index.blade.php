@@ -635,7 +635,78 @@ function trend($current, $previous) {
 
 
        <!-- RIGHT COLUMN -->
-<div class="col-lg-6">
+        <div class="col-lg-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-trash-alt me-2"></i> Sensor Lists
+                    </h5>
+                </div>
+
+                <div class="card-body p-2">
+                    <div class="accordion" id="assetAccordion">
+
+                        @forelse($assetsWithDevices as $asset)
+                            <div class="accordion-item mb-2">
+                                <h2 class="accordion-header" id="heading{{ $asset->id }}">
+                                    <button
+                                        class="accordion-button collapsed fw-semibold"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#asset{{ $asset->id }}">
+
+                                        🗑️ {{ $asset->name }}
+                                        {{ $asset->asset_name }}
+                                    </button>
+                                </h2>
+
+                                <div
+                                    id="asset{{ $asset->id }}"
+                                    class="accordion-collapse collapse"
+                                    data-bs-parent="#assetAccordion">
+
+                                    <div class="accordion-body p-2">
+                                        <ul class="list-group list-group-flush">
+
+                                            @foreach($asset->devices as $device)
+                                                @php
+                                                    $latest = $device->sensors->last();
+                                                    $level = $latest->capacity ?? null;
+
+                                                    $badge = match (true) {
+                                                        $level === null => 'secondary',
+                                                        $level >= 86 => 'danger',
+                                                        $level >= 41 => 'warning',
+                                                        default => 'success',
+                                                    };
+                                                @endphp
+
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>{{ $device->device_name }}</strong><br>
+                                                        <small class="text-muted">
+                                                        </small>
+                                                    </div>
+
+                                                    <span class="badge bg-{{ $badge }}">
+                                                        {{ $level !== null ? $level.'%' : 'Undetected' }}
+                                                    </span>
+                                                </li>
+                                            @endforeach
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No assets found
+                            </div>
+                        @endforelse
+
+                    </div>
+                </div>
+            </div>
 
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
@@ -887,34 +958,35 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         // 🔥 OPEN event modal on click (Bootstrap 4)
+
         eventClick: function(info) {
-            const eventId = info.event.extendedProps.id;
 
-            if(eventId){
-                fetch(`/events/${eventId}`)
-                    .then(res => res.json())
-                    .then(event => {
-                        // Format dates & times separately
-                        const startDate = new Date(event.start_date + 'T' + event.start_time);
-                        const endDate = new Date(event.end_date + 'T' + event.end_time);
-
-                        const formatDate = dt => dt.toISOString().split('T')[0];
-                        const formatTime = dt => dt.toTimeString().split(' ')[0].slice(0,5); // HH:MM
-
-                        $('#eventName').text(event.event_name);
-                        $('#eventLocation').text(event.location);
-                        $('#eventPic').text(event.pic_phone);
-                        $('#eventStart').text(formatDate(startDate) + ' ' + formatTime(startDate));
-                        $('#eventEnd').text(formatDate(endDate) + ' ' + formatTime(endDate));
-
-                        // Show modal
-                        $('#eventDetailsModal').modal('show');
-                    });
-            }
-
-            info.jsEvent.preventDefault();
+        if (info.event.extendedProps.type !== 'event') {
+            return;
         }
 
+        const eventId = info.event.id;
+
+        fetch(`/events/${eventId}`)
+            .then(res => res.json())
+            .then(event => {
+                const startDate = new Date(event.start_date + 'T' + event.start_time);
+                const endDate   = new Date(event.end_date + 'T' + event.end_time);
+
+                const formatDate = d => d.toISOString().split('T')[0];
+                const formatTime = d => d.toTimeString().slice(0,5);
+
+                $('#eventName').text(event.event_name);
+                $('#eventLocation').text(event.location);
+                $('#eventPic').text(event.pic_phone);
+                $('#eventStart').text(`${formatDate(startDate)} ${formatTime(startDate)}`);
+                $('#eventEnd').text(`${formatDate(endDate)} ${formatTime(endDate)}`);
+
+                $('#eventDetailsModal').modal('show');
+            });
+
+        info.jsEvent.preventDefault();
+    }
     });
 
     calendar.render();
