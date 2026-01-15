@@ -101,36 +101,6 @@
                       filter: drop-shadow(0 0 6px {{ $glowColor }});"></i>
         </div>
     </div>
-
-    <!-- Asset Image Card (NOW truly beneath map) -->
-    <div style="padding: 12px;
-                border: 1px solid #ccc;
-                border-radius: 10px;
-                background-color: #fff;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                text-align: center;">
-
-        <h3 style="font-weight: 600; font-size: 16px; margin-bottom: 10px; color: #34495e;">
-            Asset Image
-        </h3>
-
-        @if($asset->picture)
-            <img src="{{ asset('storage/' . $asset->picture) }}"
-                 alt="Asset Picture"
-                 style="width: 100%;
-                        max-height: 220px;
-                        object-fit: contain;
-                        border-radius: 8px;
-                        cursor: pointer;"
-                 onclick="window.open(this.src, '_blank')">
-        @else
-            <div style="padding: 30px; color: #999;">
-                <i class="far fa-image" style="font-size: 32px; margin-bottom: 8px;"></i>
-                <p style="margin: 0;">No image uploaded</p>
-            </div>
-        @endif
-    </div>
-
 </div>
 
 <!-- Right Column: Asset + Bin + Devices -->
@@ -139,19 +109,46 @@
     <!-- Entire right section in a card -->
     <div style=" border-radius: 12px; background: #00000000; display: flex; flex-direction: column; gap: 12px;">
 
-        <!-- Asset Info Card -->
-        <div style="padding: 12px; border: 1px solid #362e2e; border-radius: 10px;">
-            <p style="margin: 2px 0;"><strong>Floor:</strong> {{ $asset->floor->floor_name ?? '-' }}</p>
-            <p style="margin: 2px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
-            <p style="margin: 2px 0;"><strong>Location:</strong> {{ $asset->location ?? '-' }}</p>
-            <p style="margin: 2px 0;"><strong>Model:</strong> {{ $asset->model ?? '-' }}</p>
-            <x-asset.form-asset
-                :id="$asset->id"
-                :floors="$floors"
-                :picture="$asset->picture"
-            />
-        </div>
+        <!-- Asset Card: Image + Info Side by Side -->
+        <div style="display: flex; gap: 16px; padding: 12px; border: 1px solid #362e2e; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); align-items: flex-start;">
 
+            <!-- Asset Image -->
+            <div style="flex: 0 0 220px; text-align: center;">
+                @if($asset->picture)
+                    <img src="{{ asset('storage/' . $asset->picture) }}"
+                        alt="Asset Picture"
+                        style="width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; cursor: pointer;"
+                        onclick="window.open(this.src, '_blank')">
+                @else
+                    <div style="padding: 30px; color: #999;">
+                        <i class="far fa-image" style="font-size: 32px; margin-bottom: 8px;"></i>
+                        <p style="margin: 0;">No image uploaded</p>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Asset Info + Edit Button -->
+            <div style="flex: 1; position: relative;">
+                <!-- Edit Button at top-right -->
+                <div style="position: absolute; top: 0; right: 0;">
+                    <x-asset.form-asset
+                        :id="$asset->id"
+                        :floors="$floors"
+                        :picture="$asset->picture"
+                        style="font-size: 12px; padding: 4px 8px;" 
+                    />
+                </div>
+
+                <!-- Asset Details -->
+                <div style="padding-top: 28px;"> <!-- spacing to avoid overlap with button -->
+                    <p style="margin: 4px 0;"><strong>Floor:</strong> {{ $asset->floor->floor_name ?? '-' }}</p>
+                    <p style="margin: 4px 0;"><strong>Serial No:</strong> {{ $asset->serialNo ?? '-' }}</p>
+                    <p style="margin: 4px 0;"><strong>Location:</strong> {{ $asset->location ?? '-' }}</p>
+                    <p style="margin: 4px 0;"><strong>Model:</strong> {{ $asset->model ?? '-' }}</p>
+                </div>
+            </div>
+
+        </div>
         <!-- Bin + Device Cards -->
         <div style="display: flex; gap: 12px; align-items: stretch;">
 
@@ -225,67 +222,68 @@
                 flex: 1; /* take remaining space */
                 align-content: start; /* remove extra vertical gap */
             ">
-            @php
-                $deviceCount = $asset->devices->count();
-            @endphp
+                @php
+                    $deviceCount = $asset->devices->count();
+                @endphp
 
-            @if($asset->devices->count() < 3)
-                <div class="ms-auto">
-                    <x-device.form-device 
-                        :assets="$assets"
-                        :asset_id="$asset->id"
-                    />
+                @if($asset->devices->count() < 3)
+                    <div class="ms-auto">
+                        <x-device.form-device 
+                            :assets="$assets"
+                            :asset_id="$asset->id"
+                            style="font-size: 10px;"
+                        />
+                    </div>
+                @endif
+                
+                @foreach($asset->devices as $device)
+                @php
+                    $sensor = $device->sensors->sortByDesc('time')->first();
+                @endphp
+
+                <div style="position: relative; padding: 14px; border-radius: 12px; background: #fff;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+                    border-left: 5px solid
+                        {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
+                        (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};">
+                    
+                    {{-- Edit button in corner --}}
+                    <x-device.form-device
+                            :id="$device->id"
+                            :assets="$assets"
+                            :device_name="$device->device_name"
+                            :asset_id="$asset->id"
+                            :id_device="$device->id_device"
+                        />
+                    
+                    <!-- Header -->
+                    <div style="margin-bottom: 8px;">
+                        <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
+                            {{ $device->device_name }}
+                        </h3>
+                        <span style="font-size: 12px; color: #777;">
+                            Last updated: {{ $sensor?->time ?? 'N/A' }}
+                        </span>
+                    </div>
+
+                    <!-- Info rows -->
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 6px;
+                        font-size: 14px;
+                        color: #000;
+                    ">
+                        <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
+                        <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
+                        <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
+                        <div>⚙️ <strong>
+                            {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
+                            (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
+                        </strong></div>
+                    </div>
                 </div>
-            @endif
-            
-@foreach($asset->devices as $device)
-@php
-    $sensor = $device->sensors->sortByDesc('time')->first();
-@endphp
-
-<div style="position: relative; padding: 14px; border-radius: 12px; background: #fff;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-    border-left: 5px solid
-        {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
-           (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};">
-    
-    {{-- Edit button in corner --}}
-    <x-device.form-device
-            :id="$device->id"
-            :assets="$assets"
-            :device_name="$device->device_name"
-            :asset_id="$asset->id"
-            :id_device="$device->id_device"
-        />
-    
-    <!-- Header -->
-    <div style="margin-bottom: 8px;">
-        <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #2c3e50;">
-            {{ $device->device_name }}
-        </h3>
-        <span style="font-size: 12px; color: #777;">
-            Last updated: {{ $sensor?->time ?? 'N/A' }}
-        </span>
-    </div>
-
-    <!-- Info rows -->
-    <div style="
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        font-size: 14px;
-        color: #000;
-    ">
-        <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
-        <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
-        <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
-        <div>⚙️ <strong>
-            {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
-               (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
-        </strong></div>
-    </div>
-</div>
-@endforeach
+                @endforeach
             </div>
         </div>
     </div>
