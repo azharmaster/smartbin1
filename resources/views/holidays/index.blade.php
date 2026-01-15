@@ -217,9 +217,9 @@
                                 <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
                                 <td>
                                     <!-- VIEW -->
-                                    <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#showEventModal{{ $event->id }}">
+                                    <!-- <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#showEventModal{{ $event->id }}">
                                         <i class="far fa-eye"></i>
-                                    </button>
+                                    </button> -->
 
                                     <!-- EDIT -->
                                     <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEventModal{{ $event->id }}">
