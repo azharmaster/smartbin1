@@ -897,19 +897,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <!-- Event Details Modal -->
 <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content rounded shadow-sm">
-      
+
       <!-- Header -->
       <div class="modal-header border-bottom">
         <h5 class="modal-title" id="eventDetailsModalLabel">
-          <i class="fas fa-calendar-alt me-2"></i> Event Details
+          <i class="fas fa-calendar-alt"></i> Event Details
         </h5>
+        <!-- Header Close Button -->
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      
+
       <!-- Body -->
       <div class="modal-body">
         <p><strong>Name:</strong> <span id="eventName"></span></p>
@@ -918,16 +919,14 @@ document.addEventListener("DOMContentLoaded", function () {
         <p><strong>Start:</strong> <span id="eventStart"></span></p>
         <p><strong>End:</strong> <span id="eventEnd"></span></p>
       </div>
+
       
-      <!-- Footer -->
-        <div class="modal-footer border-top">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            Close
-        </button>
-        </div>
+
     </div>
   </div>
 </div>
+
+
 
 
 <script>
