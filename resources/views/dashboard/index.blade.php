@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('content_title', 'Dashboard')
+@section('content_title', '')
 
 @section('content')
 
@@ -485,11 +485,11 @@ function trend($current, $previous) {
 
 <div class="container-fluid mt-4">
 
-    <div class="d-flex justify-content-end mb-3">
+    <!-- <div class="d-flex justify-content-end mb-3">
         <a href="{{ route('admin.main.dashboard') }}" class="btn btn-success">
             <i class="fas fa-chart-line"></i> Live Dashboard
         </a>
-    </div>
+    </div> -->
 
 
     <!-- ROW 1: SMARTBIN CHART -->
