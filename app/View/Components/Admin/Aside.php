@@ -108,7 +108,7 @@ class Aside extends Component
             [
                 "label" => "Logout",
                 "icon" => "fas fa-sign-out-alt",
-                "color" => "#e74a3b",
+                "color" => "#e16256",
                 "route_name" => "logout",
                 "is_logout" => true
             ],

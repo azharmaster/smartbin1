@@ -40,7 +40,7 @@
                     <li class="nav-item mt-3">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-danger w-100 text-start">
+                            <button type="submit" class="nav-link w-100 text-white text-start logout-link">
                                 <i class="{{ $route['icon'] }} me-2"></i>
                                 {{ $route['label'] }}
                             </button>
@@ -142,7 +142,33 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     transition: background 0.3s ease, height 0.3s ease;
 }
 
+.logout-link {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+}
 
+.logout-link i {
+    color: #ffffff;
+}
+
+.logout-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.logout-link,
+.logout-link:hover,
+.logout-link:focus,
+.logout-link:active {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.logout-link i,
+.logout-link:hover i {
+    color: #ffffff !important;
+}
 </style>
 
 <!-- /.sidebar -->
