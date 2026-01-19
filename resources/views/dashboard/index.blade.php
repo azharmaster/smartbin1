@@ -767,6 +767,8 @@ function trend($current, $previous) {
             }
             </style>
         </div>
+    </div>
+</div>
 
 
 <style>

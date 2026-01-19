@@ -236,8 +236,8 @@
         </div>
 
         <footer class="main-footer">
-            <div class="float-right d-none d-sm-inline">Anything you want</div>
-            <strong>Copyright &copy; 2014-2021 SmartBin.</strong>
+            <div class="float-right d-none d-sm-inline"><b>Version</b> 0.1</div>
+            <strong>Copyright &copy; 2026-2027 SmartBin.</strong>
             All rights reserved.
         </footer>
     </div>
