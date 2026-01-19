@@ -219,11 +219,21 @@
                             <h1 class="m-0">@yield('content_title')</h1>
                         </div>
                         <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-                                <li class="breadcrumb-item active">@yield('content_title')</li>
-                            </ol>
-                        </div>
+    @if(request()->routeIs('dashboard'))
+        {{-- Dashboard: show only Live Dashboard button --}}
+        <div class="float-sm-right">
+            <a href="{{ route('admin.main.dashboard') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-chart-line"></i> Live Dashboard
+            </a>
+        </div>
+    @else
+        {{-- Other pages: normal breadcrumb --}}
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+            <li class="breadcrumb-item active">@yield('content_title')</li>
+        </ol>
+    @endif
+</div>
                     </div>
                 </div>
             </div>
