@@ -50,7 +50,7 @@
                                 <th>Name</th>
                                 <th>Dates</th>
                                 <th>Active</th>
-                                <th>Action</th>
+                                <th>Option</th>
                             </tr>
                         </thead>
                         <tbody>
