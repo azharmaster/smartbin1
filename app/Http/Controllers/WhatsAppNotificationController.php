@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WhatsAppNotification;
 use App\Models\Asset;   // ✅ Added to fetch bins/assets
 use App\Models\Device;  // ✅ Added to toggle device notifications
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -42,7 +43,10 @@ class WhatsAppNotificationController extends Controller
         // ✅ Fetch all bins (assets) and eager load devices
         $bins = Asset::with('devices')->get();
 
-        return view('whatsapp.index', compact('notification', 'bins'));
+        // ✅ Fetch supervisors for WhatsApp notification toggle
+        $supervisors = User::where('role', 'supervisor')->get();
+
+        return view('whatsapp.index', compact('notification', 'bins', 'supervisors'));
     }
 
     /**
@@ -92,5 +96,17 @@ class WhatsAppNotificationController extends Controller
 
         return redirect()->route('whatsapp.index')
                          ->with('success', "Device '{$device->device_name}' notification toggled.");
+    }
+
+    /**
+     * Toggle the ON/OFF status of a Supervisor (WhatsApp notification)
+     */
+    public function toggleSupervisor(User $user)
+    {
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return redirect()->route('whatsapp.index')
+                         ->with('success', "Supervisor '{$user->name}' notification updated.");
     }
 }
