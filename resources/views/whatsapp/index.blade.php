@@ -272,21 +272,28 @@ input:checked + .slider:before {
 
 {{-- 🔎 Client-side Search Script --}}
 <script>
-document.getElementById('binSearch').addEventListener('keyup', function () {
-    let searchValue = this.value.toLowerCase();
-    let bins = document.querySelectorAll('.bin-item');
+document.addEventListener('DOMContentLoaded', function () {
 
-    bins.forEach(function (bin) {
-        let name = bin.getAttribute('data-name');
-        let location = bin.getAttribute('data-location');
+    const searchInput = document.getElementById('binSearch');
+    if (!searchInput) return;
 
-        if (name.includes(searchValue) || location.includes(searchValue)) {
-            bin.style.display = '';
-        } else {
-            bin.style.display = 'none';
-        }
+    searchInput.addEventListener('keyup', function () {
+        let searchValue = this.value.toLowerCase();
+        let bins = document.querySelectorAll('.bin-item');
+
+        bins.forEach(function (bin) {
+            let name = bin.dataset.name || '';
+            let location = bin.dataset.location || '';
+
+            bin.style.display =
+                name.includes(searchValue) || location.includes(searchValue)
+                ? ''
+                : 'none';
+        });
     });
+
 });
 </script>
+
 
 @endsection
