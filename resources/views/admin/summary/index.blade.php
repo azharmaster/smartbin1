@@ -1,5 +1,7 @@
 @extends('layouts.app')
-@section('content_title', 'Monthly Summary Report')
+@section('content_title')
+    {{ ucfirst($period) }} Summary Report
+@endsection
 
 @section('content')
 <div class="container-fluid">
@@ -7,18 +9,49 @@
     {{-- ================= HEADER ROW ================= --}}
     <div class="row mb-4 align-items-center no-print">
         <div class="col-md-4">
-            <form method="GET" action="{{ route('summary') }}">
-                <div class="input-group">
-                    <span class="input-group-text bg-success text-white">
-                        <i class="fas fa-calendar-alt"></i>
-                    </span>
-                    <input type="month"
-                           name="month"
-                           value="{{ $monthInput }}"
-                           class="form-control fw-bold"
-                           onchange="this.form.submit()">
-                </div>
-            </form>
+            <form method="GET" action="{{ route('summary') }}" class="d-flex gap-2 align-items-end">
+
+    {{-- Period selector --}}
+    <div>
+        <label class="form-label fw-bold">Period</label>
+        <select name="period"
+                class="form-select fw-bold"
+                onchange="this.form.submit()">
+            <option value="month" {{ $period === 'month' ? 'selected' : '' }}>
+                Monthly
+            </option>
+            <option value="week" {{ $period === 'week' ? 'selected' : '' }}>
+                Weekly
+            </option>
+        </select>
+    </div>
+
+    {{-- Month picker --}}
+    @if ($period === 'month')
+        <div>
+            <label class="form-label fw-bold">Select Month</label>
+            <input type="month"
+                   name="month"
+                   value="{{ $monthInput }}"
+                   class="form-control fw-bold"
+                   onchange="this.form.submit()">
+        </div>
+    @endif
+
+    {{-- Week picker --}}
+    @if ($period === 'week')
+        <div>
+            <label class="form-label fw-bold">Select Week</label>
+            <input type="week"
+                   name="week"
+                   class="form-control fw-bold"
+                   value="{{ request('week', now()->format('Y-\WW')) }}"
+                   onchange="this.form.requestSubmit()">
+        </div>
+    @endif
+
+</form>
+
         </div>
 
         <div class="col-md-2 ms-auto text-end">
@@ -87,7 +120,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-dark text-white">
                     <i class="fas fa-lightbulb me-2"></i>
-                    Monthly Insights
+                        {{ ucfirst($period) }} Insights
                 </div>
                 <div class="card-body">
                     <ul class="mb-0">
