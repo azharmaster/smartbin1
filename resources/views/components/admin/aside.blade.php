@@ -3,9 +3,12 @@
     <!-- <a href="" class="brand-link brand-app text-center">
         <span class="brand-text">{{ env('APP_NAME') }}</span>
     </a> -->
-    <a href="" class="brand-link brand-app text-center" ><img src="{{ asset('uploads/images/logo_white.png') }}"
-     alt="Logo" class="me-2" style="height:20px;"><img src="{{ asset('uploads/images/smartbin-tex.png') }}"
-     alt="Logo" class="me-2" style="height:20px;"></a>
+    <a href="" class="brand-link brand-app text-center d-flex align-items-center justify-content-center">
+    <img src="{{ asset('uploads/images/logo_white.png') }}"
+         alt="Logo" class="brand-logo-img" style="height:20px;">
+    <img src="{{ asset('uploads/images/smartbin-tex.png') }}"
+         alt="Text" class="brand-text-img ms-2" style="height:20px;">
+</a>
 
     <!-- Sidebar -->
     <nav class="mt-2 sidebar">
@@ -66,6 +69,29 @@
     <!-- /.sidebar-menu -->
 
 <style>
+/* ===== Brand logo behavior ===== */
+
+/* Default: show both */
+.brand-logo-img {
+    display: inline-block;
+}
+
+.brand-text-img {
+    display: inline-block;
+}
+
+/* Sidebar collapsed: hide text image */
+body.sidebar-collapse .brand-text-img {
+    display: none !important;
+}
+
+/* Center logo when collapsed */
+body.sidebar-collapse .brand-link {
+    justify-content: center !important;
+}
+
+
+
 /* Base sidebar */
 .main-sidebar {
     background: linear-gradient(135deg, #103913ff, #1f6423ff);
