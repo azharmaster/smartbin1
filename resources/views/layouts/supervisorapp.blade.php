@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Supervisor | POS SYSTEM</title>
+    <title>Supervisor | SMARTBIN</title>
     
     <!-- Google Font -->
     <link rel="stylesheet"
