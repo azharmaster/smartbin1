@@ -1,8 +1,11 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="" class="brand-link brand-app text-center">
+    <!-- <a href="" class="brand-link brand-app text-center">
         <span class="brand-text">{{ env('APP_NAME') }}</span>
-    </a>
+    </a> -->
+    <a href="" class="brand-link brand-app text-center" ><img src="{{ asset('uploads/images/logo_white.png') }}"
+     alt="Logo" class="me-2" style="height:20px;"><img src="{{ asset('uploads/images/smartbin-tex.png') }}"
+     alt="Logo" class="me-2" style="height:20px;"></a>
 
     <!-- Sidebar -->
     <nav class="mt-2 sidebar">

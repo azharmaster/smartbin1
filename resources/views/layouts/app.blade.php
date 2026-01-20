@@ -161,8 +161,14 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/dashboard" class="nav-link">SMARTBIN</a>
+                    <a href="/dashboard" class="nav-link d-flex align-items-center">
+                        <!-- Logo Image -->
+                        <img src="{{ asset('uploads/images/logo.png') }}" alt="Logo" class="me-2" style="height:30px;">
+                        <!-- Link Text -->
+                        SMARTBIN
+                    </a>
                 </li>
+
             </ul>
 
             @php
