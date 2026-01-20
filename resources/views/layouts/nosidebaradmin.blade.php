@@ -5,7 +5,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'POS SYSTEM')</title>
+    <title>SMARTBIN</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('uploads/images/logo.png') }}">
 
     <!-- Google Font -->
     <link rel="stylesheet"
