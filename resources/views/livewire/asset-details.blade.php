@@ -331,13 +331,13 @@
                 ">
 
                     <div style="
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 6px;
-    z-index: 5;
-">
+                        position: absolute;
+                        top: 8px;
+                        right: 8px;
+                        display: flex;
+                        gap: 6px;
+                        z-index: 5;
+                    ">
 
     <!-- Edit -->
     <x-device.form-device
@@ -371,7 +371,7 @@
         </button>
     </form>
 </div>
-                    <h3 style="margin: 0; font-size: 15px; font-weight: 600;">
+                    <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #121010;">
                         {{ $device->device_name }}
                     </h3>
                     <p style="margin: 2px 0 10px; font-size: 12px; color: #777;">
@@ -383,6 +383,7 @@
                         grid-template-columns: 1fr 1fr;
                         gap: 6px;
                         font-size: 13px;
+                        color: #777;
                     ">
                         <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
                         <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
