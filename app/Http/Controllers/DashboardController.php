@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use App\Models\NotificationLog;
+use App\Models\WhatsAppNotification;
 
 class DashboardController extends Controller
 {
@@ -68,6 +69,7 @@ class DashboardController extends Controller
 
         $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
         $trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
+        $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
         return view('dashboard.index', array_merge($deviceStats, [
             'totalTrend' => $trendStats['totalTrend'],
@@ -83,6 +85,7 @@ class DashboardController extends Controller
             'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
             'calendarCombined' => $this->getCalendarEvents(),
             'todayNotifications' => $this->getTodayNotifications(),
+            'whatsappNotificationActive'=> $whatsappNotificationActive,
         ]));
     }
 
@@ -262,6 +265,33 @@ private function getDeviceStats($devices, $emptyMax, $halfMax): array
                    ->groupBy('user_id')
                    ->with('user:id,name')
                    ->get();
+    }
+
+    // Get the current notification status
+    private function getWhatsappNotificationStatus()
+    {
+        $notif = WhatsappNotification::first(); // assuming only one row
+        return $notif ? $notif->is_active : false;
+    }
+
+    // Toggle the notification status
+    public function toggleWhatsappNotification()
+    {
+        $notif = WhatsappNotification::first();
+
+        if (!$notif) {
+            // If the row doesn't exist, create it with is_active = true
+            $notif = WhatsappNotification::create(['is_active' => true]);
+        } else {
+            // Toggle the value
+            $notif->is_active = !$notif->is_active;
+            $notif->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_active' => $notif->is_active,
+        ]);
     }
 
     private function calculateSmartBinClearTimes($emptyMax, $halfMax)

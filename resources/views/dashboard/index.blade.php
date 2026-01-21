@@ -364,6 +364,48 @@ pre {
     font-family: inherit;
 }
 
+/* Custom ON/OFF toggle switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0d6efd; /* Blue when ON */
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -578,7 +620,37 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
-            <!-- SIMPLE USER LIST BELOW TODO LIST -->
+
+<div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white fs-6">
+            <i class="fas fa-sms"></i> WhatsApp Notification
+        </h5>
+    </div>
+    <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
+        <!-- ON / OFF Switch (Custom Style) -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="fw-semibold">Notification Status</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">OFF</span>
+                <label class="switch m-0">
+                    <input type="checkbox" id="whatsappNotificationSwitch" 
+                        {{ $whatsappNotificationActive ? 'checked' : '' }}>
+                    <span class="slider round"></span>
+                </label>
+                <span class="text-muted small">ON</span>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="text-right">
+            <button id="saveWhatsappNotification" class="btn btn-link p-0 ml-2" title="Save">
+                <i class="far fa-bookmark fa-lg text-green"></i>
+            </button>
+        </div>
+    </div>
+</div>
+            <!-- SIMPLE USER LIST  -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6">
@@ -976,6 +1048,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $(document).on('click', '.modal .close', function() {
         $(this).closest('.modal').modal('hide');
+    });
+
+    const whatsappSwitch = document.getElementById('whatsappNotificationSwitch');
+    const saveButton = document.getElementById('saveWhatsappNotification');
+
+    saveButton.addEventListener('click', function() {
+        fetch('{{ route("dashboard.toggleWhatsappNotification") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                is_active: whatsappSwitch.checked
+            }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                whatsappSwitch.checked = data.is_active;
+                alert('Notification status saved!');
+            }
+        })
+        .catch(err => console.error(err));
     });
 });
 </script>

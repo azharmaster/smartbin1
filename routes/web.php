@@ -71,6 +71,10 @@ Route::middleware('auth')->group(function(){
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout',[LoginController::class,'logout'])->name('logout');
 
+    Route::post('/dashboard/toggle-whatsapp-notification', [DashboardController::class, 'toggleWhatsappNotification'])
+        ->name('dashboard.toggleWhatsappNotification');
+
+
     // Floors
     Route::prefix('floors')->as('floors.')->controller(FloorController::class)->group(function () {
         Route::get('/', 'index')->name('index');
