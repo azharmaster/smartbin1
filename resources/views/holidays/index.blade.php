@@ -54,7 +54,7 @@
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Dates</th>
-                                <th>Active</th>
+                                <!-- <th>Active</th> -->
                                 <th>Option</th>
                             </tr>
                         </thead>
@@ -72,7 +72,7 @@
                                             {{ \Carbon\Carbon::parse($holiday->start_date)->format('Y-m-d') }}
                                         @endif
                                     </td>
-                                    <td>{{ $holiday->is_active ? 'Yes' : 'No' }}</td>
+                                    <!-- <td>{{ $holiday->is_active ? 'Yes' : 'No' }}</td> -->
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-1">
 
