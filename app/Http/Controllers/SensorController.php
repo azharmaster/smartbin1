@@ -12,8 +12,10 @@ class SensorController extends Controller
 {
     public function index()
     {
-        // Load all sensors with their device and the bin (asset) they belong to
-        $sensors = Sensor::with('device.asset')->get();
+        $sensors = Sensor::with('device.asset')
+                        ->orderBy('time', 'desc') 
+                        ->get();
+
         return view('sensors.index', compact('sensors'));
     }
 
