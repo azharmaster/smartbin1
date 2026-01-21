@@ -341,3 +341,5 @@ Route::delete('/holidays/{holiday}', [HolidayController::class, 'destroy'])->nam
 
 Route::resource('events', EventController::class)->except(['create']);
 
+Route::post('/holidays/{holiday}/toggle', [HolidayController::class, 'toggle'])->name('holidays.toggle');
+Route::post('/events/{event}/toggle', [EventController::class, 'toggle'])->name('events.toggle');

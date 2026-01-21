@@ -13,11 +13,8 @@ class HolidayController extends Controller
      */
     public function index()
     {
-        // Fetch all holidays, ordered by start_date ascending
         $holidays = Holiday::orderBy('start_date', 'asc')->get();
-
-        // Fetch all events, ordered by start_date ascending
-        $events = Event::orderBy('start_date', 'asc')->get();
+        $events   = Event::orderBy('start_date', 'asc')->get();
 
         return view('holidays.index', compact('holidays', 'events'));
     }
@@ -37,7 +34,7 @@ class HolidayController extends Controller
         Holiday::create([
             'name'       => $request->name,
             'start_date' => $request->start_date,
-            'end_date'   => $request->end_date, // can be null
+            'end_date'   => $request->end_date,
             'is_active'  => $request->has('is_active') ? 1 : 0,
         ]);
 
@@ -60,7 +57,7 @@ class HolidayController extends Controller
         $holiday->update([
             'name'       => $request->name,
             'start_date' => $request->start_date,
-            'end_date'   => $request->end_date, // can be null
+            'end_date'   => $request->end_date,
             'is_active'  => $request->has('is_active') ? 1 : 0,
         ]);
 
@@ -77,5 +74,23 @@ class HolidayController extends Controller
 
         return redirect()->route('holidays.index')
                          ->with('success', 'Holiday deleted successfully.');
+    }
+
+    /**
+     * Toggle holiday is_active.
+     */
+    public function toggle($id)
+    {
+        $holiday = Holiday::find($id);
+
+        if (!$holiday) {
+            return redirect()->back()->with('error', 'Holiday not found.');
+        }
+
+        // Toggle is_active
+        $holiday->is_active = !$holiday->is_active;
+        $holiday->save();
+
+        return redirect()->back()->with('success', 'Holiday notification status updated!');
     }
 }

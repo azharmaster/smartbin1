@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Sensor;
 use App\Services\WhatsAppSender;
 use App\Models\NotificationLog;
+use App\Models\Holiday;
+use App\Models\Event;
 use Illuminate\Support\Str;
 
 class SimulateSmartBins extends Command
@@ -51,6 +53,30 @@ class SimulateSmartBins extends Command
         if (!$now->between($workStart, $workEnd)) {
             $canSendWhatsApp = false;
             $this->info('⏰ Outside work hours.');
+        }
+
+        // Check active holidays or events
+        $isHolidayToday = Holiday::where('is_active', 1)
+            ->where('start_date', '<=', $now->toDateString())
+            ->where(function($q) use ($now) {
+                $q->whereNull('end_date')
+                  ->orWhere('end_date', '>=', $now->toDateString());
+            })->exists();
+
+        $hasActiveEvent = Event::where('is_active', 1)
+            ->where('start_date', '<=', $now->toDateString())
+            ->where(function($q) use ($now) {
+                $q->whereNull('end_date')
+                  ->orWhere('end_date', '>=', $now->toDateString());
+            })->exists();
+
+        if ($isHolidayToday) {
+            $canSendWhatsApp = false;
+            $this->info('🎉 Today is a holiday. Notifications skipped.');
+        }
+
+        if (!$hasActiveEvent) {
+            $this->info('ℹ️ No active events today.');
         }
 
         $capacity = CapacitySetting::first();

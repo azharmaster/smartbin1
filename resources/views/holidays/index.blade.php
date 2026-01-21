@@ -16,6 +16,11 @@
     max-height: 500px;
     overflow-y: auto;
 }
+.btn-notification {
+    min-width: 70px;
+    text-align: center;
+    font-weight: 600;
+}
 </style>
 
 <div class="row row-equal-height">
@@ -69,11 +74,12 @@
                                     </td>
                                     <td>{{ $holiday->is_active ? 'Yes' : 'No' }}</td>
                                     <td>
-                                        <div class="d-flex align-items-center justify-content-center">
+                                        <div class="d-flex align-items-center justify-content-center gap-1">
+
                                             <!-- Edit Button triggers modal -->
                                             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#editHolidayModal{{ $holiday->id }}">
                                                 <i class="fas fa-edit"></i>
-                                            </button>&nbsp;
+                                            </button>
 
                                             <!-- Delete -->
                                             <form action="{{ route('holidays.destroy', $holiday->id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
@@ -83,6 +89,15 @@
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
+
+                                            <!-- Notification Toggle -->
+                                            <form action="{{ route('holidays.toggle', $holiday->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-notification {{ $holiday->is_active ? 'btn-success' : 'btn-secondary' }}">
+                                                    {{ $holiday->is_active ? 'ON' : 'OFF' }}
+                                                </button>
+                                            </form>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -216,33 +231,31 @@
                                 <td>{{ \Carbon\Carbon::parse($event->start_date)->format('Y-m-d') }}</td>
                                 <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
                                 <td>
-                                    <!-- VIEW -->
-                                    <!-- <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#showEventModal{{ $event->id }}">
-                                        <i class="far fa-eye"></i>
-                                    </button> -->
-
-                                    <!-- EDIT -->
-                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEventModal{{ $event->id }}">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </button>
-
-                                    <!-- DELETE -->
-                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="fas fa-trash-alt"></i>
+                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                        <!-- EDIT -->
+                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEventModal{{ $event->id }}">
+                                            <i class="fas fa-pencil-alt"></i>
                                         </button>
-                                    </form>
+
+                                        <!-- DELETE -->
+                                        <form action="{{ route('events.destroy', $event->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- Notification Toggle -->
+                                        <form action="{{ route('events.toggle', $event->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}">
+                                                {{ $event->is_active ? 'ON' : 'OFF' }}
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
-
-                            {{-- SHOW MODAL --}}
-                            <div class="modal fade" id="showEventModal{{ $event->id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    @include('events.show', ['event' => $event])
-                                </div>
-                            </div>
 
                             {{-- EDIT MODAL --}}
                             <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1">

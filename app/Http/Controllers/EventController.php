@@ -92,4 +92,22 @@ class EventController extends Controller
         Event::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Event deleted successfully!');
     }
+
+    /**
+     * Toggle the is_active status of an event.
+     */
+    public function toggle($id)
+    {
+        $event = Event::find($id);
+
+        if (!$event) {
+            return redirect()->back()->with('error', 'Event not found!');
+        }
+
+        // Toggle active status
+        $event->is_active = !$event->is_active;
+        $event->save();
+
+        return redirect()->back()->with('success', 'Event notification status updated!');
+    }
 }
