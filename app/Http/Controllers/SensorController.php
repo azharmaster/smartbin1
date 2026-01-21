@@ -10,11 +10,20 @@ use Illuminate\Http\Request;
 
 class SensorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sensors = Sensor::with('device.asset')
-                        ->orderBy('time', 'desc') 
-                        ->get();
+        $query = Sensor::with('device.asset')->orderBy('time', 'desc');
+
+        // Apply search if there is a query
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('device_id', 'like', "%{$search}%")
+                ->orWhere('network', 'like', "%{$search}%");
+            // Add more columns if needed
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $sensors = $query->paginate($perPage)->withQueryString(); // preserves search in pagination links
 
         return view('sensors.index', compact('sensors'));
     }

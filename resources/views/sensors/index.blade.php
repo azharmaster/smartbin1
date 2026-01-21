@@ -5,7 +5,6 @@
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
         <h5 class="mb-0">Sensor Data</h5>
-
         <div class="ms-auto">
             {{-- keep empty for future button --}}
         </div>
@@ -21,8 +20,28 @@
         </div>
         @endif
 
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <form method="GET" class="d-flex">
+                <input type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    class="form-control form-control-sm me-2"
+                    placeholder="Search Device ID or Network...">
+                <button type="submit" class="btn btn-sm btn-success">Search</button>
+            </form>
+
+            <form method="GET" class="d-flex">
+                <label class="me-2">Rows per page:</label>
+                <select name="perPage" onchange="this.form.submit()" class="form-select form-select-sm w-auto">
+                    @foreach([10,25,50,100] as $n)
+                        <option value="{{ $n }}" {{ request('perPage', 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
+
         <div class="table-responsive">
-            <table class="table table-bordered table-striped datatable datatable-buttons">
+            <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -36,7 +55,8 @@
                 <tbody>
                     @foreach ($sensors as $index => $sensor)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <!-- Correct numbering across pages -->
+                        <td>{{ $sensors->firstItem() + $index }}</td>
                         <td>{{ $sensor->device_id }}</td>
                         <td>{{ $sensor->battery }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
@@ -47,6 +67,10 @@
                 </tbody>
             </table>
         </div>
+
+    <div class="mt-3 d-flex justify-content-end">
+        {{ $sensors->links('pagination::bootstrap-5') }}
+    </div>
 
     </div>
 </div>
