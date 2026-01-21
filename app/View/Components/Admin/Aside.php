@@ -100,6 +100,13 @@ class Aside extends Component
                 "route_name" => "devices.index",
                 "route_active" => "devices.*"
             ],
+            [
+                "label" => "Sensors",
+                "icon" => "fas fa-microchip",
+                "color" => "#1cc88a",
+                "route_name" => "sensors.index",
+                "route_active" => "sensors.*"
+            ],
 
             // LOGOUT
             [
