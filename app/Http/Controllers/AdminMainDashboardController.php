@@ -7,6 +7,7 @@ use App\Models\Floor;
 use App\Models\Asset;
 use Illuminate\Support\Collection;
 use App\Models\CapacitySetting;
+use App\Models\Sensor;
 
 
 class AdminMainDashboardController extends Controller
@@ -35,9 +36,8 @@ class AdminMainDashboardController extends Controller
         $emptyDevices = $emptyDevicesCollection->count();
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
-        /* ------------------------------
-         | MAP DATA
-         |------------------------------*/
+        $lastUpdated = Sensor::latest('created_at')->value('created_at');
+
         $floors = Floor::all();
         $assetsWithCoords = $this->loadAssetsWithCoordinates();
 
@@ -53,6 +53,7 @@ class AdminMainDashboardController extends Controller
             'emptyDevices',
             'emptyDevicesCollection', 
             'undetectedDevices',
+            'lastUpdated',
         ));
     }
 

@@ -6,7 +6,7 @@ use Livewire\Component;
 use App\Models\Asset;
 use App\Models\CapacitySetting;
 use App\Models\Floor;
-use App\Modes\Device;
+use App\Models\Device;
 
 class AssetDetails extends Component
 {
@@ -39,18 +39,19 @@ class AssetDetails extends Component
     protected function prepareCompartments()
     {
         $devices = $this->asset->devices ?? collect();
-
-        // Skip if no devices
         if ($devices->isEmpty()) return;
 
-        // Linear interpolation helper
         $lerp = fn($a, $b, $t) => $a + ($b - $a) * $t;
 
-        // Bin corners
-        $topLeft     = [50, 30];
-        $topRight    = [305, 20];
-        $bottomLeft  = [70, 210];
-        $bottomRight = [300, 210];
+        // ✅ SQUARE BIN (fits inside 320×240 viewBox)
+        $binSize = 210;   // ← wider & taller
+        $binX = 55;       // recenter horizontally
+        $binY = 15; 
+
+        $topLeft     = [$binX, $binY];
+        $topRight    = [$binX + $binSize, $binY];
+        $bottomLeft  = [$binX, $binY + $binSize];
+        $bottomRight = [$binX + $binSize, $binY + $binSize];
 
         $n = $devices->count();
         $this->compartments = [];
@@ -58,23 +59,31 @@ class AssetDetails extends Component
         foreach ($devices as $i => $device) {
             $sensor = $device->sensors->sortByDesc('time')->first();
             $capacity = $sensor?->capacity ?? 0;
-
-            // Helper for color
             $color = $this->capacityColor($capacity);
 
+            // Equal compartments (same logic as before, now square & parallel)
             $t0 = $i / $n;
             $t1 = ($i + 1) / $n;
 
-            $topCompLeft  = [$lerp($topLeft[0], $topRight[0], $t0), $lerp($topLeft[1], $topRight[1], $t0)];
-            $topCompRight = [$lerp($topLeft[0], $topRight[0], $t1), $lerp($topLeft[1], $topRight[1], $t1)];
-            $bottomCompLeft  = [$lerp($bottomLeft[0], $bottomRight[0], $t0), $lerp($bottomLeft[1], $bottomRight[1], $t0)];
-            $bottomCompRight = [$lerp($bottomLeft[0], $bottomRight[0], $t1), $lerp($bottomLeft[1], $bottomRight[1], $t1)];
+            $topCompLeft     = [$lerp($topLeft[0], $topRight[0], $t0), $topLeft[1]];
+            $topCompRight    = [$lerp($topLeft[0], $topRight[0], $t1), $topRight[1]];
+            $bottomCompLeft  = [$lerp($bottomLeft[0], $bottomRight[0], $t0), $bottomLeft[1]];
+            $bottomCompRight = [$lerp($bottomLeft[0], $bottomRight[0], $t1), $bottomRight[1]];
 
+            // 🔒 SAME dynamic fill logic as before
             $fillRatio = min(100, max(0, $capacity)) / 100;
 
-            $fillTopLeft  = [$lerp($bottomCompLeft[0], $topCompLeft[0], $fillRatio), $lerp($bottomCompLeft[1], $topCompLeft[1], $fillRatio)];
-            $fillTopRight = [$lerp($bottomCompRight[0], $topCompRight[0], $fillRatio), $lerp($bottomCompRight[1], $topCompRight[1], $fillRatio)];
+            $fillTopLeft  = [
+                $lerp($bottomCompLeft[0], $topCompLeft[0], $fillRatio),
+                $lerp($bottomCompLeft[1], $topCompLeft[1], $fillRatio),
+            ];
 
+            $fillTopRight = [
+                $lerp($bottomCompRight[0], $topCompRight[0], $fillRatio),
+                $lerp($bottomCompRight[1], $topCompRight[1], $fillRatio),
+            ];
+
+            // SAME label math (unchanged behavior)
             $labelX = ($topCompLeft[0] + $topCompRight[0] + $bottomCompRight[0] + $bottomCompLeft[0]) / 4;
             $labelY = ($topCompLeft[1] + $topCompRight[1] + $bottomCompRight[1] + $bottomCompLeft[1]) / 4;
 
@@ -82,15 +91,15 @@ class AssetDetails extends Component
             $capacityTextY = $labelY + 8;
 
             $this->compartments[] = [
-                'outline'     => [$topCompLeft, $topCompRight, $bottomCompRight, $bottomCompLeft],
-                'fill'        => [$fillTopLeft, $fillTopRight, $bottomCompRight, $bottomCompLeft],
-                'color'       => $color,
-                'label'       => $device->device_name,
-                'capacity'    => $capacity,
-                'battery'     => $sensor?->battery,
-                'network'     => $sensor?->network,
+                'outline' => [$topCompLeft, $topCompRight, $bottomCompRight, $bottomCompLeft],
+                'fill' => [$fillTopLeft, $fillTopRight, $bottomCompRight, $bottomCompLeft],
+                'color' => $color,
+                'label' => $device->device_name,
+                'capacity' => $capacity,
+                'battery' => $sensor?->battery,
+                'network' => $sensor?->network,
                 'lastUpdated' => $sensor?->time,
-                'labelPos'    => [$labelX, $labelY],
+                'labelPos' => [$labelX, $labelY],
                 'deviceNameY' => $deviceNameY,
                 'capacityTextY' => $capacityTextY,
             ];

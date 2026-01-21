@@ -339,6 +339,13 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+@if($lastUpdated)
+    <div class="mb-2 text-muted text-right" style="font-size: 13px;">
+        Last Updated:
+        <strong>{{ \Carbon\Carbon::parse($lastUpdated)->format('d M Y, h:i A') }}</strong>
+    </div>
+@endif
+
 <div class="d-flex flex-wrap mb-4" id="status-cards">
     @php
         $statuses = [

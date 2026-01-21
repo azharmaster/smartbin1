@@ -233,76 +233,99 @@
         <!-- BIN + DEVICES -->
         <div style="display: flex; gap: 14px; align-items: stretch;">
 
-            <!-- BIN CARD -->
             <div style="
                 flex: 0 0 320px;
-                background: #f7f7f7;
-                border-radius: 14px;
-                padding: 12px;
                 display: flex;
-                justify-content: center;
-                align-items: center;
-                box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+                flex-direction: column;
+                background: #ffffff;
+                border-radius: 14px;
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.19);
+                overflow: hidden;
             ">
-                <svg viewBox="0 0 320 240" svg height="100%" width="100%" preserveAspectRatio="xMidYMid meet">
-                    <!-- ... your SVG polygons and texts here ... -->
-                    <!-- Partial fills -->
-                    @foreach($compartments as $comp)
-                        <polygon
-                            class="bin-fill"
-                            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
-                            fill="{{ $comp['color'] }}"
-                            fill-opacity="0.8"
-                            stroke="none"
-                        />
-                        <text
-                            x="{{ $comp['labelPos'][0] }}"
-                            y="{{ $comp['capacityTextY'] }}"
-                            text-anchor="middle"
-                            fill="#000"
-                            font-size="13"
-                            font-weight="600"
-                            pointer-events="none"
-                        >
-                            {{ $comp['capacity'] }}%
-                        </text>
-                    @endforeach
 
-                    <!-- Compartment outlines and device names -->
-                    @foreach($compartments as $comp)
+                <!-- Card Header -->
+                <div style="
+                    padding: 10px 14px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #121010;
+                    border-bottom: 1px solid #e5e7eb;
+                    background: #fafafa;
+                ">
+                    Capacity Levels
+                </div>
+
+                <!-- SVG Container -->
+                <div style="
+                    flex: 1;
+                    padding: 12px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: #f7f7f7;
+                ">
+                    <svg viewBox="0 0 320 240"
+                        height="100%"
+                        width="100%"
+                        preserveAspectRatio="xMidYMid meet">
+
+                        @foreach($compartments as $comp)
+                            <polygon
+                                class="bin-fill"
+                                points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['fill'])) }}"
+                                fill="{{ $comp['color'] }}"
+                                fill-opacity="0.8"
+                                stroke="none"
+                            />
+                            <text
+                                x="{{ $comp['labelPos'][0] }}"
+                                y="{{ $comp['capacityTextY'] }}"
+                                text-anchor="middle"
+                                fill="#000"
+                                font-size="13"
+                                font-weight="600"
+                                pointer-events="none"
+                            >
+                                {{ $comp['capacity'] }}%
+                            </text>
+                        @endforeach
+
+                        <!-- Compartment outlines and device names -->
+                        @foreach($compartments as $comp)
+                            <polygon
+                                points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['outline'])) }}"
+                                fill="none"
+                                stroke="#000000"
+                                stroke-width="1"
+                            />
+                            <text
+                                x="{{ $comp['labelPos'][0] }}"
+                                y="{{ $comp['deviceNameY'] }}"
+                                text-anchor="middle"
+                                fill="#000"
+                                font-size="12"
+                                font-weight="600"
+                                pointer-events="none"
+                            >
+                                {{ $comp['label'] }}
+                            </text>
+                        @endforeach
+
+                        <!-- Outer bin outline -->
                         <polygon
-                            points="{{ implode(' ', array_map(fn($p) => $p[0].','.$p[1], $comp['outline'])) }}"
+                            points="{{ implode(' ', [
+                                $compartments[0]['outline'][0][0].','.$compartments[0]['outline'][0][1],
+                                $compartments[count($compartments)-1]['outline'][1][0].','.$compartments[count($compartments)-1]['outline'][1][1],
+                                $compartments[count($compartments)-1]['outline'][2][0].','.$compartments[count($compartments)-1]['outline'][2][1],
+                                $compartments[0]['outline'][3][0].','.$compartments[0]['outline'][3][1],
+                            ]) }}"
                             fill="none"
                             stroke="#000000"
-                            stroke-width="1"
+                            stroke-width="3"
+                            stroke-linejoin="round"
                         />
-                        <text
-                            x="{{ $comp['labelPos'][0] }}"
-                            y="{{ $comp['deviceNameY'] }}"
-                            text-anchor="middle"
-                            fill="#000"
-                            font-size="12"
-                            font-weight="600"
-                            pointer-events="none"
-                        >
-                            {{ $comp['label'] }}
-                        </text>
-                    @endforeach
-
-                    <!-- Outer bin outline -->
-                    <polygon
-                        points="{{ implode(' ', [
-                            $compartments[0]['outline'][0][0].','.$compartments[0]['outline'][0][1],
-                            $compartments[count($compartments)-1]['outline'][1][0].','.$compartments[count($compartments)-1]['outline'][1][1],
-                            $compartments[count($compartments)-1]['outline'][2][0].','.$compartments[count($compartments)-1]['outline'][2][1],
-                            $compartments[0]['outline'][3][0].','.$compartments[0]['outline'][3][1],
-                        ]) }}"
-                        fill="none"
-                        stroke="#000000"
-                        stroke-width="3"
-                        stroke-linejoin="round"
-                    />
-                </svg>
+                    </svg>
+                </div>
             </div>
 
             <!-- DEVICES -->
@@ -339,38 +362,38 @@
                         z-index: 5;
                     ">
 
-    <!-- Edit -->
-    <x-device.form-device
-        :id="$device->id"
-        :assets="$assets"
-        :device_name="$device->device_name"
-        :asset_id="$asset->id"
-        :id_device="$device->id_device"
-    />
+                        <!-- Edit -->
+                        <x-device.form-device
+                            :id="$device->id"
+                            :assets="$assets"
+                            :device_name="$device->device_name"
+                            :asset_id="$asset->id"
+                            :id_device="$device->id_device"
+                        />
 
-    <!-- Delete -->
-    <form method="POST"
-          action="{{ route('devices.destroy', $device->id) }}"
-          onsubmit="return confirm('Delete this device?')">
-        @csrf
-        @method('DELETE')
+                        <!-- Delete -->
+                        <form method="POST"
+                            action="{{ route('devices.destroy', $device->id) }}"
+                            onsubmit="return confirm('Delete this device?')">
+                            @csrf
+                            @method('DELETE')
 
-        <button type="submit"
-            style="
-                width: 26px;
-                height: 26px;
-                border-radius: 8px;
-                border: none;
-                background: #fee2e2;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-            ">
-            <i class="fas fa-trash-alt" style="font-size: 12px; color: #dc2626;"></i>
-        </button>
-    </form>
-</div>
+                            <button type="submit"
+                                style="
+                                    width: 26px;
+                                    height: 26px;
+                                    border-radius: 8px;
+                                    border: none;
+                                    background: #fee2e2;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    cursor: pointer;
+                                ">
+                                <i class="fas fa-trash-alt" style="font-size: 12px; color: #dc2626;"></i>
+                            </button>
+                        </form>
+                    </div>
                     <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #121010;">
                         {{ $device->device_name }}
                     </h3>
