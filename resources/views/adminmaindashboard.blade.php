@@ -339,51 +339,38 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="d-flex flex-wrap">
-    <div class="status-card card-total" style="color: #4cd964;">
-        <div class="status-title">Total Sensors</div>
-        <div class="status-content" style="color: #fff">
-            <i class="fas fa-satellite-dish status-icon"></i>
-            <span class="status-number">{{ $totalDevices }}</span>
+<div class="d-flex flex-wrap mb-4" id="status-cards">
+    @php
+        $statuses = [
+            ['title' => 'Total Sensors', 'count' => $totalDevices, 'icon' => 'fa-satellite-dish', 'class' => 'card-total'],
+            ['title' => 'Full Sensors', 'count' => $fullDevices, 'icon' => 'fa-trash', 'class' => 'card-full'],
+            ['title' => 'Half-Full Sensors', 'count' => $halfDevices, 'icon' => 'fa-exclamation-triangle', 'class' => 'card-half'],
+            ['title' => 'Empty Sensors', 'count' => $emptyDevices, 'icon' => 'fa-recycle', 'class' => 'card-empty'],
+            ['title' => 'Undetected', 'count' => $undetectedDevices, 'icon' => 'fa-minus-circle', 'class' => 'card-undetected'],
+        ];
+    @endphp
+
+    @foreach ($statuses as $status)
+        <div class="status-card {{ $status['class'] }}" style="color: #4cd964;">
+            <div class="status-title">{{ $status['title'] }}</div>
+            <div class="status-content" style="color: #fff">
+                <i class="fas {{ $status['icon'] }} status-icon"></i>
+                <span class="status-number">{{ $status['count'] }}</span>
+            </div>
         </div>
-    </div>
-    <div class="status-card card-full" style="color: #4cd964;">
-        <div class="status-title">Full Sensors</div>
-        <div class="status-content" style="color: #fff">
-            <i class="fas fa-trash status-icon"></i>
-            <span class="status-number">{{ $fullDevices }}</span>
-        </div>
-    </div>
-    <div class="status-card card-half" style="color: #4cd964;">
-        <div class="status-title ">Half-Full Sensors</div>
-        <div class="status-content" style="color: #fff">
-            <i class="fas fa-exclamation-triangle status-icon"></i>
-            <span class="status-number">{{ $halfDevices }}</span>
-        </div>
-    </div>
-    <div class="status-card card-empty" style="color: #4cd964;">
-        <div class="status-title">Empty Sensors</div>
-        <div class="status-content" style="color: #fff">
-            <i class="fas fa-recycle status-icon"></i>
-            <span class="status-number">{{ $emptyDevices }}</span>
-        </div>
-    </div>
-    <div class="status-card card-undetected" style="color: #4cd964;">
-        <div class="status-title">Undetected</div>
-        <div class="status-content" style="color: #fff">
-            <i class="fas fa-minus-circle status-icon"></i>
-            <span class="status-number">{{ $undetectedDevices }}</span>
-        </div>
-    </div>
+    @endforeach
 </div>
 
-
-    <div class="card mb-4" style=" background-color: rgba(0, 0, 0, 0)">
+{{-- =========================
+     DEVICE GRID
+========================= --}}
+<div id="static-device-grid">
+    <div class="card mb-4" style="background-color: transparent;">
         <div class="p-3 scroll-body" style="overflow-y: auto;">
-            <!-- GRID CONTAINER -->
+
+            {{-- FILTER DROPDOWN --}}
             <div class="d-flex justify-content-end mb-3">
-                <select id="deviceFilter"
-                        class="form-select form-select-md w-auto px-2">
+                <select id="deviceFilter" class="form-select form-select-md w-auto px-2">
                     <option value="critical">Default</option>
                     <option value="all">All Devices</option>
                     <option value="full">Full</option>
@@ -392,8 +379,8 @@
                 </select>
             </div>
 
+            {{-- DEVICES GRID --}}
             <div class="devices-grid">
-
                 {{-- FULL DEVICES --}}
                 @foreach ($fullDevicesCollection as $device)
                     @include('partials.device-card', [
@@ -432,157 +419,66 @@
             </div>
         </div>
     </div>
+</div>
 
-
-{{-- BIN POPUP & FLOOR SCRIPT --}}
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.querySelector('#static-device-grid .devices-grid');
     const filterSelect = document.getElementById('deviceFilter');
-    const cards = document.querySelectorAll('.device-card');
+    let currentFilter = 'critical';
 
-    function applyFilter(filter) {
-        cards.forEach(card => {
+    // FILTER FUNCTION
+    function applyFilter(filter = 'critical') {
+        currentFilter = filter;
+        grid.querySelectorAll('.device-card').forEach(card => {
             const status = card.dataset.status;
-
-            let show = false;
-
-            if (filter === 'all') {
-                show = true;
-            } else if (filter === 'critical') {
-                show = (status === 'full' || status === 'half' || status === 'empty');
-            } else {
-                show = (status === filter);
-            }
-
-            // hide/show entire link wrapper
-            card.closest('a').style.display = show ? '' : 'none';
+            const show =
+                filter === 'all' ||
+                (filter === 'critical' && ['full','half','empty'].includes(status)) ||
+                status === filter;
+            card.closest('.open-bin-modal').style.display = show ? '' : 'none';
         });
     }
 
-    // ✅ default: show FULL + HALF
-    applyFilter('critical');
+    // INITIAL FILTER
+    applyFilter(currentFilter);
+    filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
 
-    filterSelect.addEventListener('change', () => {
-        applyFilter(filterSelect.value);
+    // BIN MODAL FETCH
+    const modalEl = document.getElementById('binDetailsModal');
+    const modalContent = document.getElementById('binModalContent');
+    const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+
+    grid.addEventListener('click', e => {
+        const trigger = e.target.closest('.open-bin-modal');
+        if (!trigger || !modal || !modalContent) return;
+        e.preventDefault();
+
+        fetch(trigger.dataset.url)
+            .then(res => res.text())
+            .then(html => {
+                modalContent.innerHTML = html;
+                modal.show();
+            });
     });
-
-    // ✅ ZOOM SETUP
-    let scale = 1;
-    const mapInner = document.getElementById('dashboardMapInner');   // ✅ FIXED
-    const image = document.getElementById('dashboardFloorImage');    // ✅ FIXED
-
-    document.getElementById('zoomIn').addEventListener('click', function () {
-        scale += 0.1;
-        mapInner.style.transform = `scale(${scale})`;
-        mapInner.style.transformOrigin = "top left";
-    });
-
-    document.getElementById('zoomOut').addEventListener('click', function () {
-        scale = Math.max(0.5, scale - 0.1);
-        mapInner.style.transform = `scale(${scale})`;
-        mapInner.style.transformOrigin = "top left";
-    });
-
-    document.getElementById('resetView').addEventListener('click', function () {
-        scale = 1;
-        mapInner.style.transform = `scale(1)`;
-        mapInner.style.transformOrigin = "top left";
-    });
-
-    // ✅ COLLAPSE BUTTON
-    document.querySelector('.collapse-btn').addEventListener('click', function () {
-        const body = document.querySelector('.map-card-body');
-        body.classList.toggle('collapsed');
-
-        this.innerHTML = body.classList.contains('collapsed')
-            ? '<i class="fas fa-plus"></i>'
-            : '<i class="fas fa-minus"></i>';
-    });
-
-    document.getElementById('toggleMap').addEventListener('click', function() {
-        const wrapper = document.querySelector('.map-collapse-wrapper');
-
-        if (wrapper.style.height === '0px' || wrapper.style.height === '0') {
-            // Expand
-            wrapper.style.height = '650px';
-            this.querySelector('i').classList.replace('fa-plus', 'fa-minus');
-        } else {
-            // Collapse
-            wrapper.style.height = '0';
-            this.querySelector('i').classList.replace('fa-minus', 'fa-plus');
-        }
-    });
-
-    // ✅ FLOOR SWITCH + MARKER FILTER
-    const floorSelect = document.getElementById('floorSelect');
-
-    floorSelect.addEventListener('change', function () {
-        const selectedImage = this.value;
-        const selectedFloorId = this.options[this.selectedIndex].dataset.floorId;
-
-        // ✅ Change image
-        image.src = selectedImage;
-
-        // ✅ Filter markers
-        document.querySelectorAll('.asset-marker').forEach(marker => {
-            if (marker.dataset.floorId === selectedFloorId) {
-                marker.style.display = 'block';
-            } else {
-                marker.style.display = 'none';
-            }
-        });
-    });
-
-    // ✅ DEFAULT FLOOR FILTER ON PAGE LOAD
-    const defaultFloorId = floorSelect.options[floorSelect.selectedIndex].dataset.floorId;
-
-    document.querySelectorAll('.asset-marker').forEach(marker => {
-        if (marker.dataset.floorId === defaultFloorId) {
-            marker.style.display = 'block';
-        } else {
-            marker.style.display = 'none';
-        }
-    });
-
 });
 </script>
 
-{{-- BIN DETAILS MODAL --}}
-<div class="modal fade" id="binDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-dark">Bin Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+@endsection
 
-            <div class="modal-body" id="binModalContent">
-                {{-- content loaded dynamically --}}
+{{-- BIN DETAILS MODAL (static container outside Livewire) --}}
+<div id="modals-root">
+    <div class="modal fade" id="binDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark">Bin Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="binModalContent">
+                    {{-- content loaded dynamically --}}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.open-bin-modal').forEach(el => {
-        el.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const url = this.dataset.url;
-
-            fetch(url)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('binModalContent').innerHTML = html;
-                    new bootstrap.Modal(document.getElementById('binDetailsModal')).show();
-                });
-        });
-    });
-});
-</script>
-
-
-
-@endsection
