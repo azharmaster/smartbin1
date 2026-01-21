@@ -31,7 +31,6 @@
                         <th>Capacity</th>
                         <th>Time</th>
                         <th>Network</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,19 +38,10 @@
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $sensor->device_id }}</td>
-                        <td>{{ $sensor->battery }}</td>
-                        <td>{{ $sensor->capacity }}</td>
+                        <td>{{ $sensor->battery }}%</td>
+                        <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->time }}</td>
                         <td>{{ $sensor->network }}</td>
-                        <td>
-                            <div class="d-flex gap-1 align-items-center justify-content-center">
-                                <a href="{{ route('sensors.destroy', $sensor->id) }}"
-                                   data-confirm-delete="true"
-                                   class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash-alt text-white"></i>
-                                </a>
-                            </div>
-                        </td>
                     </tr>
                     @endforeach
                 </tbody>
