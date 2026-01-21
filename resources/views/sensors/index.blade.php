@@ -48,8 +48,8 @@
                         <th>Device ID</th>
                         <th>Battery</th>
                         <th>Capacity</th>
-                        <th>Time</th>
                         <th>Network</th>
+                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,8 +60,8 @@
                         <td>{{ $sensor->device_id }}</td>
                         <td>{{ $sensor->battery }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
-                        <td>{{ $sensor->time }}</td>
                         <td>{{ $sensor->network }}</td>
+                        <td>{{ $sensor->created_at }}</td>
                     </tr>
                     @endforeach
                 </tbody>
