@@ -400,11 +400,27 @@ pre {
 }
 
 input:checked + .slider {
-  background-color: #0d6efd; /* Blue when ON */
+  background-color: #2ba11d; /* Blue when ON */
 }
 
 input:checked + .slider:before {
   transform: translateX(24px);
+}
+
+<style>
+.save-bookmark i {
+    color: #28a745; /* normal green outline */
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.save-bookmark:hover i {
+    color: #28a745; 
+}
+
+.save-bookmark:hover i:before {
+    content: "\f02e"; /* Unicode for solid bookmark */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900; /* needed for solid icon */
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -621,35 +637,36 @@ function trend($current, $previous) {
                 </div>
             </div>
 
-<div class="card mb-4">
-    <div class="card-header smartbin-gradient">
-        <h5 class="mb-0 text-white fs-6">
-            <i class="fas fa-sms"></i> WhatsApp Notification
-        </h5>
-    </div>
-    <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
-        <!-- ON / OFF Switch (Custom Style) -->
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="fw-semibold">Notification Status</span>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-muted small">OFF</span>
-                <label class="switch m-0">
-                    <input type="checkbox" id="whatsappNotificationSwitch" 
-                        {{ $whatsappNotificationActive ? 'checked' : '' }}>
-                    <span class="slider round"></span>
-                </label>
-                <span class="text-muted small">ON</span>
-            </div>
-        </div>
+            <div class="card mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-sms"></i> WhatsApp Notification
+                    </h5>
+                </div>
+                <div class="card-body d-flex justify-content-between align-items-center" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
+                    
+                    <!-- Left: Label -->
+                    <span class="fw-semibold">Notification Status</span>
 
-        <!-- Save Button -->
-        <div class="text-right">
-            <button id="saveWhatsappNotification" class="btn btn-link p-0 ml-2" title="Save">
-                <i class="far fa-bookmark fa-lg text-green"></i>
-            </button>
-        </div>
-    </div>
-</div>
+                    <!-- Right: Toggle + ON/OFF + Save -->
+                    <div class="d-flex align-items-center ml-auto">
+                        <span class="text-muted small mr-1">OFF</span>
+
+                        <label class="switch m-0 mx-2">
+                            <input type="checkbox" id="whatsappNotificationSwitch" 
+                                {{ $whatsappNotificationActive ? 'checked' : '' }}>
+                            <span class="slider round"></span>
+                        </label>
+
+                        <span class="text-muted small ml-1">ON</span>
+
+                        <!-- Save icon -->
+                        <button id="saveWhatsappNotification" class="btn p-0 ml-3 save-bookmark" title="Save">
+                            <i class="far fa-bookmark fa-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
             <!-- SIMPLE USER LIST  -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
