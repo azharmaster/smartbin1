@@ -244,7 +244,7 @@
                 align-items: center;
                 box-shadow: 0 4px 14px rgba(0,0,0,0.06);
             ">
-                <svg viewBox="0 0 320 240" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">
+                <svg viewBox="0 0 320 240" svg height="100%" width="100%" preserveAspectRatio="xMidYMid meet">
                     <!-- ... your SVG polygons and texts here ... -->
                     <!-- Partial fills -->
                     @foreach($compartments as $comp)
