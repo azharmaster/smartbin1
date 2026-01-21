@@ -44,12 +44,14 @@
 
                 @elseif(!empty($route['is_logout']))
                     <li class="nav-item mt-3">
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="w-100">
                             @csrf
-                            <button type="submit" class="nav-link w-100 text-white text-start logout-link">
-                                <i class="{{ $route['icon'] }} me-2"></i>
-                                {{ $route['label'] }}
-                            </button>
+                            <a href="#"
+                            class="nav-link logout-link"
+                            onclick="event.preventDefault(); this.closest('form').submit();">
+                                <i class="nav-icon {{ $route['icon'] }}"></i>
+                                <p>{{ $route['label'] }}</p>
+                            </a>
                         </form>
                     </li>
 
