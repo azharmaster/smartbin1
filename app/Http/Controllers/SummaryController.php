@@ -152,14 +152,10 @@ public function index(Request $request)
 {
     $period = $request->input('period', 'month');
 
-    // $monthInput = $request->input('month') ?? now()->format('Y-m');
-    // $baseDate = Carbon::parse($monthInput . '-01');
-
-    $period = $request->input('period', 'month');
+    $monthInput = $request->input('month', now()->format('Y-m'));
 
     if ($period === 'week' && $request->filled('week')) {
 
-        // example: 2026-W03
         [$year, $weekNumber] = explode('-W', $request->week);
 
         $baseDate = Carbon::now()
@@ -168,11 +164,8 @@ public function index(Request $request)
 
     } else {
 
-        // month fallback
-        $monthInput = $request->input('month', now()->format('Y-m'));
         $baseDate = Carbon::parse($monthInput . '-01');
     }
-
 
     $capacityStats  = $this->getCapacityStats($baseDate, $period);
     $devicesByFloor = $this->getDevicesByFloor();
