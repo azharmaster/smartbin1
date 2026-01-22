@@ -38,6 +38,8 @@ class AssetDetails extends Component
 
     protected function prepareCompartments()
     {
+        $this->compartments = [];
+        
         $devices = $this->asset->devices ?? collect();
         if ($devices->isEmpty()) return;
 
