@@ -172,6 +172,7 @@ input:checked + .slider:before {
                 </div>
 
                 @if($bins ?? false)
+                <div id="binList">
                     @foreach($bins as $bin)
                         {{-- Bin row with custom toggle --}}
                         <div class="bin-item d-flex justify-content-between align-items-center border p-2 mb-2 rounded"
@@ -262,9 +263,10 @@ input:checked + .slider:before {
                         </div>
 
                     @endforeach
+                    </div>
                 @else
-                    <div class="alert alert-warning text-center">
-                        No bins found.
+                    <div id="noResults" class="text-center text-muted mt-3 d-none">
+                        No bins found
                     </div>
                 @endif
 
@@ -277,28 +279,33 @@ input:checked + .slider:before {
 
 {{-- 🔎 Client-side Search Script --}}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
 
-    const searchInput = document.getElementById('binSearch');
-    if (!searchInput) return;
+    const input = document.getElementById('binSearch');
+    const bins  = Array.from(document.querySelectorAll('#binList .bin-item'));
+    const empty = document.getElementById('noResults');
 
-    searchInput.addEventListener('keyup', function () {
-        let searchValue = this.value.toLowerCase();
-        let bins = document.querySelectorAll('.bin-item');
+    if (!input || !bins.length) return;
 
-        bins.forEach(function (bin) {
-            let name = bin.dataset.name || '';
-            let location = bin.dataset.location || '';
+    input.addEventListener('input', () => {
+        const keyword = input.value.trim().toLowerCase();
+        let visibleCount = 0;
 
-            bin.style.display =
-                name.includes(searchValue) || location.includes(searchValue)
-                ? ''
-                : 'none';
+        bins.forEach(bin => {
+            const name = bin.getAttribute('data-name') || '';
+            const location = bin.getAttribute('data-location') || '';
+
+            const match = name.includes(keyword) || location.includes(keyword);
+
+            bin.classList.toggle('d-none', !match);
+
+            if (match) visibleCount++;
         });
+
+        empty.classList.toggle('d-none', visibleCount !== 0);
     });
 
 });
 </script>
-
 
 @endsection
