@@ -168,7 +168,10 @@ private function getDeviceStats($devices, $emptyMax, $halfMax): array
             ];
         });
 
-        return $calendarEvents->merge($calendarHolidays)->values();
+        return $calendarEvents
+            ->toBase()
+            ->merge($calendarHolidays)
+            ->values();
     }
 
     /** Today's notifications */
