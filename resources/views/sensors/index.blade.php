@@ -12,7 +12,7 @@
 
     <div class="card-body">
         <div class="mb-4">
-            <canvas id="capacityChart" height="120"></canvas>
+            <canvas id="capacityChart" height="100"></canvas>
         </div>
 
         @if ($errors->any())
