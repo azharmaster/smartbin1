@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $serialNo
  * @property string $location
  * @property string $model
- * @property Carbon $maintenance
  * @property string $picture
  * @property decimal $x
  * @property decimal $y
@@ -37,7 +36,6 @@ class Asset extends Model
         'serialNo',
         'location',
         'model',
-        'maintenance',
         'picture',
         'x',
         'y',

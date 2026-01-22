@@ -29,7 +29,6 @@ class AssetController extends Controller
             'serialNo'    => 'required',
             'location'    => 'required',
             'model'       => 'required',
-            'maintenance' => 'required',
             'picture'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'asset_name.required' => 'Please fill this form',
@@ -37,7 +36,6 @@ class AssetController extends Controller
             'serialNo.required'   => 'Please fill this form',
             'location.required'   => 'Please fill this form',
             'model.required'      => 'Please fill this form',
-            'maintenance.required'=> 'Please fill this form',
         ]);
 
         // Get existing asset if editing
@@ -64,7 +62,6 @@ class AssetController extends Controller
                 'serialNo'    => $request->serialNo,
                 'location'    => $request->location,
                 'model'       => $request->model,
-                'maintenance' => $request->maintenance,
                 'picture'     => $imagePath,
             ]
         );
