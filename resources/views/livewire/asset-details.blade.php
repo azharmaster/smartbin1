@@ -314,19 +314,24 @@
                                     </text>
                                 @endforeach
 
-                                <!-- Outer bin outline -->
-                                <polygon
-                                    points="{{ implode(' ', [
-                                        $compartments[0]['outline'][0][0].','.$compartments[0]['outline'][0][1],
-                                        $compartments[count($compartments)-1]['outline'][1][0].','.$compartments[count($compartments)-1]['outline'][1][1],
-                                        $compartments[count($compartments)-1]['outline'][2][0].','.$compartments[count($compartments)-1]['outline'][2][1],
-                                        $compartments[0]['outline'][3][0].','.$compartments[0]['outline'][3][1],
-                                    ]) }}"
-                                    fill="none"
-                                    stroke="#000000"
-                                    stroke-width="3"
-                                    stroke-linejoin="round"
-                                />
+                                @if(!empty($compartments))
+                                    <!-- Outer bin outline -->
+                                    <polygon
+                                        points="{{ implode(', ', [
+                                            $compartments[0]['outline'][0][0].','.$compartments[0]['outline'][0][1],
+                                            $compartments[count($compartments)-1]['outline'][1][0].','.$compartments[count($compartments)-1]['outline'][1][1],
+                                            $compartments[count($compartments)-1]['outline'][2][0].','.$compartments[count($compartments)-1]['outline'][2][1],
+                                            $compartments[0]['outline'][3][0].','.$compartments[0]['outline'][3][1],
+                                        ]) }}"
+                                        fill="none"
+                                        stroke="#000000"
+                                        stroke-width="3"
+                                        stroke-linejoin="round"
+                                    />
+                                @else
+                                    <!-- Draw empty placeholder bin -->
+                                    <rect x="55" y="15" width="210" height="210" fill="#f0f0f0" stroke="#999" stroke-width="3" />
+                                @endif
                             </svg>
                         </div>
                     </div>
