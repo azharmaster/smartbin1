@@ -74,26 +74,30 @@
                                    value="{{ $model ?? '' }}">
                         </div>
 
-                        {{-- Maintenance Date --}}
-                        {{-- <div class="form-group">
-                            <label>Maintenance Date</label>
-                            <input type="datetime-local" class="form-control" name="maintenance"
-                                   value="{{ isset($maintenance) ? date('Y-m-d\TH:i', strtotime($maintenance)) : '' }}">
-                        </div> --}}
-
                         {{-- Asset Picture --}}
                         <div class="form-group">
                             <label>Asset Picture</label>
-                            <input type="file" name="picture" class="form-control-file" accept="image/*">
 
-                            @if(isset($picture) && $picture)
-                                <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $picture) }}"
-                                        alt="Asset Image"
-                                        class="img-thumbnail"
-                                        style="max-height: 120px;">
-                                </div>
-                            @endif
+                            <div id="dropZone{{ $id ?? 'new' }}"
+                                 class="border rounded p-3 text-center"
+                                 style="cursor:pointer; background:#f8f9fa;">
+
+                                <input type="file"
+                                       id="pictureInput{{ $id ?? 'new' }}"
+                                       name="picture"
+                                       class="d-none"
+                                       accept="image/*">
+
+                                <img id="imagePreview{{ $id ?? 'new' }}"
+                                     src="{{ isset($picture) && $picture ? asset('storage/'.$picture) : '' }}"
+                                     class="img-thumbnail {{ isset($picture) && $picture ? '' : 'd-none' }}"
+                                     style="max-height:120px;">
+
+                                <p id="dropText{{ $id ?? 'new' }}"
+                                   class="mb-0 text-muted {{ isset($picture) && $picture ? 'd-none' : '' }}">
+                                    Click or drag image here
+                                </p>
+                            </div>
                         </div>
 
                     </div>
@@ -108,3 +112,49 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const id = '{{ $id ?? "new" }}';
+    const dropZone = document.getElementById('dropZone' + id);
+    const fileInput = document.getElementById('pictureInput' + id);
+    const preview = document.getElementById('imagePreview' + id);
+    const text = document.getElementById('dropText' + id);
+
+    if (!dropZone) return;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('border-success');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-success');
+    });
+
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('border-success');
+
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            showPreview(fileInput.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            showPreview(fileInput.files[0]);
+        }
+    });
+
+    function showPreview(file) {
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('d-none');
+        text.classList.add('d-none');
+    }
+});
+</script>
