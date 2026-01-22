@@ -81,7 +81,7 @@ class EventController extends Controller
             'end_date',
         ]));
 
-        return redirect()->route('events.index')->with('success', 'Event updated successfully!');
+        return redirect()->route('holidays.index')->with('success', 'Event updated successfully!');
     }
 
     /**
