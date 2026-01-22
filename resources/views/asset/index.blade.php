@@ -1,9 +1,9 @@
 @extends($layout)
-@section('content_title', 'Asset Management')
+@section('content_title', 'Bin Management')
 @section('content')
 <div class="card card-success card-outline">
    <div class="card-header d-flex align-items-center">
-    <h5 class="mb-0">Assets List</h5>
+    <h5 class="mb-0">Bins List</h5>
 
     <div class="ms-auto">
         <x-asset.form-asset :floors="$floors" />
