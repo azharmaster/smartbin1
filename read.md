@@ -39,3 +39,4 @@ php artisan make:controller UserController
 
 
 php artisan make:component Product/FormProduct
+composer require barryvdh/laravel-dompdf
