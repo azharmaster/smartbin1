@@ -7,6 +7,7 @@ use App\Models\Device;
 use App\Models\Asset;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SensorController extends Controller
 {
@@ -25,7 +26,16 @@ class SensorController extends Controller
         $perPage = $request->input('perPage', 10);
         $sensors = $query->paginate($perPage)->withQueryString(); // preserves search in pagination links
 
-        return view('sensors.index', compact('sensors'));
+        $latestPerDevice = Sensor::select('device_id', 'capacity', 'created_at')
+            ->whereIn('id', function ($q) {
+                $q->select(DB::raw('MAX(id)'))
+                ->from('sensors')
+                ->groupBy('device_id');
+            })
+            ->orderBy('device_id')
+            ->get();
+
+        return view('sensors.index', compact('sensors', 'latestPerDevice'));
     }
 
     public function create()

@@ -11,6 +11,9 @@
     </div>
 
     <div class="card-body">
+        <div class="mb-4">
+            <canvas id="capacityChart" height="120"></canvas>
+        </div>
 
         @if ($errors->any())
         <div class="alert alert-danger d-flex flex-column">
@@ -74,5 +77,86 @@
 
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const sensorData = @json($latestPerDevice);
+
+    const labels = sensorData.map(item => item.device_id);
+    const capacities = sensorData.map(item => item.capacity);
+    const timestamps = sensorData.map(item => item.created_at);
+</script>
+
+<script>
+    const ctx = document.getElementById('capacityChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Latest Capacity (%)',
+                data: capacities,
+                tension: 0.3,
+                fill: false,
+                borderWidth: 2,
+
+                borderColor: '#28a745',   // ✅ line color (Bootstrap green)
+                backgroundColor: 'rgba(46,204,113,0.2)',
+                pointBackgroundColor: '#28a745',
+                pointBorderColor: '#28a745',
+
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const index = context.dataIndex;
+
+                        // Convert MySQL datetime → JS Date
+                        const date = new Date(timestamps[index]);
+
+                        // Format nicely
+                        const formatted = date.toLocaleString('en-MY', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+
+                        return [
+                            `Capacity: ${context.raw}%`,
+                            `Time: ${formatted}`
+                        ];
+                    }
+                }
+            }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Capacity (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Device ID'
+                    }
+                }
+            }
+        }
+    });
+</script>
 
 @endsection
