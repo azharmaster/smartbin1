@@ -89,7 +89,7 @@ class Aside extends Component
             [
                 "label" => "Assets",
                 "icon" => "fas fa-database",
-                "color" => "#6f42c1",
+                "color" => "#8061ba",
                 "route_name" => "master-data.assets.index",
                 "route_active" => "master-data.assets.*"
             ],
@@ -102,8 +102,8 @@ class Aside extends Component
             ],
             [
                 "label" => "Sensors",
-                "icon" => "fas fa-microchip",
-                "color" => "#1cc88a",
+                "icon" => "fas fa-broadcast-tower",
+                "color" => "#6fff00",
                 "route_name" => "sensors.index",
                 "route_active" => "sensors.*"
             ],
