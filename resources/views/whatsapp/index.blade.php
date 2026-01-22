@@ -193,6 +193,17 @@ input:checked + .slider:before {
                             {{-- Bin Info --}}
                             <span>
                                 {{ $bin->asset_name }}
+
+                                @if($bin->off_devices_count > 0)
+                                    <small class="text-danger fw-semibold ms-1">
+                                        ({{ $bin->off_devices_count }}
+                                        sensor{{ $bin->off_devices_count > 1 ? 's' : '' }} off)
+                                    </small>
+                                @else
+                                    <small class="text-success ms-1">
+                                        (All sensors on)
+                                    </small>
+                                @endif
                                 @if(!empty($bin->location))
                                     <small class="text-muted d-block">
                                         <i class="fas fa-map-marker-alt me-1"></i>{{ $bin->location }}
