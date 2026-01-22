@@ -1045,17 +1045,40 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         eventClick: function(info) {
-            if (info.event.extendedProps.type !== 'event') return;
 
-            // Pull info directly from the calendarCombined extendedProps
+            $('#eventLocation').parent().hide();
+            $('#eventPic').parent().hide();
+
+            // Modal title
+            if (info.event.extendedProps.type === 'holiday') {
+                $('#eventDetailsModalLabel').html('<i class="fas fa-umbrella-beach"></i> Holiday Details');
+            } else {
+                $('#eventDetailsModalLabel').html('<i class="fas fa-calendar-alt"></i> Event Details');
+            }
+
             $('#eventName').text(info.event.title);
-            $('#eventLocation').text(info.event.extendedProps.location);
-            $('#eventPic').text(info.event.extendedProps.pic_phone);
-            $('#eventStart').text(info.event.startStr);
-            $('#eventEnd').text(info.event.endStr || info.event.startStr);
+
+            const startDate = info.event.start;
+            let endDate = info.event.end ?? info.event.start;
+
+            // 🔑 FIX: FullCalendar end date is exclusive for all-day events
+            if (info.event.extendedProps.type === 'holiday') {
+                endDate = new Date(endDate);
+                endDate.setDate(endDate.getDate() - 1);
+            }
+
+            $('#eventStart').text(startDate.toLocaleDateString());
+            $('#eventEnd').text(endDate.toLocaleDateString());
+
+            if (info.event.extendedProps.type === 'event') {
+                $('#eventLocation').parent().show();
+                $('#eventPic').parent().show();
+
+                $('#eventLocation').text(info.event.extendedProps.location);
+                $('#eventPic').text(info.event.extendedProps.pic_phone);
+            }
 
             $('#eventDetailsModal').modal('show');
-
             info.jsEvent.preventDefault();
         }
     });
@@ -1092,5 +1115,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
 
 @endsection
