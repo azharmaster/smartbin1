@@ -41,7 +41,11 @@ class WhatsAppNotificationController extends Controller
         }
 
         // ✅ Fetch all bins (assets) and eager load devices
-        $bins = Asset::with('devices')->get();
+        $bins = Asset::withCount([
+            'devices as off_devices_count' => function ($q) {
+                $q->where('is_active', false);
+            }
+        ])->with('devices')->get();
 
         // ✅ Fetch supervisors for WhatsApp notification toggle
         $supervisors = User::where('role', 'supervisor')->get();
