@@ -52,6 +52,17 @@
 
     @stack('styles')
    <style>
+.dataTables_length label {
+    font-size: 0 !important;
+
+    line-height: 0 !important;
+}
+
+
+
+
+
+
 /* Top container: left = entries + buttons, right = search */
 .dataTables_wrapper .top {
     display: flex;
@@ -78,14 +89,21 @@
 
 /* Buttons styling */
 .dt-buttons .btn-custom {
-    background-color: #ffffff;  /* white background */
-    border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25); /* heavy shadow */
-    font-weight: 600;
-    margin-top: 6px;    /* spacing below entries */
-    margin-right: 6px;
-    transition: all 0.2s ease; /* smooth hover */
-    color: #000000;     /* default text color */
+   display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 36px;
+    padding: 0 1rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Icon default colors (only when NOT hovered) */
@@ -98,28 +116,39 @@
 
 /* Hover: button background = icon color, icon + text white */
 .dt-buttons .btn-custom.copy:hover {
-    background-color: #f39c12;
-    color: #ffffff;
+    background-color: #f59e0b;
+    color: white;
+    border-color: #f59e0b;
 }
+
 .dt-buttons .btn-custom.csv:hover {
-    background-color: #3498db;
-    color: #ffffff;
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
 }
+
 .dt-buttons .btn-custom.excel:hover {
-    background-color: #27ae60;
-    color: #ffffff;
+    background-color: #10b981;
+    color: white;
+    border-color: #10b981;
 }
+
 .dt-buttons .btn-custom.pdf:hover {
-    background-color: #e74c3c;
-    color: #ffffff;
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
 }
+
 .dt-buttons .btn-custom.print:hover {
-    background-color: #8e44ad;
-    color: #ffffff;
+    background-color: #8b5cf6;
+    color: white;
+    border-color: #8b5cf6;
 }
+
 .dt-buttons .btn-custom.filter:hover {
-    background-color: #2c3e50;
-    color: #ffffff;
+    background-color: #4b5563;
+    color: white;
+    border-color: #4b5563;
 }
 
 /* Force icon white on hover */
@@ -291,7 +320,7 @@
             $("#table1").DataTable({
                 responsive: true,
                 lengthChange: false,
-                autoWidth: true,
+                autoWidth: true,s
                 buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
             }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
 */
@@ -315,7 +344,6 @@ $(document).ready(function () {
            { extend: 'excelHtml5', className: 'btn btn-custom excel', text: '<i class="far fa-file-excel"></i> Excel' },
             { extend: 'pdfHtml5', className: 'btn btn-custom pdf', text: '<i class="far fa-file-pdf"></i> PDF' },
              { extend: 'print', className: 'btn btn-custom print', text: '<i class="fas fa-print"></i> Print' },
-              { extend: 'colvis', className: 'btn btn-custom filter', text: '<i class="fas fa-sort"></i> Filter' } 
             ] : [] 
         }); 
         if (hasButtons) { 
