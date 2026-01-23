@@ -1,73 +1,169 @@
 <div> {{-- Single Livewire root wrapper start --}}
 
-    <style>
-        .bin-fill {
-            transition: fill-opacity 0.2s ease, filter 0.2s ease;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .bin-fill:hover {
-            fill-opacity: 1.0;
-            filter: brightness(1.15);
-        }
+.page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
 
-        .device-card {
-            margin-left: 16px;
-            width: 240px;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 38px 14px 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            display: none;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
+/* Desktop columns */
+.left-column {
+    flex: 0 0 50%;
+}
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+.right-column {
+    flex: 1;
+}
 
-        .card-header h4 {
-            margin: 0;
-            font-size: 15px;
-        }
+.bin-fill {
+    transition: fill-opacity 0.2s ease, filter 0.2s ease;
+}
 
-        .status-pill {
-            padding: 3px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+.bin-fill:hover {
+    fill-opacity: 1.0;
+    filter: brightness(1.15);
+}
 
-        .status-pill.empty { background: #d4f5dc; color: #1b4f1f; }
-        .status-pill.half  { background: #fff3c4; color: #8a6d00; }
-        .status-pill.full  { background: #ffd6d6; color: #8b0000; }
+.device-card {
+    margin-left: 16px;
+    width: 240px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 38px 14px 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    display: none;
+    font-family: system-ui, -apple-system, sans-serif;
+}
 
-        .card-body {
-            font-size: 13px;
-        }
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
+.card-header h4 {
+    margin: 0;
+    font-size: 15px;
+}
 
-        .info-row.muted {
-            margin-top: 10px;
-            font-size: 11px;
-            color: #777;
-        }
-    </style>
+.status-pill {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
 
-    <div style="max-width: 1200px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; gap: 20px;">
+.status-pill.empty { background: #d4f5dc; color: #1b4f1f; }
+.status-pill.half  { background: #fff3c4; color: #8a6d00; }
+.status-pill.full  { background: #ffd6d6; color: #8b0000; }
 
-        <div style="flex: 0 0 50%; display: flex; flex-direction: column; gap: 16px;">
+.card-body {
+    font-size: 13px;
+}
 
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.info-row.muted {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #777;
+}
+
+/* =========================
+RESPONSIVE FIXES
+========================= */
+
+/* Tablets & below */
+@media (max-width: 1024px) {
+
+    /* Main container stack */
+    .page-wrapper {
+        flex-direction: column;
+    }
+
+    .left-column,
+    .right-column {
+        flex: 1 1 100% !important;
+        width: 100%;
+    }
+
+    /* Map height smaller */
+    .map-container {
+        height: 420px !important;
+    }
+
+    /* Asset card stack image + info */
+    .asset-card {
+        flex-direction: column;
+    }
+
+    .asset-image {
+        width: 100% !important;
+        max-width: none !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    /* BIN + DEVICES stack */
+    .bin-device-wrapper {
+        flex-direction: column;
+    }
+
+    .bin-card {
+        flex: 1 1 100% !important;
+        max-width: 100%;
+    }
+
+    /* Device grid → single column */
+    .device-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Smaller map */
+    .map-container {
+        height: 320px !important;
+    }
+
+    /* Marker stays visible */
+    #marker {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+
+    .map-container {
+        height: 260px !important;
+    }
+
+    .card-header h4 {
+        font-size: 14px;
+    }
+}
+</style>
+
+    <div class="page-wrapper" style="max-width: 1200px; display: flex; gap: 20px;">
+
+        <div class="left-column" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- Map container -->
-            <div style="position: relative; width: 100%; height: 600px;"
+            <div class="map-container" style="position: relative; width: 100%; height: 600px;"
                 x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
 
                 <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
@@ -124,7 +220,7 @@
         </div>
 
         <!-- Right Column: Asset + Bin + Devices -->
-        <div style="flex: 1; display: flex; flex-direction: column;">
+        <div class="right-column" style="display: flex; flex-direction: column;">
 
             <!-- Section container -->
             <div style="
@@ -137,18 +233,15 @@
             ">
 
                 <!-- ASSET CARD -->
-                <div style="
-                    display: flex;
-                    gap: 16px;
-                    padding: 14px;
-                    border-radius: 14px;
+                <div class="asset-card"
+                    style="display: flex; gap: 16px; padding: 14px; border-radius: 14px;
                     background: #ffffff;
                     box-shadow: 0 4px 14px rgba(0,0,0,0.06);
                     align-items: flex-start;
                 ">
 
                     <!-- Asset Image -->
-                    <div style="flex: 0 0 220px;">
+                    <div class="asset-image" style="flex: 0 0 220px;">
                         @if($asset->picture)
                             <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
                                 alt="Asset Picture"
@@ -234,12 +327,9 @@
                         @endif
 
                 <!-- BIN + DEVICES -->
-                <div style="display: flex; gap: 14px; align-items: stretch;">
+                <div class="bin-device-wrapper" style="display: flex; gap: 14px; align-items: stretch;">
 
-                    <div style="
-                        flex: 0 0 320px;
-                        display: flex;
-                        flex-direction: column;
+                    <div class="bin-card" style="display: flex; flex-direction: column;
                         background: #ffffff;
                         border-radius: 14px;
                         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.19);
@@ -337,10 +427,9 @@
                     </div>
 
                     <!-- DEVICES -->
-                    <div style="
-                        flex: 1;
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    <div class="device-grid" style="flex: 1; 
+                        display: grid; 
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
                         gap: 12px;
                         align-content: start;
                     ">
