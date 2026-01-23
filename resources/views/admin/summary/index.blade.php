@@ -142,7 +142,7 @@
                 <h6 class="fw-bold mb-2">{{ $asset->asset_name }}</h6>
 
                 @if($asset->picture)
-                    <img src="{{ asset('storage/' . $asset->picture) }}"
+                    <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
                          class="img-fluid rounded asset-img"
                          onclick="window.open(this.src, '_blank')">
                 @else
