@@ -96,7 +96,7 @@
     </style>
 </head>
 
-<body class="hold-transition layout-top-nav">
+<body class="min-vh-100 d-flex flex-column">
     <div class="wrapper">
 
         <!-- Content Wrapper -->
@@ -130,20 +130,18 @@
 
             <!-- Main content -->
             <div class="content">
+            <main class="flex-grow-1">
                 <div class="container-fluid">
                     @yield('content')
                 </div>
+            </main>
             </div>
         </div>
 
         <!-- Footer -->
-        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff" >
-            <div class="float-right d-none d-sm-inline">
-                Anything you want
-            </div>
-            <strong>
-                Copyright &copy; 2014-2025 PSENSEHUB / SmartBin.
-            </strong>
+        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff" ></footer>
+            <div class="float-right d-none d-sm-inline"><b>Version</b> 0.1</div>
+            <strong>Copyright &copy; 2026-2027 SmartBin.</strong>
             All rights reserved.
         </footer>
 

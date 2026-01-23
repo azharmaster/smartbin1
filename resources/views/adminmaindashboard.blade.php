@@ -19,17 +19,14 @@
 }
 
 .status-card {
-    width: 19%;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 20px;
     background: #fff;
-    color: #fff;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: 10px;
+    min-height: 130px;
     transition: 0.2s ease-in-out;
 }
 
@@ -39,10 +36,13 @@
 }
 
 .status-title {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .status-content {
@@ -50,6 +50,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .status-icon {
@@ -346,7 +347,7 @@
     </div>
 @endif
 
-<div class="d-flex flex-wrap mb-4" id="status-cards">
+<div class="dashboard-cards mb-4">
     @php
         $statuses = [
             ['title' => 'Total Sensors', 'count' => $totalDevices, 'icon' => 'fa-satellite-dish', 'class' => 'card-total'],
@@ -368,9 +369,6 @@
     @endforeach
 </div>
 
-{{-- =========================
-     DEVICE GRID
-========================= --}}
 <div id="static-device-grid">
     <div class="card mb-4" style="background-color: transparent;">
         <div class="p-3 scroll-body" style="overflow-y: auto;">
