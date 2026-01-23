@@ -299,6 +299,21 @@
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <script>
+$(document).on('hide.bs.modal', '.modal', function () {
+    const $modal = $(this);
+
+    // Remove focus from any focused element inside modal
+    $modal.find(':focus').blur();
+
+    // Also blur document active element (mobile fix)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+});
+</script>
+
+
+    <script>
 
     document.addEventListener("DOMContentLoaded", function () {
     // Remove AdminLTE's custom scrollbar

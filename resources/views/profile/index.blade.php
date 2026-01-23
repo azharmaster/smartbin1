@@ -120,6 +120,24 @@
     .right-card-wrapper form .form-group.text-center {
         align-self: center;
     }
+
+    /* RESPONSIVE UPDATES */
+    @media (max-width: 991.98px) {
+        .profile-row {
+            flex-direction: column;
+        }
+        .profile-col {
+            width: 100% !important;
+        }
+        .profile-card, .right-card-wrapper .card-shadow {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .profile-card .profile-user-img {
+            width: 120px;
+            height: 120px;
+        }
+    }
 </style>
 
 <div class="container-fluid mt-4">
