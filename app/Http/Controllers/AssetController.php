@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Floor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AssetController extends Controller
 {
@@ -45,11 +44,18 @@ class AssetController extends Controller
         if ($request->hasFile('picture')) {
 
             // Delete old image if exists
-            if ($asset && $asset->picture && Storage::disk('public')->exists($asset->picture)) {
-                Storage::disk('public')->delete($asset->picture);
+            if ($asset && $asset->picture) {
+                $oldPath = public_path('uploads/asset/' . $asset->picture);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
             }
 
-            $imagePath = $request->file('picture')->store('assets', 'public');
+            $file = $request->file('picture');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/asset'), $filename);
+
+            $imagePath = $filename;
         } else {
             $imagePath = $asset->picture ?? null;
         }
@@ -74,9 +80,12 @@ class AssetController extends Controller
     {
         $asset = Asset::findOrFail($id);
 
-        // Delete image from storage
-        if ($asset->picture && Storage::disk('public')->exists($asset->picture)) {
-            Storage::disk('public')->delete($asset->picture);
+        // Delete image from public folder
+        if ($asset->picture) {
+            $path = public_path('uploads/asset/' . $asset->picture);
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
 
         $asset->delete();

@@ -89,7 +89,11 @@
                                        accept="image/*">
 
                                 <img id="imagePreview{{ $id ?? 'new' }}"
-                                     src="{{ isset($picture) && $picture ? asset('uploads/asset/'.$picture) : '' }}"
+                                     src="{{ isset($picture) && $picture 
+                                            ? asset(str_starts_with($picture, 'uploads/') 
+                                                ? $picture 
+                                                : 'uploads/asset/'.$picture) 
+                                            : '' }}"
                                      class="img-thumbnail {{ isset($picture) && $picture ? '' : 'd-none' }}"
                                      style="max-height:120px;">
 

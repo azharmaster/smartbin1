@@ -45,7 +45,7 @@
                         <td>{{ $asset->model }}</td>
                         <td class="text-center">
                             @if($asset->picture)
-                                <img src="{{ asset('storage/' . $asset->picture) }}"
+                                <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
                                     alt="Asset Image"
                                     class="img-thumbnail"
                                     style="width: 60px; height: 60px; object-fit: cover;">

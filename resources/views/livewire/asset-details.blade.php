@@ -150,7 +150,7 @@
                     <!-- Asset Image -->
                     <div style="flex: 0 0 220px;">
                         @if($asset->picture)
-                            <img src="{{ asset('storage/' . $asset->picture) }}"
+                            <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
                                 alt="Asset Picture"
                                 style="
                                     width: 100%;
