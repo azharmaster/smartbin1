@@ -172,6 +172,15 @@
     display: inline-block;
 }
 
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+
     </style>
 
 </head>
@@ -370,6 +379,13 @@ $(document).ready(function () {
     @livewireScripts
 
      @stack('scripts')
+
+     <script>
+    $(document).on('show.bs.modal', '.modal', function () {
+        $(this).appendTo('body');
+    });
+    </script>
+
 
 </body>
 

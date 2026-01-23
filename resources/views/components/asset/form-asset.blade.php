@@ -10,19 +10,18 @@
         data-toggle="modal" data-target="#formAsset{{ $id ?? '' }}"
         style="padding: 2px 6px; font-size: 10px; border-radius: 6px;">
 
-    <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
-    {{ $id ? '' : 'Add' }}
+        <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
+        {{ $id ? '' : 'Add' }}
 
-</button>
+    </button>
 
+    <div class="modal fade" id="formAsset{{ $id ?? '' }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content">
 
-    <div class="modal fade" id="formAsset{{ $id ?? '' }}">
-        <form method="POST" action="{{ route('master-data.assets.store') }}" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="id" value="{{ $id ?? '' }}">
-
-            <div class="modal-dialog">
-                <div class="modal-content">
+                <form method="POST" action="{{ route('master-data.assets.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="id" value="{{ $id ?? '' }}">
 
                     <div class="modal-header">
                         <h4 class="modal-title">{{ $id ? 'Form Edit Asset' : 'Form Add Asset' }}</h4>
@@ -111,9 +110,10 @@
                         <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
 
-                </div>
+                </form>
+
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
