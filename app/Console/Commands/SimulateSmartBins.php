@@ -61,16 +61,15 @@ class SimulateSmartBins extends Command
               });
         })->exists();
 
-    $hasActiveEvent = Event::where('is_active', 1)
-        ->where(function ($q) use ($now) {
+    $hasActiveEvent = Event::where(function ($q) use ($now) {
             $q->where(function ($q2) use ($now) {
                 $q2->whereNull('end_date')
-                   ->whereDate('start_date', $now);
+                ->whereDate('start_date', $now);
             })
             ->orWhere(function ($q2) use ($now) {
                 $q2->whereNotNull('end_date')
-                   ->whereDate('start_date', '<=', $now)
-                   ->whereDate('end_date', '>=', $now);
+                ->whereDate('start_date', '<=', $now)
+                ->whereDate('end_date', '>=', $now);
             });
         })->exists();
 
