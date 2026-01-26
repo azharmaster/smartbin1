@@ -39,12 +39,22 @@
             background: linear-gradient(135deg, #1a2f3f 0%, #2d4a5c 100%);
             color: #fff;
             min-height: 100vh;
-            margin-left: 50px;
-            margin-right: 50px;
+            margin: 0; /* ✅ FIX: remove forced side margins */
         }
 
-        .content-wrapper {
+        /* ✅ FORCE FULL WIDTH */
+        .wrapper,
+        .content-wrapper,
+        .content {
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
             background: transparent;
+        }
+
+        .container-fluid {
+            padding-left: 24px;
+            padding-right: 24px;
         }
 
         .content-wrapper .content {
@@ -54,7 +64,7 @@
 
         /* === Dashboard Layout === */
         .dashboard-container {
-            max-width: 1400px;
+            max-width: 100%;
             margin-left: 0;
             margin-right: auto;
             display: grid;
@@ -92,11 +102,10 @@
             background-color: transparent !important;
             color: inherit !important;
         }
-
     </style>
 </head>
 
-<body class="min-vh-100 d-flex flex-column">
+<body class="layout-top-nav min-vh-100 d-flex flex-column">
     <div class="wrapper">
 
         <!-- Content Wrapper -->
@@ -111,13 +120,10 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                {{-- <li class="breadcrumb-item">
-                                    <a href="{{ route('dashboard') }}">Home</a>
-                                </li> --}}
-                                {{-- <li class="breadcrumb-item active">@yield('content_title')</li> --}}
                                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="dropdown-item d-flex align-items-center text-white logout-btn">
+                                    <button type="submit"
+                                        class="dropdown-item d-flex align-items-center text-white logout-btn">
                                         <i class="fas fa-sign-out-alt me-2" style="padding-right: 5px;"></i>
                                         Log Out
                                     </button>
@@ -130,16 +136,16 @@
 
             <!-- Main content -->
             <div class="content">
-            <main class="flex-grow-1">
-                <div class="container-fluid">
-                    @yield('content')
-                </div>
-            </main>
+                <main class="flex-grow-1">
+                    <div class="container-fluid">
+                        @yield('content')
+                    </div>
+                </main>
             </div>
         </div>
 
         <!-- Footer -->
-        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff" ></footer>
+        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff">
             <div class="float-right d-none d-sm-inline"><b>Version</b> 0.1</div>
             <strong>Copyright &copy; 2026-2027 SmartBin.</strong>
             All rights reserved.
@@ -165,5 +171,4 @@
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 
 </body>
-
 </html>
