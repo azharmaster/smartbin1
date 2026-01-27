@@ -147,12 +147,11 @@
 
       <div class="modal-header">
         <h5 class="modal-title">Set Bin Capacity – User Guide</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
 
       <div class="modal-body" style="font-size: 14px;">
 
-        <h6>🛠️ Purpose</h6>
+        <h6><i class="fas fa-tools"></i> Purpose</h6>
         <p>
           The <strong>Set Capacity</strong> page is used to define how full a bin is
           based on percentage values.  
@@ -161,7 +160,7 @@
 
         <hr>
 
-        <h6>📊 Capacity Levels</h6>
+        <h6><i class="fas fa-chart-bar"></i> Capacity Levels</h6>
         <ul>
           <li>
             <strong style="color:#2ecc71;">0 – 39%</strong> → Empty  
@@ -184,7 +183,7 @@
 
         <hr>
 
-        <h6>🧭 How to Use This Page</h6>
+        <h6><i class="fas fa-question-circle"></i> How to Use This Page</h6>
         <ol>
           <li>Set the percentage range for <strong>Empty</strong>, <strong>Half Full</strong>, and <strong>Full</strong>.</li>
           <li>Make sure the ranges do not overlap.</li>
@@ -198,7 +197,7 @@
 
         <hr>
 
-        <h6>⚠️ Important Notes</h6>
+        <h6><i class="fas fa-exclamation"></i> Important Notes</h6>
         <ul>
           <li>These settings affect <strong>all bins</strong>.</li>
           <li>Wrong ranges may cause incorrect bin status.</li>
