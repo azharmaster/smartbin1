@@ -565,7 +565,7 @@ function trend($current, $previous) {
                         @endforeach
                     </select>
                 </div>
-                <div class="position-relative w-100" style="min-height:240px;">
+                <div class="position-relative w-100" style="min-height:300px;">
                     <canvas id="smartBinClearChart"></canvas>
                 </div>
             </div>
