@@ -160,5 +160,17 @@ document.addEventListener('DOMContentLoaded', function () {
         preview.classList.remove('d-none');
         text.classList.add('d-none');
     }
+
+    // ==========================
+    // Fix duplicate modal-backdrop flicker on mobile
+    // ==========================
+    const modalEl = document.getElementById('formAsset' + id);
+    if (modalEl) {
+        $(modalEl).on('show.bs.modal', function () {
+            // remove any extra backdrop before opening
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        });
+    }
+
 });
 </script>

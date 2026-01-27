@@ -55,7 +55,7 @@
                         </td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                               <x-asset.form-asset :id="$asset->id" :floors="$floors" :picture="$asset->picture"/>&nbsp;
+                               <!-- <x-asset.form-asset :id="$asset->id" :floors="$floors" :picture="$asset->picture"/>&nbsp; -->
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt text-white"></i>
                             </a>&nbsp;
