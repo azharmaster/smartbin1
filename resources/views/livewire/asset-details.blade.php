@@ -161,6 +161,29 @@ RESPONSIVE FIXES
 
     <div class="page-wrapper" style="max-width: 1200px; display: flex; gap: 20px;">
 
+    <!-- Floating Help Button -->
+    <button type="button" onclick="openHelp()" style="
+            position: fixed;
+            top: 90px;
+            right: 30px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 999;
+        "
+        title="Help / User Guide"
+    >
+        ?
+    </button>
+
+
         <div class="left-column" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- Map container -->
             <div class="map-container" style="position: relative; width: 100%; height: 600px;"
@@ -580,6 +603,11 @@ function draggableMarker(assetId, startX, startY) {
     }
 }
 </script>
+<script>
+function openHelp() {
+    $('#helpModal').modal('show');
+}
+</script>
 
 
 
@@ -627,6 +655,43 @@ function draggableMarker(assetId, startX, startY) {
         </div>
     </div>
 </div>
+
+<!-- help modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Asset Monitoring – User Guide</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+        <h6>🗺️ Floor Map</h6>
+        <ul>
+          <li>Drag the marker to reposition the asset.</li>
+          <li><span style="color:#2ecc71">Green</span>: Empty</li>
+          <li><span style="color:#f1c40f">Yellow</span>: Half</li>
+          <li><span style="color:#e74c3c">Red</span>: Full</li>
+        </ul>
+
+        <h6>🗑️ Bin Capacity</h6>
+        <ul>
+          <li>Each section represents a device.</li>
+          <li>Percentage shows fill level.</li>
+        </ul>
+
+        <h6>📡 Device Status</h6>
+        <ul>
+          <li>🔋 Battery level</li>
+          <li>📶 Network signal</li>
+          <li>⚙️ Status derived from capacity</li>
+          <li><strong>Undetected</strong>: no data received</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 @endforeach
 
 </div> {{-- Single Livewire root wrapper end --}}
