@@ -813,7 +813,7 @@ function trend($current, $previous) {
 
        <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
-            <div class="card shadow-sm mb-4">
+            <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6">
                         <i class="fas fa-trash-alt me-2"></i> Sensor Lists
@@ -821,65 +821,37 @@ function trend($current, $previous) {
                 </div>
 
                 <div class="card-body p-2">
-                    <div class="accordion" id="assetAccordion">
+                    @forelse($assetsWithDevices as $asset)
+                        <div class="card mb-2 p-2"> <!-- smaller gap -->
+                            <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                @foreach($asset->devices as $device)
+                                    @php
+                                        $latest = $device->sensors->last();
+                                        $level = $latest->capacity ?? null;
 
-                        @forelse($assetsWithDevices as $asset)
-                            <div class="accordion-item mb-2">
-                                <h2 class="accordion-header" id="heading{{ $asset->id }}">
-                                    <button
-                                        class="accordion-button collapsed fw-semibold"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#asset{{ $asset->id }}">
+                                        $badge = match (true) {
+                                            $level === null => 'secondary',
+                                            $level > $halfMax => 'danger',
+                                            $level > $emptyMax => 'warning',
+                                            default => 'success',
+                                        };
 
-                                        🗑️ {{ $asset->name }}
-                                        {{ $asset->asset_name }}
-                                    </button>
-                                </h2>
+                                        preg_match('/-(\d+)$/', $device->device_name, $matches);
+                                        $sensorNumber = $matches[1] ?? '?';
+                                    @endphp
 
-                                <div
-                                    id="asset{{ $asset->id }}"
-                                    class="accordion-collapse collapse"
-                                    data-bs-parent="#assetAccordion">
-
-                                    <div class="accordion-body p-2">
-                                        <ul class="list-group list-group-flush">
-                                            @foreach($asset->devices as $device)
-                                                @php
-                                                    $latest = $device->sensors->last();
-                                                    $level = $latest->capacity ?? null;
-
-                                                    $badge = match (true) {
-                                                        $level === null => 'secondary',
-                                                        $level > $halfMax => 'danger',       // Full bin
-                                                        $level > $emptyMax => 'warning',     // Half
-                                                        default => 'success',                // Empty
-                                                    };
-                                                @endphp
-
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <strong>{{ $device->device_name }}</strong><br>
-                                                        <small class="text-muted">
-                                                        </small>
-                                                    </div>
-
-                                                    <span class="badge bg-{{ $badge }}">
-                                                        {{ $level !== null ? $level.'%' : 'Undetected' }}
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                                    <div class="badge bg-{{ $badge }}">
+                                        {{ $sensorNumber }} - {{ $level !== null ? $level.'%' : 'Undetected' }}
                                     </div>
-                                </div>
+                                @endforeach
                             </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No assets found
-                            </div>
-                        @endforelse
-
-                    </div>
+                        </div>
+                    @empty
+                        <div class="text-muted text-center py-3">
+                            No assets found
+                        </div>
+                    @endforelse
                 </div>
             </div>
 
