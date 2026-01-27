@@ -5,7 +5,7 @@
 <!-- Floating Help Button -->
 <button type="button" data-bs-toggle="modal" data-bs-target="#holidaysHelpModal" style="
         position: fixed;
-        top: 90px;
+        bottom: 30px;
         right: 30px;
         width: 44px;
         height: 44px;
