@@ -10,7 +10,7 @@
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: #25D366;
+        background: #faa70c;
         color: #fff;
         border: none;
         font-size: 20px;
@@ -347,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">WhatsApp Notification – User Guide</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>
