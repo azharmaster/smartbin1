@@ -2,6 +2,28 @@
 @section('content_title', 'WhatsApp Notification')
 @section('content')
 
+{{-- Floating Help Button --}}
+<button type="button" onclick="openWhatsAppHelp()" style="
+        position: fixed;
+        top: 90px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #25D366;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="WhatsApp Notification Guide"
+>
+    ?
+</button>
+
 {{-- Custom CSS for toggle --}}
 <style>
 /* Custom ON/OFF toggle switch */
@@ -318,5 +340,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
+
+{{-- WhatsApp Help Modal --}}
+<div class="modal fade" id="whatsappHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">WhatsApp Notification – User Guide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    The <strong>WhatsApp Notification</strong> page allows you to monitor your bins and devices and receive alerts via WhatsApp when certain conditions are met. Follow the guide below to understand how to configure and manage notifications.
+                </p>
+
+                <h6 class="mt-3 fw-semibold">1. Full Bin Alert</h6>
+                <p>
+                    This section lets you enable or disable global notifications when any bin reaches full capacity.
+                    <ul>
+                        <li><strong>Current Status:</strong> Shows whether the notification is <span class="badge bg-success">ON</span> or <span class="badge bg-danger">OFF</span>.</li>
+                        <li><strong>Start / End Time:</strong> Define the time range when notifications should be active. Alerts will only be sent within this time window.</li>
+                        <li><strong>ON/OFF Switch:</strong> Toggle to enable or disable the notification globally.</li>
+                        <li><strong>Save Button:</strong> Apply your changes.</li>
+                    </ul>
+                </p>
+
+                <h6 class="mt-3 fw-semibold">2. Bin & Device Notifications</h6>
+                <p>
+                    Each bin can have individual devices (sensors) that can trigger alerts. You can manage their notifications separately.
+                    <ul>
+                        <li><strong>Bin List:</strong> Shows all bins with a summary of their devices.</li>
+                        <li><strong>Eye Icon:</strong> Click to view the devices inside that bin.</li>
+                        <li><strong>Device Status:</strong> Each device has an ON/OFF toggle:
+                            <ul>
+                                <li>OFF: No notifications will be sent for this device.</li>
+                                <li>ON: Notifications will be sent for this device.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Bin Toggle:</strong> Enable or disable notifications for all devices in the bin at once.</li>
+                        <li><strong>Search Bar:</strong> Quickly find bins by name or location. The list updates as you type.</li>
+                        <li><strong>Real-Time Updates:</strong> Any toggle change (bin or device) is saved immediately without needing to submit a form.</li>
+                    </ul>
+                </p>
+
+                <h6 class="mt-3 fw-semibold">3. Tips for Efficient Notifications</h6>
+                <ul>
+                    <li>Enable notifications only for active devices to avoid unnecessary alerts.</li>
+                    <li>Use the Start / End time to limit alerts to working hours or specific periods.</li>
+                    <li>Check the device status regularly to ensure all sensors are online.</li>
+                    <li>Use the search bar if you have many bins for quicker management.</li>
+                </ul>
+
+                <p class="mb-0 text-muted mt-3">
+                    Following these steps ensures you receive accurate and timely WhatsApp alerts for your bins and devices.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{-- JS to open WhatsApp help modal --}}
+@push('scripts')
+<script>
+function openWhatsAppHelp() {
+    var modal = new bootstrap.Modal(document.getElementById('whatsappHelpModal'));
+    modal.show();
+}
+</script>
+@endpush
 
 @endsection
