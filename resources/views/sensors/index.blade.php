@@ -23,9 +23,10 @@
         width: 100%;
     }
 
-    /* Reduce chart height */
+    /* Increase chart height on mobile */
     #capacityChart {
-        max-height: 220px;
+        max-height: 400px; /* bigger for mobile */
+        min-height: 350px;
     }
 
     /* Make table text smaller */
@@ -127,7 +128,7 @@
 <script>
     const ctx = document.getElementById('capacityChart').getContext('2d');
 
-    new Chart(ctx, {
+    const capacityChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -190,6 +191,19 @@
                 }
             }
         }
+    });
+
+    // Update chart height dynamically on resize
+    window.addEventListener('resize', () => {
+        const chartCanvas = document.getElementById('capacityChart');
+        if (window.innerWidth < 576) {
+            chartCanvas.style.maxHeight = '400px';
+            chartCanvas.style.minHeight = '350px';
+        } else {
+            chartCanvas.style.maxHeight = '300px';
+            chartCanvas.style.minHeight = '300px';
+        }
+        capacityChart.resize();
     });
 </script>
 
