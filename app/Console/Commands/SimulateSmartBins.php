@@ -25,7 +25,7 @@ class SimulateSmartBins extends Command
     date_default_timezone_set('Asia/Kuala_Lumpur');
     $now = Carbon::now();
 
-    $canSendWhatsApp = true;
+    $canSendWhatsApp = true; // assume true, then disable if needed
 
     // 1️⃣ WhatsApp notification active and within schedule
     $notification = WhatsAppNotification::first();
@@ -50,35 +50,37 @@ class SimulateSmartBins extends Command
         $this->info('⏰ Outside work hours.');
     }
 
-    // 3️⃣ Holiday / Event check
-    $isHolidayToday = Holiday::where('is_active', 1)
-        ->whereDate('start_date', '<=', $now)
-        ->where(function ($q) use ($now) {
-            $q->whereDate('start_date', $now)
-              ->orWhere(function ($q2) use ($now) {
-                  $q2->whereNotNull('end_date')
-                     ->whereDate('end_date', '>=', $now);
-              });
-        })->exists();
+$isHolidayToday = Holiday::where('is_active', 1)
+    ->whereDate('start_date', '<=', $now)
+    ->where(function ($q) use ($now) {
+        $q->whereDate('start_date', $now) // if no end_date, only today counts
+          ->orWhere(function ($q2) use ($now) {
+              $q2->whereNotNull('end_date')
+                 ->whereDate('end_date', '>=', $now);
+          });
+    })->exists();
 
-    $hasActiveEvent = Event::where(function ($q) use ($now) {
-            $q->where(function ($q2) use ($now) {
-                $q2->whereNull('end_date')
-                ->whereDate('start_date', $now);
-            })
-            ->orWhere(function ($q2) use ($now) {
-                $q2->whereNotNull('end_date')
-                ->whereDate('start_date', '<=', $now)
-                ->whereDate('end_date', '>=', $now);
-            });
-        })->exists();
+$hasActiveEvent = Event::where('is_active', 1)
+    ->where(function ($q) use ($now) {
+        $q->where(function ($q2) use ($now) {
+            $q2->whereNull('end_date')
+               ->whereDate('start_date', $now);
+        })
+        ->orWhere(function ($q2) use ($now) {
+            $q2->whereNotNull('end_date')
+               ->whereDate('start_date', '<=', $now)
+               ->whereDate('end_date', '>=', $now);
+        });
+    })->exists();
 
     if ($isHolidayToday || $hasActiveEvent) {
         $canSendWhatsApp = false;
         $this->info('🎉 Today is a holiday or has an active event. Notifications skipped.');
+    } else {
+        $this->info('📤 Today is free for notifications.');
     }
 
-    // 4️⃣ Read REAL sensor data (no simulation)
+    // 4️⃣ Fetch devices and simulate sensor readings
     $capacity = CapacitySetting::first();
     $fullMin  = $capacity->half_to + 1;
 
@@ -91,32 +93,29 @@ class SimulateSmartBins extends Command
             continue;
         }
 
-        $latestSensor = Sensor::where('device_id', $device->id_device)
-            ->latest('time')
-            ->first();
+        $prev = Sensor::where('device_id', $device->id_device)->latest('time')->first();
+        $capacityValue = rand(0, 100);
 
-        if (!$latestSensor) {
-            $this->info("⚠️ No sensor data for {$device->device_name}");
-            continue;
-        }
-
-        $capacityValue = $latestSensor->capacity;
+        Sensor::create([
+            'device_id' => $device->id_device,
+            'battery'   => rand(30, 100),
+            'capacity'  => $capacityValue,
+            'time'      => now(),
+            'network'   => 'LTE'
+        ]);
 
         $this->info("{$device->device_name} → {$capacityValue}%");
 
-        if ($capacityValue >= $fullMin) {
+        if ($capacityValue >= $fullMin && (!$prev || $prev->capacity < $fullMin)) {
             $fullDevices[] = $device;
         }
     }
 
-    // 5️⃣ Send WhatsApp alerts
+    // 5️⃣ Send WhatsApp alerts if allowed and there are full bins
     if ($canSendWhatsApp && !empty($fullDevices)) {
-        $phones = User::where('role', 4)
-            ->whereNotNull('phone')
-            ->pluck('phone')
-            ->map(fn ($p) => '60' . ltrim(preg_replace('/\D+/', '', $p), '0'))
-            ->unique()
-            ->values();
+        $phones = User::where('role', 4)->whereNotNull('phone')->pluck('phone')
+            ->map(fn($p) => '60' . ltrim(preg_replace('/\D+/', '', $p), '0'))
+            ->unique()->values();
 
         $whatsapp = new WhatsAppSender();
         $deviceList = '';
