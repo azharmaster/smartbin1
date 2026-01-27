@@ -47,7 +47,7 @@
 
     <div class="card-body">
         <div class="mb-4">
-            <div class="position-relative w-100" style="min-height:200px;">
+            <div class="position-relative w-100" style="min-height:300px;">
                 <canvas id="capacityChart"></canvas>
             </div>
         </div>
