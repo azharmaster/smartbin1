@@ -662,32 +662,65 @@ function openHelp() {
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Asset Monitoring – User Guide</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
+        <div class="modal-body" style="font-size: 14px; line-height: 1.6;">
+        <!-- Asset Location -->
+        <h6 class="fw-bold mb-2">
+            <i class="fas fa-map-marked-alt"></i> Asset Location on Map
+        </h6>
+        <ol class="mb-3">
+            <li>
+            Drag the <i class="fas fa-trash text-success"></i> marker to set the asset’s location on the map.
+            </li>
+            <li>
+            The location can be updated or changed at any time.
+            </li>
+        </ol>
 
-      <div class="modal-body" style="font-size: 14px;">
-        <h6>🗺️ Floor Map</h6>
-        <ul>
-          <li>Drag the marker to reposition the asset.</li>
-          <li><span style="color:#2ecc71">Green</span>: Empty</li>
-          <li><span style="color:#f1c40f">Yellow</span>: Half</li>
-          <li><span style="color:#e74c3c">Red</span>: Full</li>
-        </ul>
+        <!-- Asset Info -->
+        <h6 class="fw-bold mb-2">
+            <i class="fas fa-info-circle"></i> Asset Info
+        </h6>
+        <ol class="mb-3">
+            <li>
+            Click the <i class="fas fa-pencil-alt"></i> button to edit the asset’s information.
+            </li>
+            <li>
+            Asset details such as name, description, and picture can be updated.
+            </li>
+        </ol>
 
-        <h6>🗑️ Bin Capacity</h6>
-        <ul>
-          <li>Each section represents a device.</li>
-          <li>Percentage shows fill level.</li>
-        </ul>
+        <!-- Capacity / Sensor Details -->
+        <h6 class="fw-bold mb-2">
+            <i class="fas fa-clipboard"></i> Capacity Levels / Sensor Details
+        </h6>
+        <ol class="mb-3">
+            <li>
+            Each compartment shown in the image represents one sensor installed in the bin.
+            </li>
+            <li>
+            Sensor color indicators:
+            <ul class="mt-1">
+                <li><span style="color:#e74c3c;">Red</span> – Full</li>
+                <li><span style="color:#f1c40f;">Yellow</span> – Half Full</li>
+                <li><span style="color:#2ecc71;">Green</span> – Empty</li>
+            </ul>
+            </li>
+            <li>
+            Click the <i class="fas fa-pencil-alt"></i> button to edit a sensor’s properties.
+            </li>
+            <li>
+            Click the <i class="fas fa-plus"></i> button to add a new sensor device.
+            </li>
+        </ol>
 
-        <h6>📡 Device Status</h6>
-        <ul>
-          <li>🔋 Battery level</li>
-          <li>📶 Network signal</li>
-          <li>⚙️ Status derived from capacity</li>
-          <li><strong>Undetected</strong>: no data received</li>
-        </ul>
-      </div>
+        <!-- Note -->
+        <div class="alert alert-info py-2 mb-0">
+            <strong>Note:</strong> The add (<i class="fas fa-plus"></i>) button is only available if fewer than
+            <strong>three</strong> sensor devices are attached to the asset.
+        </div>
+
+        </div>
     </div>
   </div>
 </div>
