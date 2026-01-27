@@ -164,12 +164,12 @@ RESPONSIVE FIXES
     <!-- Floating Help Button -->
     <button type="button" onclick="openHelp()" style="
             position: fixed;
-            top: 90px;
+            bottom: 30px;
             right: 30px;
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: #2563eb;
+            background: #faa70c;
             color: #fff;
             border: none;
             font-size: 20px;
