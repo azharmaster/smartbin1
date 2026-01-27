@@ -2,10 +2,7 @@
 @section('content_title', 'Set Capacity')
 @section('content')
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-
-        <!-- Floating Help Button -->
+<!-- Floating Help Button -->
 <button type="button" data-toggle="modal" data-target="#capacityHelpModal" style="
         position: fixed;
         top: 90px;
@@ -27,7 +24,8 @@
     ?
 </button>
 
-
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
 
         <div class="card card-success card-outline">
             <div class="card-header text-center bg-white border-bottom-0">
@@ -142,8 +140,6 @@
     </div>
 </div>
 
-@endsection
-
 <!-- Set Capacity Help Modal -->
 <div class="modal fade" id="capacityHelpModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -216,6 +212,7 @@
 </div>
 
 
+@endsection
 
 @push('styles')
 <style>
@@ -278,13 +275,6 @@ button.btn-sm {
 </style>
 @endpush
 
-<script>
-function openHelp() {
-    $('#capacityHelpModal').modal('show');
-}
-</script>
-
-
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -318,38 +308,40 @@ document.addEventListener('DOMContentLoaded', function() {
             halfInput.value = half;
         }
 
-        // Update numbers
         emptyDisplay.textContent = empty;
         halfFromDisplay.textContent = empty + 1;
         halfToDisplay.textContent = half;
         fullFromDisplay.textContent = half + 1;
 
-        // Update percentages
         emptyPercent.textContent = `${empty}%`;
         halfPercent.textContent = `${half - empty}%`;
         fullPercent.textContent = `${100 - half}%`;
 
-        // Colored track
         emptyInput.style.background = `linear-gradient(to right, #28a745 0%, #28a745 ${empty}%, #d3d3d3 ${empty}% 100%)`;
         halfInput.style.background = `linear-gradient(to right, #d3d3d3 0%, #d3d3d3 ${empty}%, #ffc107 ${empty}% , #ffc107 ${half}%, #d3d3d3 ${half}% 100%)`;
         fullInput.style.background = `linear-gradient(to right, #d3d3d3 0%, #d3d3d3 ${half}%, #dc3545 ${half}% , #dc3545 100%)`;
     }
 
-    // Slider events
     emptyInput.addEventListener('input', updateValues);
     halfInput.addEventListener('input', updateValues);
 
-    // Buttons events
     emptyPlus.addEventListener('click', () => { emptyInput.value = Math.min(parseInt(emptyInput.value)+1, 99); updateValues(); });
     emptyMinus.addEventListener('click', () => { emptyInput.value = Math.max(parseInt(emptyInput.value)-1, 0); updateValues(); });
     halfPlus.addEventListener('click', () => { halfInput.value = Math.min(parseInt(halfInput.value)+1, 99); updateValues(); });
     halfMinus.addEventListener('click', () => { halfInput.value = Math.max(parseInt(halfInput.value)-1, parseInt(emptyInput.value)+1); updateValues(); });
 
-    // Prevent Enter from submitting
     form.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); } });
 
-    // Initialize
     updateValues();
 });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+function openCapacityHelp() {
+    var modal = new bootstrap.Modal(document.getElementById('capacityHelpModal'));
+    modal.show();
+}
 </script>
 @endpush
