@@ -823,8 +823,9 @@ function trend($current, $previous) {
                 <div class="card-body p-2">
                     @forelse($assetsWithDevices as $asset)
                         <div class="card mb-2 p-2"> <!-- smaller gap -->
-                            <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
-                            <div class="d-flex flex-wrap gap-2 mt-2">
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
+
                                 @foreach($asset->devices as $device)
                                     @php
                                         $latest = $device->sensors->last();
