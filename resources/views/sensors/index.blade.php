@@ -36,6 +36,41 @@
         white-space: nowrap;
     }
 }
+
+/* ===== Table Styling ===== */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    vertical-align: middle;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.03);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.table td,
+.table th {
+    padding: 0.65rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
 </style>
 
 <div class="card card-success card-outline">
@@ -81,9 +116,9 @@
             </form>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-bordered table-striped table-hover align-middle">
+                <thead class="text-center">
                     <tr>
                         <th>#</th>
                         <th>Device ID</th>
@@ -95,7 +130,7 @@
                 </thead>
                 <tbody>
                     @foreach ($sensors as $index => $sensor)
-                    <tr>
+                    <tr class="text-center">
                         <!-- Correct numbering across pages -->
                         <td>{{ $sensors->firstItem() + $index }}</td>
                         <td>{{ $sensor->device_id }}</td>
