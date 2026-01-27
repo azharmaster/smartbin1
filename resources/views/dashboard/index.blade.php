@@ -565,8 +565,8 @@ function trend($current, $previous) {
                         @endforeach
                     </select>
                 </div>
-                <div class="card-body">
-                    <canvas id="smartBinClearChart" height="100"></canvas>
+                <div class="position-relative w-100" style="min-height:240px;">
+                    <canvas id="smartBinClearChart"></canvas>
                 </div>
             </div>
         </div>
@@ -590,6 +590,15 @@ function trend($current, $previous) {
     }
     100% {
         background-position: 0% 50%;
+    }
+}
+
+//whatsapp toggle responsive
+@media (max-width: 576px) {
+    .card-body.d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 }
 </style>
@@ -674,7 +683,8 @@ function trend($current, $previous) {
                         <i class="fas fa-users"></i> Users
                     </h5>
                 </div>
-                    <table class="table table-striped table-hover align-middle">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th style="width:5%;">#</th>
@@ -728,6 +738,7 @@ function trend($current, $previous) {
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
         </div>
 
@@ -948,6 +959,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: true },
                     tooltip: {
@@ -1028,13 +1040,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const calendarEvents = @json($calendarCombined);
 
+    const isMobile = window.innerWidth < 768;
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        height: 550,
+        initialView: isMobile ? 'dayGridWeek' : 'dayGridMonth',
+        height: isMobile ? 'auto' : 550,
+
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev,next',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
+            right: isMobile ? '' : 'dayGridMonth,timeGridWeek'
         },
         eventDisplay: 'block',
 

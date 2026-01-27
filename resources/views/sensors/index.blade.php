@@ -2,6 +2,41 @@
 @section('content_title', 'Sensor')
 @section('content')
 
+<style>
+/* ===== Mobile adjustments ===== */
+@media (max-width: 576px) {
+
+    /* Stack controls vertically */
+    .sensor-controls {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px;
+    }
+
+    .sensor-controls form {
+        width: 100%;
+    }
+
+    .sensor-controls input,
+    .sensor-controls select,
+    .sensor-controls button {
+        width: 100%;
+    }
+
+    /* Reduce chart height */
+    #capacityChart {
+        max-height: 220px;
+    }
+
+    /* Make table text smaller */
+    table th,
+    table td {
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+}
+</style>
+
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
         <h5 class="mb-0">Sensor Data</h5>
@@ -12,7 +47,9 @@
 
     <div class="card-body">
         <div class="mb-4">
-            <canvas id="capacityChart" height="100"></canvas>
+            <div class="position-relative w-100" style="min-height:200px;">
+                <canvas id="capacityChart"></canvas>
+            </div>
         </div>
 
         @if ($errors->any())
@@ -23,7 +60,7 @@
         </div>
         @endif
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3 sensor-controls">
             <form method="GET" class="d-flex">
                 <input type="text"
                     name="search"
@@ -112,32 +149,29 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const index = context.dataIndex;
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            const date = new Date(timestamps[index]);
+                            const formatted = date.toLocaleString('en-MY', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
 
-                        // Convert MySQL datetime → JS Date
-                        const date = new Date(timestamps[index]);
-
-                        // Format nicely
-                        const formatted = date.toLocaleString('en-MY', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                        });
-
-                        return [
-                            `Capacity: ${context.raw}%`,
-                            `Time: ${formatted}`
-                        ];
+                            return [
+                                `Capacity: ${context.raw}%`,
+                                `Time: ${formatted}`
+                            ];
+                        }
                     }
                 }
-            }
             },
             scales: {
                 y: {
