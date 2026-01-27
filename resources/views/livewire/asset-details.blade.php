@@ -195,8 +195,8 @@ RESPONSIVE FIXES
                         position: absolute;
                         width: 34px;
                         height: 34px;
-                        left: calc({{ $asset->x }}px - 17px);
-                        top: calc({{ $asset->y }}px - 17px);
+                        left: calc({{ $asset->x }}% - 17px);
+                        top: calc({{ $asset->y }}% - 17px);
                         background: #ffffff;
                         border-radius: 50%;
                         display: flex;
@@ -522,52 +522,66 @@ RESPONSIVE FIXES
     </div>
 
     {{-- Draggable markers JS --}}
-    <script>
-    function draggableMarker(assetId, startX, startY) {
-        return {
-            x: startX,
-            y: startY,
-            init() {
-                const marker = this.$el.querySelector('#marker');
-                const container = this.$el;
+<script>
+function draggableMarker(assetId, startX, startY) {
+    return {
+        x: startX,
+        y: startY,
+        init() {
+            const marker = this.$el.querySelector('#marker');
+            const container = this.$el;
 
-                let offsetX = 0, offsetY = 0;
+            let offsetX = 0, offsetY = 0;
 
-                const onMouseMove = (e) => {
-                    let newX = e.clientX - container.getBoundingClientRect().left - offsetX;
-                    let newY = e.clientY - container.getBoundingClientRect().top - offsetY;
+            // 🔹 Initial render using %
+            marker.style.left = `calc(${this.x}% - ${marker.offsetWidth / 2}px)`;
+            marker.style.top  = `calc(${this.y}% - ${marker.offsetHeight / 2}px)`;
 
-                    // Keep marker inside container
-                    newX = Math.max(0, Math.min(newX, container.offsetWidth - marker.offsetWidth));
-                    newY = Math.max(0, Math.min(newY, container.offsetHeight - marker.offsetHeight));
+            // 🔹 IMPORTANT for mobile
+            marker.style.touchAction = 'none';
 
-                    this.x = newX;
-                    this.y = newY;
+            const onMouseMove = (e) => {
+                const rect = container.getBoundingClientRect();
 
-                    marker.style.left = `${this.x}px`;
-                    marker.style.top = `${this.y}px`;
-                };
+                let newX = e.clientX - rect.left - offsetX;
+                let newY = e.clientY - rect.top - offsetY;
 
-                const onMouseUp = () => {
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
+                // Keep marker inside container
+                newX = Math.max(0, Math.min(newX, rect.width - marker.offsetWidth));
+                newY = Math.max(0, Math.min(newY, rect.height - marker.offsetHeight));
 
-                    // Livewire update
-                    @this.updatePosition({{ $asset->id }}, this.x, this.y);
-                };
+                // 🔹 Convert PX ➜ %
+                this.x = (newX / rect.width) * 100;
+                this.y = (newY / rect.height) * 100;
 
-                marker.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    offsetX = e.clientX - marker.getBoundingClientRect().left;
-                    offsetY = e.clientY - marker.getBoundingClientRect().top;
+                marker.style.left = `calc(${this.x}% - ${marker.offsetWidth / 2}px)`;
+                marker.style.top  = `calc(${this.y}% - ${marker.offsetHeight / 2}px)`;
+            };
 
-                    document.addEventListener('mousemove', onMouseMove);
-                    document.addEventListener('mouseup', onMouseUp);
-                });
-            }
+            const onMouseUp = () => {
+                document.removeEventListener('pointermove', onMouseMove);
+                document.removeEventListener('pointerup', onMouseUp);
+
+                // Livewire update (store % values)
+                @this.updatePosition({{ $asset->id }}, this.x, this.y);
+            };
+
+            marker.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+
+                const markerRect = marker.getBoundingClientRect();
+                offsetX = e.clientX - markerRect.left;
+                offsetY = e.clientY - markerRect.top;
+
+                document.addEventListener('pointermove', onMouseMove);
+                document.addEventListener('pointerup', onMouseUp);
+            });
         }
     }
-    </script>
+}
+</script>
+
+
 
     {{-- Device Modals moved to bottom for proper Bootstrap/Livewire functionality --}}
 @foreach($asset->devices as $device)
