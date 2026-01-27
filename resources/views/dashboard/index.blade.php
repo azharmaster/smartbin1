@@ -550,10 +550,12 @@ function trend($current, $previous) {
     </div> -->
 
 
-    <!-- ROW 1: SMARTBIN CHART -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
+    <!-- ROW 1: SMARTBIN CHART + ABNORMAL / UNDETECTED BINS -->
+    <div class="row mb-4">
+
+        <!-- SMARTBIN CHART (2/3) -->
+        <div class="col-lg-8 col-md-12">
+            <div class="card mb-4 h-100">
                 <div class="card-header smartbin-gradient d-flex align-items-center">
                     <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
                         <i class="fas fa-trash me-2"></i> SmartBin Clear Time
@@ -565,11 +567,77 @@ function trend($current, $previous) {
                         @endforeach
                     </select>
                 </div>
+
                 <div class="position-relative w-100" style="min-height:300px;">
                     <canvas id="smartBinClearChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <!-- ABNORMAL / UNDETECTED BINS (1/3) -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card mb-4 h-100">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-exclamation-circle"></i> Abnormal/Undetected Sensors
+                        <span class="badge badge-danger">{{ $abnormalBins->count() }}</span>
+                    </h5>
+                </div>
+
+                <div class="card-body p-3" style="max-height: 500px; overflow-y: auto;">
+                    <div class="notification-timeline">
+
+                        @forelse($abnormalBins as $bin)
+                            <div class="timeline-item">
+
+                                <div class="timeline-dot
+                                    {{ $bin->type === 'undetected' ? 'bg-danger' : 'bg-warning' }}">
+                                </div>
+
+                                <div class="timeline-content">
+                                    <button
+                                        class="timeline-button text-start"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#abnormal{{ $bin->id_device }}">
+
+                                        🗑 {{ $bin->asset->asset_name ?? 'Unknown Asset' }}
+                                        <div class="text-muted small">
+                                            {{ $bin->device_name }}
+                                        </div>
+                                    </button>
+
+                                    <div id="abnormal{{ $bin->id_device }}" class="collapse mt-2">
+                                        <div class="text-sm">
+                                            <strong>Status:</strong>
+                                            @if($bin->type === 'abnormal')
+                                                <span class="badge bg-warning text-dark">Abnormal</span>
+                                            @else
+                                                <span class="badge bg-danger">Undetected</span>
+                                            @endif
+                                            <br>
+
+                                            <strong>Last Update:</strong>
+                                            @if($bin->last_seen)
+                                                {{ \Carbon\Carbon::parse($bin->last_seen)->format('d-m-Y H:i') }}
+                                            @else
+                                                <span class="text-muted">Never reported</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No abnormal or undetected bins
+                            </div>
+                        @endforelse
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 <!-- SmartBin Animated Gradient Style -->
@@ -612,7 +680,7 @@ function trend($current, $previous) {
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6">
-                        📤 Notification Sent
+                        <i class="fas fa-inbox"></i> Notification Sent
                         <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
                     </h5>
                 </div>
@@ -629,7 +697,7 @@ function trend($current, $previous) {
                                         data-bs-toggle="collapse"
                                         data-bs-target="#notif{{ $log->id }}">
 
-                                        🕒 {{ $log->sent_at->format('H:i:s') }}
+                                        <i class="fas fa-history"></i> {{ $log->sent_at->format('H:i:s') }}
                                     </button>
 
                                     <div id="notif{{ $log->id }}" class="collapse mt-2">
@@ -776,7 +844,6 @@ function trend($current, $previous) {
 
                                     <div class="accordion-body p-2">
                                         <ul class="list-group list-group-flush">
-
                                             @foreach($asset->devices as $device)
                                                 @php
                                                     $latest = $device->sensors->last();
@@ -784,9 +851,9 @@ function trend($current, $previous) {
 
                                                     $badge = match (true) {
                                                         $level === null => 'secondary',
-                                                        $level >= 86 => 'danger',
-                                                        $level >= 41 => 'warning',
-                                                        default => 'success',
+                                                        $level > $halfMax => 'danger',       // Full bin
+                                                        $level > $emptyMax => 'warning',     // Half
+                                                        default => 'success',                // Empty
                                                     };
                                                 @endphp
 
@@ -802,7 +869,6 @@ function trend($current, $previous) {
                                                     </span>
                                                 </li>
                                             @endforeach
-
                                         </ul>
                                     </div>
                                 </div>

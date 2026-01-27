@@ -12,6 +12,7 @@ use App\Models\Task;
 use App\Models\CapacitySetting;
 use App\Models\Holiday;
 use App\Models\Event;
+use App\Models\Sensor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -71,6 +72,8 @@ class DashboardController extends Controller
         $trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
         $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
+        $abnormalBins = $this->getAbnormalBins();
+
         return view('dashboard.index', array_merge($deviceStats, [
             'totalTrend' => $trendStats['totalTrend'],
             'todos' => $this->loadTodosForUser(Auth::id()),
@@ -86,8 +89,49 @@ class DashboardController extends Controller
             'calendarCombined' => $this->getCalendarEvents(),
             'todayNotifications' => $this->getTodayNotifications(),
             'whatsappNotificationActive'=> $whatsappNotificationActive,
+            'abnormalBins' => $abnormalBins,
+            'emptyMax' => $emptyMax,
+            'halfMax'  => $halfMax,
         ]));
     }
+
+private function getAbnormalBins($minutesThreshold = 40)
+{
+    $threshold = Carbon::now()->subMinutes($minutesThreshold);
+
+    return Device::with(['asset', 'latestSensor'])
+        ->where('is_active', 1)
+        ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
+        ->get()
+        ->filter(function ($device) use ($threshold) {
+
+            $sensor = $device->latestSensor;
+
+            // ❌ No sensor at all → undetected
+            if (!$sensor) {
+                $device->type = 'undetected';
+                $device->last_seen = null;
+                return true;
+            }
+
+            // ⚠️ Abnormal
+            if (is_numeric($sensor->capacity) && $sensor->capacity < 0) {
+                $device->type = 'abnormal';
+                $device->last_seen = $sensor->time;
+                return true;
+            }
+
+            // 🚫 Undetected (no update > threshold)
+            if (Carbon::parse($sensor->time)->lt($threshold)) {
+                $device->type = 'undetected';
+                $device->last_seen = $sensor->time;
+                return true;
+            }
+
+            return false;
+        })
+        ->values();
+}
 
     /** Device statistics */
 private function getDeviceStats($devices, $emptyMax, $halfMax): array
