@@ -2,26 +2,27 @@
 @section('content_title', 'Holidays & Events')
 @section('content')
 
-<style>
-/* Make both columns equal height */
-.row-equal-height {
-    display: flex;
-    flex-wrap: wrap;
-}
-.row-equal-height > .col-md-6 {
-    display: flex;
-    flex-direction: column;
-}
-.card-body.scrollable {
-    max-height: 500px;
-    overflow-y: auto;
-}
-.btn-notification {
-    min-width: 70px;
-    text-align: center;
-    font-weight: 600;
-}
-</style>
+<!-- Floating Help Button -->
+<button type="button" data-bs-toggle="modal" data-bs-target="#holidaysHelpModal" style="
+        position: fixed;
+        top: 90px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="Holidays & Events Guide"
+>
+    ?
+</button>
 
 <div class="row row-equal-height">
     <!-- HOLIDAYS LEFT COLUMN -->
@@ -54,7 +55,6 @@
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Dates</th>
-                                <!-- <th>Active</th> -->
                                 <th>Option</th>
                             </tr>
                         </thead>
@@ -72,7 +72,6 @@
                                             {{ \Carbon\Carbon::parse($holiday->start_date)->format('Y-m-d') }}
                                         @endif
                                     </td>
-                                    <!-- <td>{{ $holiday->is_active ? 'Yes' : 'No' }}</td> -->
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-1">
 
@@ -193,8 +192,7 @@
             <div class="card-header d-flex align-items-center">
                 <h5 class="mb-0">Events List</h5>
                 <div class="ms-auto">
-                    <!-- Add Event Button -->
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#createEventModal">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">
                         <i class="fas fa-plus"></i> Add Event
                     </button>
                 </div>
@@ -233,7 +231,7 @@
                                 <td>
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <!-- EDIT -->
-                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEventModal{{ $event->id }}">
+                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editEventModal{{ $event->id }}">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
 
@@ -279,6 +277,60 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Holidays & Events Help Modal -->
+<div class="modal fade" id="holidaysHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Holidays & Events – User Guide</h5>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-tools"></i> Purpose</h6>
+        <p>
+          This page allows you to manage <strong>holidays</strong> and <strong>events</strong> in the system.
+          You can add, edit, delete, and toggle notifications for each item.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-calendar-day"></i> Holidays Section (Left)</h6>
+        <ul>
+          <li>View all holidays in a table with start and end dates.</li>
+          <li>Use the <strong>+</strong> button to add a new holiday.</li>
+          <li>Click the <strong>Edit</strong> button to update an existing holiday.</li>
+          <li>Use <strong>Delete</strong> to remove a holiday.</li>
+          <li>Toggle <strong>ON/OFF</strong> to enable or disable holiday notifications.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-calendar-alt"></i> Events Section (Right)</h6>
+        <ul>
+          <li>View all events in a table with details such as PIC phone and location.</li>
+          <li>Use the <strong>+</strong> button to add a new event.</li>
+          <li>Click the <strong>Edit</strong> button to update an existing event.</li>
+          <li>Use <strong>Delete</strong> to remove an event.</li>
+          <li>Toggle <strong>ON/OFF</strong> to enable or disable event notifications.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-circle"></i> Notes</h6>
+        <ul>
+          <li>Changes are applied immediately when toggling ON/OFF.</li>
+          <li>Always ensure correct dates and active status when adding or editing.</li>
+          <li>This guide helps users navigate and manage holidays and events efficiently.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 
 @endsection
