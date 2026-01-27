@@ -1044,7 +1044,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: isMobile ? 'dayGridWeek' : 'dayGridMonth',
-        height: isMobile ? 'auto' : 550,
+        height: 'auto',
+        contentHeight: 'auto',
 
         headerToolbar: {
             left: 'prev,next',
