@@ -16,7 +16,7 @@
     </button>
 
     <div class="modal fade" id="formAsset{{ $id ?? '' }}" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
 
                 <form method="POST" action="{{ route('master-data.assets.store') }}" enctype="multipart/form-data">
