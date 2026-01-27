@@ -5,6 +5,30 @@
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
 
+        <!-- Floating Help Button -->
+<button type="button" data-toggle="modal" data-target="#capacityHelpModal" style="
+        position: fixed;
+        top: 90px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="Set Capacity Guide"
+>
+    ?
+</button>
+
+
+
         <div class="card card-success card-outline">
             <div class="card-header text-center bg-white border-bottom-0">
                 <h5 class="mb-1 fw-bold">Bin Capacity Settings</h5>
@@ -120,6 +144,79 @@
 
 @endsection
 
+<!-- Set Capacity Help Modal -->
+<div class="modal fade" id="capacityHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Set Bin Capacity – User Guide</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6>🛠️ Purpose</h6>
+        <p>
+          The <strong>Set Capacity</strong> page is used to define how full a bin is
+          based on percentage values.  
+          These rules apply to <strong>every bin</strong> in the system.
+        </p>
+
+        <hr>
+
+        <h6>📊 Capacity Levels</h6>
+        <ul>
+          <li>
+            <strong style="color:#2ecc71;">0 – 39%</strong> → Empty  
+            <br>
+            <small>The bin is considered empty and does not require action.</small>
+          </li>
+
+          <li class="mt-2">
+            <strong style="color:#f1c40f;">40 – 79%</strong> → Half Full  
+            <br>
+            <small>The bin is partially filled and should be monitored.</small>
+          </li>
+
+          <li class="mt-2">
+            <strong style="color:#e74c3c;">80 – 100%</strong> → Full  
+            <br>
+            <small>The bin is full and requires immediate attention.</small>
+          </li>
+        </ul>
+
+        <hr>
+
+        <h6>🧭 How to Use This Page</h6>
+        <ol>
+          <li>Set the percentage range for <strong>Empty</strong>, <strong>Half Full</strong>, and <strong>Full</strong>.</li>
+          <li>Make sure the ranges do not overlap.</li>
+          <li>Save the configuration.</li>
+        </ol>
+
+        <p>
+          Once saved, the system will automatically determine each bin’s status
+          and update the dashboard indicators.
+        </p>
+
+        <hr>
+
+        <h6>⚠️ Important Notes</h6>
+        <ul>
+          <li>These settings affect <strong>all bins</strong>.</li>
+          <li>Wrong ranges may cause incorrect bin status.</li>
+          <li>Always keep values between <strong>0 – 100%</strong>.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
 @push('styles')
 <style>
 /* Modern slider with colored track */
@@ -180,6 +277,13 @@ button.btn-sm {
 }
 </style>
 @endpush
+
+<script>
+function openHelp() {
+    $('#capacityHelpModal').modal('show');
+}
+</script>
+
 
 @push('scripts')
 <script>
