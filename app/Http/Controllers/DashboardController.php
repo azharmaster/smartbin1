@@ -40,7 +40,7 @@ class DashboardController extends Controller
         $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
 
         // Trend calculation
-        $trendStats = $this->getTrendStats($devices, $emptyMax, $halfMax);
+        //$trendStats = $this->getTrendStats($devices, $emptyMax, $halfMax);
 
         // Floors and assets
         $floors = Floor::all();
@@ -69,13 +69,13 @@ class DashboardController extends Controller
         $todayNotifications = $this->getTodayNotifications();
 
         $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
-        $trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
+        //$trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
         $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
         $abnormalBins = $this->getAbnormalBins();
-
+//'totalTrend' => $trendStats['totalTrend'],
         return view('dashboard.index', array_merge($deviceStats, [
-            'totalTrend' => $trendStats['totalTrend'],
+            
             'todos' => $this->loadTodosForUser(Auth::id()),
             'floors' => Floor::all(),
             'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
@@ -143,38 +143,38 @@ private function getDeviceStats($devices, $emptyMax, $halfMax): array
         'halfDevicesCollection' => $this->countHalfDevices($devices, $emptyMax, $halfMax),
         'halfDevices' => $this->countHalfDevices($devices, $emptyMax, $halfMax)->count(),
         'emptyDevices' => $this->countEmptyDevices($devices, $emptyMax),
-        'undetectedDevices' => $this->countUndetectedDevices($devices),
+        'undetectedDevices' => $this->countUndetectedDevicesFromAbnormalBins(),
     ];
 }
 
     /** Trend calculation */
-    private function getTrendStats($currentDevices, $emptyMax, $halfMax): array
-    {
-        $lastMonth = Carbon::now()->subMonth();
-        $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
+    // private function getTrendStats($currentDevices, $emptyMax, $halfMax): array
+    // {
+    //     $lastMonth = Carbon::now()->subMonth();
+    //     $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
 
-        $trend = fn($current, $previous) => [
-            'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
-            'value' => abs($current - $previous),
-            'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
-        ];
+    //     $trend = fn($current, $previous) => [
+    //         'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
+    //         'value' => abs($current - $previous),
+    //         'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
+    //     ];
 
-        $totalTrend = $trend($currentDevices->count(), $previousDevices->count());
+    //     $totalTrend = $trend($currentDevices->count(), $previousDevices->count());
 
-        return [
-            'totalTrend' => $totalTrend,
-            'currentTotal' => $currentDevices->count(),
-            'previousTotal' => $previousDevices->count(),
-            'currentFull' => $this->countFullDevices($currentDevices, $halfMax)->count(),
-            'previousFull' => $this->countFullDevices($previousDevices, $halfMax)->count(),
-            'currentHalf' => $this->countHalfDevices($currentDevices, $emptyMax, $halfMax)->count(),
-            'previousHalf' => $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count(),
-            'currentEmpty' => $this->countEmptyDevices($currentDevices, $emptyMax),
-            'previousEmpty' => $this->countEmptyDevices($previousDevices, $emptyMax),
-            'currentUndetected' => $this->countUndetectedDevices($currentDevices),
-            'previousUndetected' => $this->countUndetectedDevices($previousDevices),
-        ];
-    }
+    //     return [
+    //         'totalTrend' => $totalTrend,
+    //         'currentTotal' => $currentDevices->count(),
+    //         'previousTotal' => $previousDevices->count(),
+    //         'currentFull' => $this->countFullDevices($currentDevices, $halfMax)->count(),
+    //         'previousFull' => $this->countFullDevices($previousDevices, $halfMax)->count(),
+    //         'currentHalf' => $this->countHalfDevices($currentDevices, $emptyMax, $halfMax)->count(),
+    //         'previousHalf' => $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count(),
+    //         'currentEmpty' => $this->countEmptyDevices($currentDevices, $emptyMax),
+    //         'previousEmpty' => $this->countEmptyDevices($previousDevices, $emptyMax),
+    //         'currentUndetected' => $this->countUndetectedDevices($currentDevices),
+    //         'previousUndetected' => $this->countUndetectedDevices($previousDevices),
+    //     ];
+    // }
 
     /** Combine holidays and events for calendar */
     private function getCalendarEvents()
@@ -267,16 +267,23 @@ private function getDeviceStats($devices, $emptyMax, $halfMax): array
         )->count();
     }
 
-    private function countUndetectedDevices($devices)
+    // private function countUndetectedDevices($devices)
+    // {
+    //     return $devices->filter(function($d) {
+    //         if (!$d->latestSensor) return true;
+    //         $network = $d->latestSensor->network;
+    //         return is_null($network)
+    //             || $network === ''
+    //             || (string)$network === '0'
+    //             || strtolower((string)$network) === 'unavailable';
+    //     })->count();
+    // }
+
+    private function countUndetectedDevicesFromAbnormalBins($minutesThreshold = 40)
     {
-        return $devices->filter(function($d) {
-            if (!$d->latestSensor) return true;
-            $network = $d->latestSensor->network;
-            return is_null($network)
-                || $network === ''
-                || (string)$network === '0'
-                || strtolower((string)$network) === 'unavailable';
-        })->count();
+        return $this->getAbnormalBins($minutesThreshold)
+            ->where('type', 'undetected')
+            ->count();
     }
 
     private function loadTodosForUser($userId)

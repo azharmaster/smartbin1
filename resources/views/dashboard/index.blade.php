@@ -457,8 +457,6 @@ function trend($current, $previous) {
         <div class="status-footer">
             <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
                 <span class="status-trend-footer">
-                    {{ $totalTrend['icon'] }}
-                    {{ $totalTrend['value'] }}
                 </span>
 
                 <span class="status-more">
