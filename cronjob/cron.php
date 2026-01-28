@@ -2,6 +2,11 @@
 require __DIR__ . '/db.php';
 require __DIR__ . '/whatsapp.php';
 
+// WAHA configuration
+$apiUrl = "https://beta-waha.txfdw3.easypanel.host";  // WAHA server URL
+$apiKey = "admin";                                      // WAHA API key
+$whatsapp = new WhatsAppSender($apiUrl, $apiKey);
+
 $now = new DateTime();
 $logFile = __DIR__.'/cron.log';
 
@@ -171,7 +176,9 @@ if ($canSend && count($fullBins)) {
 
         foreach ($phones as $p) {
             $formatted = '60'.ltrim(preg_replace('/\D+/', '', $p), '0');
-            $ok = sendWhatsApp($formatted, $msg);
+
+            $result = $whatsapp->sendTextMessage($formatted, $msg);
+            $ok = $result['success'];
 
             file_put_contents(
                 $logFile,

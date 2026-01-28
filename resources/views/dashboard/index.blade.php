@@ -558,7 +558,6 @@ function trend($current, $previous) {
                     <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
                         <i class="fas fa-trash me-2"></i> SmartBin Clear Time
                     </h5>
-
                     <select id="assetFilter" class="form-select form-select-sm w-auto ms-auto">
                         @foreach($smartBinClearTimes as $assetName => $devices)
                             <option value="{{ $assetName }}">{{ $assetName }}</option>
@@ -582,28 +581,21 @@ function trend($current, $previous) {
                     </h5>
                 </div>
 
-                <div class="card-body p-3" style="max-height: 500px; overflow-y: auto;">
+                <!-- Set fixed height for the card body, enable scroll -->
+                <div class="card-body p-3" style="height: 100%; max-height: 300px; overflow-y: auto;">
                     <div class="notification-timeline">
-
                         @forelse($abnormalBins as $bin)
                             <div class="timeline-item">
-
                                 <div class="timeline-dot
                                     {{ $bin->type === 'undetected' ? 'bg-danger' : 'bg-warning' }}">
                                 </div>
-
                                 <div class="timeline-content">
-                                    <button
-                                        class="timeline-button text-start"
+                                    <button class="timeline-button text-start"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#abnormal{{ $bin->id_device }}">
-
                                         🗑 {{ $bin->asset->asset_name ?? 'Unknown Asset' }}
-                                        <div class="text-muted small">
-                                            {{ $bin->device_name }}
-                                        </div>
+                                        <div class="text-muted small">{{ $bin->device_name }}</div>
                                     </button>
-
                                     <div id="abnormal{{ $bin->id_device }}" class="collapse mt-2">
                                         <div class="text-sm">
                                             <strong>Status:</strong>
@@ -613,7 +605,6 @@ function trend($current, $previous) {
                                                 <span class="badge bg-danger">Undetected</span>
                                             @endif
                                             <br>
-
                                             <strong>Last Update:</strong>
                                             @if($bin->last_seen)
                                                 {{ \Carbon\Carbon::parse($bin->last_seen)->format('d-m-Y H:i') }}
@@ -623,14 +614,12 @@ function trend($current, $previous) {
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         @empty
                             <div class="text-muted text-center py-3">
                                 No abnormal or undetected bins
                             </div>
                         @endforelse
-
                     </div>
                 </div>
             </div>
