@@ -57,7 +57,7 @@ class DeviceController extends Controller
 
         $device->update($request->only('asset_id', 'device_name', 'id_device'));
 
-        return redirect()->route('devices.index')->with('success', 'Device updated.');
+        return redirect()->back()->with('success', 'Device updated.');
     }
 
     public function destroy(Device $device)

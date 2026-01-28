@@ -686,6 +686,8 @@ function openHelp() {
             <form method="POST" action="{{ route('devices.update', $device->id) }}">
                 @csrf
                 @method('PUT')
+                
+                <input type="hidden" name="asset_id" value="{{ $device->asset_id }}">
 
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Device</h5>
