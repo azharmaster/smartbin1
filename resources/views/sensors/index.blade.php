@@ -209,10 +209,33 @@
           <li><strong>Device ID</strong>: Unique identifier of the sensor/device.</li>
           <li><strong>Battery</strong>: Current battery level in percentage (%).</li>
           <li><strong>Capacity</strong>: Current fill level of the bin in percentage (%).</li>
-          <li><strong>RSRP</strong>: Reference Signal Received Power, measures signal strength of the device in dBm. <br>
-              <em>Example:</em> -85 dBm (strong signal), -110 dBm (weak signal)</li>
-          <li><strong>NSR</strong>: Noise-to-Signal Ratio, indicates signal quality relative to interference. <br>
-              <em>Example:</em> 10 dB (good quality), 2 dB (poor quality)</li>
+          <li><strong>RSRP</strong>: Reference Signal Received Power – measures the signal strength of the device in dBm. 
+              <br> 
+              <strong>Interpretation:</strong>
+              <ul>
+                <li>Closer to 0 → stronger signal</li>
+                <li>Typical ranges:</li>
+                <li>-70 dBm → Excellent signal</li>
+                <li>-85 dBm → Good signal</li>
+                <li>-100 dBm → Fair signal</li>
+                <li>-110 dBm → Weak signal</li>
+                <li>-120 dBm → Very weak / unstable</li>
+              </ul>
+              <em>Example:</em> RSRP = -80 dBm means the device has a good signal.</em>
+          </li>
+          <li><strong>NSR</strong>: Noise-to-Signal Ratio – measures signal quality relative to interference in dB. 
+              <br>
+              <strong>Interpretation:</strong>
+              <ul>
+                <li>Higher NSR → better quality</li>
+                <li>Typical ranges:</li>
+                <li>15 dB → Excellent quality</li>
+                <li>10 dB → Good quality</li>
+                <li>5 dB → Fair quality</li>
+                <li>2 dB → Poor quality / prone to errors</li>
+              </ul>
+              <em>Example:</em> NSR = 12 dB means the device has good signal quality.</em>
+          </li>
           <li><strong>Time</strong>: Timestamp of the latest data reading from the device.</li>
         </ul>
 
@@ -231,6 +254,7 @@
           <li>The table shows the <strong>most recent readings</strong> for each sensor/device.</li>
           <li>Ensure devices are active and transmitting data for accurate monitoring.</li>
           <li>The page layout is fully responsive; charts and tables adapt automatically for mobile or desktop screens.</li>
+          <li>RSRP and NSR values can fluctuate; they provide an indication of signal strength and quality at the moment of measurement.</li>
         </ul>
 
       </div>
@@ -238,6 +262,7 @@
     </div>
   </div>
 </div>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
