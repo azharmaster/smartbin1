@@ -4,9 +4,14 @@
 
 <div class="container-fluid">
 
-    {{-- Filter Section --}}
-    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-        <form action="{{ route('notifications.index') }}" method="GET" class="d-flex gap-2 align-items-center">
+   {{-- Filter Section --}}
+<div class="mb-3">
+    <form action="{{ route('notifications.index') }}" method="GET"
+          class="d-flex flex-wrap gap-2 align-items-end">
+
+        {{-- Period Filter --}}
+        <div>
+            <label class="form-label small mb-1">Quick Filter</label>
             <select name="filter" class="form-select form-select-sm">
                 <option value="">-- Select Period --</option>
                 <option value="day" {{ request('filter') == 'day' ? 'selected' : '' }}>Today</option>
@@ -14,16 +19,43 @@
                 <option value="month" {{ request('filter') == 'month' ? 'selected' : '' }}>This Month</option>
                 <option value="year" {{ request('filter') == 'year' ? 'selected' : '' }}>This Year</option>
             </select>
+        </div>
 
-            <button type="submit" class="btn btn-sm btn-success">Filter</button>
+        {{-- From Date --}}
+        <div>
+            <label class="form-label small mb-1">From</label>
+            <input type="date"
+                   name="from_date"
+                   class="form-control form-control-sm"
+                   value="{{ request('from_date') }}">
+        </div>
 
-            @if(request('filter'))
-                <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-secondary ms-auto">
+        {{-- To Date --}}
+        <div>
+            <label class="form-label small mb-1">To</label>
+            <input type="date"
+                   name="to_date"
+                   class="form-control form-control-sm"
+                   value="{{ request('to_date') }}">
+        </div>
+
+        {{-- Buttons --}}
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-success">
+                Filter
+            </button>
+
+            @if(request()->hasAny(['filter','from_date','to_date']))
+                <a href="{{ route('notifications.index') }}"
+                   class="btn btn-sm btn-secondary">
                     Clear
                 </a>
             @endif
-        </form>
-    </div>
+        </div>
+
+    </form>
+</div>
+
 
     {{-- Notifications Table --}}
     <div class="card card-success card-outline mb-4">

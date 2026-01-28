@@ -14,8 +14,15 @@ class NotificationController extends Controller
     {
         $query = NotificationLog::query();
 
-        // Apply filter if set
-        if ($request->filled('filter')) {
+        // Exact calendar date range filter
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('sent_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59'
+            ]);
+        }
+        // Apply quick filter if set and no date range
+        elseif ($request->filled('filter')) {
             switch ($request->filter) {
                 case 'day':
                     $query->whereDate('sent_at', today());
