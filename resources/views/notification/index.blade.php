@@ -35,28 +35,27 @@
 
         <div class="card-body p-0">
             @if($notifications->count())
-                <div class="table-responsive">
+                <div class="table-responsive notification-table">
                     <table class="table table-bordered table-hover mb-0">
                         <thead class="table-success">
                             <tr>
-                                <th style="width:50px;">#</th>
-                                <th style="width:120px;">Channel</th>
+                                <th>#</th>
+                                <th>Channel</th>
                                 <th>Message Preview</th>
-                                <th style="width:180px;" class="text-center">Sent At</th>
-                                <th style="width:130px;" class="text-center">Action</th>
+                                <th class="text-center">Sent At</th>
+                                <th class="text-center">Action</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             @foreach($notifications as $log)
-                                {{-- Main Row --}}
                                 <tr>
                                     <td>{{ $loop->iteration + ($notifications->currentPage()-1) * $notifications->perPage() }}</td>
-                                    <td>{{ ucfirst($log->channel) }}</td>
-                                    <td style="white-space: normal; word-break: break-word;">
+                                    <td class="text-nowrap">{{ ucfirst($log->channel) }}</td>
+                                    <td class="message-preview">
                                         {{ $log->message_preview }}
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center text-nowrap">
                                         {{ $log->sent_at->format('Y-m-d H:i:s') }}
                                     </td>
                                     <td class="text-center">
@@ -68,7 +67,6 @@
                                     </td>
                                 </tr>
 
-                                {{-- Expanded Message --}}
                                 <tr class="collapse" id="message{{ $log->id }}">
                                     <td colspan="5" class="bg-light">
                                         <pre class="mb-0">{{ $log->message_full }}</pre>
@@ -94,21 +92,49 @@
     </div>
 </div>
 
-{{-- User Page Matching Style --}}
+{{-- User Page Matching Style + Responsive Fix --}}
 <style>
+/* Card style same as User page */
 .card-success.card-outline {
     border-top: 3px solid #28a745;
     border-radius: 6px;
 }
 
+/* Hover effect */
 .table-hover tbody tr:hover {
     background-color: #f6fbf8;
 }
 
+/* Message formatting */
 pre {
     white-space: pre-wrap;
     word-break: break-word;
     font-size: 0.85rem;
+}
+
+/* Keep important columns visible */
+.text-nowrap {
+    white-space: nowrap;
+}
+
+/* Responsive fix */
+@media (max-width: 768px) {
+    .notification-table {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 700px;
+    }
+
+    th, td {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+
+    .message-preview {
+        min-width: 250px;
+    }
 }
 </style>
 
