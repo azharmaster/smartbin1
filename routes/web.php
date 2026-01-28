@@ -30,6 +30,7 @@ use App\Http\Controllers\WhatsAppNotificationController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -343,3 +344,6 @@ Route::resource('events', EventController::class)->except(['create']);
 
 Route::post('/holidays/{holiday}/toggle', [HolidayController::class, 'toggle'])->name('holidays.toggle');
 Route::post('/events/{event}/toggle', [EventController::class, 'toggle'])->name('events.toggle');
+
+Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+    ->name('notifications.index');

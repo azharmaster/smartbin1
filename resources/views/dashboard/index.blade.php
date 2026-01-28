@@ -664,42 +664,50 @@ function trend($current, $previous) {
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
             <!-- NOTIFICATION LOGS-->
-            <div class="card mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-inbox"></i> Notification Sent
-                        <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
-                    </h5>
-                </div>
+<div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white fs-6">
+            <i class="fas fa-inbox"></i> Notification Sent
+            <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
+        </h5>
+    </div>
 
-                <div class="card-body p-3">
-                    <div class="notification-timeline">
-                        @forelse($todayNotifications->take(10) as $log)
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
+    <div class="card-body p-3">
+        <div class="notification-timeline">
+            @forelse($todayNotifications->take(10) as $log)
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
 
-                                <div class="timeline-content">
-                                    <button
-                                        class="timeline-button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#notif{{ $log->id }}">
+                    <div class="timeline-content">
+                        <button
+                            class="timeline-button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#notif{{ $log->id }}">
 
-                                        <i class="fas fa-history"></i> {{ $log->sent_at->format('H:i:s') }}
-                                    </button>
+                            <i class="fas fa-history"></i> {{ $log->sent_at->format('H:i:s') }}
+                        </button>
 
-                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
-                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No notifications sent today
-                            </div>
-                        @endforelse
+                        <div id="notif{{ $log->id }}" class="collapse mt-2">
+                            <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="text-muted text-center py-3">
+                    No notifications sent today
+                </div>
+            @endforelse
+        </div>
+
+        {{-- Button to Full Notifications Page --}}
+        <div class="text-end mt-3">
+            <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-primary">
+                View All Notifications <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
 
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
