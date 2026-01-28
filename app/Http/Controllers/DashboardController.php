@@ -95,57 +95,57 @@ class DashboardController extends Controller
         ]));
     }
 
-private function getAbnormalBins($minutesThreshold = 40)
-{
-    $threshold = Carbon::now()->subMinutes($minutesThreshold);
+    private function getAbnormalBins($minutesThreshold = 40)
+    {
+        $threshold = Carbon::now()->subMinutes($minutesThreshold);
 
-    return Device::with(['asset', 'latestSensor'])
-        ->where('is_active', 1)
-        ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
-        ->get()
-        ->filter(function ($device) use ($threshold) {
+        return Device::with(['asset', 'latestSensor'])
+            ->where('is_active', 1)
+            ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
+            ->get()
+            ->filter(function ($device) use ($threshold) {
 
-            $sensor = $device->latestSensor;
+                $sensor = $device->latestSensor;
 
-            // ❌ No sensor at all → undetected
-            if (!$sensor) {
-                $device->type = 'undetected';
-                $device->last_seen = null;
-                return true;
-            }
+                // ❌ No sensor at all → undetected
+                if (!$sensor) {
+                    $device->type = 'undetected';
+                    $device->last_seen = null;
+                    return true;
+                }
 
-            // ⚠️ Abnormal
-            if (is_numeric($sensor->capacity) && $sensor->capacity < 0) {
-                $device->type = 'abnormal';
-                $device->last_seen = $sensor->time;
-                return true;
-            }
+                // ⚠️ Abnormal
+                if (is_numeric($sensor->capacity) && $sensor->capacity < 0) {
+                    $device->type = 'abnormal';
+                    $device->last_seen = $sensor->time;
+                    return true;
+                }
 
-            // 🚫 Undetected (no update > threshold)
-            if (Carbon::parse($sensor->time)->lt($threshold)) {
-                $device->type = 'undetected';
-                $device->last_seen = $sensor->time;
-                return true;
-            }
+                // 🚫 Undetected (no update > threshold)
+                if (Carbon::parse($sensor->time)->lt($threshold)) {
+                    $device->type = 'undetected';
+                    $device->last_seen = $sensor->time;
+                    return true;
+                }
 
-            return false;
-        })
-        ->values();
-}
+                return false;
+            })
+            ->values();
+    }
 
     /** Device statistics */
-private function getDeviceStats($devices, $emptyMax, $halfMax): array
-{
-    return [
-        'totalDevices' => $devices->count(),
-        'fullDevicesCollection' => $this->countFullDevices($devices, $halfMax),
-        'fullDevices' => $this->countFullDevices($devices, $halfMax)->count(),
-        'halfDevicesCollection' => $this->countHalfDevices($devices, $emptyMax, $halfMax),
-        'halfDevices' => $this->countHalfDevices($devices, $emptyMax, $halfMax)->count(),
-        'emptyDevices' => $this->countEmptyDevices($devices, $emptyMax),
-        'undetectedDevices' => $this->countUndetectedDevicesFromAbnormalBins(),
-    ];
-}
+    private function getDeviceStats($devices, $emptyMax, $halfMax): array
+    {
+        return [
+            'totalDevices' => $devices->count(),
+            'fullDevicesCollection' => $this->countFullDevices($devices, $halfMax),
+            'fullDevices' => $this->countFullDevices($devices, $halfMax)->count(),
+            'halfDevicesCollection' => $this->countHalfDevices($devices, $emptyMax, $halfMax),
+            'halfDevices' => $this->countHalfDevices($devices, $emptyMax, $halfMax)->count(),
+            'emptyDevices' => $this->countEmptyDevices($devices, $emptyMax),
+            'undetectedDevices' => $this->countUndetectedDevicesFromAbnormalBins(),
+        ];
+    }
 
     /** Trend calculation */
     // private function getTrendStats($currentDevices, $emptyMax, $halfMax): array
