@@ -14,7 +14,7 @@ class Sensor extends Model
         'battery',
         'capacity',
         'time',
-        'network',
+        // 'network', dropped in migration
         'rsrp',
         'nsr',
     ];
