@@ -193,7 +193,7 @@ if ($canSend && count($fullBins)) {
             (channel, message_preview, message_full, sent_at)
             VALUES ('whatsapp', ?, ?, NOW())
         ");
-        $log->execute([substr($deviceList, 0, 300), $deviceList]);
+        $log->execute([substr($deviceList, 0, 300), $msg]);
     }
 }
 

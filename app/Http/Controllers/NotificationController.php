@@ -37,7 +37,7 @@ class NotificationController extends Controller
         }
 
         // Order by latest
-        $notifications = $query->orderBy('sent_at', 'desc')->paginate(20);
+        $notifications = $query->orderBy('sent_at', 'desc')->paginate(10);
 
         return view('notification.index', compact('notifications'));
     }
