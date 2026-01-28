@@ -13,7 +13,7 @@ class SensorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Sensor::with('device.asset')->orderBy('time', 'desc');
+        $query = Sensor::with('device.asset')->orderBy('created_at', 'desc');
 
         // Apply search if there is a query
         if ($request->has('search') && $request->search != '') {

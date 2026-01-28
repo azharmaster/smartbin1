@@ -459,19 +459,81 @@ RESPONSIVE FIXES
 
                         @foreach($asset->devices as $device)
                         @php
-                            $sensor = $device->sensors->sortByDesc('time')->first();
+                            $sensor = $device->sensors->sortByDesc('created_at')->first();
                         @endphp
+                        @php
 
+                        $nsrValue = $sensor?->nsr !== null ? (float) $sensor->nsr : null;
+
+                        if ($nsrValue === null) {
+                            $nsrColor = '#777';
+                            $nsrTooltip = 'No signal data';
+                        } elseif ($nsrValue > 20) {
+                            $nsrColor = '#10b981'; // very good, green
+                            $nsrTooltip = 'Maximum speed, high modulation';
+                        } elseif ($nsrValue > 13) {
+                            $nsrColor = '#22d3ee'; // good, cyan
+                            $nsrTooltip = 'Good speed';
+                        } elseif ($nsrValue > 5) {
+                            $nsrColor = '#facc15'; // medium, yellow
+                            $nsrTooltip = 'Normal speed, connection starting to slow';
+                        } elseif ($nsrValue > 0) {
+                            $nsrColor = '#f97316'; // weak, orange
+                            $nsrTooltip = 'Slow, often lose connection';
+                        } else {
+                            $nsrColor = '#ef4444'; // very weak, red
+                            $nsrTooltip = 'Almost unable to connect, many errors';
+                        }
+
+                            // Capacity value and color (for cog + trash icon)
+                            $capacityValue = $sensor?->capacity ?? 0;
+                            $capacityColor = $capacityValue <= $capacitySetting->empty_to ? '#1b4f1f' :
+                                            ($capacityValue <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c');
+
+                            // Battery value and color
+                            $batteryValue = $sensor?->battery ?? 0;
+                            if ($batteryValue <= 20) {
+                                $batteryColor = '#ff0000'; // red
+                            } elseif ($batteryValue <= 50) {
+                                $batteryColor = '#f97316'; // orange
+                            } elseif ($batteryValue <= 80) {
+                                $batteryColor = '#facc15'; // yellow
+                            } else {
+                                $batteryColor = '#10b981'; // green
+                            }
+
+                            // RSRP value and color (wifi)
+                            $rsrpValue = $sensor?->rsrp !== null ? (int) $sensor->rsrp : null;
+                            if ($rsrpValue === null) {
+                                $wifiColor = '#777';
+                                $wifiTooltip = 'No signal data';
+                            } elseif ($rsrpValue >= -80) {
+                                $wifiColor = '#10b981';
+                                $wifiTooltip = 'Signal strong, very fast and stable';
+                            } elseif ($rsrpValue > -90) {
+                                $wifiColor = '#22d3ee';
+                                $wifiTooltip = 'Normal, fast connection';
+                            } elseif ($rsrpValue > -100) {
+                                $wifiColor = '#facc15';
+                                $wifiTooltip = 'Starting to slow, sometimes spotty connection';
+                            } elseif ($rsrpValue > -105) {
+                                $wifiColor = '#f97316';
+                                $wifiTooltip = 'Slow, always buffering, very connection';
+                            } else {
+                                $wifiColor = '#ef4444';
+                                $wifiTooltip = 'Signal is extremely weak, cannot connect';
+                            }
+                        @endphp
                         <div style="
                             position: relative;
                             padding: 14px;
                             border-radius: 14px;
                             background: #ffffff;
                             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-                            border-left: 5px solid
-                                {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? '#1b4f1f' :
-                                (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c') }};">
-                            
+                            border-left: 5px solid {{ $capacityColor }};
+                        ">
+
+                            {{-- Top-right controls --}}
                             <div style="
                                 position: absolute;
                                 top: 8px;
@@ -480,8 +542,6 @@ RESPONSIVE FIXES
                                 gap: 6px;
                                 z-index: 5;
                             ">
-
-                                <!-- Edit button triggers modal -->
                                 <button type="button"
                                         class="btn btn-sm btn-outline-secondary"
                                         data-toggle="modal"
@@ -489,51 +549,58 @@ RESPONSIVE FIXES
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
 
-                                <!-- Delete -->
                                 <form method="POST"
                                     action="{{ route('devices.destroy', $device->id) }}"
                                     onsubmit="return confirm('Delete this device?')">
                                     @csrf
                                     @method('DELETE')
 
-                                    <button type="submit"
-                                        style="
-                                            width: 26px;
-                                            height: 26px;
-                                            border-radius: 8px;
-                                            border: none;
-                                            background: #fee2e2;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            cursor: pointer;
-                                        ">
-                                        <i class="fas fa-trash-alt" style="font-size: 12px; color: #dc2626;"></i>
+                                    <button type="submit" style="
+                                        width: 26px;
+                                        height: 26px;
+                                        border-radius: 8px;
+                                        border: none;
+                                        background: #fee2e2;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        cursor: pointer;
+                                    ">
+                                        <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
                                     </button>
                                 </form>
                             </div>
 
+                            {{-- Device name --}}
                             <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #121010;">
                                 {{ $device->device_name }}
                             </h3>
                             <p style="margin: 2px 0 10px; font-size: 12px; color: #777;">
-                                Last updated: {{ $sensor?->time ?? 'N/A' }}
+                                Last updated: {{ $sensor?->created_at ?? 'N/A' }}
                             </p>
-
                             <div style="
                                 display: grid;
                                 grid-template-columns: 1fr 1fr;
                                 gap: 6px;
                                 font-size: 13px;
-                                color: #777;
+                                color: #474747;
                             ">
-                                <div>🔋 <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong></div>
-                                <div>🗑️ <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong></div>
-                                <div>📶 <strong>{{ $sensor?->network ?? 'N/A' }}</strong></div>
-                                <div>⚙️ <strong>
-                                    {{ ($sensor?->capacity ?? 0) <= $capacitySetting->empty_to ? 'Empty' :
-                                    (($sensor?->capacity ?? 0) <= $capacitySetting->half_to ? 'Half' : 'Full') }}
-                                </strong></div>
+                                <div>
+                                    <i class="fas fa-battery-full" style="color: {{ $batteryColor }};" title="Battery level"></i>
+                                    <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong>
+                                </div>
+                                <div>
+                                    <i class="fas fa-trash-alt" style="color: {{ $capacityColor }};" title="Current capacity"></i>
+                                    <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong>
+                                </div>
+                                <div>
+                                    <i class="fas fa-wifi" style="color: {{ $wifiColor }};" title="{{ $wifiTooltip }}"></i>
+                                    <strong>{{ $sensor?->rsrp ?? 'N/A' }}</strong>
+                                </div>
+                                <div>
+                                    <i class="fas fa-signal" style="color: {{ $nsrColor }};" title="{{ $nsrTooltip }}"></i>
+                                    <strong>{{ $sensor?->nsr ?? 'N/A' }}</strong>
+                                </div>
                             </div>
                         </div>
                         @endforeach

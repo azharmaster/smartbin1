@@ -59,7 +59,7 @@ class AssetDetails extends Component
         $this->compartments = [];
 
         foreach ($devices as $i => $device) {
-            $sensor = $device->sensors->sortByDesc('time')->first();
+            $sensor = $device->sensors->sortByDesc('created_at')->first();
             $capacity = $sensor?->capacity ?? 0;
             $color = $this->capacityColor($capacity);
 
@@ -99,8 +99,8 @@ class AssetDetails extends Component
                 'label' => $device->device_name,
                 'capacity' => $capacity,
                 'battery' => $sensor?->battery,
-                'network' => $sensor?->network,
-                'lastUpdated' => $sensor?->time,
+                'rsrp' => $sensor?->rsrp,
+                'lastUpdated' => $sensor?->created_at,
                 'labelPos' => [$labelX, $labelY],
                 'deviceNameY' => $deviceNameY,
                 'capacityTextY' => $capacityTextY,
