@@ -1,4 +1,4 @@
-@extends('layouts.app') 
+@extends('layouts.app')
 @section('content_title', 'Notification Logs')
 @section('content')
 
@@ -14,7 +14,8 @@
                 <option value="month" {{ request('filter') == 'month' ? 'selected' : '' }}>This Month</option>
                 <option value="year" {{ request('filter') == 'year' ? 'selected' : '' }}>This Year</option>
             </select>
-            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+
+            <button type="submit" class="btn btn-sm btn-success">Filter</button>
 
             @if(request('filter'))
                 <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-secondary ms-auto">
@@ -25,11 +26,10 @@
     </div>
 
     {{-- Notifications Table --}}
-    <div class="card mb-4">
-        <div class="card-header smartbin-gradient text-white d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">
-                <i class="fas fa-inbox"></i> All Notifications
-                <span class="badge badge-light">{{ $notifications->total() }}</span>
+    <div class="card card-success card-outline mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-inbox me-1"></i> All Notifications
             </h5>
         </div>
 
@@ -37,43 +37,45 @@
             @if($notifications->count())
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0">
-                        <thead class="table-light">
-    <tr>
-        <th style="width:50px;">#</th>
-        <th style="width:120px;">Channel</th>
-        <th style="width:400px;">Message Preview</th>
-        <th style="width:170px;" class="text-center">Sent At</th>
-        <th style="width:130px;" class="text-center">Action</th>
-    </tr>
-</thead>
-<tbody>
-    @foreach($notifications as $log)
-        {{-- Main row --}}
-        <tr>
-            <td>{{ $loop->iteration + ($notifications->currentPage()-1) * $notifications->perPage() }}</td>
-            <td>{{ ucfirst($log->channel) }}</td>
-            <td style="max-width:400px; word-break: break-word; white-space: normal;">
-                {{ $log->message_preview }}
-            </td>
-            <td class="text-center">{{ $log->sent_at->format('Y-m-d H:i:s') }}</td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#message{{ $log->id }}">
-                    View
-                </button>
-            </td>
-        </tr>
+                        <thead class="table-success">
+                            <tr>
+                                <th style="width:50px;">#</th>
+                                <th style="width:120px;">Channel</th>
+                                <th>Message Preview</th>
+                                <th style="width:180px;" class="text-center">Sent At</th>
+                                <th style="width:130px;" class="text-center">Action</th>
+                            </tr>
+                        </thead>
 
-        {{-- Collapsible full message row --}}
-        <tr class="collapse" id="message{{ $log->id }}">
-            <td colspan="5" class="p-2 bg-light">
-                <pre class="mb-0" style="white-space: pre-wrap; word-break: break-word;">{{ $log->message_full }}</pre>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
+                        <tbody>
+                            @foreach($notifications as $log)
+                                {{-- Main Row --}}
+                                <tr>
+                                    <td>{{ $loop->iteration + ($notifications->currentPage()-1) * $notifications->perPage() }}</td>
+                                    <td>{{ ucfirst($log->channel) }}</td>
+                                    <td style="white-space: normal; word-break: break-word;">
+                                        {{ $log->message_preview }}
+                                    </td>
+                                    <td class="text-center">
+                                        {{ $log->sent_at->format('Y-m-d H:i:s') }}
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-success"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#message{{ $log->id }}">
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                {{-- Expanded Message --}}
+                                <tr class="collapse" id="message{{ $log->id }}">
+                                    <td colspan="5" class="bg-light">
+                                        <pre class="mb-0">{{ $log->message_full }}</pre>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
                     </table>
                 </div>
             @else
@@ -91,5 +93,23 @@
         @endif
     </div>
 </div>
+
+{{-- User Page Matching Style --}}
+<style>
+.card-success.card-outline {
+    border-top: 3px solid #28a745;
+    border-radius: 6px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f6fbf8;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85rem;
+}
+</style>
 
 @endsection
