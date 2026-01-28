@@ -18,8 +18,7 @@ class SensorController extends Controller
         // Apply search if there is a query
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where('device_id', 'like', "%{$search}%")
-                ->orWhere('network', 'like', "%{$search}%");
+            $query->where('device_id', 'like', "%{$search}%");
             // Add more columns if needed
         }
 
@@ -51,11 +50,12 @@ class SensorController extends Controller
             'battery' => 'nullable|numeric',
             'capacity' => 'required|numeric', // required for alert check
             'time' => 'required|date',
-            'network' => 'nullable|string|max:50',
+            'rsrp' => 'nullable|string|max:50',
+            'nsr' => 'nullable|string|max:50',
         ]);
 
         // Save the sensor reading
-        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'time', 'network'));
+        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
         // Get device and the bin (asset) it belongs to
         $device = $sensor->device;
@@ -95,11 +95,12 @@ class SensorController extends Controller
             'battery' => 'nullable|numeric',
             'capacity' => 'required|numeric', // required for alert check
             'time' => 'required|date',
-            'network' => 'nullable|string|max:50',
+            'rsrp' => 'nullable|string|max:50',
+            'nsr' => 'nullable|string|max:50',
         ]);
 
         // Update the sensor reading
-        $sensor->update($request->only('device_id', 'battery', 'capacity', 'time', 'network'));
+        $sensor->update($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;

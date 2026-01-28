@@ -124,7 +124,7 @@
                     name="search"
                     value="{{ request('search') }}"
                     class="form-control form-control-sm me-2"
-                    placeholder="Search Device ID or Network...">
+                    placeholder="Search Device ID...">
                 <button type="submit" class="btn btn-sm btn-success">Search</button>
             </form>
 
@@ -146,7 +146,8 @@
                         <th>Device ID</th>
                         <th>Battery</th>
                         <th>Capacity</th>
-                        <th>Network</th>
+                        <th>RSRP</th>
+                        <th>NSR</th>
                         <th>Time</th>
                     </tr>
                 </thead>
@@ -158,7 +159,8 @@
                         <td>{{ $sensor->device_id }}</td>
                         <td>{{ $sensor->battery }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
-                        <td>{{ $sensor->network }}</td>
+                        <td>{{ $sensor->rsrp }}</td>
+                        <td>{{ $sensor->nsr }}</td>
                         <td>{{ $sensor->created_at }}</td>
                     </tr>
                     @endforeach
@@ -187,7 +189,7 @@
         <h6><i class="fas fa-tools"></i> Purpose</h6>
         <p>
           The <strong>Sensor</strong> page provides an overview of all connected devices.
-          You can monitor <strong>capacity, battery, network,</strong> and the latest activity for each device.
+          You can monitor <strong>capacity, battery, RSRP, NSR,</strong> and the latest activity for each device.
         </p>
 
         <hr>
@@ -207,7 +209,8 @@
           <li><strong>Device ID</strong>: Unique identifier of the sensor/device.</li>
           <li><strong>Battery</strong>: Current battery level percentage.</li>
           <li><strong>Capacity</strong>: Current capacity percentage.</li>
-          <li><strong>Network</strong>: Device network status or signal.</li>
+          <li><strong>RSRP</strong>: Latest RSRP value (dBm).</li>
+          <li><strong>NSR</strong>: Latest NSR value.</li>
           <li><strong>Time</strong>: Last data update timestamp.</li>
         </ul>
 
@@ -215,7 +218,7 @@
 
         <h6><i class="fas fa-search"></i> Searching & Pagination</h6>
         <ul>
-            <li>Use the search box to filter by <strong>Device ID</strong> or <strong>Network</strong>.</li>
+            <li>Use the search box to filter by <strong>Device ID</strong>.</li>
             <li>Adjust <strong>Rows per page</strong> to control pagination.</li>
         </ul>
 
