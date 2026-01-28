@@ -188,30 +188,55 @@
 
         <h6><i class="fas fa-tools"></i> Purpose</h6>
         <p>
-          The <strong>Sensor</strong> page provides an overview of all connected devices.
-          You can monitor <strong>capacity, battery, RSRP, NSR,</strong> and the latest activity for each device.
+          The <strong>Sensor</strong> page provides a complete overview of all connected devices.
+          You can monitor <strong>capacity, battery, RSRP, NSR,</strong> and see the latest readings for each device.
         </p>
 
         <hr>
 
         <h6><i class="fas fa-chart-line"></i> Chart Overview</h6>
         <ul>
-            <li>The line chart shows the <strong>latest capacity percentage</strong> for each device.</li>
-            <li>Hover over points to see <strong>exact values and timestamps</strong>.</li>
-            <li>The chart updates automatically when new data is available.</li>
+            <li>The line chart shows the <strong>latest capacity percentage</strong> for each device over time.</li>
+            <li>Hover over points to see <strong>exact capacity values and timestamps</strong>.</li>
+            <li>The chart updates automatically whenever new data is available.</li>
         </ul>
 
         <hr>
 
         <h6><i class="fas fa-table"></i> Table Overview</h6>
         <ul>
-          <li><strong>#</strong>: Serial number across pages.</li>
+          <li><strong>#</strong>: Serial number across paginated results.</li>
           <li><strong>Device ID</strong>: Unique identifier of the sensor/device.</li>
-          <li><strong>Battery</strong>: Current battery level percentage.</li>
-          <li><strong>Capacity</strong>: Current capacity percentage.</li>
-          <li><strong>RSRP</strong>: Latest RSRP value (dBm).</li>
-          <li><strong>NSR</strong>: Latest NSR value.</li>
-          <li><strong>Time</strong>: Last data update timestamp.</li>
+          <li><strong>Battery</strong>: Current battery level in percentage (%).</li>
+          <li><strong>Capacity</strong>: Current fill level of the bin in percentage (%).</li>
+          <li><strong>RSRP</strong>: Reference Signal Received Power – measures the signal strength of the device in dBm. 
+              <br> 
+              <strong>Interpretation:</strong>
+              <ul>
+                <li>Closer to 0 → stronger signal</li>
+                <li>Typical ranges:</li>
+                <li>-70 dBm → Excellent signal</li>
+                <li>-85 dBm → Good signal</li>
+                <li>-100 dBm → Fair signal</li>
+                <li>-110 dBm → Weak signal</li>
+                <li>-120 dBm → Very weak / unstable</li>
+              </ul>
+              <em>Example:</em> RSRP = -80 dBm means the device has a good signal.</em>
+          </li>
+          <li><strong>NSR</strong>: Noise-to-Signal Ratio – measures signal quality relative to interference in dB. 
+              <br>
+              <strong>Interpretation:</strong>
+              <ul>
+                <li>Higher NSR → better quality</li>
+                <li>Typical ranges:</li>
+                <li>15 dB → Excellent quality</li>
+                <li>10 dB → Good quality</li>
+                <li>5 dB → Fair quality</li>
+                <li>2 dB → Poor quality / prone to errors</li>
+              </ul>
+              <em>Example:</em> NSR = 12 dB means the device has good signal quality.</em>
+          </li>
+          <li><strong>Time</strong>: Timestamp of the latest data reading from the device.</li>
         </ul>
 
         <hr>
@@ -219,16 +244,17 @@
         <h6><i class="fas fa-search"></i> Searching & Pagination</h6>
         <ul>
             <li>Use the search box to filter by <strong>Device ID</strong>.</li>
-            <li>Adjust <strong>Rows per page</strong> to control pagination.</li>
+            <li>Select <strong>Rows per page</strong> to control pagination and how many records are displayed per page.</li>
         </ul>
 
         <hr>
 
         <h6><i class="fas fa-exclamation-circle"></i> Notes</h6>
         <ul>
-          <li>Data displayed reflects the <strong>latest reading</strong> from each device.</li>
-          <li>Ensure your devices are active and transmitting for accurate display.</li>
-          <li>The page is fully responsive; charts and tables adapt for mobile.</li>
+          <li>The table shows the <strong>most recent readings</strong> for each sensor/device.</li>
+          <li>Ensure devices are active and transmitting data for accurate monitoring.</li>
+          <li>The page layout is fully responsive; charts and tables adapt automatically for mobile or desktop screens.</li>
+          <li>RSRP and NSR values can fluctuate; they provide an indication of signal strength and quality at the moment of measurement.</li>
         </ul>
 
       </div>
@@ -236,6 +262,8 @@
     </div>
   </div>
 </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
