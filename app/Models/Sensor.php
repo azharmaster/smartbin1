@@ -15,6 +15,8 @@ class Sensor extends Model
         'capacity',
         'time',
         'network',
+        'rsrp',
+        'nsr',
     ];
 
     // A Sensor belongs to a Device
