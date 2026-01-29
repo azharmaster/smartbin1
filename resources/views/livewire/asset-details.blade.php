@@ -83,19 +83,59 @@
 }
 
 /* =========================
-RESPONSIVE FIXES
+DESKTOP BASE (NO REMOVALS)
+========================= */
+
+/* Page wrapper stays as-is, we do NOT override it */
+.page-wrapper {
+    /* untouched */
+}
+
+/* Asset layout inside page-wrapper */
+.page-wrapper .asset-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* Left column (map) */
+.page-wrapper .asset-layout .left-column {
+    flex: 0 0 55%;
+    min-width: 0;
+}
+
+/* Right column (details) */
+.page-wrapper .asset-layout .right-column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Extra-wide screens */
+@media (min-width: 1400px) {
+    .page-wrapper .asset-layout .left-column {
+        flex-basis: 60%;
+    }
+
+    .page-wrapper .asset-layout .right-column {
+        flex-basis: 40%;
+    }
+}
+
+
+/* =========================
+RESPONSIVE FIXES (MERGED)
 ========================= */
 
 /* Tablets & below */
 @media (max-width: 1024px) {
 
-    /* Main container stack */
-    .page-wrapper {
+    /* Stack ONLY asset layout */
+    .page-wrapper .asset-layout {
         flex-direction: column;
     }
 
-    .left-column,
-    .right-column {
+    .page-wrapper .left-column,
+    .page-wrapper .right-column {
         flex: 1 1 100% !important;
         width: 100%;
     }
@@ -115,6 +155,7 @@ RESPONSIVE FIXES
         max-width: none !important;
     }
 }
+
 
 /* Mobile */
 @media (max-width: 768px) {
@@ -145,6 +186,7 @@ RESPONSIVE FIXES
         height: 28px;
     }
 }
+
 
 /* Small phones */
 @media (max-width: 480px) {
@@ -183,7 +225,7 @@ RESPONSIVE FIXES
         ?
     </button>
 
-    <div style="display: flex; gap: 20px;">
+    <div class="asset-layout">
         <div class="left-column" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- Map container -->
             <div class="map-container" style="position: relative; width: 100%; height: 600px;"
