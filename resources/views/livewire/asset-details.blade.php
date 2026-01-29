@@ -94,27 +94,24 @@ ASSET LAYOUT
     flex-direction: row; /* side by side */
 }
 
-.page-wrapper .asset-layout .left-column {
-    flex: 0 0 55%;
-}
-
+.page-wrapper .asset-layout .left-column,
 .page-wrapper .asset-layout .right-column {
-    flex: 1 1 45%;
+    flex: 0 0 50%; /* exact 50/50 */
+    min-width: 0;
 }
-
 
 /* =========================
-RESPONSIVE: STACK FOR MOBILE
+RESPONSIVE: STACK FOR TABLETS & MOBILE
 ========================= */
 @media (max-width: 1024px) {
     .page-wrapper .asset-layout {
-        flex-direction: column !important; /* stack vertically */
+        flex-direction: column; /* stack vertically */
     }
 
     .page-wrapper .asset-layout .left-column,
     .page-wrapper .asset-layout .right-column {
-        width: 100% !important;
-        flex: 1 1 100% !important;
+        width: 100%;
+        flex: 1 1 100%;
     }
 
     /* Stack asset card image + info */
@@ -131,16 +128,16 @@ RESPONSIVE: STACK FOR MOBILE
 /* BIN + DEVICE responsive */
 @media (max-width: 768px) {
     .bin-device-wrapper {
-        flex-direction: column !important;
+        flex-direction: column;
     }
 
     .bin-card {
-        flex: 1 1 100% !important;
-        max-width: 100% !important;
+        flex: 1 1 100%;
+        max-width: 100%;
     }
 
     .device-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
     }
 
     #marker {
