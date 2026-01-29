@@ -159,7 +159,7 @@ RESPONSIVE FIXES
 }
 </style>
 
-    <div class="page-wrapper" style="max-width: 1200px; display: flex; gap: 20px;">
+    <div class="page-wrapper" style="max-width: 1200px; display: flex; flex-direction: column; gap: 20px;">
 
     <!-- Floating Help Button -->
     <button type="button" onclick="openHelp()" style="
@@ -183,7 +183,7 @@ RESPONSIVE FIXES
         ?
     </button>
 
-
+    <div style="display: flex; gap: 20px;">
         <div class="left-column" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- Map container -->
             <div class="map-container" style="position: relative; width: 100%; height: 600px;"
@@ -608,9 +608,34 @@ RESPONSIVE FIXES
                 </div>
             </div>
         </div>
+        </div>
+
+        <!-- weekly graph-->
+        <div style="
+            margin-top: 10px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        ">
+            <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">
+                Weekly Chart
+            </h4>
+
+            <div style="position: relative; height: 320px;">
+                <canvas id="weeklyBinChart"></canvas>
+            </div>
+
+            <p style="font-size: 12px; color: #777; margin-top: 6px;">
+                Scroll to zoom • Drag to pan • Double-click to reset
+            </p>
+        </div>
 
     </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
     {{-- Draggable markers JS --}}
 <script>
 function draggableMarker(assetId, startX, startY) {
@@ -670,6 +695,75 @@ function draggableMarker(assetId, startX, startY) {
     }
 }
 </script>
+<!--ZOOM IN CHART-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('weeklyBinChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($weeklyChartLabels),
+            datasets: [
+                {
+                    label: 'Min/Max Range',
+                    data: @json($weeklyChartMin),
+                    borderColor: 'rgba(239,68,68,0.1)',
+                    backgroundColor: 'rgba(239,68,68,0.15)',
+                    fill: '+1', // fills up to the next dataset (max)
+                    pointRadius: 0,
+                    tension: 0.35,
+                    order: 1
+                },
+                {
+                    data: @json($weeklyChartMax),
+                    borderColor: 'rgba(239,68,68,0.1)',
+                    pointRadius: 0,
+                    tension: 0.35,
+                    fill: false,
+                    order: 2
+                },
+                {
+                    label: 'Average Capacity (%)',
+                    data: @json($weeklyChartValues),
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: false,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    order: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: true },
+                zoom: {
+                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                    pan: { enabled: true, mode: 'x' }
+                }
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100,
+                    title: { display: true, text: 'Capacity (%)' }
+                },
+                x: {
+                    title: { display: true, text: 'Day' }
+                }
+            }
+        }
+    });
+});
+</script>
+<!--OPEN HELP MODAL -->
 <script>
 function openHelp() {
     $('#helpModal').modal('show');

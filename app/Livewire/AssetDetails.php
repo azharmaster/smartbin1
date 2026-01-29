@@ -7,6 +7,8 @@ use App\Models\Asset;
 use App\Models\CapacitySetting;
 use App\Models\Floor;
 use App\Models\Device;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AssetDetails extends Component
 {
@@ -15,6 +17,10 @@ class AssetDetails extends Component
     public $allAssets;
     public $compartments = [];
     public $capacitySetting;
+    public $weeklyChartLabels = [];
+    public $weeklyChartValues = [];
+    public $weeklyChartMin = [];
+    public $weeklyChartMax = [];
 
     public function mount($asset)
     {
@@ -34,6 +40,28 @@ class AssetDetails extends Component
 
         // Prepare SVG data
         $this->prepareCompartments();
+        $this->prepareWeeklyChart();
+    }
+
+    protected function prepareWeeklyChart()
+    {
+        $deviceIds = $this->asset->devices->pluck('id_device'); // <- use id_device
+
+        $weeklyData = DB::table('sensors')
+            ->selectRaw('DATE(created_at) as day, AVG(capacity) as avg_capacity, MIN(capacity) as min_capacity, MAX(capacity) as max_capacity')
+            ->whereIn('device_id', $deviceIds)
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
+
+        $this->weeklyChartLabels = $weeklyData->pluck('day')->map(fn($d) =>
+            Carbon::parse($d)->format('D')
+        )->values();
+
+        $this->weeklyChartValues = $weeklyData->pluck('avg_capacity')->values();
+        $this->weeklyChartMin = $weeklyData->pluck('min_capacity')->values();
+        $this->weeklyChartMax = $weeklyData->pluck('max_capacity')->values();
     }
 
     protected function prepareCompartments()
