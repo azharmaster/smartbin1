@@ -39,13 +39,13 @@ class AssetDetails extends Component
         $this->floors = Floor::orderBy('floor_name')->get();
 
         $this->prepareCompartments();
-        $this->prepareWeeklyChart();
+        $this->prepareDailyChart();
     }
 
     /**
-     * 30-minute interval from 7AM – 7PM
+     * 30-minute interval from 7AM – 7PM for today's sensor data
      */
-    protected function prepareWeeklyChart()
+    protected function prepareDailyChart()
     {
         $devices = $this->asset->devices;
 
@@ -99,7 +99,7 @@ class AssetDetails extends Component
     protected function prepareCompartments()
     {
         $this->compartments = [];
-        
+
         $devices = $this->asset->devices ?? collect();
         if ($devices->isEmpty()) return;
 

@@ -661,7 +661,7 @@ RESPONSIVE FIXES (MERGED)
     box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 ">
     <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">
-        Daily Chart
+        Today's Capacity Levels (7AM - 7PM)
     </h4>
 
     <div style="position: relative; height: 320px;">
