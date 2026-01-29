@@ -743,22 +743,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             scales: {
-                x: {
-                    title: { display: true, text: 'Time' },
-                    ticks: {
-                        display: false // ✅ hide all x-axis labels
-                    },
-                    grid: {
-                        drawTicks: false, // optional: remove tick lines
-                    }
-                },
                 y: {
                     min: 0,
                     max: 100,
                     title: { display: true, text: 'Capacity (%)' }
+                },
+                x: {
+                    title: { display: true, text: 'Time' }
                 }
             }
-
         }
     });
 });
