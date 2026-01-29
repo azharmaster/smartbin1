@@ -710,7 +710,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const sensorDatasets = @json($weeklySensorDatasets);
 
-    const colors = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b'];
+    const colors = ['#8a8583', '#eed7a1', '#cd8b62', '#f59e0b'];
 
     const datasets = sensorDatasets.map((sensor, index) => ({
         label: sensor.label,
@@ -718,10 +718,12 @@ document.addEventListener('DOMContentLoaded', function () {
         borderWidth: 2,
         tension: 0.35,
         fill: false,
-        borderColor: colors[index % colors.length],
+        borderColor: colors[index % colors.length],   // line color
+        backgroundColor: colors[index % colors.length], // legend box color
         pointRadius: 4,
         pointHoverRadius: 6
     }));
+
 
     new Chart(ctx, {
         type: 'line',
