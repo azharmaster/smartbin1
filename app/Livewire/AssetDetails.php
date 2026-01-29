@@ -22,9 +22,10 @@ class AssetDetails extends Component
     public $weeklyChartMin = [];
     public $weeklyChartMax = [];
 
+    public $weeklySensorDatasets = [];
+
     public function mount($asset)
     {
-        // Load the asset with relationships
         if (is_numeric($asset)) {
             $this->asset = Asset::with(['floor', 'devices.sensors'])->findOrFail($asset);
         } elseif ($asset instanceof Asset) {
@@ -33,37 +34,68 @@ class AssetDetails extends Component
             throw new \Exception('Invalid asset provided');
         }
 
-        // Load capacity settings
         $this->capacitySetting = CapacitySetting::first();
         $this->allAssets = Asset::all();
         $this->floors = Floor::orderBy('floor_name')->get();
 
-        // Prepare SVG data
         $this->prepareCompartments();
         $this->prepareWeeklyChart();
     }
 
+    /**
+     * 30-minute interval from 7AM – 7PM
+     */
     protected function prepareWeeklyChart()
     {
-        $deviceIds = $this->asset->devices->pluck('id_device'); // <- use id_device
+        $devices = $this->asset->devices;
 
-        $weeklyData = DB::table('sensors')
-            ->selectRaw('DATE(created_at) as day, AVG(capacity) as avg_capacity, MIN(capacity) as min_capacity, MAX(capacity) as max_capacity')
-            ->whereIn('device_id', $deviceIds)
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get();
+        $start = Carbon::today()->setTime(7, 0);
+        $end   = Carbon::today()->setTime(19, 0);
 
-        $this->weeklyChartLabels = $weeklyData->pluck('day')->map(fn($d) =>
-            Carbon::parse($d)->format('D')
-        )->values();
+        $slots = collect();
+        $cursor = $start->copy();
 
-        $this->weeklyChartValues = $weeklyData->pluck('avg_capacity')->values();
-        $this->weeklyChartMin = $weeklyData->pluck('min_capacity')->values();
-        $this->weeklyChartMax = $weeklyData->pluck('max_capacity')->values();
+        while ($cursor <= $end) {
+            $slots->push($cursor->format('H:i'));
+            $cursor->addMinutes(30);
+        }
+
+        $this->weeklyChartLabels = $slots->map(function ($time) {
+            $hour = Carbon::createFromFormat('H:i', $time);
+            return $hour->minute === 0 ? $hour->format('ga') : '';
+        })->values();
+
+        $this->weeklySensorDatasets = [];
+
+        foreach ($devices as $device) {
+
+            $data = DB::table('sensors')
+                ->selectRaw('
+                    DATE_FORMAT(
+                        FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(created_at) / 1800) * 1800),
+                        "%H:%i"
+                    ) as t,
+                    AVG(capacity) as avg_capacity
+                ')
+                ->where('device_id', $device->id_device)
+                ->whereDate('created_at', Carbon::today())
+                ->whereTime('created_at', '>=', '07:00:00')
+                ->whereTime('created_at', '<=', '19:00:00')
+                ->groupBy('t')
+                ->pluck('avg_capacity', 't');
+
+            $values = $slots->map(fn ($slot) => $data[$slot] ?? null);
+
+            $this->weeklySensorDatasets[] = [
+                'label' => $device->device_name,
+                'data'  => $values,
+            ];
+        }
     }
 
+    /**
+     * ✅ FIXED: restore capacityTextY & deviceNameY
+     */
     protected function prepareCompartments()
     {
         $this->compartments = [];
@@ -73,10 +105,9 @@ class AssetDetails extends Component
 
         $lerp = fn($a, $b, $t) => $a + ($b - $a) * $t;
 
-        // ✅ SQUARE BIN (fits inside 320×240 viewBox)
-        $binSize = 210;   // ← wider & taller
-        $binX = 55;       // recenter horizontally
-        $binY = 15; 
+        $binSize = 210;
+        $binX = 55;
+        $binY = 15;
 
         $topLeft     = [$binX, $binY];
         $topRight    = [$binX + $binSize, $binY];
@@ -84,14 +115,12 @@ class AssetDetails extends Component
         $bottomRight = [$binX + $binSize, $binY + $binSize];
 
         $n = $devices->count();
-        $this->compartments = [];
 
         foreach ($devices as $i => $device) {
             $sensor = $device->sensors->sortByDesc('created_at')->first();
             $capacity = $sensor?->capacity ?? 0;
             $color = $this->capacityColor($capacity);
 
-            // Equal compartments (same logic as before, now square & parallel)
             $t0 = $i / $n;
             $t1 = ($i + 1) / $n;
 
@@ -100,7 +129,6 @@ class AssetDetails extends Component
             $bottomCompLeft  = [$lerp($bottomLeft[0], $bottomRight[0], $t0), $bottomLeft[1]];
             $bottomCompRight = [$lerp($bottomLeft[0], $bottomRight[0], $t1), $bottomRight[1]];
 
-            // 🔒 SAME dynamic fill logic as before
             $fillRatio = min(100, max(0, $capacity)) / 100;
 
             $fillTopLeft  = [
@@ -113,7 +141,6 @@ class AssetDetails extends Component
                 $lerp($bottomCompRight[1], $topCompRight[1], $fillRatio),
             ];
 
-            // SAME label math (unchanged behavior)
             $labelX = ($topCompLeft[0] + $topCompRight[0] + $bottomCompRight[0] + $bottomCompLeft[0]) / 4;
             $labelY = ($topCompLeft[1] + $topCompRight[1] + $bottomCompRight[1] + $bottomCompLeft[1]) / 4;
 
