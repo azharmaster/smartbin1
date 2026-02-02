@@ -152,6 +152,18 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
         font-size: 14px;
     }
 }
+
+@media (max-width: 768px) {
+    .map-container img {
+        object-fit: contain !important;
+        height: auto !important;
+        max-height: 100%;
+    }
+
+    .map-container {
+        height: auto !important;
+    }
+}
 </style>
 
     <div class="page-wrapper" style="max-width: 1200px; display: flex; flex-direction: column; gap: 20px;">
