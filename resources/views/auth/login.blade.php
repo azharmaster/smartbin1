@@ -159,11 +159,6 @@
   </div>
 </div>
 <!-- /.login-box -->
-<div class="text-center mt-3">
-    <a href="{{ route('complaint.guest') }}" class="btn btn-outline-secondary btn-block">
-        Continue as Guest
-    </a>
-</div>
 
 <!-- jQuery -->
 <script src="{{ asset('adminlte') }}/plugins/jquery/jquery.min.js"></script>
