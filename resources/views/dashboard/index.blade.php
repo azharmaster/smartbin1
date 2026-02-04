@@ -629,7 +629,9 @@ function trend($current, $previous) {
     
         <div class="card mt-3">
             <div class="card-header smartbin-gradient">
-                <strong>Abnormal / Undetected Bin Trend (Last 7 Days)</strong>
+                <h5 class="mb-0 text-white fs-6">
+                    <i class="fas fa-exclamation-circle"></i> Abnormal/Undetected Sensors
+                </h5>
             </div>
             <div class="card-body" style="height: 250px;">
                 <canvas id="abnormalBinsChart"></canvas>
