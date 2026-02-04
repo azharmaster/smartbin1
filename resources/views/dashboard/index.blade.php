@@ -1050,7 +1050,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const datasets = Object.entries(devices).map(([deviceName, records]) => {
             const dataMap = {};
             records.forEach(r => {
-                dataMap[r.date] = r.hours;
+                const day = r.date.split(' ')[0]; // <--- fix here
+                dataMap[day] = r.hours;
             });
 
             return {

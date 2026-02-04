@@ -403,51 +403,56 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function calculateSmartBinClearTimes($emptyMax, $halfMax)
-    {
-        $result = [];
+private function calculateSmartBinClearTimes($emptyMax, $halfMax)
+{
+    $result = [];
 
-        $devices = Device::with([
-            'asset',
-            'sensors' => fn ($q) => $q->orderBy('time', 'asc')
-        ])->get();
+    $startOfWeek = Carbon::now()->startOfWeek(); // Monday 00:00
+    $endOfWeek   = Carbon::now()->endOfWeek();   // Sunday 23:59
 
-        foreach ($devices as $device) {
-            if (!$device->asset) continue;
+    $devices = Device::with([
+        'asset',
+        'sensors' => fn ($q) => $q->orderBy('time', 'asc')
+    ])->get();
 
-            $fullTimestamp = null;
-            $clears = [];
+    foreach ($devices as $device) {
+        if (!$device->asset) continue;
 
-            foreach ($device->sensors as $sensor) {
+        $fullTimestamp = null;
+        $clears = [];
 
-                // Bin becomes FULL
-                if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
-                    $fullTimestamp = $sensor->time;
-                    continue;
-                }
-
-                // Bin is CLEARED
-                if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
-
-                    $minutes = Carbon::parse($fullTimestamp)
-                        ->diffInMinutes(Carbon::parse($sensor->time));
-
-                    $clears[] = [
-                        'date'  => Carbon::parse($sensor->time)->format('Y-m-d H:i'),
-                        'hours' => round($minutes / 60, 2),
-                    ];
-
-                    $fullTimestamp = null;
-                }
+        foreach ($device->sensors as $sensor) {
+            // Bin becomes FULL
+            if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
+                $fullTimestamp = $sensor->time;
+                continue;
             }
 
-            $clears = collect($clears)->take(-10)->values();
+            // Bin is CLEARED
+            if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
 
-            if ($clears->isNotEmpty()) {
-                $result[$device->asset->asset_name][$device->device_name] = $clears;
+                $clearTime = Carbon::parse($sensor->time);
+
+                // Only include clears in the current week
+                if ($clearTime->between($startOfWeek, $endOfWeek)) {
+                    $minutes = Carbon::parse($fullTimestamp)
+                        ->diffInMinutes($clearTime);
+
+                    $clears[] = [
+                        'date'  => $clearTime->format('Y-m-d H:i'),
+                        'hours' => round($minutes / 60, 2),
+                    ];
+                }
+
+                $fullTimestamp = null;
             }
         }
 
-        return collect($result);
+        if (!empty($clears)) {
+            $result[$device->asset->asset_name][$device->device_name] = $clears;
+        }
     }
+
+    return collect($result);
+}
 }
