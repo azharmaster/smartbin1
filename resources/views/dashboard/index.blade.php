@@ -626,6 +626,16 @@ function trend($current, $previous) {
         </div>
 
     </div>
+    
+        <div class="card mt-3">
+            <div class="card-header">
+                <strong>Abnormal / Undetected Bin Trend (Last 7 Days)</strong>
+            </div>
+            <div class="card-body" style="height: 250px;">
+                <canvas id="abnormalBinsChart"></canvas>
+            </div>
+        </div>
+
 
 <!-- SmartBin Animated Gradient Style -->
 <style>
@@ -939,6 +949,67 @@ function trend($current, $previous) {
 }
 </style>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const trendData = @json($abnormalBinsTrend);
+
+    const labels = trendData.map(d => d.date);
+    const abnormalData = trendData.map(d => d.abnormal);
+    const undetectedData = trendData.map(d => d.undetected);
+
+    const ctx = document.getElementById('abnormalBinsChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Abnormal Bins',
+                    data: abnormalData,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Undetected Bins',
+                    data: undetectedData,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Bins'
+                    },
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -962,19 +1033,27 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderChart(assetName) {
         const devices = smartBinData[assetName];
 
-        // collect all unique dates
-        const labels = Array.from(
-            { length: Math.max(...Object.values(devices).map(d => d.length)) },
-            (_, i) => `Clear #${i + 1}`
-        );
+        // 🗓️ get last 7 days (including today)
+        const today = new Date();
+        const lastWeekDates = [];
+
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            lastWeekDates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD
+        }
+
+        const labels = lastWeekDates;
 
         const datasets = Object.entries(devices).map(([deviceName, records]) => {
             const dataMap = {};
-            records.forEach(r => dataMap[r.date] = r.hours);
+            records.forEach(r => {
+                dataMap[r.date] = r.hours;
+            });
 
             return {
                 label: deviceName,
-                data: labels.map((_, i) => records[i]?.hours ?? null),
+                data: labels.map(date => dataMap[date] ?? null),
                 borderWidth: 3,
                 tension: 0.4,
                 pointRadius: 5,
@@ -997,7 +1076,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     legend: { display: true },
                     tooltip: {
                         callbacks: {
-                            label: ctx => `${ctx.raw} hours`
+                            label: ctx => ctx.raw !== null ? `${ctx.raw} hours` : 'No data'
                         }
                     }
                 },
@@ -1005,7 +1084,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     x: {
                         title: {
                             display: true,
-                            text: 'Latest Bin is Cleared (10)'
+                            text: 'Last 7 Days'
                         }
                     },
                     y: {

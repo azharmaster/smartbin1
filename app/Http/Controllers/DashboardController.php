@@ -92,7 +92,62 @@ class DashboardController extends Controller
             'abnormalBins' => $abnormalBins,
             'emptyMax' => $emptyMax,
             'halfMax'  => $halfMax,
+            'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
         ]));
+    }
+
+    private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40)
+    {
+        $trend = collect();
+        $startDate = Carbon::today()->subDays($days - 1);
+
+        for ($i = 0; $i < $days; $i++) {
+
+            $date = $startDate->copy()->addDays($i)->toDateString();
+            $endOfDay = Carbon::parse($date)->endOfDay();
+
+            $devices = Device::with([
+                'asset',
+                'latestSensor' => function ($q) use ($endOfDay) {
+                    $q->where('time', '<=', $endOfDay);
+                }
+            ])
+            ->where('is_active', 1)
+            ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
+            ->get();
+
+            $abnormal = 0;
+            $undetected = 0;
+
+            foreach ($devices as $device) {
+
+                $sensor = $device->latestSensor;
+
+                if (!$sensor) {
+                    $undetected++;
+                    continue;
+                }
+
+                if (is_numeric($sensor->capacity) && $sensor->capacity < 0) {
+                    $abnormal++;
+                    continue;
+                }
+
+                if (Carbon::parse($sensor->time)->lt(
+                    Carbon::parse($endOfDay)->subMinutes($minutesThreshold)
+                )) {
+                    $undetected++;
+                }
+            }
+
+            $trend->push([
+                'date' => $date,
+                'abnormal' => $abnormal,
+                'undetected' => $undetected,
+            ]);
+        }
+
+        return $trend;
     }
 
     private function getAbnormalBins($minutesThreshold = 40)
