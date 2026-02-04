@@ -628,7 +628,7 @@ function trend($current, $previous) {
     </div>
     
         <div class="card mt-3">
-            <div class="card-header">
+            <div class="card-header smartbin-gradient">
                 <strong>Abnormal / Undetected Bin Trend (Last 7 Days)</strong>
             </div>
             <div class="card-body" style="height: 250px;">
