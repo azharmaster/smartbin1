@@ -559,8 +559,8 @@ function trend($current, $previous) {
                         <i class="fas fa-trash me-2"></i> SmartBin Clear Time
                     </h5>
                     <select id="assetFilter" class="form-select form-select-sm w-auto ms-auto">
-                        @foreach($smartBinClearTimes as $assetName => $devices)
-                            <option value="{{ $assetName }}">{{ $assetName }}</option>
+                        @foreach($assetsWithDevices as $asset)
+                            <option value="{{ $asset->asset_name }}">{{ $asset->asset_name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -1032,75 +1032,60 @@ document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('smartBinClearChart').getContext('2d');
     let chart;
 
-    function renderChart(assetName) {
-        const devices = smartBinData[assetName];
+function renderChart(assetName) {
+    const devices = smartBinData[assetName] || {}; // <-- use empty object if no data
 
-        // 🗓️ get last 7 days (including today)
-        const today = new Date();
-        const lastWeekDates = [];
+    const today = new Date();
+    const lastWeekDates = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        lastWeekDates.push(d.toISOString().split('T')[0]);
+    }
+    const labels = lastWeekDates;
 
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date(today);
-            d.setDate(today.getDate() - i);
-            lastWeekDates.push(d.toISOString().split('T')[0]); // YYYY-MM-DD
-        }
-
-        const labels = lastWeekDates;
-
-        const datasets = Object.entries(devices).map(([deviceName, records]) => {
-            const dataMap = {};
-            records.forEach(r => {
-                const day = r.date.split(' ')[0];
-                dataMap[day] = r.hours;
-            });
-
-            return {
-                label: deviceName,
-                data: labels.map(date => dataMap[date] ?? null),
-                borderWidth: 3,
-                tension: 0.4,
-                pointRadius: 5,
-                spanGaps: true
-            };
+    const datasets = Object.entries(devices).map(([deviceName, records]) => {
+        const dataMap = {};
+        records.forEach(r => {
+            const day = r.date.split(' ')[0];
+            dataMap[day] = r.hours;
         });
+        return {
+            label: deviceName,
+            data: labels.map(date => dataMap[date] ?? null),
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            spanGaps: true
+        };
+    });
 
-        if (chart) chart.destroy();
+    if (chart) chart.destroy();
 
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ctx.raw !== null ? `${ctx.raw} hours` : 'No data'
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Last 7 Days'
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Hours to Clear'
-                        }
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.raw !== null ? `${ctx.raw} hours` : 'No data'
                     }
                 }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Last 7 Days' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Hours to Clear' } }
             }
-        });
-    }
+        }
+    });
+}
 
     // initial load
     const assetSelect = document.getElementById('assetFilter');
