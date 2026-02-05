@@ -347,3 +347,11 @@ Route::post('/events/{event}/toggle', [EventController::class, 'toggle'])->name(
 
 Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
     ->name('notifications.index');
+
+//qr code
+Route::get('/assets/{id}', [AssetController::class, 'show'])->name('assets.show');
+
+//scanner
+Route::get('/qr-scanner', function () {
+    return view('qr.scanner');
+})->name('qr.scanner');

@@ -108,6 +108,15 @@ class Aside extends Component
                 "route_active" => "sensors.*"
             ],
 
+            /* ✅ NEW: QR Scanner */
+            [
+                "label" => "QR Scanner",
+                "icon" => "fas fa-qrcode",
+                "color" => "#f59e0b",
+                "route_name" => "qr.scanner",
+                "route_active" => "qr.scanner"
+            ],
+
             // LOGOUT
             [
                 "type" => "divider"

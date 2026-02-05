@@ -59,9 +59,18 @@
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt text-white"></i>
                             </a>&nbsp;
+
                             <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
                                 <i class="far fa-eye"></i>
-                            </a>
+                            </a>&nbsp;
+
+                            <!-- QR Code Button -->
+                            <button type="button"
+                                    class="btn btn-primary btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#qrModal{{ $asset->id }}">
+                                <i class="fas fa-qrcode"></i>
+                            </button>
                             </div>
                         </td>
                     </tr>
@@ -71,4 +80,68 @@
         </div>
     </div>
 </div>
+
+<!-- QR Code Modals -->
+@foreach ($assets as $asset)
+<div class="modal fade" id="qrModal{{ $asset->id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">QR Code – {{ $asset->asset_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+
+                <!-- QR Container -->
+                <div id="qrContainer{{ $asset->id }}">
+                    {!! QrCode::size(200)->generate(route('master-data.assets.details', $asset->id)) !!}
+                </div>
+
+                <p class="mt-2 text-muted">Scan to view bin details</p>
+
+                <!-- Download Button -->
+                <button class="btn btn-success btn-sm mt-2"
+                        onclick="downloadQR('qrContainer{{ $asset->id }}', '{{ $asset->asset_name }}')">
+                    <i class="fas fa-download"></i> Download QR
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
+
+<!-- Download QR Script -->
+<script>
+function downloadQR(containerId, fileName) {
+    const svg = document.querySelector(`#${containerId} svg`);
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svg);
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        const pngUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = pngUrl;
+        a.download = fileName + "_QR.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+    img.src = url;
+}
+</script>
+
 @endsection
