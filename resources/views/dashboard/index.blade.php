@@ -1166,7 +1166,7 @@ function renderChart(assetName) {
         <h6><i class="fas fa-tachometer-alt"></i> 1. Dashboard Overview</h6>
         <p>
           The SMARTBIN Dashboard provides a real-time overview of smart bin sensors, system status, notifications, 
-          and abnormal conditions. It allows administrators and supervisors to monitor bin conditions efficiently 
+          and abnormal conditions. It allows administrators to monitor bin conditions efficiently 
           and take timely actions.
         </p>
 
@@ -1181,7 +1181,7 @@ function renderChart(assetName) {
           <li><strong>🟩 Empty Sensors</strong>: Shows bins that are currently empty.</li>
           <li><strong>⚪ Undetected Sensors</strong>: Sensors that are offline, disconnected, or not reporting data.</li>
         </ul>
-        <p>👉 Click “More info” on any card to view detailed sensor data.</p>
+        <p>👉 Click “More info” on any card to view the live data.</p>
 
         <hr>
 
@@ -1190,7 +1190,7 @@ function renderChart(assetName) {
         <ul>
           <li>Line chart showing hours taken to clear bins.</li>
           <li>Each line represents a sensor (TRX1-1, TRX1-2, TRX1-3).</li>
-          <li>X-axis: Clear sequence</li>
+          <li>X-axis: Date in the week</li>
           <li>Y-axis: Time (hours)</li>
         </ul>
         <p><strong>Dropdown Filter:</strong> Select a specific SmartBin unit (e.g., TRX SmartBin 01) to view its data.</p>
