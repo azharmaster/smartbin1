@@ -93,4 +93,12 @@ class AssetController extends Controller
         toast()->success('Successfully Deleted!');
         return redirect()->route('master-data.assets.index');
     }
+
+    public function show($id)
+{
+    $asset = Asset::findOrFail($id); // fetch asset from database
+    return view('assets.show', compact('asset'));
+}
+
+
 }
