@@ -62,7 +62,17 @@
                     </div>
                     <div class="form-group">
                         <label>Device Name</label>
-                        <input type="text" name="device_name" class="form-control" value="{{ $device_name }}">
+                        <select name="device_name" class="form-control">
+                            <option value="GLASS" {{ $device_name === 'GLASS' ? 'selected' : '' }}>
+                                GLASS
+                            </option>
+                            <option value="PAPER" {{ $device_name === 'PAPER' ? 'selected' : '' }}>
+                                PAPER
+                            </option>
+                            <option value="GENERAL" {{ $device_name === 'GENERAL' ? 'selected' : '' }}>
+                                GENERAL
+                            </option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Assets</label>

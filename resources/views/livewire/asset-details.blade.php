@@ -787,13 +787,19 @@ function openHelp() {
                                value="{{ $device->id_device }}"
                                readonly>
                     </div>
-
                     <div class="form-group">
                         <label>Device Name</label>
-                        <input type="text"
-                               class="form-control"
-                               name="device_name"
-                               value="{{ $device->device_name }}">
+                        <select name="device_name" class="form-control">
+                            <option value="GLASS" {{ $device->device_name === 'GLASS' ? 'selected' : '' }}>
+                                GLASS
+                            </option>
+                            <option value="PAPER" {{ $device->device_name === 'PAPER' ? 'selected' : '' }}>
+                                PAPER
+                            </option>
+                            <option value="GENERAL" {{ $device->device_name === 'GENERAL' ? 'selected' : '' }}>
+                                GENERAL
+                            </option>
+                        </select>
                     </div>
                     <!-- Add other device fields here if needed -->
                 </div>

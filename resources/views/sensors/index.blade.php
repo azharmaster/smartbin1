@@ -147,7 +147,7 @@
                         <th>Battery</th>
                         <th>Capacity</th>
                         <th>RSRP</th>
-                        <th>NSR</th>
+                        <th>SNR</th>
                         <th>Time</th>
                     </tr>
                 </thead>

@@ -842,49 +842,59 @@ function trend($current, $previous) {
 
        <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-trash-alt me-2"></i> Sensor Lists
-                    </h5>
-                </div>
+<div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white fs-6">
+            <i class="fas fa-trash-alt me-2"></i> Sensor Lists
+        </h5>
+    </div>
 
-                <div class="card-body p-2">
-                    @forelse($assetsWithDevices as $asset)
-                        <div class="card mb-2 p-2"> <!-- smaller gap -->
-                            <div class="d-flex align-items-center flex-wrap gap-2">
-                                <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
+    <div class="card-body p-2">
+        @forelse($assetsWithDevices as $asset)
+            <div class="card mb-2 p-2">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
 
-                                @foreach($asset->devices as $device)
-                                    @php
-                                        $latest = $device->sensors->last();
-                                        $level = $latest->capacity ?? null;
+                    <!-- LEFT: ASSET NAME + SENSOR INFO -->
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
 
-                                        $badge = match (true) {
-                                            $level === null => 'secondary',
-                                            $level > $halfMax => 'danger',
-                                            $level > $emptyMax => 'warning',
-                                            default => 'success',
-                                        };
+                        @foreach($asset->devices as $device)
+                            @php
+                                $latest = $device->sensors->last();
+                                $level = $latest->capacity ?? null;
 
-                                        preg_match('/-(\d+)$/', $device->device_name, $matches);
-                                        $sensorNumber = $matches[1] ?? '?';
-                                    @endphp
+                                $badge = match (true) {
+                                    $level === null => 'secondary',
+                                    $level > $halfMax => 'danger',
+                                    $level > $emptyMax => 'warning',
+                                    default => 'success',
+                                };
+                            @endphp
 
-                                    <div class="badge bg-{{ $badge }}">
-                                        {{ $sensorNumber }} - {{ $level !== null ? $level.'%' : 'Undetected' }}
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-muted text-center py-3">
-                            No assets found
-                        </div>
-                    @endforelse
+                            <span class="badge bg-{{ $badge }}">
+                                {{ $device->device_name }}
+                                -
+                                {{ $level !== null ? $level.'%' : 'Undetected' }}
+                            </span>
+                        @endforeach
+                    </div>
+
+                    <!-- RIGHT: VIEW BUTTON -->
+                    <a href="{{ route('master-data.assets.details', $asset->id) }}"
+                       class="btn btn-info btn-sm"
+                       title="View Asset">
+                        <i class="far fa-eye"></i>
+                    </a>
+
                 </div>
             </div>
-
+        @empty
+            <div class="text-muted text-center py-3">
+                No assets found
+            </div>
+        @endforelse
+    </div>
+</div>
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
