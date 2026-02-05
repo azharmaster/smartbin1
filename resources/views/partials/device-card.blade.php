@@ -1,7 +1,7 @@
-<a href="#"
-   class="text-decoration-none device-link open-bin-modal"
-   data-url="{{ route('admin.dashboard.bin.popup', $device->asset->id) }}">
-
+<a href="javascript:void(0)"
+   class="text-decoration-none device-link"
+   onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+   
     <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
         <div class="d-flex justify-content-between align-items-start">
             <div class="fw-bold fs-4 text-white">
