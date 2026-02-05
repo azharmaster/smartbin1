@@ -1,32 +1,26 @@
 @extends('layouts.app')
 
+@section('content_title', 'QR Scanner')
+
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-6">
 
             <div class="card shadow-sm">
-                <div class="card-header text-center">
-                    <h5 class="mb-0">QR Code Scanner</h5>
+                <div class="card-header text-center fw-bold">
+                    Scan Asset QR Code
                 </div>
 
                 <div class="card-body text-center">
 
-                    <p class="text-muted">
-                        Upload a QR image from your gallery or downloads
-                    </p>
+                    {{-- Video element --}}
+                    <video id="qr-video" style="width:100%; border-radius:10px;" autoplay muted playsinline></video>
 
-                    <!-- Upload -->
-                    <input type="file"
-                           id="qrImage"
-                           accept="image/*"
-                           class="form-control mb-3">
-
-                    <!-- Canvas -->
-                    <canvas id="canvas" hidden></canvas>
-
-                    <!-- Result -->
-                    <div id="result" class="mt-3"></div>
+                    {{-- Status messages --}}
+                    <div id="scanner-message" class="text-muted my-3">
+                        Initializing camera...
+                    </div>
 
                 </div>
             </div>
@@ -35,48 +29,90 @@
     </div>
 </div>
 
-<!-- jsQR Library -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script type="module">
+    import QrScanner from 'https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js';
 
-<script>
-document.getElementById('qrImage').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const video = document.getElementById('qr-video');
+    const message = document.getElementById('scanner-message');
 
-    const img = new Image();
-    const reader = new FileReader();
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-    reader.onload = function () {
-        img.src = reader.result;
-    };
-
-    img.onload = function () {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-
-        if (code) {
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-success">
-                    QR detected! Redirecting...
-                </div>
-            `;
-            window.location.href = code.data;
-        } else {
-            document.getElementById('result').innerHTML = `
-                <div class="alert alert-danger">
-                    No QR code detected in this image.
-                </div>
-            `;
+    async function initScanner() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            message.innerHTML = '<span class="text-danger">No camera detected</span>';
+            return;
         }
-    };
 
-    reader.readAsDataURL(file);
-});
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter(d => d.kind === 'videoinput');
+
+            if (cameras.length === 0) {
+                message.innerHTML = '<span class="text-danger">No camera detected</span>';
+                return;
+            }
+
+            const selectedCameraId = cameras[0].deviceId;
+
+            const scanner = new QrScanner(
+                video,
+                result => {
+                    scanner.stop();
+
+                    let redirectUrl = '';
+
+                    try {
+                        // Coerce to string first
+                        const textResult = typeof result === 'string' ? result : JSON.stringify(result);
+
+                        // Try parsing as JSON
+                        const parsed = JSON.parse(textResult);
+
+                        // If the QR contains a `data` field, use that
+                        if (parsed && parsed.data) {
+                            redirectUrl = parsed.data;
+                        } else {
+                            redirectUrl = textResult;
+                        }
+
+                    } catch (e) {
+                        // Not JSON, treat as plain text
+                        redirectUrl = typeof result === 'string' ? result : String(result);
+                    }
+
+                    // Make sure redirectUrl is a string
+                    redirectUrl = String(redirectUrl);
+
+                    // Redirect if looks like URL
+                    if (redirectUrl.startsWith('http://') || redirectUrl.startsWith('https://')) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        // Fallback: asset route
+                        window.location.href = `/asset/${encodeURIComponent(redirectUrl)}`;
+                    }
+                },
+                {
+                    video: { deviceId: selectedCameraId, width: { ideal: 1280 }, height: { ideal: 720 } },
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
+                    maxScansPerSecond: 5
+                }
+            );
+
+            await scanner.start();
+            message.innerHTML = 'Point your camera at the QR code';
+
+        } catch (err) {
+            console.error(err);
+            if (err.name === 'NotAllowedError') {
+                message.innerHTML = '<span class="text-danger">Camera access denied. Please allow camera permissions.</span>';
+            } else if (err.name === 'NotFoundError') {
+                message.innerHTML = '<span class="text-danger">No camera found on this device.</span>';
+            } else {
+                message.innerHTML = `<span class="text-danger">Camera error: ${err.message}</span>`;
+            }
+        }
+    }
+
+    initScanner();
 </script>
+
 @endsection
