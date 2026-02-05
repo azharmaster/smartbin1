@@ -445,6 +445,29 @@ function trend($current, $previous) {
 }
 @endphp
 
+
+<!-- Floating Help Button -->
+        <button type="button" onclick="openHelp()" style="
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: #faa70c;
+                color: #fff;
+                border: none;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+                z-index: 999;
+            "
+            title="Help / User Guide"
+        >
+            ?
+        </button>
+
 <div class="d-flex flex-wrap">
     <div class="status-card card-total">
         <div class="status-body">
@@ -1129,7 +1152,145 @@ function renderChart(assetName) {
   </div>
 </div>
 
+<!-- Dashboard Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
 
+      <div class="modal-header">
+        <h5 class="modal-title">SMARTBIN Dashboard – User Guide</h5>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-tachometer-alt"></i> 1. Dashboard Overview</h6>
+        <p>
+          The SMARTBIN Dashboard provides a real-time overview of smart bin sensors, system status, notifications, 
+          and abnormal conditions. It allows administrators and supervisors to monitor bin conditions efficiently 
+          and take timely actions.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-th-large"></i> 2. Top Summary Cards</h6>
+        <p>Located at the top of the dashboard.</p>
+        <ul>
+          <li><strong>🔢 Total Sensors</strong>: Displays the total number of sensors registered in the system.</li>
+          <li><strong>🟥 Full Sensors</strong>: Shows bins that have reached full capacity. Immediate action may be required.</li>
+          <li><strong>🟨 Half-Full Sensors</strong>: Indicates bins that are partially filled. Used for monitoring upcoming collection needs.</li>
+          <li><strong>🟩 Empty Sensors</strong>: Shows bins that are currently empty.</li>
+          <li><strong>⚪ Undetected Sensors</strong>: Sensors that are offline, disconnected, or not reporting data.</li>
+        </ul>
+        <p>👉 Click “More info” on any card to view detailed sensor data.</p>
+
+        <hr>
+
+        <h6><i class="fas fa-chart-line"></i> 3. SmartBin Clear Time Chart</h6>
+        <p>Displays sensor clearing history.</p>
+        <ul>
+          <li>Line chart showing hours taken to clear bins.</li>
+          <li>Each line represents a sensor (TRX1-1, TRX1-2, TRX1-3).</li>
+          <li>X-axis: Clear sequence</li>
+          <li>Y-axis: Time (hours)</li>
+        </ul>
+        <p><strong>Dropdown Filter:</strong> Select a specific SmartBin unit (e.g., TRX SmartBin 01) to view its data.</p>
+        <p><strong>Purpose:</strong> Track cleaning efficiency, identify delays, and support operational decisions.</p>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-triangle"></i> 4. Abnormal / Undetected Sensors Panel</h6>
+        <p>Located on the right side of the dashboard. Displays sensors that are:</p>
+        <ul>
+          <li>Offline</li>
+          <li>Undetected</li>
+          <li>Sending abnormal readings</li>
+        </ul>
+        <p><strong>Information Shown:</strong> SmartBin name, Sensor ID (e.g., TRX1-1)</p>
+        <p><strong>Indicator:</strong> Red dot indicates critical attention required</p>
+        <p>👉 Action should be taken immediately to inspect the sensor or bin.</p>
+
+        <hr>
+
+        <h6><i class="fas fa-envelope"></i> 5. Notification Sent Panel</h6>
+        <p>Shows the notification status for the current day.</p>
+        <ul>
+          <li>Number of alerts sent</li>
+          <li>Message status</li>
+          <li>If no notifications: “No notifications sent today”</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-mobile-alt"></i> 6. WhatsApp Notification Control</h6>
+        <p>Allows administrators to control WhatsApp alerts.</p>
+        <ul>
+          <li><strong>ON</strong> – System sends WhatsApp alerts automatically</li>
+          <li><strong>OFF</strong> – Notifications are disabled</li>
+        </ul>
+        <p>Use Case: Enable alerts during operational hours, disable during maintenance or testing.</p>
+
+        <hr>
+
+        <h6><i class="fas fa-broadcast-tower"></i> 7. Sensor Lists</h6>
+        <p>Displays sensors under each SmartBin unit.</p>
+        <ul>
+          <li>SmartBin name</li>
+          <li>Sensor ID</li>
+          <li>Current fill percentage</li>
+        </ul>
+        <p>Example:</p>
+        <pre>
+            TRX SmartBin 01
+            Sensor 1 – 17%
+            Sensor 2 – 5%
+            Sensor 3 – 12%
+        </pre>
+
+        <hr>
+
+        <h6><i class="fas fa-users"></i> 8. Users Panel</h6>
+        <p>Shows system users and their roles.</p>
+        <ul>
+          <li>Columns: Name, Role (Admin / Supervisor), Phone Number, Actions</li>
+          <li>Action Buttons: 📞 Call user, 💬 WhatsApp user (quick communication during alerts)</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-calendar-alt"></i> 9. Calendar (Holiday & Event)</h6>
+        <p>Displays public holidays and scheduled events.</p>
+        <ul>
+          <li>Monthly & weekly view</li>
+          <li>Event labels (e.g., Chinese New Year)</li>
+          <li>Used for planning collection schedules</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-play-circle"></i> 10. Live Dashboard Button</h6>
+        <p>🟢 Live Dashboard opens real-time monitoring view and displays live sensor updates.</p>
+
+        <hr>
+
+        <h6><i class="fas fa-check-circle"></i> 11. Best Practices</h6>
+        <ul>
+          <li>✔ Check dashboard daily</li>
+          <li>✔ Monitor abnormal sensors immediately</li>
+          <li>✔ Keep notifications enabled</li>
+          <li>✔ Review clear time trends weekly</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+<!--OPEN HELP MODAL -->
+<script>
+function openHelp() {
+    $('#helpModal').modal('show');
+}
+</script>
 
 
 <script>
