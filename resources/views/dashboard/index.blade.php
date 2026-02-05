@@ -1261,7 +1261,7 @@ function renderChart(assetName) {
         <p>Displays public holidays and scheduled events.</p>
         <ul>
           <li>Monthly & weekly view</li>
-          <li>Event labels (e.g., Chinese New Year)</li>
+          <li>Event labels (e.g., Concert)</li>
           <li>Used for planning collection schedules</li>
         </ul>
 
