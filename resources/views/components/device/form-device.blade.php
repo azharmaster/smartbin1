@@ -40,7 +40,25 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Device ID</label>
-                        <input type="text" name="id_device" class="form-control" value="{{ $id_device }}">
+
+                        @if($isEdit)
+                            {{-- Show but lock --}}
+                            <input type="text"
+                                class="form-control"
+                                value="{{ $id_device }}"
+                                readonly>
+
+                            {{-- Hidden input so value is still submitted --}}
+                            <input type="hidden"
+                                name="id_device"
+                                value="{{ $id_device }}">
+                        @else
+                            {{-- Editable when adding --}}
+                            <input type="text"
+                                name="id_device"
+                                class="form-control"
+                                value="{{ $id_device }}">
+                        @endif
                     </div>
                     <div class="form-group">
                         <label>Device Name</label>

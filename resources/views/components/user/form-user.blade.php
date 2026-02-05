@@ -39,7 +39,7 @@
 
                 <!-- PHONE -->
                 <div class="form-group">
-                  <label for="phone">Phone | Ex: 60101234567</label>
+                  <label for="phone">Phone | Ex: 0101234567</label>
                   <input type="text" class="form-control" name="phone" id="phone" value="{{ $phone ?? '' }}">
                 </div>
 
