@@ -427,6 +427,10 @@
 </div>
 
 <script>
+function openAssetDetails(url) {
+    window.open(url, '_blank');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.querySelector('#static-device-grid .devices-grid');
     const filterSelect = document.getElementById('deviceFilter');
@@ -441,49 +445,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 filter === 'all' ||
                 (filter === 'critical' && ['full','half','empty'].includes(status)) ||
                 status === filter;
-            card.closest('.open-bin-modal').style.display = show ? '' : 'none';
+            card.style.display = show ? '' : 'none';
         });
     }
 
     // INITIAL FILTER
     applyFilter(currentFilter);
     filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
-
-    // BIN MODAL FETCH
-    const modalEl = document.getElementById('binDetailsModal');
-    const modalContent = document.getElementById('binModalContent');
-    const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
-
-    grid.addEventListener('click', e => {
-        const trigger = e.target.closest('.open-bin-modal');
-        if (!trigger || !modal || !modalContent) return;
-        e.preventDefault();
-
-        fetch(trigger.dataset.url)
-            .then(res => res.text())
-            .then(html => {
-                modalContent.innerHTML = html;
-                modal.show();
-            });
-    });
 });
 </script>
 
 @endsection
 
-{{-- BIN DETAILS MODAL (static container outside Livewire) --}}
-<div id="modals-root">
-    <div class="modal fade" id="binDetailsModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-dark">Bin Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="binModalContent">
-                    {{-- content loaded dynamically --}}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+function openAssetDetails(url) {
+    window.open(url, '_blank');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.querySelector('#static-device-grid .devices-grid');
+    const filterSelect = document.getElementById('deviceFilter');
+    let currentFilter = 'critical';
+
+    // FILTER FUNCTION
+    function applyFilter(filter = 'critical') {
+        currentFilter = filter;
+        grid.querySelectorAll('.device-card').forEach(card => {
+            const status = card.dataset.status;
+            const show =
+                filter === 'all' ||
+                (filter === 'critical' && ['full','half','empty'].includes(status)) ||
+                status === filter;
+            card.style.display = show ? '' : 'none';
+        });
+    }
+
+    // INITIAL FILTER
+    applyFilter(currentFilter);
+    filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
+});
+</script>
