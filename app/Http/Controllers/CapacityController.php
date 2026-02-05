@@ -4,31 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CapacitySetting;
+use App\Models\Asset;
 
 class CapacityController extends Controller
 {
     // Show the capacity page
     public function index()
     {
-        $capacity = CapacitySetting::first();
+        $assets = Asset::all();
 
-        // Create default if not exists
-        if (!$capacity) {
-            $capacity = CapacitySetting::create([
-                'empty_to' => 39,
-                'half_to' => 79,
-            ]);
-        }
+        // Get all capacities keyed by asset_id
+        $capacities = CapacitySetting::all()->keyBy('asset_id');
 
-        return view('capacity.index', compact('capacity'));
+        return view('capacity.index', compact('assets', 'capacities'));
     }
 
-    // Update the capacity settings
-    public function update(Request $request, $id)
+    // Update capacity (single asset or bulk)
+    public function update(Request $request)
     {
         $request->validate([
-            'empty_to' => 'required|integer|min:1|max:98',
-            'half_to'  => 'required|integer|min:2|max:99',
+            'empty_to' => 'required|integer|min:0|max:98',
+            'half_to'  => 'required|integer|min:1|max:99',
+            'asset_id' => 'nullable|exists:assets,id',
         ]);
 
         $emptyTo = $request->empty_to;
@@ -48,13 +45,23 @@ class CapacityController extends Controller
             ]);
         }
 
-        $capacity = CapacitySetting::findOrFail($id);
-        $capacity->update([
-            'empty_to' => $emptyTo,
-            'half_to' => $halfTo,
-        ]);
+        // If "apply to all" is checked, update all bins
+        if ($request->has('apply_all') && $request->apply_all) {
+            CapacitySetting::query()->update([
+                'empty_to' => $emptyTo,
+                'half_to'  => $halfTo,
+            ]);
+        } else {
+            // Update or create the selected bin's capacity
+            CapacitySetting::updateOrCreate(
+                ['asset_id' => $request->asset_id],
+                [
+                    'empty_to' => $emptyTo,
+                    'half_to'  => $halfTo,
+                ]
+            );
+        }
 
-        // Flash success message
         return back()->with('success', 'Capacity settings updated successfully.');
     }
 }

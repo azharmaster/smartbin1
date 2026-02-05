@@ -43,11 +43,37 @@
                     </div>
                 @endif
 
-                @if(isset($capacity))
+                @if(isset($assets) && $assets->count() > 0)
 
-                <form action="{{ route('capacity.update', $capacity->id) }}" method="POST" id="capacityForm">
+                <form action="{{ route('capacity.update') }}" method="POST" id="capacityForm">
                     @csrf
                     @method('PUT')
+
+                    <!-- Asset Selector -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Bin / Asset</label>
+                        <select name="asset_id" id="assetSelect" class="form-select">
+                            @foreach($assets as $asset)
+                                @php
+                                    $cap = $capacities[$asset->id] ?? null;
+                                @endphp
+                                <option value="{{ $asset->id }}"
+                                    data-empty="{{ $cap->empty_to ?? 39 }}"
+                                    data-half="{{ $cap->half_to ?? 85 }}"
+                                    {{ $capacities[$asset->id] ? 'selected' : '' }}>
+                                    {{ $asset->asset_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Apply to All Toggle -->
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="applyAll" name="apply_all">
+                        <label class="form-check-label fw-semibold" for="applyAll">
+                            Apply this setting to all bins
+                        </label>
+                    </div>
 
                     <!-- EMPTY SLIDER (GREEN) -->
                     <div class="mb-4">
@@ -58,7 +84,7 @@
                                    id="empty_to"
                                    class="form-range slider-green flex-grow-1"
                                    min="0" max="100"
-                                   value="{{ $capacity->empty_to }}">
+                                   value="{{ $capacity->empty_to ?? 40 }}">
                             <div class="d-flex flex-column gap-1">
                                 <button type="button" class="btn btn-success btn-sm" id="empty_plus">+</button>
                                 <button type="button" class="btn btn-success btn-sm" id="empty_minus">-</button>
@@ -66,7 +92,7 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-1">
                             <small class="text-muted">0</small>
-                            <strong id="empty_display" class="text-success">{{ $capacity->empty_to }}</strong>
+                            <strong id="empty_display" class="text-success">{{ $capacity->empty_to ?? 40 }}</strong>
                             <span id="empty_percent" class="badge bg-success ms-2"></span>
                         </div>
                         <small class="text-muted">Example: 0 - 39</small>
@@ -81,15 +107,15 @@
                                    id="half_to"
                                    class="form-range slider-yellow flex-grow-1"
                                    min="0" max="100"
-                                   value="{{ $capacity->half_to }}">
+                                   value="{{ $capacity->half_to ?? 79 }}">
                             <div class="d-flex flex-column gap-1">
                                 <button type="button" class="btn btn-warning btn-sm" id="half_plus">+</button>
                                 <button type="button" class="btn btn-warning btn-sm" id="half_minus">-</button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-1">
-                            <strong id="half_from_display">{{ $capacity->empty_to + 1 }}</strong>
-                            <strong id="half_to_display">{{ $capacity->half_to }}</strong>
+                            <strong id="half_from_display">{{ ($capacity->empty_to ?? 40) + 1 }}</strong>
+                            <strong id="half_to_display">{{ $capacity->half_to ?? 79 }}</strong>
                             <span id="half_percent" class="badge bg-warning text-dark ms-2"></span>
                         </div>
                         <small class="text-muted">Example: 40 - 79</small>
@@ -112,7 +138,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-1">
-                            <strong id="full_from_display" class="text-danger">{{ $capacity->half_to + 1 }}</strong>
+                            <strong id="full_from_display" class="text-danger">{{ ($capacity->half_to ?? 79) + 1 }}</strong>
                             <strong class="text-danger">100</strong>
                             <span id="full_percent" class="badge bg-danger ms-2"></span>
                         </div>
@@ -130,7 +156,7 @@
 
                 @else
                     <div class="alert alert-warning text-center rounded-3">
-                        No capacity configuration found.
+                        No assets found.
                     </div>
                 @endif
 
@@ -140,78 +166,8 @@
     </div>
 </div>
 
-<!-- Set Capacity Help Modal -->
-<div class="modal fade" id="capacityHelpModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Set Bin Capacity – User Guide</h5>
-      </div>
-
-      <div class="modal-body" style="font-size: 14px;">
-
-        <h6><i class="fas fa-tools"></i> Purpose</h6>
-        <p>
-          The <strong>Set Capacity</strong> page is used to define how full a bin is
-          based on percentage values.  
-          These rules apply to <strong>every bin</strong> in the system.
-        </p>
-
-        <hr>
-
-        <h6><i class="fas fa-chart-bar"></i> Capacity Levels</h6>
-        <ul>
-          <li>
-            <strong style="color:#2ecc71;">0 – 39%</strong> → Empty  
-            <br>
-            <small>The bin is considered empty and does not require action.</small>
-          </li>
-
-          <li class="mt-2">
-            <strong style="color:#f1c40f;">40 – 79%</strong> → Half Full  
-            <br>
-            <small>The bin is partially filled and should be monitored.</small>
-          </li>
-
-          <li class="mt-2">
-            <strong style="color:#e74c3c;">80 – 100%</strong> → Full  
-            <br>
-            <small>The bin is full and requires immediate attention.</small>
-          </li>
-        </ul>
-
-        <hr>
-
-        <h6><i class="fas fa-question-circle"></i> How to Use This Page</h6>
-        <ol>
-          <li>Set the percentage range for <strong>Empty</strong>, <strong>Half Full</strong>, and <strong>Full</strong>.</li>
-          <li>Make sure the ranges do not overlap.</li>
-          <li>Save the configuration.</li>
-        </ol>
-
-        <p>
-          Once saved, the system will automatically determine each bin’s status
-          and update the dashboard indicators.
-        </p>
-
-        <hr>
-
-        <h6><i class="fas fa-exclamation"></i> Important Notes</h6>
-        <ul>
-          <li>These settings affect <strong>all bins</strong>.</li>
-          <li>Wrong ranges may cause incorrect bin status.</li>
-          <li>Always keep values between <strong>0 – 100%</strong>.</li>
-        </ul>
-
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
 @endsection
+
 
 @push('styles')
 <style>
@@ -274,9 +230,14 @@ button.btn-sm {
 </style>
 @endpush
 
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const assetSelect = document.getElementById('assetSelect');
+    const applyAll = document.getElementById('applyAll');
+
+    // ===== Keep your slider JS =====
     const emptyInput = document.getElementById('empty_to');
     const halfInput = document.getElementById('half_to');
     const fullInput = document.getElementById('full_to');
@@ -331,7 +292,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.tagName === 'INPUT'){ e.preventDefault(); } });
 
-    updateValues();
+    assetSelect.addEventListener('change', function() {
+        const selectedOption = assetSelect.selectedOptions[0];
+        const empty = parseInt(selectedOption.dataset.empty);
+        const half = parseInt(selectedOption.dataset.half);
+
+        emptyInput.value = empty;
+        halfInput.value = half;
+
+        updateValues();
+    });
+
+    applyAll.addEventListener('change', e => {
+        assetSelect.disabled = e.target.checked;
+    });
+
+    (function initializeSliders() {
+        const selectedOption = assetSelect.selectedOptions[0];
+        const empty = parseInt(selectedOption.dataset.empty);
+        const half = parseInt(selectedOption.dataset.half);
+
+        emptyInput.value = empty;
+        halfInput.value = half;
+
+        updateValues();
+    })();
+
 });
 </script>
 @endpush

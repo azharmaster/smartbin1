@@ -319,11 +319,11 @@ Route::put('whatsapp/device/{device}/toggle', [WhatsAppNotificationController::c
 
 
 //Set Capacity Page
- Route::get('/capacity', [CapacityController::class, 'index'])
+Route::get('/capacity', [CapacityController::class, 'index'])
         ->name('capacity.index');
 
-    Route::put('/capacity/{id}', [CapacityController::class, 'update'])
-        ->name('capacity.update');
+Route::put('capacity', [CapacityController::class, 'update'])->name('capacity.update');
+
 
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
