@@ -175,57 +175,52 @@
 
       <div class="modal-body" style="font-size: 14px;">
 
-        <h6><i class="fas fa-tools"></i> Purpose</h6>
+        <h6><i class="fas fa-info-circle"></i> What Is This Page For?</h6>
         <p>
-          The <strong>Set Capacity</strong> page is used to define how full a bin is
-          based on percentage values.  
-          These rules apply to <strong>every bin</strong> in the system.
+          This page allows administrators to define how full each bin is based on
+          percentage values.  
+          These settings are used by the system to determine the bin status shown
+          on the dashboard and alerts.
         </p>
 
         <hr>
 
-        <h6><i class="fas fa-chart-bar"></i> Capacity Levels</h6>
+        <h6><i class="fas fa-layer-group"></i> Bin Capacity Status Levels</h6>
         <ul>
           <li>
-            <strong style="color:#2ecc71;">0 – 39%</strong> → Empty  
-            <br>
-            <small>The bin is considered empty and does not require action.</small>
+            <strong style="color:#2ecc71;">Empty (0 – 39%)</strong><br>
+            <small>The bin has plenty of space and does not require action.</small>
           </li>
 
           <li class="mt-2">
-            <strong style="color:#f1c40f;">40 – 79%</strong> → Half Full  
-            <br>
-            <small>The bin is partially filled and should be monitored.</small>
+            <strong style="color:#f1c40f;">Half Full (40 – 79%)</strong><br>
+            <small>The bin is filling up and should be monitored.</small>
           </li>
 
           <li class="mt-2">
-            <strong style="color:#e74c3c;">80 – 100%</strong> → Full  
-            <br>
-            <small>The bin is full and requires immediate attention.</small>
+            <strong style="color:#e74c3c;">Full (80 – 100%)</strong><br>
+            <small>The bin is full and requires immediate collection.</small>
           </li>
         </ul>
 
         <hr>
 
-        <h6><i class="fas fa-question-circle"></i> How to Use This Page</h6>
+        <h6><i class="fas fa-sliders-h"></i> How to Configure Capacity</h6>
         <ol>
-          <li>Set the percentage range for <strong>Empty</strong>, <strong>Half Full</strong>, and <strong>Full</strong>.</li>
-          <li>Make sure the ranges do not overlap.</li>
-          <li>Save the configuration.</li>
+          <li>Select the bin (asset) you want to configure.</li>
+          <li>Adjust the sliders to define the percentage ranges.</li>
+          <li>Ensure ranges do not overlap and follow logical order.</li>
+          <li>Enable <strong>Apply to all bins</strong> if the same rule should apply everywhere.</li>
+          <li>Click <strong>Save Capacity Settings</strong> to apply changes.</li>
         </ol>
-
-        <p>
-          Once saved, the system will automatically determine each bin’s status
-          and update the dashboard indicators.
-        </p>
 
         <hr>
 
-        <h6><i class="fas fa-exclamation"></i> Important Notes</h6>
+        <h6><i class="fas fa-exclamation-triangle"></i> Important Notes</h6>
         <ul>
-          <li>These settings affect <strong>all bins</strong>.</li>
-          <li>Wrong ranges may cause incorrect bin status.</li>
-          <li>Always keep values between <strong>0 – 100%</strong>.</li>
+          <li>Capacity values must stay between <strong>0 – 100%</strong>.</li>
+          <li>Incorrect ranges may cause wrong bin status on the dashboard.</li>
+          <li>Changes take effect immediately after saving.</li>
         </ul>
 
       </div>
