@@ -73,7 +73,7 @@ class AssetController extends Controller
         );
 
         toast()->success('Successfully Saved!');
-        return redirect()->route('master-data.assets.index');
+        return redirect()->back()->with('success', 'Asset updated.');
     }
 
     public function destroy(string $id)
