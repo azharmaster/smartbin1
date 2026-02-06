@@ -60,4 +60,13 @@ class Asset extends Model
     {
         return $this->hasMany(Complaint::class);
     }
+
+    public function capacitySetting()
+    {
+        return $this->hasOne(
+            CapacitySetting::class,
+            'asset_id', // FK in capacity_settings
+            'id'        // PK in assets
+        );
+    }
 }

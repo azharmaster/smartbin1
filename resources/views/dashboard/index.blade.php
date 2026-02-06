@@ -857,23 +857,27 @@ function trend($current, $previous) {
                     <!-- LEFT: ASSET NAME + SENSOR INFO -->
                     <div class="d-flex align-items-center flex-wrap gap-2">
                         <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
-
                         @foreach($asset->devices as $device)
                             @php
                                 $latest = $device->sensors->last();
                                 $level = $latest->capacity ?? null;
 
+                                $setting = $asset->capacitySetting;
+
+                                // Default safe values if no capacitySetting found
+                                $emptyTo = $setting->empty_to ?? 39;
+                                $halfTo  = $setting->half_to ?? 79;
+
                                 $badge = match (true) {
                                     $level === null => 'secondary',
-                                    $level > $halfMax => 'danger',
-                                    $level > $emptyMax => 'warning',
+                                    $level > $halfTo => 'danger',
+                                    $level > $emptyTo => 'warning',
                                     default => 'success',
                                 };
                             @endphp
 
                             <span class="badge bg-{{ $badge }}">
-                                {{ $device->device_name }}
-                                -
+                                {{ $device->device_name }} -
                                 {{ $level !== null ? $level.'%' : 'Undetected' }}
                             </span>
                         @endforeach

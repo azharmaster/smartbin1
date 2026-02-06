@@ -38,10 +38,6 @@ class Device extends Model
         );
     }
 
-    /**
-     * Get the latest Sensor reading for this Device
-     * This allows $device->latestSensor to get the most recent sensor data
-     */
     public function latestSensor()
     {
         return $this->hasOne(

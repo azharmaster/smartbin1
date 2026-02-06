@@ -30,17 +30,7 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Load devices and capacity settings
         $devices = $this->loadDevicesWithLatestSensor();
-        $capacity = CapacitySetting::first();
-        $emptyMax = $capacity->empty_to;
-        $halfMax  = $capacity->half_to;
-
-        // Device statistics
-        $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
-
-        // Trend calculation
-        //$trendStats = $this->getTrendStats($devices, $emptyMax, $halfMax);
 
         // Floors and assets
         $floors = Floor::all();
@@ -60,7 +50,7 @@ class DashboardController extends Controller
         $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 
         // Smart bin clear times
-        $smartBinClearTimes = $this->calculateSmartBinClearTimes($emptyMax, $halfMax);
+        $smartBinClearTimes = $this->calculateSmartBinClearTimes();
 
         // Calendar
         $calendarCombined = $this->getCalendarEvents();
@@ -68,12 +58,10 @@ class DashboardController extends Controller
         // Today's notifications
         $todayNotifications = $this->getTodayNotifications();
 
-        $deviceStats = $this->getDeviceStats($devices, $emptyMax, $halfMax);
-        //$trendStats  = $this->getTrendStats($devices, $emptyMax, $halfMax);
+        $deviceStats = $this->getDeviceStats($devices);
         $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
         $abnormalBins = $this->getAbnormalBins();
-//'totalTrend' => $trendStats['totalTrend'],
         return view('dashboard.index', array_merge($deviceStats, [
             
             'todos' => $this->loadTodosForUser(Auth::id()),
@@ -84,14 +72,12 @@ class DashboardController extends Controller
             'assignedTasks' => $this->loadAssignedTasks(),
             'latestComplaints' => $this->loadLatestComplaints(),
             'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
-            'smartBinClearTimes' => $this->calculateSmartBinClearTimes($emptyMax, $halfMax),
+            'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
             'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
             'calendarCombined' => $this->getCalendarEvents(),
             'todayNotifications' => $this->getTodayNotifications(),
             'whatsappNotificationActive'=> $whatsappNotificationActive,
             'abnormalBins' => $abnormalBins,
-            'emptyMax' => $emptyMax,
-            'halfMax'  => $halfMax,
             'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
         ]));
     }
@@ -189,47 +175,30 @@ class DashboardController extends Controller
     }
 
     /** Device statistics */
-    private function getDeviceStats($devices, $emptyMax, $halfMax): array
-    {
-        return [
-            'totalDevices' => $devices->count(),
-            'fullDevicesCollection' => $this->countFullDevices($devices, $halfMax),
-            'fullDevices' => $this->countFullDevices($devices, $halfMax)->count(),
-            'halfDevicesCollection' => $this->countHalfDevices($devices, $emptyMax, $halfMax),
-            'halfDevices' => $this->countHalfDevices($devices, $emptyMax, $halfMax)->count(),
-            'emptyDevices' => $this->countEmptyDevices($devices, $emptyMax),
-            'undetectedDevices' => $this->countUndetectedDevicesFromAbnormalBins(),
-        ];
-    }
+private function getDeviceStats($devices): array
+{
+    $fullDevices  = $this->countFullDevices($devices);
+    $halfDevices  = $this->countHalfDevices($devices);
+    $emptyDevices = $this->countEmptyDevices($devices);
 
-    /** Trend calculation */
-    // private function getTrendStats($currentDevices, $emptyMax, $halfMax): array
-    // {
-    //     $lastMonth = Carbon::now()->subMonth();
-    //     $previousDevices = $this->loadDevicesWithLatestSensor($lastMonth);
+    // Count undetected separately (no latest sensor or too old)
+    $undetectedDevices = $this->countUndetectedDevicesFromAbnormalBins();
 
-    //     $trend = fn($current, $previous) => [
-    //         'icon'  => $current > $previous ? '▲' : ($current < $previous ? '▼' : '—'),
-    //         'value' => abs($current - $previous),
-    //         'class' => $current > $previous ? 'text-success' : ($current < $previous ? 'text-danger' : 'text-muted'),
-    //     ];
+    return [
+        'totalDevices' => $devices->count(),
 
-    //     $totalTrend = $trend($currentDevices->count(), $previousDevices->count());
+        'fullDevicesCollection' => $fullDevices,
+        'fullDevices' => $fullDevices->count(),
 
-    //     return [
-    //         'totalTrend' => $totalTrend,
-    //         'currentTotal' => $currentDevices->count(),
-    //         'previousTotal' => $previousDevices->count(),
-    //         'currentFull' => $this->countFullDevices($currentDevices, $halfMax)->count(),
-    //         'previousFull' => $this->countFullDevices($previousDevices, $halfMax)->count(),
-    //         'currentHalf' => $this->countHalfDevices($currentDevices, $emptyMax, $halfMax)->count(),
-    //         'previousHalf' => $this->countHalfDevices($previousDevices, $emptyMax, $halfMax)->count(),
-    //         'currentEmpty' => $this->countEmptyDevices($currentDevices, $emptyMax),
-    //         'previousEmpty' => $this->countEmptyDevices($previousDevices, $emptyMax),
-    //         'currentUndetected' => $this->countUndetectedDevices($currentDevices),
-    //         'previousUndetected' => $this->countUndetectedDevices($previousDevices),
-    //     ];
-    // }
+        'halfDevicesCollection' => $halfDevices,
+        'halfDevices' => $halfDevices->count(),
+
+        'emptyDevicesCollection' => $emptyDevices,
+        'emptyDevices' => $emptyDevices->count(),
+
+        'undetectedDevices' => $undetectedDevices,
+    ];
+}
 
     /** Combine holidays and events for calendar */
     private function getCalendarEvents()
@@ -282,46 +251,62 @@ class DashboardController extends Controller
     }
 
     /** Load devices with latest sensor and optional before date */
-    private function loadDevicesWithLatestSensor($before = null)
-    {
-        return Device::with([
-            'asset.floor',
-            'latestSensor' => function ($q) use ($before) {
-                if ($before) {
-                    $q->where('time', '<=', $before);
-                }
+private function loadDevicesWithLatestSensor($before = null)
+{
+    return Device::with([
+        'asset.floor',
+        'asset.capacitySetting', 
+        'latestSensor' => function ($q) use ($before) {
+            if ($before) {
+                $q->where('time', '<=', $before);
             }
-        ])->get();
-    }
+        }
+    ])->get();
+}
 
-    private function countFullDevices($devices, $halfMax)
-    {
-        return $devices->filter(fn($d) =>
-            $d->latestSensor &&
-            is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > $halfMax
-        );
-    }
 
-    private function countHalfDevices($devices, $emptyMax, $halfMax)
-    {
-        return $devices->filter(fn($d) =>
-            $d->latestSensor &&
-            is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > $emptyMax &&
-            $d->latestSensor->capacity <= $halfMax
-        );
-    }
+private function countFullDevices($devices)
+{
+    return $devices->filter(function ($device) {
+        $sensor = $device->latestSensor;
+        $capacitySetting = $device->asset->capacitySetting ?? null;
 
-    private function countEmptyDevices($devices, $emptyMax)
-    {
-        return $devices->filter(fn($d) =>
-            $d->latestSensor &&
-            is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity <= $emptyMax
-        )->count();
-    }
+        if (!$sensor || !is_numeric($sensor->capacity) || !$capacitySetting) {
+            return false; // cannot categorize without reading or capacity settings
+        }
 
+        return $sensor->capacity > $capacitySetting->half_to;
+    });
+}
+
+private function countHalfDevices($devices)
+{
+    return $devices->filter(function ($device) {
+        $sensor = $device->latestSensor;
+        $capacitySetting = $device->asset->capacitySetting ?? null;
+
+        if (!$sensor || !is_numeric($sensor->capacity) || !$capacitySetting) {
+            return false;
+        }
+
+        return $sensor->capacity > $capacitySetting->empty_to
+            && $sensor->capacity <= $capacitySetting->half_to;
+    });
+}
+
+private function countEmptyDevices($devices)
+{
+    return $devices->filter(function ($device) {
+        $sensor = $device->latestSensor;
+        $capacitySetting = $device->asset->capacitySetting ?? null;
+
+        if (!$sensor || !is_numeric($sensor->capacity) || !$capacitySetting) {
+            return false;
+        }
+
+        return $sensor->capacity <= $capacitySetting->empty_to;
+    });
+}
     // private function countUndetectedDevices($devices)
     // {
     //     return $devices->filter(function($d) {
@@ -403,7 +388,7 @@ class DashboardController extends Controller
         ]);
     }
 
-private function calculateSmartBinClearTimes($emptyMax, $halfMax)
+private function calculateSmartBinClearTimes()
 {
     $result = [];
 
@@ -416,24 +401,24 @@ private function calculateSmartBinClearTimes($emptyMax, $halfMax)
     ])->get();
 
     foreach ($devices as $device) {
-        if (!$device->asset) continue;
+        if (!$device->asset || !$device->capacitySetting) continue;
 
+        $capacity = $device->capacitySetting;
         $fullTimestamp = null;
         $clears = [];
 
         foreach ($device->sensors as $sensor) {
-            // Bin becomes FULL
-            if ($sensor->capacity > $halfMax && $fullTimestamp === null) {
+
+            if (!is_numeric($sensor->capacity)) continue;
+
+            if ($sensor->capacity > $capacity->half_to && $fullTimestamp === null) {
                 $fullTimestamp = $sensor->time;
                 continue;
             }
 
-            // Bin is CLEARED
-            if ($fullTimestamp && $sensor->capacity <= $emptyMax) {
-
+            if ($fullTimestamp && $sensor->capacity <= $capacity->empty_to) {
                 $clearTime = Carbon::parse($sensor->time);
 
-                // Only include clears in the current week
                 if ($clearTime->between($startOfWeek, $endOfWeek)) {
                     $minutes = Carbon::parse($fullTimestamp)
                         ->diffInMinutes($clearTime);
@@ -452,7 +437,6 @@ private function calculateSmartBinClearTimes($emptyMax, $halfMax)
             $result[$device->asset->asset_name][$device->device_name] = $clears;
         }
     }
-
     return collect($result);
 }
 }
