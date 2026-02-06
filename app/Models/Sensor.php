@@ -39,17 +39,17 @@ class Sensor extends Model
     
     /**
      * Calculate battery percentage from voltage
-     * 
+     *
      * @return int Battery percentage based on voltage
      */
     public function getBatteryPercentageAttribute()
     {
         $voltage = $this->battery;
-        
+
         if ($voltage === null) {
             return 0;
         }
-        
+
         // Voltage to percentage mapping
         // Conditions are evaluated in order, so once a condition is met,
         // the rest are not checked
@@ -75,6 +75,33 @@ class Sensor extends Model
             return 1;
         } else {
             return 0;
+        }
+    }
+
+    /**
+     * Get network strength based on RSRP value
+     *
+     * @return string Network strength indicator
+     */
+    public function getNetworkStrengthAttribute()
+    {
+        $rsrp = $this->rsrp;
+
+        if ($rsrp === null) {
+            return 'Unknown';
+        }
+
+        // Convert to numeric for comparison
+        $rsrpValue = (float)$rsrp;
+
+        if ($rsrpValue > -80) {
+            return 'Strong';
+        } elseif ($rsrpValue >= -100) {
+            return 'Normal';
+        } elseif ($rsrpValue >= -110) {
+            return 'Week';
+        } else {
+            return 'Very Week';
         }
     }
 }

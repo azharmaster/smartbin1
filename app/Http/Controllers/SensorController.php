@@ -25,14 +25,22 @@ class SensorController extends Controller
         $perPage = $request->input('perPage', 10);
         $sensors = $query->paginate($perPage)->withQueryString(); // preserves search in pagination links
 
-        $latestPerDevice = Sensor::select('device_id', 'capacity', 'created_at')
+        $latestPerDevice = Sensor::select('device_id', 'capacity', 'created_at', 'rsrp', 'nsr')
             ->whereIn('id', function ($q) {
                 $q->select(DB::raw('MAX(id)'))
                 ->from('sensors')
                 ->groupBy('device_id');
             })
             ->orderBy('device_id')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                $sensor = new Sensor([
+                    'rsrp' => $item->rsrp,
+                    'nsr' => $item->nsr
+                ]);
+                $item->network_strength = $sensor->network_strength;
+                return $item;
+            });
 
         return view('sensors.index', compact('sensors', 'latestPerDevice'));
     }

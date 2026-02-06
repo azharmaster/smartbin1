@@ -148,6 +148,7 @@
                         <th>Capacity</th>
                         <th>RSRP</th>
                         <th>SNR</th>
+                        <th>Network Strength</th>
                         <th>Time</th>
                     </tr>
                 </thead>
@@ -161,6 +162,19 @@
                         <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->rsrp }}</td>
                         <td>{{ $sensor->nsr }}</td>
+                        <td>
+                            @if($sensor->network_strength === 'Strong')
+                                <span class="badge bg-success">{{ $sensor->network_strength }}</span>
+                            @elseif($sensor->network_strength === 'Normal')
+                                <span class="badge bg-info">{{ $sensor->network_strength }}</span>
+                            @elseif($sensor->network_strength === 'Week')
+                                <span class="badge bg-warning">{{ $sensor->network_strength }}</span>
+                            @elseif($sensor->network_strength === 'Very Week')
+                                <span class="badge bg-danger">{{ $sensor->network_strength }}</span>
+                            @else
+                                <span class="badge bg-secondary">{{ $sensor->network_strength }}</span>
+                            @endif
+                        </td>
                         <td>{{ $sensor->created_at }}</td>
                     </tr>
                     @endforeach
@@ -223,7 +237,7 @@
               </ul>
               <em>Example:</em> RSRP = -80 dBm means the device has a good signal.</em>
           </li>
-          <li><strong>NSR</strong>: Noise-to-Signal Ratio – measures signal quality relative to interference in dB. 
+          <li><strong>NSR</strong>: Noise-to-Signal Ratio – measures signal quality relative to interference in dB.
               <br>
               <strong>Interpretation:</strong>
               <ul>
@@ -235,6 +249,15 @@
                 <li>2 dB → Poor quality / prone to errors</li>
               </ul>
               <em>Example:</em> NSR = 12 dB means the device has good signal quality.</em>
+          </li>
+          <li><strong>Network Strength</strong>: Visual indicator of network connection quality based on RSRP value:
+              <br>
+              <ul>
+                <li><strong>Strong</strong>: RSRP > -80 dBm (Excellent connection)</li>
+                <li><strong>Normal</strong>: RSRP between -80 and -100 dBm (Good connection)</li>
+                <li><strong>Week</strong>: RSRP between -100 and -110 dBm (Fair connection)</li>
+                <li><strong>Very Week</strong>: RSRP < -110 dBm (Poor connection)</li>
+              </ul>
           </li>
           <li><strong>Time</strong>: Timestamp of the latest data reading from the device.</li>
         </ul>
