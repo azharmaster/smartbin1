@@ -392,12 +392,40 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                                 y="{{ $comp['capacityTextY'] }}"
                                                 text-anchor="middle"
                                                 fill="#000"
-                                                font-size="13"
+                                                font-size="11"
                                                 font-weight="600"
                                                 pointer-events="none"
                                             >
                                                 {{ $comp['capacity'] }}%
                                             </text>
+                                            <text
+                                                x="{{ $comp['labelPos'][0] }}"
+                                                y="{{ $comp['capacityTextY'] + 12 }}"
+                                                text-anchor="middle"
+                                                fill="#000"
+                                                font-size="10"
+                                                font-weight="normal"
+                                                pointer-events="none"
+                                            >
+                                                {{ number_format($comp['battery'], 2) }}V ({{ $comp['battery_percentage'] }}%)
+                                            </text>
+                                            @if($comp['battery_status'] == 'recommended_replacement')
+                                                <circle
+                                                    cx="{{ $comp['labelPos'][0] - 15 }}"
+                                                    cy="{{ $comp['capacityTextY'] - 15 }}"
+                                                    r="4"
+                                                    fill="orange"
+                                                    title="Battery replacement recommended"
+                                                />
+                                            @elseif($comp['battery_status'] == 'required_replacement')
+                                                <circle
+                                                    cx="{{ $comp['labelPos'][0] - 15 }}"
+                                                    cy="{{ $comp['capacityTextY'] - 15 }}"
+                                                    r="4"
+                                                    fill="red"
+                                                    title="Battery replacement required"
+                                                />
+                                            @endif
                                         @endforeach
 
                                         <!-- Compartment outlines and device names -->
@@ -484,16 +512,20 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     $capacityColor = $capacityValue <= $capacitySetting->empty_to ? '#1b4f1f' :
                                                     ($capacityValue <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c');
 
-                                    // Battery value and color
-                                    $batteryValue = $sensor?->battery ?? 0;
-                                    if ($batteryValue <= 20) {
-                                        $batteryColor = '#ff0000'; // red
-                                    } elseif ($batteryValue <= 50) {
-                                        $batteryColor = '#f97316'; // orange
-                                    } elseif ($batteryValue <= 80) {
-                                        $batteryColor = '#facc15'; // yellow
+                                    // Battery value (treating as voltage) and color
+                                    $batteryVoltage = $sensor?->battery ?? 0;
+                                    $batteryPercentage = $this->voltageToPercentage($batteryVoltage);
+                                    $batteryStatus = $this->getBatteryStatus($batteryVoltage);
+
+                                    // Determine battery color based on voltage
+                                    if ($batteryVoltage <= 3.1) {
+                                        $batteryColor = '#ff0000'; // red - low battery
+                                    } elseif ($batteryVoltage <= 3.3) {
+                                        $batteryColor = '#f97316'; // orange - medium low
+                                    } elseif ($batteryVoltage <= 3.5) {
+                                        $batteryColor = '#facc15'; // yellow - medium
                                     } else {
-                                        $batteryColor = '#10b981'; // green
+                                        $batteryColor = '#10b981'; // green - good
                                     }
 
                                     // RSRP value and color (wifi)
@@ -581,7 +613,12 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     ">
                                         <div>
                                             <i class="fas fa-battery-full" style="color: {{ $batteryColor }};" title="Battery level"></i>
-                                            <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong>
+                                            <strong>{{ number_format($batteryVoltage, 2) }}V ({{ $batteryPercentage }}%)</strong>
+                                            @if($batteryStatus == 'recommended_replacement')
+                                                <br><small style="color: orange;">Battery replacement recommended</small>
+                                            @elseif($batteryStatus == 'required_replacement')
+                                                <br><small style="color: red;">Battery replacement required</small>
+                                            @endif
                                         </div>
                                         <div>
                                             <i class="fas fa-trash-alt" style="color: {{ $capacityColor }};" title="Current capacity"></i>

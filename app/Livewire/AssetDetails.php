@@ -147,13 +147,19 @@ class AssetDetails extends Component
             $deviceNameY = $topCompLeft[1] - 6;
             $capacityTextY = $labelY + 8;
 
+            $batteryVoltage = $sensor?->battery ?? 0;
+            $batteryPercentage = $this->voltageToPercentage($batteryVoltage);
+            $batteryStatus = $this->getBatteryStatus($batteryVoltage);
+
             $this->compartments[] = [
                 'outline' => [$topCompLeft, $topCompRight, $bottomCompRight, $bottomCompLeft],
                 'fill' => [$fillTopLeft, $fillTopRight, $bottomCompRight, $bottomCompLeft],
                 'color' => $color,
                 'label' => $device->device_name,
                 'capacity' => $capacity,
-                'battery' => $sensor?->battery,
+                'battery' => $batteryVoltage,
+                'battery_percentage' => $batteryPercentage,
+                'battery_status' => $batteryStatus,
                 'rsrp' => $sensor?->rsrp,
                 'lastUpdated' => $sensor?->created_at,
                 'labelPos' => [$labelX, $labelY],
@@ -168,6 +174,48 @@ class AssetDetails extends Component
         if ($capacity <= $this->capacitySetting->empty_to) return '#1b4f1f';
         if ($capacity <= $this->capacitySetting->half_to) return '#f2c224';
         return '#e74c3c';
+    }
+
+    /**
+     * Convert battery voltage to percentage based on the provided mapping
+     */
+    protected function voltageToPercentage($voltage)
+    {
+        if ($voltage >= 3.7) {
+            return 100;
+        } elseif ($voltage >= 3.6) {
+            return 98;
+        } elseif ($voltage >= 3.5) {
+            return 95;
+        } elseif ($voltage >= 3.4) {
+            return 80;
+        } elseif ($voltage >= 3.3) {
+            return 20;
+        } elseif ($voltage >= 3.2) {
+            return 10;
+        } elseif ($voltage >= 3.1) {
+            return 8;
+        } elseif ($voltage >= 3.0) {
+            return 5;
+        } elseif ($voltage >= 2.9) {
+            return 3;
+        } else {
+            return 1;
+        }
+    }
+
+    /**
+     * Get battery status based on voltage
+     */
+    protected function getBatteryStatus($voltage)
+    {
+        if ($voltage <= 3.2) {
+            return 'recommended_replacement';
+        } elseif ($voltage <= 3.1) {
+            return 'required_replacement';
+        } else {
+            return 'normal';
+        }
     }
 
     public function updatePosition($assetId, $x, $y)
