@@ -1,8 +1,8 @@
 @props(['id' => null, 'name' => null, 'email' => null, 'role' => null, 'phone' => null])
 
 <div>
-   <button type="button" 
-        class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
+    <button type="button" 
+        class="{{ $id ? 'btn btn-outline-secondary' : 'btn btn-primary' }}"
         data-toggle="modal" data-target="#formUser{{ $id ?? '' }}">
         <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
         {{ $id ? '' : 'Add' }}
