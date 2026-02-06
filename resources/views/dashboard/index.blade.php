@@ -875,11 +875,16 @@ function trend($current, $previous) {
                                     default => 'success',
                                 };
                             @endphp
+                            <div class="d-flex flex-column">
+                                <span class="badge bg-{{ $badge }}">
+                                    {{ $device->device_name }} -
+                                    {{ $level !== null ? $level.'%' : 'Undetected' }}
+                                </span>
 
-                            <span class="badge bg-{{ $badge }}">
-                                {{ $device->device_name }} -
-                                {{ $level !== null ? $level.'%' : 'Undetected' }}
-                            </span>
+                                <small class="text-muted mt-1" style="font-size: 0.7rem;">
+                                    {{ $latest?->created_at?->diffForHumans() ?? '—' }}
+                                </small>
+                            </div>
                         @endforeach
                     </div>
 
