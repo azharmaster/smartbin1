@@ -157,7 +157,7 @@
                         <!-- Correct numbering across pages -->
                         <td>{{ $sensors->firstItem() + $index }}</td>
                         <td>{{ $sensor->device_id }}</td>
-                        <td>{{ $sensor->battery }}%</td>
+                        <td>{{ $sensor->battery_percentage }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->rsrp }}</td>
                         <td>{{ $sensor->nsr }}</td>
