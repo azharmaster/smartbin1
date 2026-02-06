@@ -4,11 +4,11 @@
         <span class="brand-text">{{ env('APP_NAME') }}</span>
     </a> -->
     <a href="" class="brand-link brand-app text-center d-flex align-items-center justify-content-center">
-    <img src="{{ asset('uploads/images/logo_white.png') }}"
-         alt="Logo" class="brand-logo-img" style="height:20px;">
-    <img src="{{ asset('uploads/images/smartbin-tex.png') }}"
-         alt="Text" class="brand-text-img ms-2" style="height:20px;">
-</a>
+        <img src="{{ asset('uploads/images/logo_white.png') }}"
+             alt="Logo" class="brand-logo-img" style="height:20px;">
+        <img src="{{ asset('uploads/images/smartbin-tex.png') }}"
+             alt="Text" class="brand-text-img ms-2" style="height:20px;">
+    </a>
 
     <!-- Sidebar -->
     <nav class="mt-2 sidebar">
@@ -47,8 +47,8 @@
                         <form method="POST" action="{{ route('logout') }}" class="w-100">
                             @csrf
                             <a href="#"
-                            class="nav-link logout-link"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
+                               class="nav-link logout-link"
+                               onclick="event.preventDefault(); this.closest('form').submit();">
                                 <i class="nav-icon {{ $route['icon'] }}"></i>
                                 <p>{{ $route['label'] }}</p>
                             </a>
@@ -68,7 +68,7 @@
         </ul>
     </nav>
 </aside>
-    <!-- /.sidebar-menu -->
+<!-- /.sidebar-menu -->
 
 <style>
 /* ===== Brand logo behavior ===== */
@@ -91,8 +91,6 @@ body.sidebar-collapse .brand-text-img {
 body.sidebar-collapse .brand-link {
     justify-content: center !important;
 }
-
-
 
 /* Base sidebar */
 .main-sidebar {
@@ -167,9 +165,9 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     left: 0;
     top: 0;
     height: 100%;
-    width: 4px; /* slightly thicker */
-    background: #717b75; /* brighter green for visibility */
-    border-radius: 0 4px 4px 0; /* rounded edges on the right */
+    width: 4px;
+    background: #717b75;
+    border-radius: 0 4px 4px 0;
     transition: background 0.3s ease, height 0.3s ease;
 }
 
@@ -199,6 +197,36 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
 .logout-link i,
 .logout-link:hover i {
     color: #ffffff !important;
+}
+
+/* ============================= */
+/* ✅ SCROLLABLE SIDEBAR (NEW)   */
+/* ============================= */
+
+.main-sidebar {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-sidebar .sidebar {
+    height: calc(100vh - 70px); /* adjust if brand height changes */
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+}
+
+/* Optional: nice scrollbar */
+.main-sidebar .sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+}
+
+.main-sidebar .sidebar::-webkit-scrollbar-track {
+    background: transparent;
 }
 </style>
 
