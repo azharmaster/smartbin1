@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\CapacitySetting;
 use App\Models\Floor;
 use App\Models\Device;
+use App\Models\Sensor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -21,13 +22,17 @@ class AssetDetails extends Component
     public $weeklyChartValues = [];
     public $weeklyChartMin = [];
     public $weeklyChartMax = [];
-
     public $weeklySensorDatasets = [];
+    public $deviceStatuses = [];
 
     public function mount($asset)
     {
         if (is_numeric($asset)) {
-            $this->asset = Asset::with(['floor', 'devices.sensors'])->findOrFail($asset);
+            $this->asset = Asset::with([
+                'floor',
+                'capacitySetting',      // ✅ IMPORTANT
+                'devices.sensors',
+            ])->findOrFail($asset);
         } elseif ($asset instanceof Asset) {
             $this->asset = $asset->load(['floor', 'devices.sensors']);
         } else {
@@ -37,6 +42,11 @@ class AssetDetails extends Component
         $this->capacitySetting = CapacitySetting::first();
         $this->allAssets = Asset::all();
         $this->floors = Floor::orderBy('floor_name')->get();
+
+        $this->deviceStatuses = [];
+        foreach ($this->asset->devices as $device) {
+            $this->deviceStatuses[$device->id_device] = $this->getLastFullAndClear($device, $this->asset->capacitySetting->half_to, $this->asset->capacitySetting->empty_to);
+        }
 
         $this->prepareCompartments();
         $this->prepareDailyChart();
@@ -242,5 +252,36 @@ class AssetDetails extends Component
             'compartments' => $this->compartments,
             'assets' => $this->allAssets,
         ]);
+    }
+
+    private function getLastFullAndClear(Device $device, float $full_threshold, float $empty_threshold): array
+    {
+        $sensors = $device->sensors()
+            ->whereNotNull('capacity')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $lastFull = null;
+        $lastClear = null;
+
+        foreach ($sensors as $sensor) {
+            $isFull  = $sensor->capacity >= $full_threshold;
+            $isClear = $sensor->capacity <= $empty_threshold;
+
+            // Track last full independently
+            if ($isFull) {
+                $lastFull = $sensor->created_at;
+            }
+
+            // Track last clear independently (latest clear reading)
+            if ($isClear) {
+                $lastClear = $sensor->created_at;
+            }
+        }
+
+        return [
+            'last_full'  => $lastFull,
+            'last_clear' => $lastClear,
+        ];
     }
 }

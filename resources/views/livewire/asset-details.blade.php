@@ -596,13 +596,21 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                             </button>
                                         </form>
                                     </div>
-
+                                    @php
+                                        $status = $deviceStatuses[$device->id_device] ?? ['last_full' => null, 'last_clear' => null];
+                                    @endphp
                                     {{-- Device name --}}
                                     <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #121010;">
                                         {{ $device->device_name }}
                                     </h3>
-                                    <p style="margin: 2px 0 10px; font-size: 12px; color: #777;">
+                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
                                         Last updated: {{ $sensor?->created_at ?? 'N/A' }}
+                                    </p>
+                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
+                                        Last full: {{ $status['last_full'] ? \Carbon\Carbon::parse($status['last_full'])->format('Y-m-d H:i') : 'Never' }}
+                                    </p>
+                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
+                                        Last clear: {{ $status['last_clear'] ? \Carbon\Carbon::parse($status['last_clear'])->format('Y-m-d H:i') : 'Never' }}
                                     </p>
                                     <div style="
                                         display: grid;
