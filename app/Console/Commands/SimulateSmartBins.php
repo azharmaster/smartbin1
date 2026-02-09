@@ -54,14 +54,21 @@ class SimulateSmartBins extends Command
                 $newCapacity = rand(0, 10);
             }
 
+            // Generate random values for rsrp and nsr
+            $rsrp = rand(0, 1) ? -90 : -95;             // either -90 or -95
+            $nsr  = collect([0, -5, -10])->random();    // 0, -5, or -10
+
             // Insert dummy sensor reading
             Sensor::create([
                 'device_id' => $device->id_device,
                 'capacity'  => $newCapacity,
+                'battery'   => 95,
+                'rsrp'      => $rsrp,
+                'nsr'       => $nsr,
                 'time'      => $now,
             ]);
 
-            $this->info("✅ {$device->device_name} → Capacity: {$newCapacity}% inserted");
+            $this->info("✅ {$device->device_name} → Capacity: {$newCapacity}%, Battery: 95, RSRP: {$rsrp}, NSR: {$nsr}");
         }
 
         $this->info("🎉 Gradual simulation completed. No notifications were sent.");
