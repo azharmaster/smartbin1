@@ -604,13 +604,12 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                         {{ $device->device_name }}
                                     </h3>
                                     <p style="margin: 2px 0; font-size: 12px; color: #777;">
-                                        Last updated: {{ $sensor?->created_at ?? 'N/A' }}
+                                        <i class="fas fa-trash-alt" style="color: red"></i> 
+                                        {{ $status['last_full'] ? \Carbon\Carbon::parse($status['last_full'])->format('Y-m-d H:i') : 'Never' }}
                                     </p>
                                     <p style="margin: 2px 0; font-size: 12px; color: #777;">
-                                        Last full: {{ $status['last_full'] ? \Carbon\Carbon::parse($status['last_full'])->format('Y-m-d H:i') : 'Never' }}
-                                    </p>
-                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
-                                        Last clear: {{ $status['last_clear'] ? \Carbon\Carbon::parse($status['last_clear'])->format('Y-m-d H:i') : 'Never' }}
+                                        <i class="fas fa-trash-restore" style="color: green"></i> 
+                                        {{ $status['last_clear'] ? \Carbon\Carbon::parse($status['last_clear'])->format('Y-m-d H:i') : 'Never' }}
                                     </p>
                                     <div style="
                                         display: grid;
@@ -645,6 +644,9 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                 @endforeach
                             </div>
                         </div>
+                        <p style="font-size: 12px; color: #777;">
+                            Last updated: {{ $sensor?->created_at ?? 'N/A' }}
+                        </p>
                     </div>
                 </div>
             </div>

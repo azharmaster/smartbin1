@@ -62,7 +62,7 @@ class SimulateSmartBins extends Command
             Sensor::create([
                 'device_id' => $device->id_device,
                 'capacity'  => $newCapacity,
-                'battery'   => 95,
+                'battery'   => 3.5,
                 'rsrp'      => $rsrp,
                 'nsr'       => $nsr,
                 'time'      => $now,
