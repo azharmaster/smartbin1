@@ -55,12 +55,21 @@
                             @foreach($assets as $asset)
                                 @php
                                     $cap = $capacities[$asset->id] ?? null;
+
+                                    // Defaults if no capacity set
+                                    $emptyDefault = $cap->empty_to ?? 40;
+                                    $halfDefault  = $cap->half_to  ?? 84;
+                                    $fullDefault  = $cap->full_to  ?? 100;
+
+                                    $noCapacityLabel = $cap ? '' : ' (No capacity set)';
                                 @endphp
+
                                 <option value="{{ $asset->id }}"
-                                    data-empty="{{ $cap->empty_to ?? 39 }}"
-                                    data-half="{{ $cap->half_to ?? 85 }}"
-                                    {{ $capacities[$asset->id] ? 'selected' : '' }}>
-                                    {{ $asset->asset_name }}
+                                    data-empty="{{ $emptyDefault }}"
+                                    data-half="{{ $halfDefault }}"
+                                    data-full="{{ $fullDefault }}"
+                                    {{ $cap ? 'selected' : '' }}>
+                                    {{ $asset->asset_name }}{{ $noCapacityLabel }}
                                 </option>
                             @endforeach
                         </select>
@@ -213,6 +222,11 @@
           <li>Enable <strong>Apply to all bins</strong> if the same rule should apply everywhere.</li>
           <li>Click <strong>Save Capacity Settings</strong> to apply changes.</li>
         </ol>
+        <!-- Note -->
+        <div class="alert alert-info py-2 mb-0">
+            <strong>Note:</strong> Please make sure to save the capacity settings for bins with "<strong>No capacity set</strong>"
+            before proceeding.
+        </div>
 
         <hr>
 
