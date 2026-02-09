@@ -396,40 +396,38 @@ private function calculateSmartBinClearTimes()
     $endOfWeek   = Carbon::now()->endOfWeek();   // Sunday 23:59
 
     $devices = Device::with([
-        'asset',
+        'asset.capacitySetting', // <-- corrected
         'sensors' => fn ($q) => $q->orderBy('time', 'asc')
     ])->get();
 
     foreach ($devices as $device) {
-        if (!$device->asset || !$device->capacitySetting) continue;
+        if (!$device->asset || !$device->asset->capacitySetting) continue;
 
-        $capacity = $device->capacitySetting;
+        $capacity = $device->asset->capacitySetting;
         $fullTimestamp = null;
         $clears = [];
 
         foreach ($device->sensors as $sensor) {
-
             if (!is_numeric($sensor->capacity)) continue;
 
-            if ($sensor->capacity > $capacity->half_to && $fullTimestamp === null) {
-                $fullTimestamp = $sensor->time;
-                continue;
+            // Bin reaches full threshold
+            if ($fullTimestamp === null && $sensor->capacity > $capacity->half_to) {
+                $fullTimestamp = Carbon::parse($sensor->time);
             }
 
+            // Bin clears (drops below empty threshold)
             if ($fullTimestamp && $sensor->capacity <= $capacity->empty_to) {
                 $clearTime = Carbon::parse($sensor->time);
 
                 if ($clearTime->between($startOfWeek, $endOfWeek)) {
-                    $minutes = Carbon::parse($fullTimestamp)
-                        ->diffInMinutes($clearTime);
-
+                    $minutes = $fullTimestamp->diffInMinutes($clearTime);
                     $clears[] = [
                         'date'  => $clearTime->format('Y-m-d H:i'),
                         'hours' => round($minutes / 60, 2),
                     ];
                 }
 
-                $fullTimestamp = null;
+                $fullTimestamp = null; // reset for next cycle
             }
         }
 
@@ -437,6 +435,7 @@ private function calculateSmartBinClearTimes()
             $result[$device->asset->asset_name][$device->device_name] = $clears;
         }
     }
+
     return collect($result);
 }
 }
