@@ -1245,11 +1245,11 @@ document.addEventListener("DOMContentLoaded", function () {
 <!-- Leaflet JS & CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map
-    const map = L.map('dashboardMap').setView([3.1390, 101.6869], 12); // Default: Kuala Lumpur
+    const map = L.map('dashboardMap').setView([3.1390, 101.6869], 12); // Default center: Kuala Lumpur
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1257,23 +1257,46 @@ document.addEventListener('DOMContentLoaded', function() {
         attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Add asset markers
-    @foreach($assetsWithCoords as $asset)
-        @if($asset->latitude && $asset->longitude)
-            const marker = L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}])
-                .addTo(map)
-                .bindPopup(`<b>{{ $asset->asset_name ?? 'Asset' }}</b>`);
-        @endif
-    @endforeach
-
-    // Zoom buttons
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
     document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
+    document.getElementById('resetView').addEventListener('click', () => map.setView([3.1390, 101.6869], 12));
 
-    // Reset view button
-    document.getElementById('resetView').addEventListener('click', () => {
-        map.setView([3.1390, 101.6869], 12); // Reset to default center + zoom
-    });
+    @foreach($assetsWithCoords as $asset)
+        @php
+            $devices = $asset->devices;
+
+            $fullCount = $devices->filter(fn($device) => 
+                $device->latestSensor && $device->asset->capacitySetting && 
+                $device->latestSensor->capacity > $device->asset->capacitySetting->half_to
+            )->count();
+
+            $halfCount = $devices->filter(fn($device) => 
+                $device->latestSensor && $device->asset->capacitySetting && 
+                $device->latestSensor->capacity > $device->asset->capacitySetting->empty_to &&
+                $device->latestSensor->capacity <= $device->asset->capacitySetting->half_to
+            )->count();
+
+            if($fullCount > 0) {
+                $color = 'red';
+            } elseif($halfCount > 0) {
+                $color = 'orange';
+            } else {
+                $color = 'green';
+            }
+        @endphp
+
+        @if($asset->latitude && $asset->longitude)
+            L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
+                icon: L.divIcon({
+                    html: `<i class="fas fa-trash-alt" style="font-size:22px; color: {{ $color }}; filter: drop-shadow(0 0 4px {{ $color }});"></i>`,
+                    className: '',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                }),
+                title: "{{ $asset->asset_name ?? 'Asset' }}"
+            }).addTo(map).bindPopup(`<b>{{ $asset->asset_name ?? 'Asset' }}</b>`);
+        @endif
+    @endforeach
 });
 </script>
 
