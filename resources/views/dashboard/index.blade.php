@@ -467,11 +467,6 @@ input:checked + .slider:before {
     width: 100%;
 }
 
-.devices-grid > a {
-    display: block;
-    min-width: 0;
-}
-
 /* shared card sizing */
 .device-card {
     padding: 16px;
@@ -532,6 +527,11 @@ input:checked + .slider:before {
 
 .bar-empty {
     background-color: #2ecc71; /* green */
+}
+
+.asset-card {
+    background-color: #a4a4a454; /* Dark card background */
+    border-radius: 12px;
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -684,104 +684,94 @@ function trend($current, $previous) {
 
     <div class="row mb-4">
         <div class="col-12">
-            <div id="static-device-grid">
-                <div class="card mb-4" style="background-color: transparent;">
-                    <div class="p-3 scroll-body" style="overflow-y: auto;">
+            {{-- DEVICES GRID --}}
+<div id="static-device-grid">
+    <div class="card mb-4" style="background-color: transparent;">
+        <div class="p-2 scroll-body" style="overflow-y: auto;">
 
-                        {{-- FILTER DROPDOWN --}}
-                        <div class="d-flex justify-content-end mb-3">
-                            <select id="deviceFilter" class="form-select form-select-md w-auto px-2">
-                                <option value="critical">Default</option>
-                                <option value="full">Full</option>
-                                <option value="half">Half</option>
-                                <option value="empty">Empty</option>
-                            </select>
-                        </div>
-
-                        {{-- DEVICES GRID --}}
-                        <div class="devices-grid">
-                            @foreach($assetsWithDevices as $asset)
-                                <div class="asset-card card mb-3 p-3">
-                                    <div class="fw-bold fs-5 mb-2 text-dark">{{ $asset->asset_name }}</div>
-
-                                    @foreach($asset->devices as $device)
-                                        @php
-                                            $sensor = $device->latestSensor;
-                                            $setting = $asset->capacitySetting;
-
-                                            $capacity = $sensor->capacity ?? 0;
-
-                                            // fallback safe values if no setting
-                                            $emptyTo = $setting->empty_to ?? 39;
-                                            $halfTo  = $setting->half_to ?? 79;
-
-                                            if ($capacity > $halfTo) {
-                                                $status = 'full';
-                                                $badge  = 'FULL';
-                                                $badgeClass = 'full-status text-white';
-                                                $cardClass  = 'full-device-card';
-                                                $barClass   = 'bg-danger';
-                                            } elseif ($capacity > $emptyTo) {
-                                                $status = 'half';
-                                                $badge  = 'HALF';
-                                                $badgeClass = 'half-status text-white';
-                                                $cardClass  = 'half-device-card';
-                                                $barClass   = 'bg-warning';
-                                            } else {
-                                                $status = 'empty';
-                                                $badge  = 'EMPTY';
-                                                $badgeClass = 'empty-status text-white';
-                                                $cardClass  = 'empty-device-card';
-                                                $barClass   = 'bg-success';
-                                            }
-                                        @endphp
-
-                                        <a href="javascript:void(0)"
-                                        class="text-decoration-none device-link mb-2 d-block"
-                                        onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
-
-                                            <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div class="fw-bold fs-4 text-white">
-                                                        {{ $device->device_name }}
-                                                    </div>
-                                                    <div class="badge {{ $badgeClass }}">
-                                                        {{ $badge }}
-                                                    </div>
-                                                </div>
-
-                                                <div class="mt-1 text-white">
-                                                    <i class="fas fa-map-marker-alt"></i>
-                                                    {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                                                </div>
-
-                                                <div class="mt-2">
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="progress flex-grow-1 me-2" style="height: 12px; border-radius: 999px;">
-                                                            <div class="progress-bar {{ $barClass }}"
-                                                                style="width: {{ $capacity }}%;"></div>
-                                                        </div>
-                                                        <div class="text-white small fw-bold ms-2">
-                                                            {{ $capacity }}%
-                                                        </div>
-                                                    </div>
-
-                                                    @if($sensor && $sensor->battery)
-                                                        <div class="text-white small d-flex align-items-center">
-                                                            <i class="fas fa-battery-three-quarters me-1"></i>
-                                                            {{ $sensor->battery_percentage }}%
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
+            {{-- FILTER DROPDOWN --}}
+            <div class="d-flex justify-content-end mb-2">
+                <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
+                    <option value="critical">Default</option>
+                    <option value="full">Full</option>
+                    <option value="half">Half</option>
+                    <option value="empty">Empty</option>
+                </select>
             </div>
+
+            {{-- ASSETS --}}
+            <div class="devices-grid">
+                @foreach($assetsWithDevices as $asset)
+                    <div class="asset-card card mb-2 p-2">
+                        <div class="fw-bold fs-6 mb-1 text-dark">{{ $asset->asset_name }}</div>
+
+                        @foreach($asset->devices as $device)
+                            @php
+                                $sensor = $device->latestSensor;
+                                $setting = $asset->capacitySetting;
+
+                                $capacity = $sensor->capacity ?? 0;
+                                $emptyTo = $setting->empty_to ?? 39;
+                                $halfTo  = $setting->half_to ?? 79;
+
+                                if ($capacity > $halfTo) {
+                                    $status = 'full';
+                                    $badge  = 'FULL';
+                                    $badgeClass = 'full-status text-white';
+                                    $cardClass  = 'full-device-card';
+                                    $barClass   = 'bg-danger';
+                                } elseif ($capacity > $emptyTo) {
+                                    $status = 'half';
+                                    $badge  = 'HALF';
+                                    $badgeClass = 'half-status text-white';
+                                    $cardClass  = 'half-device-card';
+                                    $barClass   = 'bg-warning';
+                                } else {
+                                    $status = 'empty';
+                                    $badge  = 'EMPTY';
+                                    $badgeClass = 'empty-status text-white';
+                                    $cardClass  = 'empty-device-card';
+                                    $barClass   = 'bg-success';
+                                }
+                            @endphp
+
+                            <a href="javascript:void(0)"
+                               class="text-decoration-none device-link mb-1 d-block"
+                               onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+                                <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
+                                        <div class="badge {{ $badgeClass }}">{{ $badge }}</div>
+                                    </div>
+
+                                    <div class="text-white small mb-1">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
+                                            <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
+                                        </div>
+                                        <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
+                                    </div>
+
+                                    @if($sensor && $sensor->battery)
+                                        <div class="text-white smaller d-flex align-items-center mt-1">
+                                            <i class="fas fa-battery-three-quarters me-1"></i>
+                                            {{ $sensor->battery_percentage }}%
+                                        </div>
+                                    @endif
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+
         </div>
     </div>
 
