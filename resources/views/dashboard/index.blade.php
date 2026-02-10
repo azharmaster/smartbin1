@@ -1490,7 +1490,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!calendarEl) return;
 
     const calendarEvents = @json($calendarCombined);
-
     const isMobile = window.innerWidth < 768;
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -1516,11 +1515,13 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#eventLocation').parent().hide();
             $('#eventPic').parent().hide();
 
-            // Modal title
+            // Modal title and content
             if (info.event.extendedProps.type === 'holiday') {
                 $('#eventDetailsModalLabel').html('<i class="fas fa-umbrella-beach"></i> Holiday Details');
-            } else {
+            } else if (info.event.extendedProps.type === 'event') {
                 $('#eventDetailsModalLabel').html('<i class="fas fa-calendar-alt"></i> Event Details');
+            } else if (info.event.extendedProps.type === 'notification') {
+                $('#eventDetailsModalLabel').html('<i class="fas fa-bell"></i> Notification Details');
             }
 
             $('#eventName').text(info.event.title);
@@ -1537,12 +1538,20 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#eventStart').text(startDate.toLocaleDateString());
             $('#eventEnd').text(endDate.toLocaleDateString());
 
+            // Show additional fields for events
             if (info.event.extendedProps.type === 'event') {
                 $('#eventLocation').parent().show();
                 $('#eventPic').parent().show();
 
                 $('#eventLocation').text(info.event.extendedProps.location);
                 $('#eventPic').text(info.event.extendedProps.pic_phone);
+            }
+
+            // Show notification details in modal (optional extra info)
+            if (info.event.extendedProps.type === 'notification') {
+                // Example: show sent_at time if exists
+                $('#eventLocation').parent().show();
+                $('#eventLocation').text('Sent At: ' + (info.event.extendedProps.sent_at ?? 'N/A'));
             }
 
             $('#eventDetailsModal').modal('show');
