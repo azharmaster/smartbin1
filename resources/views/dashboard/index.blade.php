@@ -1259,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
     document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
-    document.getElementById('resetView').addEventListener('click', () => map.setView([3.1390, 101.6869], 12));
+    document.getElementById('resetView').addEventListener('click', () => map.setView([3.1421, 101.7184], 17));
 
     @foreach($assetsWithCoords as $asset)
         @php
