@@ -461,10 +461,10 @@ input:checked + .slider:before {
 }
 
 .devices-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* ✅ 4 in a row */
-    gap: 16px;
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start; /* prevents stretching to tallest card */
+    gap: 1rem;
 }
 
 /* shared card sizing */
@@ -483,7 +483,7 @@ input:checked + .slider:before {
 
 @media (max-width: 1200px) {
     .devices-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -532,6 +532,59 @@ input:checked + .slider:before {
 .asset-card {
     background-color: #a4a4a454; /* Dark card background */
     border-radius: 12px;
+    display: block;
+    flex: 0 0 calc(50% - 0.5rem); /* default: two per row */
+    box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {  /* Medium devices and below */
+    .asset-card {
+        flex: 0 0 calc(50% - 0.5rem); /* still two per row */
+    }
+}
+
+@media (max-width: 768px) { /* Small devices (tablets) */
+    .asset-card {
+        flex: 0 0 100%; /* one per row */
+    }
+}
+
+@media (max-width: 576px) { /* Extra small devices (phones) */
+    .asset-card {
+        flex: 0 0 100%; /* one per row */
+    }
+}
+/* Card body */
+.map-card-body {
+    position: relative;
+    padding: 15px;    
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+    height: 100%;
+}
+
+/* Map container */
+#dashboardMap {
+    width: 100%;
+    flex-grow: 1;  
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 200px;         
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) { 
+    #dashboardMap {
+        height: 450px;
+    }
+}
+
+@media (max-width: 576px) { 
+    #dashboardMap {
+        height: 300px;
+    }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -680,110 +733,125 @@ function trend($current, $previous) {
             <i class="fas fa-chart-line"></i> Live Dashboard
         </a>
     </div> -->
-
-
     <div class="row mb-4">
-    <div class="col-12">
-        {{-- DEVICES GRID --}}
-        <div id="static-device-grid">
-            <div class="card mb-4" style="background-color: transparent;">
-                <div class="p-2 scroll-body" style="overflow-y: auto;">
+        <!-- LEFT COLUMN: MAP -->
+        <div class="col-lg-7">
+            <div class="card card-success map-card mb-4">
+                <!-- Header -->
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
+                </div>
 
-                    {{-- FILTER DROPDOWN --}}
-                    <div class="d-flex justify-content-end mb-2">
-                        <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
-                            <option value="critical">Default</option>
-                            <option value="full">Full</option>
-                            <option value="half">Half</option>
-                            <option value="empty">Empty</option>
-                        </select>
+                <!-- Card Body -->
+                <div class="card-body map-card-body" style="height: 650px; position: relative;">
+                    <!-- Controls -->
+                    <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
+                        <button id="zoomIn" class="btn btn-secondary btn-sm"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoomOut" class="btn btn-secondary btn-sm"><i class="fas fa-search-minus"></i></button>
+                        <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
                     </div>
 
-                    {{-- ASSETS --}}
-                    <div class="devices-grid">
-                        @foreach($assetsWithDevices as $asset)
+                    <!-- Leaflet Map -->
+                    <div id="dashboardMap"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            {{-- DEVICES GRID --}}
+        <div class="card mb-4">
+            <div class="card-header smartbin-gradient">
+                <h5 class="mb-0 text-white fs-6">
+                    <i class="fas fa-trash-alt me-2"></i> Sensor Lists
+                </h5>
+            </div>
 
-                            <div class="asset-card card mb-2 p-2">
+            <div id="static-device-grid" class="p-2 scroll-body" style="overflow-y: auto; max-height: 650px;">
+                {{-- FILTER DROPDOWN --}}
+                <div class="d-flex justify-content-end mb-2">
+                    <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
+                        <option value="critical">Default</option>
+                        <option value="full">Full</option>
+                        <option value="half">Half</option>
+                        <option value="empty">Empty</option>
+                    </select>
+                </div>
 
-                                {{-- ASSET HEADER (CLICK TO TOGGLE) --}}
-                                <div class="fw-bold fs-6 mb-1 text-dark d-flex justify-content-between align-items-center asset-toggle"
-                                     role="button"
-                                     data-bs-toggle="collapse"
-                                     data-bs-target="#assetDevices{{ $asset->id }}">
-                                    {{ $asset->asset_name }}
-                                    <i class="fas fa-chevron-down small"></i>
-                                </div>
-
-                                {{-- COLLAPSIBLE DEVICE LIST --}}
-                                <div class="collapse asset-collapse" id="assetDevices{{ $asset->id }}">
-
-                                    @foreach($asset->devices as $device)
-                                        @php
-                                            $sensor = $device->latestSensor;
-                                            $setting = $asset->capacitySetting;
-
-                                            $capacity = $sensor->capacity ?? 0;
-                                            $emptyTo = $setting->empty_to ?? 39;
-                                            $halfTo  = $setting->half_to ?? 79;
-
-                                            if ($capacity > $halfTo) {
-                                                $status = 'full';
-                                                $badge  = 'FULL';
-                                                $badgeClass = 'full-status text-white';
-                                                $cardClass  = 'full-device-card';
-                                                $barClass   = 'bg-danger';
-                                            } elseif ($capacity > $emptyTo) {
-                                                $status = 'half';
-                                                $badge  = 'HALF';
-                                                $badgeClass = 'half-status text-white';
-                                                $cardClass  = 'half-device-card';
-                                                $barClass   = 'bg-warning';
-                                            } else {
-                                                $status = 'empty';
-                                                $badge  = 'EMPTY';
-                                                $badgeClass = 'empty-status text-white';
-                                                $cardClass  = 'empty-device-card';
-                                                $barClass   = 'bg-success';
-                                            }
-                                        @endphp
-
-                                        <a href="javascript:void(0)"
-                                           class="text-decoration-none device-link mb-1 d-block"
-                                           onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
-
-                                            <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
-                                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                                    <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
-                                                    <div class="badge {{ $badgeClass }}">{{ $badge }}</div>
-                                                </div>
-
-                                                <div class="text-white small mb-1">
-                                                    <i class="fas fa-map-marker-alt"></i>
-                                                    {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                                                </div>
-
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
-                                                        <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
-                                                    </div>
-                                                    <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
-                                                </div>
-
-                                                @if($sensor && $sensor->battery)
-                                                    <div class="text-white smaller d-flex align-items-center mt-1">
-                                                        <i class="fas fa-battery-three-quarters me-1"></i>
-                                                        {{ $sensor->battery_percentage }}%
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </a>
-                                    @endforeach
-
-                                </div>
+                {{-- ASSETS --}}
+                <div class="devices-grid">
+                    @foreach($assetsWithDevices as $asset)
+                        <div class="asset-card card mb-2 p-2">
+                            {{-- ASSET HEADER (CLICK TO TOGGLE) --}}
+                            <div class="fw-bold fs-6 mb-1 text-dark d-flex justify-content-between align-items-center asset-toggle"
+                                role="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#assetDevices{{ $asset->id }}">
+                                {{ $asset->asset_name }}
+                                <i class="fas fa-chevron-down small"></i>
                             </div>
 
-                        @endforeach
-                    </div>
+                            {{-- COLLAPSIBLE DEVICE LIST --}}
+                            <div class="collapse asset-collapse" id="assetDevices{{ $asset->id }}">
+                                @foreach($asset->devices as $device)
+                                    @php
+                                        $sensor = $device->latestSensor;
+                                        $setting = $asset->capacitySetting;
+                                        $capacity = $sensor->capacity ?? 0;
+                                        $emptyTo = $setting->empty_to ?? 39;
+                                        $halfTo  = $setting->half_to ?? 79;
+
+                                        if ($capacity > $halfTo) {
+                                            $status = 'full';
+                                            $badge  = 'FULL';
+                                            $badgeClass = 'full-status text-white';
+                                            $cardClass  = 'full-device-card';
+                                            $barClass   = 'bg-danger';
+                                        } elseif ($capacity > $emptyTo) {
+                                            $status = 'half';
+                                            $badge  = 'HALF';
+                                            $badgeClass = 'half-status text-white';
+                                            $cardClass  = 'half-device-card';
+                                            $barClass   = 'bg-warning';
+                                        } else {
+                                            $status = 'empty';
+                                            $badge  = 'EMPTY';
+                                            $badgeClass = 'empty-status text-white';
+                                            $cardClass  = 'empty-device-card';
+                                            $barClass   = 'bg-success';
+                                        }
+                                    @endphp
+
+                                    <a href="javascript:void(0)" class="text-decoration-none device-link mb-1 d-block"
+                                    onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+                                        <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
+                                                <div class="badge {{ $badgeClass }}">{{ $badge }}</div>
+                                            </div>
+
+                                            <div class="text-white small mb-1">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
+                                                    <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
+                                                </div>
+                                                <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
+                                            </div>
+
+                                            @if($sensor && $sensor->battery)
+                                                <div class="text-white smaller d-flex align-items-center mt-1">
+                                                    <i class="fas fa-battery-three-quarters me-1"></i>
+                                                    {{ $sensor->battery_percentage }}%
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -1171,7 +1239,41 @@ document.addEventListener("DOMContentLoaded", function () {
             confirmButtonColor: '#d33',
         });
     @endif
+});
+</script>
 
+<!-- Leaflet JS & CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const map = L.map('dashboardMap').setView([3.1390, 101.6869], 12); // Default: Kuala Lumpur
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Add asset markers
+    @foreach($assetsWithCoords as $asset)
+        @if($asset->latitude && $asset->longitude)
+            const marker = L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}])
+                .addTo(map)
+                .bindPopup(`<b>{{ $asset->asset_name ?? 'Asset' }}</b>`);
+        @endif
+    @endforeach
+
+    // Zoom buttons
+    document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
+    document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
+
+    // Reset view button
+    document.getElementById('resetView').addEventListener('click', () => {
+        map.setView([3.1390, 101.6869], 12); // Reset to default center + zoom
+    });
 });
 </script>
 
