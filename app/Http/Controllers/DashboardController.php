@@ -200,55 +200,69 @@ private function getDeviceStats($devices): array
     ];
 }
 
-    /** Combine holidays and events for calendar */
-    private function getCalendarEvents()
-    {
-        $holidays = Holiday::where('is_active', true)->get();
-        $events = Event::all();
+// ------------------- UPDATED CALENDAR METHOD -------------------
+/** Combine holidays, events, and notifications for calendar */
+private function getCalendarEvents()
+{
+    $holidays = Holiday::where('is_active', true)->get();
+    $events = Event::all();
+    $notifications = NotificationLog::all();
 
-        $calendarHolidays = $holidays->map(function ($holiday) {
-            $start = Carbon::parse($holiday->start_date)->format('Y-m-d');
-            $end = $holiday->end_date
-                ? Carbon::parse($holiday->end_date)->addDay()->format('Y-m-d')
-                : $start;
+    $calendarHolidays = $holidays->map(function ($holiday) {
+        $start = Carbon::parse($holiday->start_date)->format('Y-m-d');
+        $end = $holiday->end_date
+            ? Carbon::parse($holiday->end_date)->addDay()->format('Y-m-d')
+            : $start;
 
-            return [
-                'title' => '🎉 ' . $holiday->name,
-                'start' => $start,
-                'end'   => $end,
-                'allDay' => true,
-                'color' => '#dc3545',
-                'type' => 'holiday',
-            ];
-        });
+        return [
+            'title' => '🎉 ' . $holiday->name,
+            'start' => $start,
+            'end'   => $end,
+            'allDay' => true,
+            'color' => '#dc3545',
+            'type' => 'holiday',
+        ];
+    });
 
-        $calendarEvents = $events->map(function ($e) {
-            return [
-                'id' => $e->id,
-                'title' => $e->event_name,
-                'start' => $e->start_date,
-                'end' => $e->end_date ?? $e->start_date,
-                'allDay' => true,
-                'color' => '#28a745',
-                'type' => 'event',
-                'pic_phone' => $e->pic_phone,
-                'location' => $e->location,
-            ];
-        });
+    $calendarEvents = $events->map(function ($e) {
+        return [
+            'id' => $e->id,
+            'title' => $e->event_name,
+            'start' => $e->start_date,
+            'end' => $e->end_date ?? $e->start_date,
+            'allDay' => true,
+            'color' => '#28a745',
+            'type' => 'event',
+            'pic_phone' => $e->pic_phone,
+            'location' => $e->location,
+        ];
+    });
 
-        return $calendarEvents
-            ->toBase()
-            ->merge($calendarHolidays)
-            ->values();
-    }
+    $calendarNotifications = $notifications->map(function ($n) {
+        return [
+            'id' => $n->id,
+            'title' => $n->title ?? 'Notification',
+            'start' => $n->sent_at ? Carbon::parse($n->sent_at)->toDateString() : Carbon::today()->toDateString(),
+            'allDay' => true,
+            'color' => '#ffc107',
+            'type' => 'notification',
+        ];
+    });
 
-    /** Today's notifications */
-    private function getTodayNotifications()
-    {
-        return NotificationLog::whereDate('sent_at', now()->toDateString())
-            ->orderBy('sent_at', 'desc')
-            ->get();
-    }
+    return $calendarEvents
+        ->toBase()
+        ->merge($calendarHolidays)
+        ->merge($calendarNotifications)
+        ->values();
+}
+
+/** Today's notifications */
+private function getTodayNotifications()
+{
+    return NotificationLog::whereDate('sent_at', now()->toDateString())
+        ->orderBy('sent_at', 'desc')
+        ->get();
+}
 
     /** Load devices with latest sensor and optional before date */
 private function loadDevicesWithLatestSensor($before = null)
