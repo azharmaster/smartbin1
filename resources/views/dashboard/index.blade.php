@@ -683,97 +683,152 @@ function trend($current, $previous) {
 
 
     <div class="row mb-4">
-        <div class="col-12">
-            {{-- DEVICES GRID --}}
-<div id="static-device-grid">
-    <div class="card mb-4" style="background-color: transparent;">
-        <div class="p-2 scroll-body" style="overflow-y: auto;">
+    <div class="col-12">
+        {{-- DEVICES GRID --}}
+        <div id="static-device-grid">
+            <div class="card mb-4" style="background-color: transparent;">
+                <div class="p-2 scroll-body" style="overflow-y: auto;">
 
-            {{-- FILTER DROPDOWN --}}
-            <div class="d-flex justify-content-end mb-2">
-                <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
-                    <option value="critical">Default</option>
-                    <option value="full">Full</option>
-                    <option value="half">Half</option>
-                    <option value="empty">Empty</option>
-                </select>
-            </div>
+                    {{-- FILTER DROPDOWN --}}
+                    <div class="d-flex justify-content-end mb-2">
+                        <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
+                            <option value="critical">Default</option>
+                            <option value="full">Full</option>
+                            <option value="half">Half</option>
+                            <option value="empty">Empty</option>
+                        </select>
+                    </div>
 
-            {{-- ASSETS --}}
-            <div class="devices-grid">
-                @foreach($assetsWithDevices as $asset)
-                    <div class="asset-card card mb-2 p-2">
-                        <div class="fw-bold fs-6 mb-1 text-dark">{{ $asset->asset_name }}</div>
+                    {{-- ASSETS --}}
+                    <div class="devices-grid">
+                        @foreach($assetsWithDevices as $asset)
 
-                        @foreach($asset->devices as $device)
-                            @php
-                                $sensor = $device->latestSensor;
-                                $setting = $asset->capacitySetting;
+                            <div class="asset-card card mb-2 p-2">
 
-                                $capacity = $sensor->capacity ?? 0;
-                                $emptyTo = $setting->empty_to ?? 39;
-                                $halfTo  = $setting->half_to ?? 79;
-
-                                if ($capacity > $halfTo) {
-                                    $status = 'full';
-                                    $badge  = 'FULL';
-                                    $badgeClass = 'full-status text-white';
-                                    $cardClass  = 'full-device-card';
-                                    $barClass   = 'bg-danger';
-                                } elseif ($capacity > $emptyTo) {
-                                    $status = 'half';
-                                    $badge  = 'HALF';
-                                    $badgeClass = 'half-status text-white';
-                                    $cardClass  = 'half-device-card';
-                                    $barClass   = 'bg-warning';
-                                } else {
-                                    $status = 'empty';
-                                    $badge  = 'EMPTY';
-                                    $badgeClass = 'empty-status text-white';
-                                    $cardClass  = 'empty-device-card';
-                                    $barClass   = 'bg-success';
-                                }
-                            @endphp
-
-                            <a href="javascript:void(0)"
-                               class="text-decoration-none device-link mb-1 d-block"
-                               onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
-                                <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
-                                    <div class="d-flex justify-content-between align-items-start mb-1">
-                                        <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
-                                        <div class="badge {{ $badgeClass }}">{{ $badge }}</div>
-                                    </div>
-
-                                    <div class="text-white small mb-1">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        {{ $device->asset->floor->floor_name ?? 'Unknown' }}
-                                    </div>
-
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
-                                            <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
-                                        </div>
-                                        <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
-                                    </div>
-
-                                    @if($sensor && $sensor->battery)
-                                        <div class="text-white smaller d-flex align-items-center mt-1">
-                                            <i class="fas fa-battery-three-quarters me-1"></i>
-                                            {{ $sensor->battery_percentage }}%
-                                        </div>
-                                    @endif
+                                {{-- ASSET HEADER (CLICK TO TOGGLE) --}}
+                                <div class="fw-bold fs-6 mb-1 text-dark d-flex justify-content-between align-items-center asset-toggle"
+                                     role="button"
+                                     data-bs-toggle="collapse"
+                                     data-bs-target="#assetDevices{{ $asset->id }}">
+                                    {{ $asset->asset_name }}
+                                    <i class="fas fa-chevron-down small"></i>
                                 </div>
-                            </a>
+
+                                {{-- COLLAPSIBLE DEVICE LIST --}}
+                                <div class="collapse asset-collapse" id="assetDevices{{ $asset->id }}">
+
+                                    @foreach($asset->devices as $device)
+                                        @php
+                                            $sensor = $device->latestSensor;
+                                            $setting = $asset->capacitySetting;
+
+                                            $capacity = $sensor->capacity ?? 0;
+                                            $emptyTo = $setting->empty_to ?? 39;
+                                            $halfTo  = $setting->half_to ?? 79;
+
+                                            if ($capacity > $halfTo) {
+                                                $status = 'full';
+                                                $badge  = 'FULL';
+                                                $badgeClass = 'full-status text-white';
+                                                $cardClass  = 'full-device-card';
+                                                $barClass   = 'bg-danger';
+                                            } elseif ($capacity > $emptyTo) {
+                                                $status = 'half';
+                                                $badge  = 'HALF';
+                                                $badgeClass = 'half-status text-white';
+                                                $cardClass  = 'half-device-card';
+                                                $barClass   = 'bg-warning';
+                                            } else {
+                                                $status = 'empty';
+                                                $badge  = 'EMPTY';
+                                                $badgeClass = 'empty-status text-white';
+                                                $cardClass  = 'empty-device-card';
+                                                $barClass   = 'bg-success';
+                                            }
+                                        @endphp
+
+                                        <a href="javascript:void(0)"
+                                           class="text-decoration-none device-link mb-1 d-block"
+                                           onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+
+                                            <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
+                                                    <div class="badge {{ $badgeClass }}">{{ $badge }}</div>
+                                                </div>
+
+                                                <div class="text-white small mb-1">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                    {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                                </div>
+
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
+                                                        <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
+                                                    </div>
+                                                    <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
+                                                </div>
+
+                                                @if($sensor && $sensor->battery)
+                                                    <div class="text-white smaller d-flex align-items-center mt-1">
+                                                        <i class="fas fa-battery-three-quarters me-1"></i>
+                                                        {{ $sensor->battery_percentage }}%
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </a>
+                                    @endforeach
+
+                                </div>
+                            </div>
+
                         @endforeach
                     </div>
-                @endforeach
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-        </div>
-    </div>
+{{-- JS: ACCORDION + FILTER --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Only one asset dropdown open
+    document.querySelectorAll('.asset-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            const target = this.getAttribute('data-bs-target');
+
+            document.querySelectorAll('.asset-collapse').forEach(collapse => {
+                if ('#' + collapse.id !== target) {
+                    bootstrap.Collapse.getOrCreateInstance(collapse).hide();
+                }
+            });
+        });
+    });
+
+    // Filter devices
+    document.getElementById('deviceFilter').addEventListener('change', function () {
+        const filter = this.value;
+
+        document.querySelectorAll('.asset-card').forEach(asset => {
+            let visible = 0;
+
+            asset.querySelectorAll('.device-card').forEach(device => {
+                if (filter === 'critical' || device.dataset.status === filter) {
+                    device.closest('.device-link').style.display = 'block';
+                    visible++;
+                } else {
+                    device.closest('.device-link').style.display = 'none';
+                }
+            });
+
+            asset.style.display = visible > 0 ? 'block' : 'none';
+        });
+    });
+
+});
+</script>
 
 <!-- SmartBin Animated Gradient Style -->
 <style>
