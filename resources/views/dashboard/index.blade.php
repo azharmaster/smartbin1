@@ -735,7 +735,7 @@ function trend($current, $previous) {
     </div> -->
     <div class="row mb-4">
         <!-- LEFT COLUMN: MAP -->
-        <div class="col-lg-7">
+        <div class="col-lg-9">
             <div class="card card-success map-card mb-4">
                 <!-- Header -->
                 <div class="card-header smartbin-gradient">
@@ -756,9 +756,10 @@ function trend($current, $previous) {
                 </div>
             </div>
         </div>
-        <div class="col-lg-5">
+        {{-- right column --}}
+        <div class="col-lg-3">
             {{-- DEVICES GRID --}}
-        <div class="card mb-4">
+        {{-- -<div class="card mb-4">
             <div class="card-header smartbin-gradient">
                 <h5 class="mb-0 text-white fs-6">
                     <i class="fas fa-trash-alt me-2"></i> Sensor Lists
@@ -766,7 +767,7 @@ function trend($current, $previous) {
             </div>
 
             <div id="static-device-grid" class="p-2 scroll-body" style="overflow-y: auto; max-height: 650px;">
-                {{-- FILTER DROPDOWN --}}
+                
                 <div class="d-flex justify-content-end mb-2">
                     <select id="deviceFilter" class="form-select form-select-sm w-auto px-1">
                         <option value="critical">Default</option>
@@ -776,11 +777,9 @@ function trend($current, $previous) {
                     </select>
                 </div>
 
-                {{-- ASSETS --}}
                 <div class="devices-grid">
                     @foreach($assetsWithDevices as $asset)
                         <div class="asset-card card mb-2 p-2">
-                            {{-- ASSET HEADER (CLICK TO TOGGLE) --}}
                             <div class="fw-bold fs-6 mb-1 text-dark d-flex justify-content-between align-items-center asset-toggle"
                                 role="button"
                                 data-bs-toggle="collapse"
@@ -789,7 +788,6 @@ function trend($current, $previous) {
                                 <i class="fas fa-chevron-down small"></i>
                             </div>
 
-                            {{-- COLLAPSIBLE DEVICE LIST --}}
                             <div class="collapse asset-collapse" id="assetDevices{{ $asset->id }}">
                                 @foreach($asset->devices as $device)
                                     @php
@@ -854,7 +852,79 @@ function trend($current, $previous) {
                     @endforeach
                 </div>
             </div>
-        </div>
+        </div>--}}
+<div class="card mb-3" style="font-size: 1.0rem;">
+    <div class="card-header smartbin-gradient py-2">
+        <h6 class="mb-0 text-white">
+            <i class="fas fa-trash-alt me-1"></i> Sensor List
+        </h6>
+    </div>
+
+    <div class="card-body p-2">
+        @forelse($assetsWithDevices as $asset)
+            <div class="border rounded p-2 mb-2">
+
+                <!-- ASSET HEADER -->
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="lh-sm">
+                        <div class="fw-semibold">
+                            {{ $asset->name }} {{ $asset->asset_name }}
+                        </div>
+
+                        <!-- LOCATION (ONCE PER ASSET) -->
+                        <div class="text-muted" style="font-size: 0.65rem;">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ $asset->location ?? 'Unknown location' }}
+                        </div>
+                    </div>
+
+                    <a href="{{ route('master-data.assets.details', $asset->id) }}"
+                       class="btn btn-success btn-xs px-2 py-1"
+                       title="View Asset">
+                        <i class="far fa-eye"></i>
+                    </a>
+                </div>
+
+                <!-- DEVICES -->
+                <div class="d-flex flex-column gap-1 mt-1">
+                    @foreach($asset->devices as $device)
+                        @php
+                            $latest = $device->latestSensor;
+                            $level  = $latest?->capacity;
+
+                            $setting = $asset->capacitySetting;
+                            $emptyTo = $setting->empty_to ?? 39;
+                            $halfTo  = $setting->half_to ?? 79;
+
+                            $badge = match (true) {
+                                $level === null     => 'secondary',
+                                $level > $halfTo   => 'danger',
+                                $level > $emptyTo  => 'warning',
+                                default            => 'success',
+                            };
+                        @endphp
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{{ $badge }} px-2 py-1">
+                                {{ $device->device_name }}
+                                {{ $level !== null ? '· '.$level.'%' : '· Undetected' }}
+                            </span>
+
+                            <small class="text-muted" style="font-size: 0.65rem;">
+                                {{ $latest?->created_at?->diffForHumans() ?? '—' }}
+                            </small>
+                        </div>
+                    @endforeach
+                </div>
+
+            </div>
+        @empty
+            <div class="text-muted text-center py-3">
+                No assets found
+            </div>
+        @endforelse
+    </div>
+</div>
     </div>
 </div>
 
@@ -1014,68 +1084,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
        <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
-<div class="card mb-4">
-    <div class="card-header smartbin-gradient">
-        <h5 class="mb-0 text-white fs-6">
-            <i class="fas fa-trash-alt me-2"></i> Sensor Lists
-        </h5>
-    </div>
-
-    <div class="card-body p-2">
-        @forelse($assetsWithDevices as $asset)
-            <div class="card mb-2 p-2">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-
-                    <!-- LEFT: ASSET NAME + SENSOR INFO -->
-                    <div class="d-flex align-items-center flex-wrap gap-2">
-                        <strong>{{ $asset->name }} {{ $asset->asset_name }}</strong>
-                        @foreach($asset->devices as $device)
-                            @php
-                                $latest = $device->sensors->last();
-                                $level = $latest->capacity ?? null;
-
-                                $setting = $asset->capacitySetting;
-
-                                // Default safe values if no capacitySetting found
-                                $emptyTo = $setting->empty_to ?? 39;
-                                $halfTo  = $setting->half_to ?? 79;
-
-                                $badge = match (true) {
-                                    $level === null => 'secondary',
-                                    $level > $halfTo => 'danger',
-                                    $level > $emptyTo => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <div class="d-flex flex-column">
-                                <span class="badge bg-{{ $badge }}">
-                                    {{ $device->device_name }} -
-                                    {{ $level !== null ? $level.'%' : 'Undetected' }}
-                                </span>
-
-                                <small class="text-muted mt-1" style="font-size: 0.7rem;">
-                                    {{ $latest?->created_at?->diffForHumans() ?? '—' }}
-                                </small>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <!-- RIGHT: VIEW BUTTON -->
-                    <a href="{{ route('master-data.assets.details', $asset->id) }}"
-                       class="btn btn-info btn-sm"
-                       title="View Asset">
-                        <i class="far fa-eye"></i>
-                    </a>
-
-                </div>
-            </div>
-        @empty
-            <div class="text-muted text-center py-3">
-                No assets found
-            </div>
-        @endforelse
-    </div>
-</div>
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
@@ -1249,17 +1257,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const map = L.map('dashboardMap').setView([3.1421, 101.7184], 17);//default trx
+    const map = L.map('dashboardMap').setView([3.1427, 101.7181], 17.5);//default trx
 
     // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-    }).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+}).addTo(map);
 
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
     document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
-    document.getElementById('resetView').addEventListener('click', () => map.setView([3.1421, 101.7184], 17));
+    document.getElementById('resetView').addEventListener('click', () => map.setView([3.1427, 101.7181], 17.5));
 
     @foreach($assetsWithCoords as $asset)
         @php

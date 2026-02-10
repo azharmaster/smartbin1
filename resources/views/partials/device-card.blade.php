@@ -29,14 +29,6 @@
             {{ $device->latestSensor->capacity ?? 0 }}%
         </div>
     </div>
-
-    <!-- Battery below the progress bar -->
-    @if($device->latestSensor && $device->latestSensor->battery)
-        <div class="text-white small d-flex align-items-center">
-            <i class="fas fa-battery-three-quarters me-1"></i>
-            {{ $device->latestSensor->battery_percentage }}%
-        </div>
-    @endif
 </div>
 
     </div>
