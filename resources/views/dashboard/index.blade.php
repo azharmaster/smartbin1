@@ -902,6 +902,9 @@ function trend($current, $previous) {
                                 $level > $emptyTo  => 'warning',
                                 default            => 'success',
                             };
+                            $timestamp = $latest?->created_at
+                                ? $latest->created_at->format('Y-m-d H:i')
+                                : '—';
                         @endphp
 
                         <div class="d-flex justify-content-between align-items-center">
@@ -911,7 +914,7 @@ function trend($current, $previous) {
                             </span>
 
                             <small class="text-muted" style="font-size: 0.65rem;">
-                                {{ $latest?->created_at?->diffForHumans() ?? '—' }}
+                                {{ $timestamp }}
                             </small>
                         </div>
                     @endforeach
