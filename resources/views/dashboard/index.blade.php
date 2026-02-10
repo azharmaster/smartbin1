@@ -245,7 +245,7 @@ a.status-footer:hover {
 
 /* FULL DEVICE CARD */
 .full-device-card {
-    background-color: #6f060687;
+    background-color: #6f0606b8;
     border: 2px solid #ff4d4d;
     border-radius: 12px;
     box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
@@ -277,7 +277,7 @@ a.status-footer:hover {
 
 /* HALF DEVICE CARD (similar style but yellow, no pulse) */
 .half-device-card {
-    background-color: #8f6f0587; /* translucent yellow-brown */
+    background-color: #8f6f05b7;
     border: 2px solid #f7d24a;
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(255, 208, 0, 0.45);
@@ -299,11 +299,49 @@ a.status-footer:hover {
     box-shadow: 0 0 8px #FFD70090;
 }
 
+/* HALF DEVICE CARD (similar style but yellow, no pulse) */
+.empty-device-card {
+    background-color: #14431bc7;
+    border: 2px solid rgb(40, 255, 80);
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.empty-device-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 14px rgba(41, 56, 43, 0.2);
+}
+
+/* EMPTY STATUS – No pulse */
+.empty-status {
+    background-color: #4cd964;
+    padding: 0.4em 0.9em;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 0 8px #4cd96381;
+}
+
 /* Title size */
 .full-device-card .fw-bold.fs-4,
-.half-device-card .fw-bold.fs-4 {
+.half-device-card .fw-bold.fs-4, 
+.empty-device-card .fw-bold.fs-4, {
     font-size: 1.3rem;
     font-weight: bold;
+}
+
+.sensor-row {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.sensor-row:last-child {
+    border-bottom: none;
+}
+
+.asset-device-card {
+    min-height: unset; /* let it grow naturally */
 }
 
 .notification-timeline {
@@ -407,7 +445,6 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-<style>
 .save-bookmark i {
     color: #28a745; /* normal green outline */
     transition: color 0.2s ease, transform 0.2s ease;
@@ -421,6 +458,80 @@ input:checked + .slider:before {
     content: "\f02e"; /* Unicode for solid bookmark */
     font-family: "Font Awesome 5 Free";
     font-weight: 900; /* needed for solid icon */
+}
+
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* ✅ 4 in a row */
+    gap: 16px;
+    width: 100%;
+}
+
+.devices-grid > a {
+    display: block;
+    min-width: 0;
+}
+
+/* shared card sizing */
+.device-card {
+    padding: 16px;
+    border-radius: 12px;
+    min-height: 130px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* hover effect */
+.device-link:hover .device-card {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1200px) {
+    .devices-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .devices-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .devices-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+#deviceFilter {
+    border-radius: 10px;
+    min-width: 100px;
+    min-height: 10px;
+}
+
+#deviceFilter:focus {
+    box-shadow: 0 0 0 0.15rem rgba(108, 117, 125, 0.25); /* subtle */
+}
+
+.bin-progress {
+    width: 100%;
+    background-color: #e9ecef;
+    height: 10px;
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+.bin-progress-bar {
+    height: 10px;
+    border-radius: 6px;
+}
+
+.progress-warning { background-color: #e74c3c; }
+.progress-normal { background-color: #7ccc63; }
+
+.bar-empty {
+    background-color: #2ecc71; /* green */
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -571,96 +682,108 @@ function trend($current, $previous) {
     </div> -->
 
 
-    <!-- ROW 1: SMARTBIN CHART + ABNORMAL / UNDETECTED BINS -->
     <div class="row mb-4">
+        <div class="col-12">
+            <div id="static-device-grid">
+                <div class="card mb-4" style="background-color: transparent;">
+                    <div class="p-3 scroll-body" style="overflow-y: auto;">
 
-        <!-- SMARTBIN CHART (2/3) -->
-        <div class="col-lg-8 col-md-12">
-            <div class="card mb-4 h-100">
-                <div class="card-header smartbin-gradient d-flex align-items-center">
-                    <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
-                        <i class="fas fa-trash me-2"></i> SmartBin Clear Time
-                    </h5>
-                    <select id="assetFilter" class="form-select form-select-sm w-auto ms-auto">
-                        @foreach($assetsWithDevices as $asset)
-                            <option value="{{ $asset->asset_name }}">{{ $asset->asset_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                        {{-- FILTER DROPDOWN --}}
+                        <div class="d-flex justify-content-end mb-3">
+                            <select id="deviceFilter" class="form-select form-select-md w-auto px-2">
+                                <option value="critical">Default</option>
+                                <option value="full">Full</option>
+                                <option value="half">Half</option>
+                                <option value="empty">Empty</option>
+                            </select>
+                        </div>
 
-                <div class="position-relative w-100" style="min-height:300px;">
-                    <canvas id="smartBinClearChart"></canvas>
-                </div>
-            </div>
-        </div>
+                        {{-- DEVICES GRID --}}
+                        <div class="devices-grid">
+                            @foreach($assetsWithDevices as $asset)
+                                <div class="asset-card card mb-3 p-3">
+                                    <div class="fw-bold fs-5 mb-2 text-dark">{{ $asset->asset_name }}</div>
 
-        <!-- ABNORMAL / UNDETECTED BINS (1/3) -->
-        <div class="col-lg-4 col-md-12">
-            <div class="card mb-4 h-100">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-exclamation-circle"></i> Abnormal/Undetected Sensors
-                        <span class="badge badge-danger">{{ $abnormalBins->count() }}</span>
-                    </h5>
-                </div>
+                                    @foreach($asset->devices as $device)
+                                        @php
+                                            $sensor = $device->latestSensor;
+                                            $setting = $asset->capacitySetting;
 
-                <!-- Set fixed height for the card body, enable scroll -->
-                <div class="card-body p-3" style="height: 100%; max-height: 300px; overflow-y: auto;">
-                    <div class="notification-timeline">
-                        @forelse($abnormalBins as $bin)
-                            <div class="timeline-item">
-                                <div class="timeline-dot
-                                    {{ $bin->type === 'undetected' ? 'bg-danger' : 'bg-warning' }}">
+                                            $capacity = $sensor->capacity ?? 0;
+
+                                            // fallback safe values if no setting
+                                            $emptyTo = $setting->empty_to ?? 39;
+                                            $halfTo  = $setting->half_to ?? 79;
+
+                                            if ($capacity > $halfTo) {
+                                                $status = 'full';
+                                                $badge  = 'FULL';
+                                                $badgeClass = 'full-status text-white';
+                                                $cardClass  = 'full-device-card';
+                                                $barClass   = 'bg-danger';
+                                            } elseif ($capacity > $emptyTo) {
+                                                $status = 'half';
+                                                $badge  = 'HALF';
+                                                $badgeClass = 'half-status text-white';
+                                                $cardClass  = 'half-device-card';
+                                                $barClass   = 'bg-warning';
+                                            } else {
+                                                $status = 'empty';
+                                                $badge  = 'EMPTY';
+                                                $badgeClass = 'empty-status text-white';
+                                                $cardClass  = 'empty-device-card';
+                                                $barClass   = 'bg-success';
+                                            }
+                                        @endphp
+
+                                        <a href="javascript:void(0)"
+                                        class="text-decoration-none device-link mb-2 d-block"
+                                        onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+
+                                            <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="fw-bold fs-4 text-white">
+                                                        {{ $device->device_name }}
+                                                    </div>
+                                                    <div class="badge {{ $badgeClass }}">
+                                                        {{ $badge }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-1 text-white">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                    {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                                </div>
+
+                                                <div class="mt-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <div class="progress flex-grow-1 me-2" style="height: 12px; border-radius: 999px;">
+                                                            <div class="progress-bar {{ $barClass }}"
+                                                                style="width: {{ $capacity }}%;"></div>
+                                                        </div>
+                                                        <div class="text-white small fw-bold ms-2">
+                                                            {{ $capacity }}%
+                                                        </div>
+                                                    </div>
+
+                                                    @if($sensor && $sensor->battery)
+                                                        <div class="text-white small d-flex align-items-center">
+                                                            <i class="fas fa-battery-three-quarters me-1"></i>
+                                                            {{ $sensor->battery_percentage }}%
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @endforeach
                                 </div>
-                                <div class="timeline-content">
-                                    <button class="timeline-button text-start"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#abnormal{{ $bin->id_device }}">
-                                        🗑 {{ $bin->asset->asset_name ?? 'Unknown Asset' }}
-                                        <div class="text-muted small">{{ $bin->device_name }}</div>
-                                    </button>
-                                    <div id="abnormal{{ $bin->id_device }}" class="collapse mt-2">
-                                        <div class="text-sm">
-                                            <strong>Status:</strong>
-                                            @if($bin->type === 'abnormal')
-                                                <span class="badge bg-warning text-dark">Abnormal</span>
-                                            @else
-                                                <span class="badge bg-danger">Undetected</span>
-                                            @endif
-                                            <br>
-                                            <strong>Last Update:</strong>
-                                            @if($bin->last_seen)
-                                                {{ \Carbon\Carbon::parse($bin->last_seen)->format('d-m-Y H:i') }}
-                                            @else
-                                                <span class="text-muted">Never reported</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No abnormal or undetected bins
-                            </div>
-                        @endforelse
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-    
-        <div class="card mt-3">
-            <div class="card-header smartbin-gradient">
-                <h5 class="mb-0 text-white fs-6">
-                    <i class="fas fa-exclamation-circle"></i> Abnormal/Undetected Sensors
-                </h5>
-            </div>
-            <div class="card-body" style="height: 250px;">
-                <canvas id="abnormalBinsChart"></canvas>
-            </div>
-        </div>
-
 
 <!-- SmartBin Animated Gradient Style -->
 <style>
@@ -773,70 +896,6 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
-            <!-- SIMPLE USER LIST  -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-users"></i> Users
-                    </h5>
-                </div>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:5%;">#</th>
-                                <th style="width:30%;">Name</th>
-                                <th style="width:15%;">Role</th>
-                                <th style="width:20%;">Phone</th>
-                                <th style="width:30%;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($users as $index => $user)
-                                <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $user->name }}</td>
-                                    <td>
-                                        @switch($user->role)
-                                            @case(1) <span class="badge bg-danger">Admin</span> @break
-                                            @case(2) <span class="badge bg-primary">Staff</span> @break
-                                            @case(3) <span class="badge bg-secondary">User</span> @break
-                                            @case(4) <span class="badge bg-success">Supervisor</span> @break
-                                            @default <span class="badge bg-dark">Unknown</span>
-                                        @endswitch
-                                    </td>
-                                    <td>
-                                        @if($user->phone)
-                                            @php
-                                                $cleanPhone = preg_replace('/\D+/', '', $user->phone);
-                                                $cleanPhone = ltrim($cleanPhone, '0');
-                                                $fullPhone = '60' . $cleanPhone;
-                                            @endphp
-                                            <a href="tel:{{ $fullPhone }}" class="text-decoration-none me-2">
-                                                {{ $user->phone }}
-                                            </a>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($user->phone)
-                                            <a href="tel:{{ $fullPhone }}" class="btn btn-sm btn-outline-primary me-1" title="Call">
-                                                <i class="fas fa-phone"></i>
-                                            </a>
-                                            <a href="https://wa.me/{{ $fullPhone }}" target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
         </div>
 
 
@@ -1068,75 +1127,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     @endif
 
-    //smartbin tracker
-    const smartBinData = @json($smartBinClearTimes);
-
-    const ctx = document.getElementById('smartBinClearChart').getContext('2d');
-    let chart;
-
-function renderChart(assetName) {
-    const devices = smartBinData[assetName] || {}; // <-- use empty object if no data
-
-    const today = new Date();
-    const lastWeekDates = [];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        lastWeekDates.push(d.toISOString().split('T')[0]);
-    }
-    const labels = lastWeekDates;
-
-    const datasets = Object.entries(devices).map(([deviceName, records]) => {
-        const dataMap = {};
-        records.forEach(r => {
-            const day = r.date.split(' ')[0];
-            dataMap[day] = r.hours;
-        });
-        return {
-            label: deviceName,
-            data: labels.map(date => dataMap[date] ?? null),
-            borderWidth: 3,
-            tension: 0.4,
-            pointRadius: 5,
-            spanGaps: true
-        };
-    });
-
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: true },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ctx.raw !== null ? `${ctx.raw} hours` : 'No data'
-                    }
-                }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Last 7 Days' } },
-                y: { beginAtZero: true, title: { display: true, text: 'Hours to Clear' } }
-            }
-        }
-    });
-}
-
-    // initial load
-    const assetSelect = document.getElementById('assetFilter');
-    renderChart(assetSelect.value);
-
-    // filter change
-    assetSelect.addEventListener('change', e => {
-        renderChart(e.target.value);
-    });
 });
 </script>
 
@@ -1412,5 +1402,45 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+function openAssetDetails(url) {
+    window.open(url, '_blank');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.querySelector('#static-device-grid .devices-grid');
+    const filterSelect = document.getElementById('deviceFilter');
+    let currentFilter = 'critical';
+
+    function applyFilter(filter = 'critical') {
+        currentFilter = filter;
+
+        // Loop over each asset card
+        grid.querySelectorAll('.asset-card').forEach(assetCard => {
+            let anyVisible = false;
+
+            // Loop over device cards inside this asset
+            assetCard.querySelectorAll('.device-card').forEach(deviceCard => {
+                const status = deviceCard.dataset.status;
+                const show =
+                    filter === 'all' ||
+                    (filter === 'critical' && ['full','half','empty'].includes(status)) ||
+                    status === filter;
+
+                deviceCard.style.display = show ? '' : 'none';
+                if (show) anyVisible = true;
+            });
+
+            // Show/hide the asset card depending on whether any devices are visible
+            assetCard.style.display = anyVisible ? '' : 'none';
+        });
+    }
+
+    // INITIAL FILTER
+    applyFilter(currentFilter);
+
+    filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
+});
+</script>
 
 @endsection
