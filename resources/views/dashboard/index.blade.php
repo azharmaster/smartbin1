@@ -1249,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const map = L.map('dashboardMap').setView([3.1390, 101.6869], 12); // Default center: Kuala Lumpur
+    const map = L.map('dashboardMap').setView([3.1421, 101.7184], 17);//default trx
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1289,12 +1289,17 @@ document.addEventListener('DOMContentLoaded', function() {
             L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
                 icon: L.divIcon({
                     html: `
-                        <i class="fas fa-trash-alt
-                            {{ $color === 'red' ? 'pulse-icon' : '' }}"
-                            style="font-size:22px; color: {{ $color }};">
-                        </i>
+                    <i class="fas fa-trash
+                        {{ $color === 'red' ? 'radar-icon' : '' }}"
+                        style="
+                            font-size:22px; 
+                            color: {{ $color }};
+                            -webkit-text-stroke: 0.3px white; /* thinner outline */
+                            text-stroke: 0.3px white;        /* fallback */
+                            text-shadow: 0 0 1px white;      /* subtle glow */
+                        ">
+                    </i>
                     `,
-
                     className: '',
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
@@ -1620,27 +1625,37 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <style>
-/* Pulse animation for FULL bins */
-.pulse-icon {
+/* Radar pulse - crisp thick expanding circle */
+.radar-icon {
     position: relative;
-    animation: pulseGlow 1.5s infinite;
+    font-size: 22px;
+    color: red; /* icon color */
+    display: inline-block;
 }
 
-@keyframes pulseGlow {
+/* Expanding thick ring */
+.radar-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;           /* really small start */
+    height: 5px;          /* make it equal to width for a circle */
+    border: 6px solid currentColor; /* thick ring */
+    border-radius: 50%;    /* keeps it circular */
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+    pointer-events: none;
+    animation: radarPing 1.5s infinite;
+}
+@keyframes radarPing {
     0% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 4px red);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 12px red);
-        opacity: 0.85;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
     }
     100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 4px red);
-        opacity: 1;
+        transform: translate(-50%, -50%) scale(6); /* expand far */
+        opacity: 0; /* fade out */
     }
 }
 </style>
