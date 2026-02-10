@@ -1288,7 +1288,13 @@ document.addEventListener('DOMContentLoaded', function() {
         @if($asset->latitude && $asset->longitude)
             L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
                 icon: L.divIcon({
-                    html: `<i class="fas fa-trash-alt" style="font-size:22px; color: {{ $color }}; filter: drop-shadow(0 0 4px {{ $color }});"></i>`,
+                    html: `
+                        <i class="fas fa-trash-alt
+                            {{ $color === 'red' ? 'pulse-icon' : '' }}"
+                            style="font-size:22px; color: {{ $color }};">
+                        </i>
+                    `,
+
                     className: '',
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
@@ -1612,5 +1618,31 @@ document.addEventListener('DOMContentLoaded', () => {
     filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
 });
 </script>
+
+<style>
+/* Pulse animation for FULL bins */
+.pulse-icon {
+    position: relative;
+    animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 4px red);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 12px red);
+        opacity: 0.85;
+    }
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 4px red);
+        opacity: 1;
+    }
+}
+</style>
 
 @endsection
