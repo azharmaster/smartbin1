@@ -33,6 +33,8 @@ class Asset extends Model
     protected $fillable = [
         'asset_name',
         'floor_id',
+        'latitude',
+        'longitude',
         'serialNo',
         'location',
         'model',

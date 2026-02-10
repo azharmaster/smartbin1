@@ -9,30 +9,40 @@ use Illuminate\Http\Request;
 class DeviceController extends Controller
 {
     public $allAssets;
+
     public function index()
     {
         $devices = Device::with('asset')->get();
         $assets = Asset::all(); // fetch all assets for dropdown
+
         return view('devices.index', compact('devices', 'assets'));
     }
 
     public function create()
     {
         $assets = Asset::all();
+
         return view('devices.create', compact('assets'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'asset_id' => 'required|exists:assets,id',
+            'asset_id'    => 'required|exists:assets,id',
             'device_name' => 'nullable|string|max:255',
-            'id_device' => 'nullable|string|max:255',
+            'id_device'   => 'nullable|string|max:255',
+            'serialno'    => 'nullable|string|max:255',
+            'simcard'     => 'nullable|string|max:255',
         ]);
 
-        Device::create($request->only('asset_id', 'device_name', 'id_device'));
+        Device::create($request->only(
+            'asset_id',
+            'device_name',
+            'id_device',
+            'serialno',
+            'simcard'
+        ));
 
-        // Redirect back to the previous page (where the form was submitted)
         return redirect()->back()->with('success', 'Device created.');
     }
 
@@ -44,18 +54,27 @@ class DeviceController extends Controller
     public function edit(Device $device)
     {
         $assets = Asset::all();
+
         return view('devices.edit', compact('device', 'assets'));
     }
 
     public function update(Request $request, Device $device)
     {
         $request->validate([
-            'asset_id' => 'required|exists:assets,id',
+            'asset_id'    => 'required|exists:assets,id',
             'device_name' => 'nullable|string|max:255',
-            'id_device' => 'nullable|string|max:255',
+            'id_device'   => 'nullable|string|max:255',
+            'serialno'    => 'nullable|string|max:255',
+            'simcard'     => 'nullable|string|max:255',
         ]);
 
-        $device->update($request->only('asset_id', 'device_name', 'id_device'));
+        $device->update($request->only(
+            'asset_id',
+            'device_name',
+            'id_device',
+            'serialno',
+            'simcard'
+        ));
 
         return redirect()->back()->with('success', 'Device updated.');
     }
@@ -63,6 +82,7 @@ class DeviceController extends Controller
     public function destroy(Device $device)
     {
         $device->delete();
-        return redirect()->back()->with('success', 'Device created.');
+
+        return redirect()->back()->with('success', 'Device deleted.');
     }
 }

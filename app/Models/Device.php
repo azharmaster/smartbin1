@@ -15,7 +15,9 @@ class Device extends Model
         'asset_id',
         'id_device',
         'device_name',
-        'is_active', // ✅ Added for device-level ON/OFF
+        'serialno',
+        'simcard',
+        'is_active',
     ];
 
     protected $casts = [

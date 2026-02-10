@@ -815,7 +815,7 @@ function openHelp() {
             <form method="POST" action="{{ route('devices.update', $device->id) }}">
                 @csrf
                 @method('PUT')
-                
+
                 <input type="hidden" name="asset_id" value="{{ $device->asset_id }}">
 
                 <div class="modal-header">
@@ -834,6 +834,26 @@ function openHelp() {
                                value="{{ $device->id_device }}"
                                readonly>
                     </div>
+
+                    {{-- Serial Number --}}
+                    <div class="form-group">
+                        <label>Serial Number</label>
+                        <input type="text"
+                               name="serialno"
+                               class="form-control"
+                               value="{{ $device->serialno }}">
+                    </div>
+
+                    {{-- SIM Card --}}
+                    <div class="form-group">
+                        <label>SIM Card</label>
+                        <input type="text"
+                               name="simcard"
+                               class="form-control"
+                               value="{{ $device->simcard }}">
+                    </div>
+
+                    {{-- Device Name --}}
                     <div class="form-group">
                         <label>Device Name</label>
                         <select name="device_name" class="form-control">
@@ -848,17 +868,26 @@ function openHelp() {
                             </option>
                         </select>
                     </div>
-                    <!-- Add other device fields here if needed -->
+
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save changes
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endforeach
+
 
 <!-- help modal -->
 <div class="modal fade" id="helpModal" tabindex="-1">
@@ -929,7 +958,6 @@ function openHelp() {
   </div>
 </div>
 
-@endforeach
 
 </div> {{-- Single Livewire root wrapper end --}}
 

@@ -53,6 +53,8 @@
                         <th>Asset Name</th>
                         <th>Sensor ID</th>
                         <th>Sensor Name</th>
+                        <th>Serial Number</th>
+                        <th>Sim Card</th>
                         <th>Option</th>
                     </tr>
                 </thead>
@@ -63,6 +65,8 @@
                         <td>{{ $device->asset->asset_name ?? '-' }}</td>
                         <td>{{ $device->id_device }}</td>
                         <td>{{ $device->device_name }}</td>
+                        <td>{{ $device->serialno }}</td>
+                        <td>{{ $device->simcard }}</td>
                         <td>
                             @if(auth()->user()->role == 1)
                             <div style="position: relative; display: flex; align-items: center; justify-content: center;">
@@ -72,6 +76,8 @@
                                     :device_name="$device->device_name"
                                     :asset_id="$device->asset_id"
                                     :id_device="$device->id_device"
+                                    :serialno="$device->serialno"
+                                    :simcard="$device->simcard"
                                 />
                                 &nbsp;
 
