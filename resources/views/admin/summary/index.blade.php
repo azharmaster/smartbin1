@@ -55,7 +55,7 @@
         </div>
 
         <div class="col-md-2 ms-auto text-end">
-            <button class="btn btn-outline-primary mt-2" onclick="window.print()">
+            <button class="btn btn-outline-primary mt-2" onclick="printDashboard()">
                 <i class="fas fa-print me-1"></i> Print 
             </button>
         </div>
@@ -101,26 +101,65 @@
     </div>
 
     {{-- ================= CHART ROW 2 ================= --}}
-    <div class="row g-4 mt-1">
+    <div class="row g-4 mt-1 align-items-stretch">
+
         {{-- Average Clear Time --}}
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
+        <div class="col-lg-6 d-flex">
+            <div class="card shadow-sm border-0 w-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-broom me-2"></i>
                     Average Bin Clear Time (Hours)
                 </div>
-                <div class="card-body" style="height: 320px;">
+                <div class="card-body p-2" style="height: 320px;">
                     <canvas id="avgClearChart"></canvas>
                 </div>
             </div>
         </div>
 
+        {{-- Cleaning History --}}
+        <div class="col-lg-6 d-flex">
+            <div class="card shadow-sm border-0 w-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-history me-2"></i>
+                    Cleaning History
+                </div>
+
+                {{-- Scrollable content --}}
+                <div class="card-body p-0" style="height: 320px; overflow-y: auto;">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Asset</th>
+                                <th>Device / Compartment</th>
+                                <th>Cleaned At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($cleaningLogs as $log)
+                                <tr>
+                                    <td>{{ $log->asset_name }}</td>
+                                    <td>{{ $log->device_name }}</td>
+                                    <td>{{ $log->cleaned_at->format('d M Y, h:i A') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">
+                                        No cleaning records found for this period.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         {{-- Insight Box --}}
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
+        <div class="col-lg-6 d-flex">
+            <div class="card shadow-sm border-0 w-100">
                 <div class="card-header bg-dark text-white">
                     <i class="fas fa-lightbulb me-2"></i>
-                        {{ ucfirst($period) }} Insights
+                    {{ ucfirst($period) }} Insights
                 </div>
                 <div class="card-body">
                     <ul class="mb-0">
@@ -132,6 +171,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     {{-- ================= ASSET IMAGES ================= --}}
@@ -163,7 +203,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-    const labels = @json($binAnalytics->pluck('device_name'));
+    const labels = @json($binAnalytics->pluck('asset_name'));
 
     /* Times Full */
     new Chart(document.getElementById('timesFullChart'), {
@@ -241,6 +281,49 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+<script>
+function printDashboard() {
+
+    // Convert all canvases to images
+    document.querySelectorAll('canvas').forEach(canvas => {
+
+        // Skip if already converted
+        if (canvas.dataset.printed) return;
+
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png', 1.0);
+        img.style.width = '100%';
+        img.style.maxHeight = '320px';
+        img.classList.add('print-chart');
+
+        img.dataset.canvasId = canvas.id;
+        canvas.dataset.printed = true;
+
+        canvas.style.display = 'none';
+        canvas.parentNode.appendChild(img);
+    });
+
+    // Give browser time to render images
+    setTimeout(() => {
+        window.print();
+
+        // Restore after printing
+        setTimeout(() => {
+            document.querySelectorAll('.print-chart').forEach(img => {
+                const canvas = document.getElementById(img.dataset.canvasId);
+                if (canvas) canvas.style.display = '';
+                img.remove();
+            });
+
+            document.querySelectorAll('canvas').forEach(c => {
+                delete c.dataset.printed;
+            });
+
+        }, 500);
+
+    }, 300);
+}
+</script>
 
 <style>
 .summary-gradient {
@@ -276,8 +359,55 @@ window.addEventListener('DOMContentLoaded', () => {
     object-fit: cover;
 }
 @media print {
-    .no-print { display: none !important; }
-    canvas { page-break-inside: avoid; }
+
+    /* Hide elements marked no-print */
+    .no-print {
+        display: none !important;
+    }
+
+    /* Expand scrollable cards for print */
+    .card-body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Make charts taller and full width */
+    .card-body canvas,
+    .card-body img.print-chart {
+        width: 100% !important;
+        height: 450px !important; /* taller for paper */
+    }
+
+    /* Tables flow properly across pages */
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    /* Prevent chart images from splitting across pages */
+    img.print-chart {
+        page-break-inside: avoid;
+    }
+
+    /* Ensure colors are preserved */
+    body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+.card-body::-webkit-scrollbar {
+    width: 6px;
+}
+.card-body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
 }
 </style>
 @endsection

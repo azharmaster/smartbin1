@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Asset;
+use App\Models\CapacitySetting;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SummaryReportMail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,19 +14,41 @@ use QuickChart\Quickchart;
 
 class SummaryController extends Controller
 {
-    private function getCapacityStats(Carbon $baseDate, string $period)
-    {
-        [$start, $end] = $this->resolveDateRange($baseDate, $period);
+private function getCapacityStats(Carbon $baseDate, string $period)
+{
+    $assets = Asset::with([
+        'capacitySetting',
+        'devices.latestSensor' // ❗ NO whereBetween here
+    ])->get();
 
-        return DB::table('sensors')
-            ->whereBetween('sensors.time', [$start, $end])
-            ->selectRaw("
-                SUM(CASE WHEN capacity BETWEEN 0 AND 40 THEN 1 ELSE 0 END) as empty_count,
-                SUM(CASE WHEN capacity BETWEEN 41 AND 85 THEN 1 ELSE 0 END) as half_count,
-                SUM(CASE WHEN capacity >= 86 THEN 1 ELSE 0 END) as full_count
-            ")
-            ->first();
+    $empty = $half = $full = 0;
+
+    foreach ($assets as $asset) {
+
+        $setting = $asset->capacitySetting;
+        if (!$setting) continue;
+
+        foreach ($asset->devices as $device) {
+
+            $sensor = $device->latestSensor;
+            if (!$sensor || !is_numeric($sensor->capacity)) continue;
+
+            if ($sensor->capacity <= $setting->empty_to) {
+                $empty++;
+            } elseif ($sensor->capacity <= $setting->half_to) {
+                $half++;
+            } else {
+                $full++;
+            }
+        }
     }
+
+    return (object) [
+        'empty_count' => $empty,
+        'half_count'  => $half,
+        'full_count'  => $full,
+    ];
+}
 
     private function getDevicesByFloor()
     {
@@ -37,96 +60,181 @@ class SummaryController extends Controller
             ->get();
     }
 
-    private function computeBinAnalyticsPerDevice(Carbon $baseDate, string $period)
-{
-    [$start, $end] = $this->resolveDateRange($baseDate, $period);
+    private function computeBinAnalyticsPerAsset(Carbon $baseDate, string $period)
+    {
+        [$start, $end] = $this->resolveDateRange($baseDate, $period);
 
-    // 1️⃣ Load ALL devices first (this stabilizes the count)
-    $devices = DB::table('devices')
-        ->join('assets', 'devices.asset_id', '=', 'assets.id')
-        ->select(
-            'devices.id_device as device_id',
-            'devices.device_name',
-            'assets.asset_name'
-        )
-        ->orderBy('devices.id_device')
-        ->get()
-        ->keyBy('device_id');
+        $assets = Asset::with([
+            'capacitySetting',
+            'devices' => function ($q) {
+                $q->orderBy('id_device');
+            }
+        ])->get();
 
-    // 2️⃣ Load sensor data ONLY for the selected period
-    $sensorData = DB::table('sensors')
-        ->whereBetween('time', [$start, $end])
-        ->orderBy('time')
-        ->get()
-        ->groupBy('device_id');
+        $sensorData = DB::table('sensors')
+            ->whereBetween('time', [$start, $end])
+            ->orderBy('time')
+            ->get()
+            ->groupBy('device_id');
 
-    $results = [];
+        $results = [];
 
-    // 3️⃣ Loop over DEVICES, not sensors
-    foreach ($devices as $deviceId => $device) {
+        foreach ($assets as $asset) {
 
-        $deviceSensors = $sensorData->get($deviceId, collect());
+            $setting = $asset->capacitySetting;
 
-        $timesFull = 0;
-        $fillDurations = [];
-        $clearDurations = [];
-
-        $prevCapacity = null;
-        $lastFullAt = null;
-        $lastEmptyAt = null;
-
-        foreach ($deviceSensors as $sensor) {
-            $capacity = (float) $sensor->capacity;
-            $time = Carbon::parse($sensor->time);
-
-            if ($prevCapacity === null) {
-                $prevCapacity = $capacity;
-                if ($capacity <= 40) $lastEmptyAt = $time;
-                if ($capacity >= 86) $lastFullAt = $time;
+            if (!$setting) {
+                $results[] = (object) [
+                    'asset_name'     => $asset->asset_name,
+                    'times_full'     => 0,
+                    'avg_fill_time'  => 0,
+                    'avg_clear_time' => 0,
+                ];
                 continue;
             }
 
-            // EMPTY → FULL
-            if ($prevCapacity < 86 && $capacity >= 86) {
-                $timesFull++;
-                if ($lastEmptyAt) {
-                    $fillDurations[] = $lastEmptyAt->diffInMinutes($time) / 60;
+            $timesFull = 0;
+            $fillDurations = [];
+            $clearDurations = [];
+
+            foreach ($asset->devices as $device) {
+
+                $deviceSensors = $sensorData->get($device->id_device, collect());
+
+                $prevCapacity = null;
+                $lastFullAt = null;
+                $lastEmptyAt = null;
+
+                foreach ($deviceSensors as $sensor) {
+
+                    if (!is_numeric($sensor->capacity)) continue;
+
+                    $capacity = (float) $sensor->capacity;
+                    $time = Carbon::parse($sensor->time);
+
+                    if ($prevCapacity === null) {
+                        $prevCapacity = $capacity;
+
+                        if ($capacity <= $setting->empty_to) {
+                            $lastEmptyAt = $time;
+                        } elseif ($capacity > $setting->half_to) {
+                            $lastFullAt = $time;
+                        }
+                        continue;
+                    }
+
+                    // EMPTY → FULL
+                    if (
+                        $prevCapacity <= $setting->half_to &&
+                        $capacity >  $setting->half_to
+                    ) {
+                        $timesFull++;
+
+                        if ($lastEmptyAt) {
+                            $fillDurations[] =
+                                $lastEmptyAt->diffInMinutes($time) / 60;
+                        }
+
+                        $lastFullAt = $time;
+                    }
+
+                    // FULL → EMPTY
+                    if (
+                        $prevCapacity >  $setting->half_to &&
+                        $capacity <= $setting->empty_to
+                    ) {
+                        if ($lastFullAt) {
+                            $clearDurations[] =
+                                $lastFullAt->diffInMinutes($time) / 60;
+                        }
+
+                        $lastEmptyAt = $time;
+                    }
+
+                    $prevCapacity = $capacity;
                 }
-                $lastFullAt = $time;
+
+                // Still full at period end
+                if ($lastFullAt && $lastFullAt < $end) {
+                    $clearDurations[] =
+                        $lastFullAt->diffInMinutes($end) / 60;
+                }
             }
 
-            // FULL → EMPTY
-            if ($prevCapacity >= 86 && $capacity <= 40) {
-                if ($lastFullAt) {
-                    $clearDurations[] = $lastFullAt->diffInMinutes($time) / 60;
-                }
-                $lastEmptyAt = $time;
-            }
-
-            $prevCapacity = $capacity;
+            $results[] = (object) [
+                'asset_name'     => $asset->asset_name,
+                'times_full'     => $timesFull,
+                'avg_fill_time'  => count($fillDurations)
+                    ? round(array_sum($fillDurations) / count($fillDurations), 2)
+                    : 0,
+                'avg_clear_time' => count($clearDurations)
+                    ? round(array_sum($clearDurations) / count($clearDurations), 2)
+                    : 0,
+            ];
         }
 
-        // Edge case: bin stayed full until period end
-        if ($lastFullAt && $lastFullAt < $end) {
-            $clearDurations[] = $lastFullAt->diffInMinutes($end) / 60;
-        }
-
-        // 4️⃣ Always return device, even with no data
-        $results[] = (object) [
-            'asset_name'     => $device->asset_name,
-            'device_name'    => $device->device_name,
-            'times_full'     => $timesFull,
-            'avg_fill_time'  => count($fillDurations)
-                ? round(array_sum($fillDurations) / count($fillDurations), 2)
-                : 0,
-            'avg_clear_time' => count($clearDurations)
-                ? round(array_sum($clearDurations) / count($clearDurations), 2)
-                : 0,
-        ];
+        return collect($results);
     }
 
-    return collect($results);
-}
+    private function getCleaningLogs(Carbon $baseDate, string $period)
+    {
+        [$start, $end] = $this->resolveDateRange($baseDate, $period);
+
+        $assets = Asset::with([
+            'capacitySetting',
+            'devices'
+        ])->get();
+
+        $sensorData = DB::table('sensors')
+            ->whereBetween('time', [$start, $end])
+            ->orderBy('time')
+            ->get()
+            ->groupBy('device_id');
+
+        $logs = [];
+
+        foreach ($assets as $asset) {
+
+            $setting = $asset->capacitySetting;
+            if (!$setting) continue;
+
+            foreach ($asset->devices as $device) {
+
+                $deviceSensors = $sensorData->get($device->id_device, collect());
+
+                $prevCapacity = null;
+
+                foreach ($deviceSensors as $sensor) {
+
+                    if (!is_numeric($sensor->capacity)) continue;
+
+                    $capacity = (float) $sensor->capacity;
+                    $time     = Carbon::parse($sensor->time);
+
+                    if ($prevCapacity === null) {
+                        $prevCapacity = $capacity;
+                        continue;
+                    }
+
+                    // ✅ CLEANED EVENT: FULL → EMPTY
+                    if (
+                        $prevCapacity >  $setting->half_to &&
+                        $capacity <= $setting->empty_to
+                    ) {
+                        $logs[] = (object) [
+                            'asset_name'  => $asset->asset_name,
+                            'device_name' => $device->device_name ?? $device->id_device,
+                            'cleaned_at'  => $time,
+                        ];
+                    }
+
+                    $prevCapacity = $capacity;
+                }
+            }
+        }
+
+        return collect($logs)->sortByDesc('cleaned_at');
+    }
 
     private function getAssets()
     {
@@ -169,8 +277,9 @@ public function index(Request $request)
 
     $capacityStats  = $this->getCapacityStats($baseDate, $period);
     $devicesByFloor = $this->getDevicesByFloor();
-    $binAnalytics   = $this->computeBinAnalyticsPerDevice($baseDate, $period);
+    $binAnalytics = $this->computeBinAnalyticsPerAsset($baseDate, $period);
     $assets         = $this->getAssets();
+    $cleaningLogs = $this->getCleaningLogs($baseDate, $period);
 
     return view('admin.summary.index', compact(
         'monthInput',
@@ -178,7 +287,8 @@ public function index(Request $request)
         'capacityStats',
         'devicesByFloor',
         'binAnalytics',
-        'assets'
+        'assets',
+        'cleaningLogs'
     ));
 }
 
@@ -212,7 +322,7 @@ public function sendEmail(Request $request)
         ]));
     };
 
-    $labels = $binAnalytics->pluck('device_name');
+    $labels = $binAnalytics->pluck('asset_name');
 
     $timesFullChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
