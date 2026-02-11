@@ -247,24 +247,20 @@ private function getCalendarEvents()
 
     // Map grouped notifications into one calendar event per day
     $calendarNotifications = $groupedNotifications->map(function($items, $date) {
-        return [
-            'id' => 'notifications-' . $date,
-            'title' => '🔔 ' . $items->count() . ' Notifications',
-            'start' => $date,
-            'allDay' => true,
-            'color' => '#ffc107',
-            'type' => 'notification_group', // mark as a group
-            'notifications' => $items->map(function($n) {
-                return [
-                    'asset' => $n->asset,      // make sure you eager-load asset with with('asset')
-                    'location' => $n->location,
-                    'created_at' => $n->created_at,
-                    'device_name' => $n->device_name,
-                    'is_active' => $n->is_active,
-                ];
-            }),
-        ];
-    })->values();
+    return [
+        'id' => 'notifications-' . $date,
+        'title' => '🔔 ' . $items->count() . ' Notifications',
+        'start' => $date,
+        'allDay' => true,
+        'color' => '#ffc107',
+        'type' => 'notification_group',
+        'notifications' => $items->map(function($n) {
+            return [
+                'message_preview' => $n->message_preview,
+            ];
+        }),
+    ];
+})->values();
 
         return $calendarEvents
             ->toBase()

@@ -1545,9 +1545,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let html = '<ul class="list-group list-group-flush">';
         info.event.extendedProps.notifications.forEach(n => {
             html += `<li class="list-group-item">
-                        <strong>Asset:</strong> ${n.asset?.asset_name ?? 'N/A'}<br>
-                        <strong>Location:</strong> ${n.location ?? 'N/A'}<br>
-                        <strong>Sent At:</strong> ${new Date(n.created_at).toLocaleString()}
+                        ${n.message_preview ?? 'No message available'}
                      </li>`;
         });
         html += '</ul>';
