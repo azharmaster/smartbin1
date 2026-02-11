@@ -18,4 +18,14 @@ class NotificationLog extends Model
     ];
 
     protected $dates = ['sent_at'];
+
+    public function asset()
+{
+    return $this->belongsTo(Asset::class, 'asset_id', 'id');
+}
+
+// In NotificationLog model (ni dgn atas maybe bole buang)
+public function device() {
+    return $this->belongsTo(Device::class, 'id_device', 'id_device');
+}
 }

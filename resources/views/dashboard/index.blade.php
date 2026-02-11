@@ -1354,6 +1354,23 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
   </div>
 </div>
 
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-bell"></i> Notifications for the Day</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="notificationListContainer"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Dashboard Help Modal -->
 <div class="modal fade" id="helpModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -1523,6 +1540,23 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         eventClick: function(info) {
+    if (info.event.extendedProps.type === 'notification_group') {
+
+        let html = '<ul class="list-group list-group-flush">';
+        info.event.extendedProps.notifications.forEach(n => {
+            html += `<li class="list-group-item">
+                        <strong>Asset:</strong> ${n.asset?.asset_name ?? 'N/A'}<br>
+                        <strong>Location:</strong> ${n.location ?? 'N/A'}<br>
+                        <strong>Sent At:</strong> ${new Date(n.created_at).toLocaleString()}
+                     </li>`;
+        });
+        html += '</ul>';
+
+        $('#notificationListContainer').html(html);
+        $('#notificationModal').modal('show');
+        info.jsEvent.preventDefault();
+        return;
+    }
 
             $('#eventLocation').parent().hide();
             $('#eventPic').parent().hide();

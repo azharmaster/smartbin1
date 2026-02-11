@@ -206,7 +206,9 @@ private function getCalendarEvents()
 {
     $holidays = Holiday::where('is_active', true)->get();
     $events = Event::all();
-    $notifications = NotificationLog::all();
+    $notifications = NotificationLog::with('asset')->get(); // eager load asset
+
+    
 
     $calendarHolidays = $holidays->map(function ($holiday) {
         $start = Carbon::parse($holiday->start_date)->format('Y-m-d');
@@ -238,23 +240,38 @@ private function getCalendarEvents()
         ];
     });
 
-    $calendarNotifications = $notifications->map(function ($n) {
-        return [
-            'id' => $n->id,
-            'title' => $n->title ?? 'Notification',
-            'start' => $n->sent_at ? Carbon::parse($n->sent_at)->toDateString() : Carbon::today()->toDateString(),
-            'allDay' => true,
-            'color' => '#ffc107',
-            'type' => 'notification',
-        ];
+    // Group notifications by date
+    $groupedNotifications = $notifications->groupBy(function($n) {
+        return Carbon::parse($n->sent_at)->toDateString();
     });
 
-    return $calendarEvents
-        ->toBase()
-        ->merge($calendarHolidays)
-        ->merge($calendarNotifications)
-        ->values();
-}
+    // Map grouped notifications into one calendar event per day
+    $calendarNotifications = $groupedNotifications->map(function($items, $date) {
+        return [
+            'id' => 'notifications-' . $date,
+            'title' => '🔔 ' . $items->count() . ' Notifications',
+            'start' => $date,
+            'allDay' => true,
+            'color' => '#ffc107',
+            'type' => 'notification_group', // mark as a group
+            'notifications' => $items->map(function($n) {
+                return [
+                    'asset' => $n->asset,      // make sure you eager-load asset with with('asset')
+                    'location' => $n->location,
+                    'created_at' => $n->created_at,
+                    'device_name' => $n->device_name,
+                    'is_active' => $n->is_active,
+                ];
+            }),
+        ];
+    })->values();
+
+        return $calendarEvents
+            ->toBase()
+            ->merge($calendarHolidays)
+            ->merge($calendarNotifications)
+            ->values();
+    }
 
 /** Today's notifications */
 private function getTodayNotifications()
