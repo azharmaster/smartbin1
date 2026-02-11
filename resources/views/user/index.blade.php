@@ -29,6 +29,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Phone</th>
+                        <th>Role</th>
                         <th>Option</th>
                     </tr>
                 </thead>
@@ -39,6 +40,15 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->phone }}</td>
+                        <td>
+                            @if($user->role == 1)
+                                <span class="badge bg-primary">Admin</span>
+                            @elseif($user->role == 4)
+                                <span class="badge bg-info">Supervisor</span>
+                            @else
+                                <span class="badge bg-secondary">User</span>
+                            @endif
+                        </td>
                         <td>
                             <div class="d-flex gap-1 align-items-center justify-content-center">
 

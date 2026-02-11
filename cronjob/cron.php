@@ -1,9 +1,64 @@
 <?php
 require __DIR__ . '/db.php';
 require __DIR__ . '/whatsapp.php';
-require __DIR__ . '/../vendor/autoload.php';  // <-- correct path
+require __DIR__ . '/../vendor/autoload.php'; // Composer autoload
 
 use Carbon\Carbon;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Load .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
+$logFile = __DIR__ . '/cron.log';
+$now = new DateTime();
+
+// --- Helper: send email via SMTP safely ---
+function sendEmailSMTP($to, $subject, $body, $logFile) {
+    $mail = new PHPMailer(true);
+
+    // Read env variables with fallback
+    $mailHost       = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
+    $mailPort       = $_ENV['MAIL_PORT'] ?? 465;
+    $mailUsername   = $_ENV['MAIL_USERNAME'] ?? 'smartbin2026@gmail.com';
+    $mailPassword   = $_ENV['MAIL_PASSWORD'] ?? '';
+    $mailEncryption = $_ENV['MAIL_ENCRYPTION'] ?? 'ssl';
+    $mailFrom       = $_ENV['MAIL_FROM_ADDRESS'] ?? 'smartbin2026@gmail.com';
+    $mailFromName   = $_ENV['MAIL_FROM_NAME'] ?? 'SmartBin Reports';
+
+    try {
+        // SMTP setup
+        $mail->isSMTP();
+        $mail->Host       = $mailHost;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $mailUsername;
+        $mail->Password   = $mailPassword;
+        $mail->SMTPSecure = $mailEncryption;
+        $mail->Port       = $mailPort;
+
+        // Only ONE setFrom!
+        $mail->setFrom($mailFrom, $mailFromName);
+
+        // Recipient
+        $mail->addAddress($to);
+
+        // Content
+        $mail->isHTML(false);
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        file_put_contents(
+            $logFile,
+            date('Y-m-d H:i') . " | PHPMailer ERROR for {$to}: " . $mail->ErrorInfo . "\n",
+            FILE_APPEND
+        );
+        return false;
+    }
+}
 
 // WAHA configuration
 $apiUrl = "https://beta-waha.txfdw3.easypanel.host";  // WAHA server URL
@@ -125,65 +180,70 @@ file_put_contents(
     FILE_APPEND
 );
 
-/* Send WhatsApp */
+/* Send WhatsApp + Email */
 if ($canSend && count($fullBins)) {
 
-    $phones = $db->query("
-        SELECT DISTINCT phone
-        FROM users
-        WHERE role = 4 AND phone IS NOT NULL
-    ")->fetchAll(PDO::FETCH_COLUMN);
+    $supervisors = $db->query("SELECT DISTINCT phone, email FROM users WHERE role=4 AND (phone IS NOT NULL OR email IS NOT NULL)")->fetchAll(PDO::FETCH_ASSOC);
 
-    if (empty($phones)) {
-        file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor phones found\n", FILE_APPEND);
+    if (empty($supervisors)) {
+        file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor contacts found\n", FILE_APPEND);
     } else {
 
-        // Build minimal list by unique asset with timestamp
+        // Build minimal list by unique asset
         $uniqueAssets = [];
         foreach ($fullBins as $device) {
             $assetKey = $device['asset_name'];
-
-            // If asset not added yet OR this device has a later timestamp
             if (!isset($uniqueAssets[$assetKey]) || $device['full_time'] > $uniqueAssets[$assetKey]['timestamp']) {
                 $uniqueAssets[$assetKey] = [
-                    'location'  => $device['location'],
-                    'timestamp' => $device['full_time']
+                    'location'=>$device['location'],
+                    'timestamp'=>$device['full_time']
                 ];
             }
         }
 
-        // Build WhatsApp message
+        // Build message
         $assetList = '';
-        foreach ($uniqueAssets as $name => $data) {
+        foreach ($uniqueAssets as $name=>$data) {
             $ts = Carbon::parse($data['timestamp']);
-            $assetList .= 
-                "{$name}\n" .
-                "Location: {$data['location']}\n" .
-                "Date: ".$ts->format('d-m-Y')."\n" .
-                "Time: ".$ts->format('H:i')."\n";
+            $assetList .= "{$name}\nLocation: {$data['location']}\nDate: ".$ts->format('d-m-Y')."\nTime: ".$ts->format('H:i')."\n\n";
         }
 
-        $msg = "*".count($uniqueAssets)."* *FULL BINS* \n\n" . $assetList;
+        $msg = "*".count($uniqueAssets)."* *FULL BINS*\n\n".$assetList;
+        file_put_contents($logFile, date('Y-m-d H:i')." | Message prepared:\n".$msg."\n", FILE_APPEND);
 
-        foreach ($phones as $p) {
-            $formatted = '60'.ltrim(preg_replace('/\D+/', '', $p), '0');
-            $result = $whatsapp->sendTextMessage($formatted, $msg);
-            $ok = $result['success'];
+        // Send to each supervisor
+        foreach ($supervisors as $sup) {
 
-            file_put_contents(
-                $logFile,
-                date('Y-m-d H:i')." | WhatsApp sent to {$formatted} | ".($ok ? 'SUCCESS' : 'FAILED')."\n",
-                FILE_APPEND
-            );
+            file_put_contents($logFile, date('Y-m-d H:i')." | Processing supervisor: ".json_encode($sup)."\n", FILE_APPEND);
+
+            // WhatsApp
+            if (!empty($sup['phone'])) {
+                $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                try {
+                    $result = $whatsapp->sendTextMessage($formatted, $msg);
+                    $ok = isset($result['success']) ? $result['success'] : false;
+                } catch (Exception $e) {
+                    $ok = false;
+                    file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                }
+                file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp sent to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+            }
+
+            // Email via PHPMailer
+            if (!empty($sup['email'])) {
+                file_put_contents($logFile, date('Y-m-d H:i')." | Sending email to {$sup['email']}\n", FILE_APPEND);
+                $result = sendEmailSMTP($sup['email'], "FULL BINS ALERT", $msg, $logFile);
+                file_put_contents($logFile, date('Y-m-d H:i')." | Email sent to {$sup['email']} | ".($result===true?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+            }
         }
 
         // Log to DB
-        $log = $db->prepare("
-            INSERT INTO notification_logs
-            (channel, message_preview, message_full, sent_at)
-            VALUES ('whatsapp', ?, ?, NOW())
-        ");
-        $log->execute([substr($assetList, 0, 300), $msg]);
+        try {
+            $log = $db->prepare("INSERT INTO notification_logs (channel,message_preview,message_full,sent_at) VALUES ('whatsapp+email', ?, ?, NOW())");
+            $log->execute([substr($assetList,0,300), $msg]);
+        } catch (Exception $e) {
+            file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+        }
     }
 }
 
