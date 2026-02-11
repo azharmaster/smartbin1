@@ -1543,11 +1543,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (info.event.extendedProps.type === 'notification_group') {
 
         let html = '<ul class="list-group list-group-flush">';
+
         info.event.extendedProps.notifications.forEach(n => {
-            html += `<li class="list-group-item">
-                        ${n.message_preview ?? 'No message available'}
-                     </li>`;
+            // Split the message_preview by "🆔" or any separator if needed
+            let messages = n.message_preview.split('🆔').filter(m => m.trim() !== '');
+            messages.forEach(msg => {
+                html += `<li class="list-group-item">🆔 ${msg.trim()}</li>`;
+            });
         });
+
         html += '</ul>';
 
         $('#notificationListContainer').html(html);
