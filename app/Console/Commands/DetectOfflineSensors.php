@@ -18,7 +18,6 @@ class DetectOfflineSensors extends Command
 
     public function handle()
     {
-        date_default_timezone_set('Asia/Kuala_Lumpur');
         $now = Carbon::now();
         $threshold = $now->subMinutes(40);
 
