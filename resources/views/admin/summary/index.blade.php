@@ -11,46 +11,45 @@
         <div class="col-md-4">
             <form method="GET" action="{{ route('summary') }}" class="d-flex gap-2 align-items-end">
 
-    {{-- Period selector --}}
-    <div>
-        <label class="form-label fw-bold">Period</label>
-        <select name="period"
-                class="form-select fw-bold"
-                onchange="this.form.submit()">
-            <option value="month" {{ $period === 'month' ? 'selected' : '' }}>
-                Monthly
-            </option>
-            <option value="week" {{ $period === 'week' ? 'selected' : '' }}>
-                Weekly
-            </option>
-        </select>
-    </div>
+            {{-- Period selector --}}
+            <div>
+                <label class="form-label fw-bold">Period</label>
+                <select name="period"
+                        class="form-select fw-bold"
+                        onchange="this.form.submit()">
+                    <option value="month" {{ $period === 'month' ? 'selected' : '' }}>
+                        Monthly
+                    </option>
+                    <option value="week" {{ $period === 'week' ? 'selected' : '' }}>
+                        Weekly
+                    </option>
+                </select>
+            </div>
 
-    {{-- Month picker --}}
-    @if ($period === 'month')
-        <div>
-            <label class="form-label fw-bold">Select Month</label>
-            <input type="month"
-                   name="month"
-                   value="{{ $monthInput }}"
-                   class="form-control fw-bold"
-                   onchange="this.form.submit()">
-        </div>
-    @endif
+            {{-- Month picker --}}
+            @if ($period === 'month')
+                <div>
+                    <label class="form-label fw-bold">Select Month</label>
+                    <input type="month"
+                        name="month"
+                        value="{{ $monthInput }}"
+                        class="form-control fw-bold"
+                        onchange="this.form.submit()">
+                </div>
+            @endif
 
-    {{-- Week picker --}}
-    @if ($period === 'week')
-        <div>
-            <label class="form-label fw-bold">Select Week</label>
-            <input type="week"
-                   name="week"
-                   class="form-control fw-bold"
-                   value="{{ request('week', now()->format('Y-\WW')) }}"
-                   onchange="this.form.requestSubmit()">
-        </div>
-    @endif
-
-</form>
+            {{-- Week picker --}}
+            @if ($period === 'week')
+                <div>
+                    <label class="form-label fw-bold">Select Week</label>
+                    <input type="week"
+                        name="week"
+                        class="form-control fw-bold"
+                        value="{{ request('week', now()->format('Y-\WW')) }}"
+                        onchange="this.form.requestSubmit()">
+                </div>
+            @endif
+            </form>
 
         </div>
 
@@ -153,7 +152,10 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    {{-- ================= ROW 3 ================= --}}
+    <div class="row g-4 mt-1 align-items-stretch">
         {{-- Insight Box --}}
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
@@ -171,8 +173,8 @@
                 </div>
             </div>
         </div>
-
     </div>
+    
 
     {{-- ================= ASSET IMAGES ================= --}}
     <div class="row g-3 mt-4">
