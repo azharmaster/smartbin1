@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content_title')
-    {{ ucfirst($period) }} Summary Report
+    {{ $period === 'month' ? 'Monthly' : 'Weekly' }} Summary Report
 @endsection
 
 @section('content')
