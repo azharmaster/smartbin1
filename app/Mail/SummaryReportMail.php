@@ -27,9 +27,10 @@ class SummaryReportMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Monthly SmartBin Summary')
-            // You can include a simple plain text or html view if you want
-            ->view('emails.blank') 
+        $title = $this->data['reportTitle'] ?? 'SmartBin Summary Report';
+
+        return $this->subject('SmartBin ' . $title)
+            ->view('emails.blank')
             ->with($this->data)
             ->attachData(
                 $this->pdfOutput,

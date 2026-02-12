@@ -65,7 +65,17 @@
         <div class="col-md-2">
             <form method="POST" action="{{ route('summary.sendEmail') }}">
                 @csrf
-                <input type="hidden" name="month" value="{{  $monthInput }}">
+
+                <input type="hidden" name="period" value="{{ $period }}">
+
+                @if($period === 'month')
+                    <input type="hidden" name="month" value="{{ $monthInput }}">
+                @endif
+
+                @if($period === 'week')
+                    <input type="hidden" name="week" value="{{ request('week') }}">
+                @endif
+
                 <button class="btn btn-success mt-2 w-100">
                     <i class="fas fa-envelope me-1"></i> Send Report
                 </button>

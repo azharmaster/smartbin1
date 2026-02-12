@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Summary Report - {{ $month }}</title>
+    <title>SmartBin Summary Report</title>
     <style>
         body { font-family: Arial, sans-serif; color: #333; margin: 20px; }
         h4 { margin-bottom: 10px; }
@@ -18,7 +18,11 @@
 </head>
 <body>
 
-<h2>SmartBin Monthly Summary - {{ $month }}</h2>
+<h2>SmartBin Summary</h2>
+
+<p style="font-weight: bold;">
+    {{ $reportTitle }}
+</p>
 
 <h4>Number of Times Each Bin Became Full</h4>
 <img src="{{ $timesFullChartData }}" class="chart">
@@ -28,6 +32,25 @@
 
 <h4>Average Bin Clear Time (Hours)</h4>
 <img src="{{ $avgClearChartData }}" class="chart">
+
+<h4>Bin Analytics (Per Asset)</h4>
+
+<table>
+    <tr>
+        <th>Asset</th>
+        <th>Times Full</th>
+        <th>Avg Fill Time (hrs)</th>
+        <th>Avg Clear Time (hrs)</th>
+    </tr>
+    @foreach($binAnalytics as $row)
+        <tr>
+            <td>{{ $row->asset_name }}</td>
+            <td>{{ $row->times_full }}</td>
+            <td>{{ $row->avg_fill_time }}</td>
+            <td>{{ $row->avg_clear_time }}</td>
+        </tr>
+    @endforeach
+</table>
 
 </body>
 </html>

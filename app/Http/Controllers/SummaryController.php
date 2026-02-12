@@ -249,7 +249,7 @@ private function getCapacityStats(Carbon $baseDate, string $period)
                 $baseDate->copy()->endOfDay(),
             ];
         }
-        
+
         if ($period === 'week') {
             return [
                 $baseDate->copy()->startOfWeek(),
@@ -278,6 +278,10 @@ public function index(Request $request)
         $baseDate = Carbon::now()
             ->setISODate($year, $weekNumber)
             ->startOfWeek();
+
+        // Define monthInput for view (e.g., first day of week)
+        $monthInput = $baseDate->format('Y-m');
+
     }
     else {
         $monthInput = $request->input('month', now()->format('Y-m'));
@@ -303,15 +307,57 @@ public function index(Request $request)
 
 public function sendEmail(Request $request)
 {
-    $period   = $request->input('period', 'month');
-    $month    = $request->input('month', now()->format('Y-m'));
-    $baseDate = Carbon::parse($month . '-01');
+    $period = $request->input('period', 'month');
+
+    if ($period === 'today') {
+        $baseDate = now();
+        $monthInput = now()->format('Y-m');
+    }
+    elseif ($period === 'week' && $request->filled('week')) {
+
+        [$year, $weekNumber] = explode('-W', $request->week);
+
+        $baseDate = Carbon::now()
+            ->setISODate($year, $weekNumber)
+            ->startOfWeek();
+
+        $monthInput = $baseDate->format('Y-m');
+    }
+    else {
+        $monthInput = $request->input('month', now()->format('Y-m'));
+        $baseDate   = Carbon::parse($monthInput . '-01');
+    }
+
+    if ($period === 'today') {
+    $reportTitle = 'Daily Report – ' . $baseDate->format('d M Y');
+    }
+    elseif ($period === 'week') {
+        $start = $baseDate->copy()->startOfWeek();
+        $end   = $baseDate->copy()->endOfWeek();
+
+        $weekNumber = $baseDate->weekOfYear;
+
+        $reportTitle = 'Weekly Report – Week ' . $weekNumber .
+            ' (' . $start->format('d M Y') .
+            ' – ' . $end->format('d M Y') . ')';
+    }
+    else {
+        $start = $baseDate->copy()->startOfMonth();
+        $end   = $baseDate->copy()->endOfMonth();
+
+        $reportTitle = 'Monthly Report – ' .
+            $baseDate->format('F Y') .
+            ' (' . $start->format('d M') .
+            ' – ' . $end->format('d M Y') . ')';
+    }
+
     $user     = auth()->user();
 
     $capacityStats  = $this->getCapacityStats($baseDate, $period);
     $devicesByFloor = $this->getDevicesByFloor();
-    $binAnalytics   = $this->computeBinAnalyticsPerDevice($baseDate, $period);
+    $binAnalytics   = $this->computeBinAnalyticsPerAsset($baseDate, $period);
     $assets         = $this->getAssets();
+    $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
 
     // Helper to generate QuickChart URL
     $generateChartUrl = function ($type, $labels, $label, $data, $borderColor, $bgColor) {
@@ -331,41 +377,81 @@ public function sendEmail(Request $request)
         ]));
     };
 
-    $labels = $binAnalytics->pluck('asset_name');
+    $labels = $binAnalytics->pluck('asset_name')->values();
+
+    $generateChartUrl = function ($type, $label, $data, $border, $bg) use ($labels) {
+        return "https://quickchart.io/chart?c=" . urlencode(json_encode([
+            'type' => $type,
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [[
+                    'label' => $label,
+                    'data' => $data,
+                    'borderColor' => $border,
+                    'backgroundColor' => $bg,
+                    'fill' => true,
+                    'tension' => 0.3,
+                ]],
+            ],
+        ]));
+    };
 
     $timesFullChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
-            $generateChartUrl('line', $labels, 'Times Became Full', $binAnalytics->pluck('times_full'), '#8e44ad', 'rgba(142,68,173,0.2)')
+            $generateChartUrl(
+                'line',
+                'Times Became Full',
+                $binAnalytics->pluck('times_full')->values(),
+                '#8e44ad',
+                'rgba(142,68,173,0.2)'
+            )
         )
     );
 
     $avgFillChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
-            $generateChartUrl('line', $labels, 'Average Fill Time (Hours)', $binAnalytics->pluck('avg_fill_time'), '#2ecc71', 'rgba(46,204,113,0.2)')
+            $generateChartUrl(
+                'line',
+                'Average Fill Time (Hours)',
+                $binAnalytics->pluck('avg_fill_time')->values(),
+                '#2ecc71',
+                'rgba(46,204,113,0.2)'
+            )
         )
     );
 
     $avgClearChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
-            $generateChartUrl('line', $labels, 'Average Clear Time (Hours)', $binAnalytics->pluck('avg_clear_time'), '#e74c3c', 'rgba(231,76,60,0.2)')
+            $generateChartUrl(
+                'line',
+                'Average Clear Time (Hours)',
+                $binAnalytics->pluck('avg_clear_time')->values(),
+                '#e74c3c',
+                'rgba(231,76,60,0.2)'
+            )
         )
     );
 
     $pdf = Pdf::loadView('emails.summary_report', [
-        'month'              => $month,
+        'reportTitle'        => $reportTitle,
         'period'             => $period,
+        'baseDate'           => $baseDate,
         'capacityStats'      => $capacityStats,
         'devicesByFloor'     => $devicesByFloor,
         'binAnalytics'       => $binAnalytics,
         'assets'             => $assets,
+        'cleaningLogs'       => $cleaningLogs,
+        'monthInput'         => $monthInput,
         'timesFullChartData' => $timesFullChartData,
         'avgFillChartData'   => $avgFillChartData,
         'avgClearChartData'  => $avgClearChartData,
     ])->setPaper('a4', 'portrait');
 
     Mail::to($user->email)->send(
-        new SummaryReportMail(['month' => $month], $pdf->output())
-    );
+            new SummaryReportMail([
+        'reportTitle' => $reportTitle
+        ], $pdf->output())
+        );
 
     return back()->with('success', 'Summary report sent to your email!');
 }
