@@ -17,6 +17,9 @@
                 <select name="period"
                         class="form-select fw-bold"
                         onchange="this.form.submit()">
+                    <option value="today" {{ $period === 'today' ? 'selected' : '' }}>
+                        Today
+                    </option>
                     <option value="month" {{ $period === 'month' ? 'selected' : '' }}>
                         Monthly
                     </option>

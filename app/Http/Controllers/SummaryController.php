@@ -243,6 +243,13 @@ private function getCapacityStats(Carbon $baseDate, string $period)
 
     private function resolveDateRange(Carbon $baseDate, string $period)
     {
+        if ($period === 'today') {
+            return [
+                $baseDate->copy()->startOfDay(),
+                $baseDate->copy()->endOfDay(),
+            ];
+        }
+        
         if ($period === 'week') {
             return [
                 $baseDate->copy()->startOfWeek(),
@@ -260,26 +267,28 @@ public function index(Request $request)
 {
     $period = $request->input('period', 'month');
 
-    $monthInput = $request->input('month', now()->format('Y-m'));
-
-    if ($period === 'week' && $request->filled('week')) {
+    if ($period === 'today') {
+        $baseDate = now();
+        $monthInput = now()->format('Y-m'); // keep view happy
+    }
+    elseif ($period === 'week' && $request->filled('week')) {
 
         [$year, $weekNumber] = explode('-W', $request->week);
 
         $baseDate = Carbon::now()
             ->setISODate($year, $weekNumber)
-            ->startOfWeek(); // Monday
-
-    } else {
-
-        $baseDate = Carbon::parse($monthInput . '-01');
+            ->startOfWeek();
+    }
+    else {
+        $monthInput = $request->input('month', now()->format('Y-m'));
+        $baseDate   = Carbon::parse($monthInput . '-01');
     }
 
     $capacityStats  = $this->getCapacityStats($baseDate, $period);
     $devicesByFloor = $this->getDevicesByFloor();
-    $binAnalytics = $this->computeBinAnalyticsPerAsset($baseDate, $period);
+    $binAnalytics   = $this->computeBinAnalyticsPerAsset($baseDate, $period);
     $assets         = $this->getAssets();
-    $cleaningLogs = $this->getCleaningLogs($baseDate, $period);
+    $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
 
     return view('admin.summary.index', compact(
         'monthInput',
