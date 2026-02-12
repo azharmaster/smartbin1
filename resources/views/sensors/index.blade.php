@@ -157,7 +157,12 @@
                     <tr class="text-center">
                         <!-- Correct numbering across pages -->
                         <td>{{ $sensors->firstItem() + $index }}</td>
-                        <td>{{ $sensor->device->device_name ?? 'Unknown Device' }}</td>
+                        <td>
+                            {{ $sensor->device->device_name ?? 'Unknown Device' }}
+                            <br>
+                            <small class="text-muted">{{ $sensor->device->asset->asset_name ?? 'Unknown Bin' }}</small>
+                        </td>
+
                         <td>{{ $sensor->battery_percentage }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->rsrp }}</td>
@@ -292,7 +297,12 @@
 <script>
     const sensorData = @json($latestPerDevice);
 
-    const labels = sensorData.map(item => item.device_name ?? item.device_id);
+    // Combine device name and asset name for multi-line label
+    const labels = sensorData.map(item => {
+        const deviceName = item.device_name ?? 'Unknown Device';
+        const assetName = item.asset_name ?? 'Unknown Bin';
+        return deviceName + '\n(' + assetName + ')';
+    });
     const capacities = sensorData.map(item => item.capacity);
     const timestamps = sensorData.map(item => item.created_at);
 </script>
@@ -358,14 +368,22 @@
                 x: {
                     title: {
                         display: true,
-                        text: 'Device Name'   // ✅ Changed only this line
+                        text: 'Device / Asset'   // ✅ updated title
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            // Split multi-line labels by "\n"
+                            const label = this.getLabelForValue(value);
+                            return label.split('\n');
+                        },
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }
             }
         }
     });
-
-
 
     // Update chart height dynamically on resize
     window.addEventListener('resize', () => {

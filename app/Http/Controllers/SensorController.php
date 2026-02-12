@@ -30,11 +30,13 @@ class SensorController extends Controller
         $perPage = $request->input('perPage', 10);
         $sensors = $query->paginate($perPage)->withQueryString();
 
-        // ✅ UPDATED PART FOR CHART (JOIN DEVICE NAME)
+        // ✅ UPDATED PART FOR CHART (JOIN DEVICE NAME + ASSET NAME)
         $latestPerDevice = Sensor::join('devices', 'sensors.device_id', '=', 'devices.id_device')
+            ->join('assets', 'devices.asset_id', '=', 'assets.id')
             ->select(
                 'sensors.device_id',
                 'devices.device_name',
+                'assets.asset_name',
                 'sensors.capacity',
                 'sensors.created_at',
                 'sensors.rsrp',
@@ -53,6 +55,11 @@ class SensorController extends Controller
                     'nsr' => $item->nsr
                 ]);
                 $item->network_strength = $sensor->network_strength;
+
+                // Add device_name and asset_name for chart labels
+                $item->device_name = $item->device_name ?? 'Unknown Device';
+                $item->asset_name = $item->asset_name ?? 'Unknown Bin';
+
                 return $item;
             });
 
