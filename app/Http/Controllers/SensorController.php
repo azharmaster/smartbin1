@@ -18,20 +18,34 @@ class SensorController extends Controller
         // Apply search if there is a query
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where('device_id', 'like', "%{$search}%");
-            // Add more columns if needed
+
+            $query->where(function ($q) use ($search) {
+                $q->where('device_id', 'like', "%{$search}%")
+                  ->orWhereHas('device', function ($deviceQuery) use ($search) {
+                      $deviceQuery->where('device_name', 'like', "%{$search}%");
+                  });
+            });
         }
 
         $perPage = $request->input('perPage', 10);
-        $sensors = $query->paginate($perPage)->withQueryString(); // preserves search in pagination links
+        $sensors = $query->paginate($perPage)->withQueryString();
 
-        $latestPerDevice = Sensor::select('device_id', 'capacity', 'created_at', 'rsrp', 'nsr')
-            ->whereIn('id', function ($q) {
+        // ✅ UPDATED PART FOR CHART (JOIN DEVICE NAME)
+        $latestPerDevice = Sensor::join('devices', 'sensors.device_id', '=', 'devices.id_device')
+            ->select(
+                'sensors.device_id',
+                'devices.device_name',
+                'sensors.capacity',
+                'sensors.created_at',
+                'sensors.rsrp',
+                'sensors.nsr'
+            )
+            ->whereIn('sensors.id', function ($q) {
                 $q->select(DB::raw('MAX(id)'))
-                ->from('sensors')
-                ->groupBy('device_id');
+                  ->from('sensors')
+                  ->groupBy('device_id');
             })
-            ->orderBy('device_id')
+            ->orderBy('sensors.device_id')
             ->get()
             ->map(function ($item) {
                 $sensor = new Sensor([
@@ -54,30 +68,25 @@ class SensorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'device_id' => 'required|exists:devices,id',
+            'device_id' => 'required|exists:devices,id_device',
             'battery' => 'nullable|numeric',
-            'capacity' => 'required|numeric', // required for alert check
+            'capacity' => 'required|numeric',
             'time' => 'required|date',
             'rsrp' => 'nullable|string|max:50',
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        // Save the sensor reading
         $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
-        // Get device and the bin (asset) it belongs to
         $device = $sensor->device;
         $asset = $device->asset;
 
-        // Fetch latest sensor readings of all devices in this bin
         $latestSensors = $asset->devices()->with('latestSensor')->get()->pluck('latestSensor');
 
-        // Check if any sensor in this bin is already >= 85%
         $alreadyFull = $latestSensors->filter(function ($s) {
             return $s && $s->capacity >= 85;
         });
 
-        // Send notification only if this is the first full sensor in the bin
         if ($sensor->capacity >= 85 && $alreadyFull->count() === 1) {
             $this->sendBinFullNotification($asset, $sensor);
         }
@@ -99,29 +108,25 @@ class SensorController extends Controller
     public function update(Request $request, Sensor $sensor)
     {
         $request->validate([
-            'device_id' => 'required|exists:devices,id',
+            'device_id' => 'required|exists:devices,id_device',
             'battery' => 'nullable|numeric',
-            'capacity' => 'required|numeric', // required for alert check
+            'capacity' => 'required|numeric',
             'time' => 'required|date',
             'rsrp' => 'nullable|string|max:50',
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        // Update the sensor reading
         $sensor->update($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;
 
-        // Fetch latest sensor readings of all devices in this bin
         $latestSensors = $asset->devices()->with('latestSensor')->get()->pluck('latestSensor');
 
-        // Check if any sensor in this bin is already >= 85%
         $alreadyFull = $latestSensors->filter(function ($s) {
             return $s && $s->capacity >= 85;
         });
 
-        // Send notification only if this is the first full sensor in the bin
         if ($sensor->capacity >= 85 && $alreadyFull->count() === 1) {
             $this->sendBinFullNotification($asset, $sensor);
         }
@@ -135,22 +140,14 @@ class SensorController extends Controller
         return redirect()->route('sensors.index')->with('success', 'Sensor deleted.');
     }
 
-    /**
-     * Send WhatsApp notification to all supervisors when a bin is full
-     *
-     * @param Asset $asset The bin that is full
-     * @param Sensor $sensor The sensor that triggered the alert
-     */
     protected function sendBinFullNotification(Asset $asset, Sensor $sensor)
     {
-        $token = "PDVc#7eH-4YXkXcR5Yvn"; // Fonnte API token
+        $token = "PDVc#7eH-4YXkXcR5Yvn";
 
-        // Get all supervisors (role = 4) who have a phone number
         $supervisors = User::where('role', 4)
                            ->whereNotNull('phone')
                            ->pluck('phone');
 
-        // Build WhatsApp message dynamically
         $message = "⚠️ *BIN FULL ALERT!* ⚠️\n\n";
         $message .= "Bin: {$asset->asset_name}\n";
         $message .= "Device: {$sensor->device->device_name}\n";
@@ -158,7 +155,6 @@ class SensorController extends Controller
         $message .= "Time: {$sensor->time}\n\n";
         $message .= "Please take immediate action.";
 
-        // Send message to each supervisor
         foreach ($supervisors as $phone) {
             $curl = curl_init();
             curl_setopt_array($curl, [

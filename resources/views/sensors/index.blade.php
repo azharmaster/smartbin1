@@ -143,7 +143,7 @@
                 <thead class="text-center">
                     <tr>
                         <th>#</th>
-                        <th>Device ID</th>
+                        <th>Device Name</th>
                         <th>Battery</th>
                         <th>Capacity</th>
                         <th>RSRP</th>
@@ -157,7 +157,7 @@
                     <tr class="text-center">
                         <!-- Correct numbering across pages -->
                         <td>{{ $sensors->firstItem() + $index }}</td>
-                        <td>{{ $sensor->device_id }}</td>
+                        <td>{{ $sensor->device->device_name ?? 'Unknown Device' }}</td>
                         <td>{{ $sensor->battery_percentage }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->rsrp }}</td>
@@ -292,7 +292,7 @@
 <script>
     const sensorData = @json($latestPerDevice);
 
-    const labels = sensorData.map(item => item.device_id);
+    const labels = sensorData.map(item => item.device_name ?? item.device_id);
     const capacities = sensorData.map(item => item.capacity);
     const timestamps = sensorData.map(item => item.created_at);
 </script>
@@ -358,12 +358,14 @@
                 x: {
                     title: {
                         display: true,
-                        text: 'Device ID'
+                        text: 'Device Name'   // ✅ Changed only this line
                     }
                 }
             }
         }
     });
+
+
 
     // Update chart height dynamically on resize
     window.addEventListener('resize', () => {
