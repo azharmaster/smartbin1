@@ -193,12 +193,13 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             <div class="asset-layout">
                 <div class="left-column">
                     <!-- Map container -->
-                    <div class="map-container" style="position: relative; width: 100%; height: 600px;"
+                    <div class="map-container"
+                        style="position: relative; width: 100%;"
                         x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
 
-                        <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
+                        <img src="{{ asset('floor_pictures/' . $asset->floor->picture) }}"
                             alt="Floor Map"
-                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
+                            style="width: 100%; height: auto; border-radius: 10px; display: block; pointer-events: none;">
 
                         @php
                             $maxCapacity = $asset->devices

@@ -83,6 +83,13 @@ class Aside extends Component
 
             // ASSETHUB
             [
+                "label" => "Floor",
+                "icon" => "fas fa-building",
+                "color" => "#3ef0f6",
+                "route_name" => "floors.index",
+                "route_active" => "floors.*"
+            ],
+            [
                 "type" => "section",
                 "label" => "AssetHub"
             ],

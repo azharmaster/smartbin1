@@ -1260,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const map = L.map('dashboardMap').setView([3.1427, 101.7181], 17.5);//default trx
+    const map = L.map('dashboardMap').setView([3.1427, 101.7176], 17.5);//default trx
 
     // Add OpenStreetMap tiles
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {

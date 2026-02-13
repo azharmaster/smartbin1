@@ -72,6 +72,26 @@
                                    value="{{ $model ?? '' }}">
                         </div>
 
+                        {{-- Latitude --}}
+                        <div class="form-group">
+                            <label>Latitude</label>
+                            <input type="number"
+                                step="any"
+                                class="form-control"
+                                name="latitude"
+                                value="{{ $latitude ?? '' }}">
+                        </div>
+
+                        {{-- Longitude --}}
+                        <div class="form-group">
+                            <label>Longitude</label>
+                            <input type="number"
+                                step="any"
+                                class="form-control"
+                                name="longitude"
+                                value="{{ $longitude ?? '' }}">
+                        </div>
+
                         {{-- Asset Picture --}}
                         <div class="form-group">
                             <label>Asset Picture</label>

@@ -28,6 +28,8 @@ class AssetController extends Controller
             'serialNo'    => 'required',
             'location'    => 'required',
             'model'       => 'required',
+            'latitude'    => 'nullable|numeric',
+            'longitude'   => 'nullable|numeric',
             'picture'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'asset_name.required' => 'Please fill this form',
@@ -68,6 +70,8 @@ class AssetController extends Controller
                 'serialNo'    => $request->serialNo,
                 'location'    => $request->location,
                 'model'       => $request->model,
+                'latitude'    => $request->latitude, 
+                'longitude'   => $request->longitude,
                 'picture'     => $imagePath,
             ]
         );
