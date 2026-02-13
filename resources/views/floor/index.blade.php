@@ -18,7 +18,7 @@
             <x-floor.form-floor />
         </div>
         <div class="table-responsive">
-        <table id="table1" class="table table-bordered table-striped dataTable dtr-inline">
+            <table class="table table-bordered table-striped datatable datatable-buttons">
               <thead>
                  <tr>
                         <th>#</th>
