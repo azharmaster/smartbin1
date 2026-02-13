@@ -7,12 +7,14 @@ use Carbon\Carbon;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
 $logFile = __DIR__ . '/cron.log';
-$now = new DateTime();
+$now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
 
 // --- Helper: send email via SMTP safely ---
 function sendEmailSMTP($to, $subject, $body, $logFile) {
@@ -65,10 +67,12 @@ $apiUrl = "https://beta-waha.txfdw3.easypanel.host";  // WAHA server URL
 $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
-$now = new DateTime();
+$now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
 $logFile = __DIR__.'/cron.log';
 
-/* 1️⃣ WhatsApp notification window */
+/* -------------------------
+   1️⃣ Check Notification Toggle
+---------------------------- */
 $canSend = true;
 $reason = [];
 
@@ -85,7 +89,9 @@ if (!$notif) {
     $reason[] = "Outside notification time window";
 }
 
-/* Work hours */
+/* -------------------------
+   2️⃣ Check Work Hours
+---------------------------- */
 $cfg = require __DIR__ . '/config.php';
 
 if ($now->format('H:i') < $cfg['work_hours']['start'] || $now->format('H:i') > $cfg['work_hours']['end']) {
@@ -93,53 +99,42 @@ if ($now->format('H:i') < $cfg['work_hours']['start'] || $now->format('H:i') > $
     $reason[] = "Outside work hours ({$cfg['work_hours']['start']} - {$cfg['work_hours']['end']})";
 }
 
-/* Holiday / Event */
+/* -------------------------
+   3️⃣ Check Holidays / Events
+---------------------------- */
 $today = $now->format('Y-m-d');
 
-// --- Check holidays ---
+// Holiday
 $stmt = $db->prepare("
-    SELECT 1
-    FROM holidays
+    SELECT 1 FROM holidays
     WHERE is_active = 1
-      AND (
-          (:today BETWEEN start_date AND end_date)
-          OR (end_date IS NULL AND start_date = :today)
-      )
+      AND ((:today BETWEEN start_date AND end_date) OR (end_date IS NULL AND start_date = :today))
     LIMIT 1
 ");
 $stmt->execute(['today' => $today]);
-$isHoliday = $stmt->fetchColumn();
-
-if ($isHoliday) {
+if ($stmt->fetchColumn()) {
     $canSend = false;
     $reason[] = "Today is a holiday";
 }
 
+// Event
 $stmt = $db->prepare("
-    SELECT 1
-    FROM events
+    SELECT 1 FROM events
     WHERE is_active = 1
-      AND (
-          (:today BETWEEN start_date AND end_date)
-          OR (end_date IS NULL AND start_date = :today)
-      )
+      AND ((:today BETWEEN start_date AND end_date) OR (end_date IS NULL AND start_date = :today))
     LIMIT 1
 ");
 $stmt->execute(['today' => $today]);
-$hasEvent = $stmt->fetchColumn();
-
-if ($hasEvent) {
+if ($stmt->fetchColumn()) {
     $canSend = false;
     $reason[] = "There is an active event today";
 }
 
-/* Capacity threshold */
-$cap = $db->query("SELECT half_to FROM capacity_settings LIMIT 1")->fetch();
-$fullMin = $cap['half_to'] + 1;
-
-/* Scan devices */
+/* -------------------------
+   4️⃣ Scan Devices
+---------------------------- */
 $stmt = $db->query("
-    SELECT d.id_device, d.device_name, a.location, a.asset_name
+    SELECT d.id_device, d.device_name, a.asset_name, a.id AS asset_id, a.location
     FROM devices d
     JOIN assets a ON a.id = d.asset_id
     WHERE d.is_active = 1 AND a.is_active = 1
@@ -148,6 +143,7 @@ $stmt = $db->query("
 $fullBins = [];
 
 while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    // Get latest sensor reading
     $sensorStmt = $db->prepare("
         SELECT capacity, time
         FROM sensors
@@ -160,89 +156,124 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     if (!$sensor) continue;
 
-    if ($sensor['capacity'] >= $fullMin) {
+    // Get capacity settings for this asset
+    $capStmt = $db->prepare("
+        SELECT empty_to, half_to
+        FROM capacity_settings
+        WHERE asset_id = ?
+        LIMIT 1
+    ");
+    $capStmt->execute([$device['asset_id']]);
+    $cap = $capStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$cap) continue;
+
+    // FULL condition
+    if ($sensor['capacity'] > $cap['half_to']) {
         $device['capacity'] = $sensor['capacity'];
-        $device['full_time'] = $sensor['time']; // timestamp when full
+        $device['full_time'] = $sensor['time'];
         $fullBins[] = $device;
     }
 }
 
-/*6️⃣ Debug logging before sending */
-file_put_contents(
-    $logFile,
-    date('Y-m-d H:i')." | canSend: ".($canSend ? 'YES' : 'NO')." | Reasons: ".implode(', ', $reason)."\n",
-    FILE_APPEND
-);
+/* -------------------------
+   Debug Logging
+---------------------------- */
+file_put_contents($logFile, date('Y-m-d H:i')." | canSend: ".($canSend ? 'YES':'NO')." | Reasons: ".implode(', ',$reason)."\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i')." | Full bins detected: ".count($fullBins)."\n".print_r($fullBins,true)."\n", FILE_APPEND);
 
-file_put_contents(
-    $logFile,
-    date('Y-m-d H:i')." | Full bins detected: ".count($fullBins)."\n".print_r($fullBins, true)."\n",
-    FILE_APPEND
-);
-
-/* Send WhatsApp + Email */
+/* -------------------------
+   5️⃣ Send Notification if Allowed
+---------------------------- */
 if ($canSend && count($fullBins)) {
-
-    $supervisors = $db->query("SELECT DISTINCT phone, email FROM users WHERE role=4 AND (phone IS NOT NULL OR email IS NOT NULL)")->fetchAll(PDO::FETCH_ASSOC);
+    $supervisors = $db->query("
+        SELECT DISTINCT phone, email
+        FROM users
+        WHERE role=4 AND (phone IS NOT NULL OR email IS NOT NULL)
+    ")->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($supervisors)) {
         file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor contacts found\n", FILE_APPEND);
     } else {
 
-        // Build minimal list by unique asset
-        $uniqueAssets = [];
+        // Apply 10-minute throttle per device
+        /** @var Carbon $now */
+        $sendBins = [];
+        $tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
+
         foreach ($fullBins as $device) {
-            $assetKey = $device['asset_name'];
-            if (!isset($uniqueAssets[$assetKey]) || $device['full_time'] > $uniqueAssets[$assetKey]['timestamp']) {
-                $uniqueAssets[$assetKey] = [
-                    'location'=>$device['location'],
-                    'timestamp'=>$device['full_time']
-                ];
+            $lastLogStmt = $db->prepare("
+                SELECT sent_at
+                FROM notification_logs
+                WHERE device_id = ?
+                ORDER BY sent_at DESC
+                LIMIT 1
+            ");
+            $lastLogStmt->execute([$device['id_device']]);
+            $lastSent = $lastLogStmt->fetchColumn();
+
+            if (!$lastSent || $lastSent <= $tenMinAgo) {
+                $sendBins[] = $device; // eligible for notification
             }
         }
 
-        // Build message
-        $assetList = '';
-        foreach ($uniqueAssets as $name=>$data) {
-            $ts = Carbon::parse($data['timestamp']);
-            $assetList .= "{$name}\nLocation: {$data['location']}\nDate: ".$ts->format('d-m-Y')."\nTime: ".$ts->format('H:i')."\n\n";
-        }
+        if (count($sendBins)) {
+            // Build combined message
+            $assetList = '';
+            foreach ($sendBins as $device) {
+                $ts = Carbon::parse($device['full_time']);
+                $assetList .= "{$device['asset_name']}\nLocation: {$device['location']}\nDate: ".$ts->format('d-m-Y')."\nTime: ".$ts->format('H:i')."\n\n";
+            }
+            $msg = "*".count($sendBins)."* *FULL BINS*\n\n".$assetList;
 
-        $msg = "*".count($uniqueAssets)."* *FULL BINS*\n\n".$assetList;
-        file_put_contents($logFile, date('Y-m-d H:i')." | Message prepared:\n".$msg."\n", FILE_APPEND);
+            file_put_contents($logFile, date('Y-m-d H:i')." | Message prepared:\n".$msg."\n", FILE_APPEND);
 
-        // Send to each supervisor
-        foreach ($supervisors as $sup) {
+            // Send to supervisors
+            foreach ($supervisors as $sup) {
 
-            file_put_contents($logFile, date('Y-m-d H:i')." | Processing supervisor: ".json_encode($sup)."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i')." | Processing supervisor: ".json_encode($sup)."\n", FILE_APPEND);
 
-            // WhatsApp
-            if (!empty($sup['phone'])) {
-                $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
-                try {
-                    $result = $whatsapp->sendTextMessage($formatted, $msg);
-                    $ok = isset($result['success']) ? $result['success'] : false;
-                } catch (Exception $e) {
-                    $ok = false;
-                    file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                // WhatsApp
+                if (!empty($sup['phone'])) {
+                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    try {
+                        $result = $whatsapp->sendTextMessage($formatted, $msg);
+                        $ok = isset($result['success']) ? $result['success'] : false;
+                    } catch (Exception $e) {
+                        $ok = false;
+                        file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                    }
+                    file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp sent to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
                 }
-                file_put_contents($logFile, date('Y-m-d H:i')." | WhatsApp sent to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+
+                // Email via PHPMailer
+                if (!empty($sup['email'])) {
+                    file_put_contents($logFile, date('Y-m-d H:i')." | Sending email to {$sup['email']}\n", FILE_APPEND);
+                    $result = sendEmailSMTP($sup['email'], "FULL BINS ALERT", $msg, $logFile);
+                    file_put_contents($logFile, date('Y-m-d H:i')." | Email sent to {$sup['email']} | ".($result===true?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                }
             }
 
-            // Email via PHPMailer
-            if (!empty($sup['email'])) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | Sending email to {$sup['email']}\n", FILE_APPEND);
-                $result = sendEmailSMTP($sup['email'], "FULL BINS ALERT", $msg, $logFile);
-                file_put_contents($logFile, date('Y-m-d H:i')." | Email sent to {$sup['email']} | ".($result===true?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+            // -------------------------
+            // Log to DB (one row per device)
+            // -------------------------
+            try {
+                $logStmt = $db->prepare("
+                    INSERT INTO notification_logs (device_id, channel, message_preview, message_full, sent_at)
+                    VALUES (?, 'whatsapp+email', ?, ?, NOW())
+                ");
+                foreach ($sendBins as $device) {
+                    $logStmt->execute([
+                        $device['id_device'],
+                        substr($assetList,0,300),
+                        $msg
+                    ]);
+                }
+            } catch (Exception $e) {
+                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
             }
-        }
-
-        // Log to DB
-        try {
-            $log = $db->prepare("INSERT INTO notification_logs (channel,message_preview,message_full,sent_at) VALUES ('whatsapp+email', ?, ?, NOW())");
-            $log->execute([substr($assetList,0,300), $msg]);
-        } catch (Exception $e) {
-            file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+        } else {
+            file_put_contents($logFile, date('Y-m-d H:i')." | No bins eligible for notification (throttle 10min)\n", FILE_APPEND);
         }
     }
 }
