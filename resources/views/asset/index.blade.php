@@ -1,5 +1,5 @@
 @extends($layout)
-@section('content_title', 'Bin Management')
+@section('content_title', 'Asset Management')
 @section('content')
 <div class="card card-success card-outline">
    <div class="card-header d-flex align-items-center">
