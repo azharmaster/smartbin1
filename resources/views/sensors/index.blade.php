@@ -144,6 +144,7 @@
                     <tr>
                         <th>#</th>
                         <th>Device Name</th>
+                        <th>Device ID</th>
                         <th>Battery</th>
                         <th>Capacity</th>
                         <th>RSRP</th>
@@ -163,6 +164,7 @@
                             <small class="text-muted">{{ $sensor->device->asset->asset_name ?? 'Unknown Bin' }}</small>
                         </td>
 
+                        <td>{{ $sensor->device_id }}</td>
                         <td>{{ $sensor->battery_percentage }}%</td>
                         <td>{{ $sensor->capacity }}%</td>
                         <td>{{ $sensor->rsrp }}</td>
