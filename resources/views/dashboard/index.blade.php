@@ -1480,7 +1480,8 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
         <p>Displays public holidays and scheduled events.</p>
         <ul>
           <li>Monthly & weekly view</li>
-          <li>Event labels (e.g., Concert)</li>
+          <li>Event and Holiday labels (e.g., Concert)</li>
+          <li>View notification logs by date</li>
           <li>Used for planning collection schedules</li>
         </ul>
 
