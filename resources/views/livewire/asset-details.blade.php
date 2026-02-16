@@ -294,12 +294,14 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
 
                                 <!-- Edit asset -->
                                 <div style="position: absolute; top: 0; right: 0;">
+                                @if(auth()->user()->role == 1)
                                     <x-asset.form-asset
                                         :id="$asset->id"
                                         :floors="$floors"
                                         :picture="$asset->picture"
                                         style="font-size: 11px; padding: 4px 8px;"
                                     />
+                                @endif
                                 </div>
 
                                 <div style="
@@ -569,6 +571,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                         gap: 6px;
                                         z-index: 5;
                                     ">
+                                    @if(auth()->user()->role == 1)
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-secondary"
                                                 data-toggle="modal"
@@ -596,6 +599,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                                 <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
+                                    @endif
                                     </div>
                                     @php
                                         $status = $deviceStatuses[$device->id_device] ?? ['last_full' => null, 'last_clear' => null];

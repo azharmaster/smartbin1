@@ -2,6 +2,10 @@
 @section('content_title', 'Set Capacity')
 @section('content')
 
+@php
+    $isAdmin = auth()->user()->role == 1;
+@endphp
+
 <!-- Floating Help Button -->
 <button type="button" data-toggle="modal" data-target="#capacityHelpModal" style="
         position: fixed;
@@ -77,7 +81,8 @@
 
                     <!-- Apply to All Toggle -->
                     <div class="form-check form-switch mb-4">
-                        <input class="form-check-input" type="checkbox" id="applyAll" name="apply_all">
+                        <input class="form-check-input" type="checkbox" id="applyAll" name="apply_all"
+                        {{ !$isAdmin ? 'disabled' : '' }}>
                         <label class="form-check-label fw-semibold" for="applyAll">
                             Apply this setting to all bins
                         </label>
@@ -92,10 +97,11 @@
                                    id="empty_to"
                                    class="form-range slider-green flex-grow-1"
                                    min="0" max="100"
-                                   value="{{ $capacity->empty_to ?? 40 }}">
+                                   value="{{ $capacity->empty_to ?? 40 }}"
+                                    {{ !$isAdmin ? 'disabled' : '' }}>
                             <div class="d-flex flex-column gap-1">
-                                <button type="button" class="btn btn-success btn-sm" id="empty_plus">+</button>
-                                <button type="button" class="btn btn-success btn-sm" id="empty_minus">-</button>
+                                <button type="button" class="btn btn-success btn-sm" id="empty_plus" {{ !$isAdmin ? 'disabled' : '' }}>+</button>
+                                <button type="button" class="btn btn-success btn-sm" id="empty_minus" {{ !$isAdmin ? 'disabled' : '' }}>-</button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-1">
@@ -115,10 +121,11 @@
                                    id="half_to"
                                    class="form-range slider-yellow flex-grow-1"
                                    min="0" max="100"
-                                   value="{{ $capacity->half_to ?? 79 }}">
+                                   value="{{ $capacity->half_to ?? 79 }}"
+                                   {{ !$isAdmin ? 'disabled' : '' }}>
                             <div class="d-flex flex-column gap-1">
-                                <button type="button" class="btn btn-warning btn-sm" id="half_plus">+</button>
-                                <button type="button" class="btn btn-warning btn-sm" id="half_minus">-</button>
+                                <button type="button" class="btn btn-warning btn-sm" id="half_plus" {{ !$isAdmin ? 'disabled' : '' }}>+</button>
+                                <button type="button" class="btn btn-warning btn-sm" id="half_minus" {{ !$isAdmin ? 'disabled' : '' }}>-</button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-1">
@@ -138,7 +145,7 @@
                                    id="full_to"
                                    class="form-range slider-red flex-grow-1"
                                    min="0" max="100"
-                                   value="100"
+                                   value="100" {{ !$isAdmin ? 'disabled' : '' }}
                                    readonly>
                             <div class="d-flex flex-column gap-1">
                                 <button type="button" class="btn btn-danger btn-sm" disabled>+</button>
@@ -155,9 +162,11 @@
 
                     <!-- Save Button -->
                     <div class="text-end">
+                    @if(auth()->user()->role == 1)
                         <button type="submit" class="btn btn-primary px-4 rounded-3">
                             <i class="fas fa-save"></i> Save Capacity Settings
                         </button>
+                    @endif
                     </div>
 
                 </form>

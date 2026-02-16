@@ -7,7 +7,9 @@
         <h5 class="mb-0">User List</h5>
 
         <div class="ms-auto">
+            @if(auth()->user()->role == 1)
             <x-user.form-user/>
+            @endif
         </div>
     </div>
     <div class="card-body">
@@ -30,7 +32,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Role</th>
-                        <th>Option</th>
+                        @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
                 </thead>
                 <tbody>
@@ -46,19 +48,19 @@
                             @elseif($user->role == 4)
                                 <span class="badge bg-info">Supervisor</span>
                             @else
-                                <span class="badge bg-secondary">User</span>
+                                <span class="badge bg-secondary">Client</span>
                             @endif
                         </td>
-                        <td>
+                        @if(auth()->user()->role == 1)<td>
                             <div class="d-flex gap-1 align-items-center justify-content-center">
 
-                    {{-- PENCIL EDIT FORM --}}
+                    
                     <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :phone="$user->phone" :role="$user->role" />
+                    
 
-                    {{-- DELETE USER --}}
-                    {{-- Notification warning delete user --}}
                      <a href="{{ route('users.destroy', $user->id) }}"class="btn btn-danger btn-sm" data-confirm-delete="true">
                     <i class="fas fa-trash-alt text-white"></i></a>
+                    
                     @csrf
                      @method('DELETE')
                         </form>
@@ -68,7 +70,7 @@
                                     <i class="far fa-eye"></i>
                                 </a>
                             </div>
-                        </td>
+                        </td>@endif
                     </tr>
                     @endforeach
                 </tbody>

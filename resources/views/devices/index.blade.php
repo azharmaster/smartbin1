@@ -29,7 +29,9 @@
         <h6 class="mb-0">Sensors List</h6>
 
         <div class="ms-auto">
+        @if(auth()->user()->role == 1)
         <x-device.form-device :assets="$assets" />
+        @endif
         </div>
     </div>
     <div class="card-body">
@@ -55,7 +57,7 @@
                         <th>Sensor Name</th>
                         <th>Serial Number</th>
                         <th>Sim Card</th>
-                        <th>Option</th>
+                        @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
                 </thead>
                 <tbody>
@@ -70,6 +72,7 @@
                         <td>
                             @if(auth()->user()->role == 1)
                             <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+                            @if(auth()->user()->role == 1)
                                 <x-device.form-device
                                     :id="$device->id"
                                     :assets="$assets"
@@ -89,6 +92,7 @@
                                         <i class="fas fa-trash-alt text-white"></i>
                                     </button>
                                 </form>
+                            @endif
                             </div>
                             @else
                                 <span class="text-muted">-</span>

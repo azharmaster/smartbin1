@@ -15,7 +15,9 @@
         @endif
 
         <div class="d-flex justify-content-end mb-2">
+        @if(auth()->user()->role == 1)
             <x-floor.form-floor />
+        @endif
         </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped datatable datatable-buttons">
@@ -24,7 +26,7 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Picture</th>
-                        <th>Option</th>
+                        @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
               </thead>
               <tbody>
@@ -57,10 +59,12 @@
 
                         <td>
                             <div class="d-flex align-items-center justify-content-center">
+                            @if(auth()->user()->role == 1)
                                 <x-floor.form-floor :id="$floor->id " />&nbsp;
                                <a href="{{ route('floors.destroy', $floor->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
-    <i class="fas fa-trash-alt text-white"></i>
-</a>
+                                    <i class="fas fa-trash-alt text-white"></i>
+                                </a>
+                            @endif
                             </div>
                         </td>
                     </tr>

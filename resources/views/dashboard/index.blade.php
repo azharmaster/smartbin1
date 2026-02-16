@@ -3,6 +3,10 @@
 
 @section('content')
 
+@php
+    $isAdmin = auth()->user()->role == 1;
+@endphp
+
 <style>
 .dashboard-cards {
     display: grid;
@@ -1069,14 +1073,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <label class="switch m-0 mx-2">
                             <input type="checkbox" id="whatsappNotificationSwitch" 
-                                {{ $whatsappNotificationActive ? 'checked' : '' }}>
+                                {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
                             <span class="slider round"></span>
                         </label>
 
                         <span class="text-muted small ml-1">ON</span>
 
                         <!-- Save icon -->
-                        <button id="saveWhatsappNotification" class="btn p-0 ml-3 save-bookmark" title="Save">
+                        <button id="saveWhatsappNotification" class="btn p-0 ml-3 save-bookmark"
+                            title="{{ !$isAdmin ? 'No authorization' : 'Save' }}"
+                            {{ !$isAdmin ? 'disabled' : '' }}>
                             <i class="far fa-bookmark fa-lg"></i>
                         </button>
                     </div>

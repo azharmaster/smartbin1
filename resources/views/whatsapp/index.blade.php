@@ -2,6 +2,10 @@
 @section('content_title', 'WhatsApp Notification')
 @section('content')
 
+@php
+    $isAdmin = auth()->user()->role == 1;
+@endphp
+
 {{-- Floating Help Button --}}
 <button type="button" onclick="openWhatsAppHelp()" style="
         position: fixed;
@@ -128,7 +132,8 @@ input:checked + .slider:before {
                     <input type="time" 
                            name="start_time" 
                            class="form-control"
-                           value="{{ old('start_time', $notification->start_time ?? '') }}">
+                           value="{{ old('start_time', $notification->start_time ?? '') }}"
+                           {{ !$isAdmin ? 'disabled' : '' }}>
                 </div>
 
                 <!-- End Time -->
@@ -137,7 +142,8 @@ input:checked + .slider:before {
                     <input type="time" 
                            name="end_time" 
                            class="form-control"
-                           value="{{ old('end_time', $notification->end_time ?? '') }}">
+                           value="{{ old('end_time', $notification->end_time ?? '') }}"
+                           {{ !$isAdmin ? 'disabled' : '' }}>
                 </div>
 
                 <!-- ON / OFF Switch (Custom Style) -->
@@ -146,7 +152,8 @@ input:checked + .slider:before {
                     <div class="d-flex align-items-center gap-2">
                         <span class="text-muted small">OFF</span>
                         <label class="switch m-0">
-                            <input type="checkbox" name="is_active" value="1" {{ $notification->is_active ? 'checked' : '' }}>
+                            <input type="checkbox" name="is_active" value="1" {{ $notification->is_active ? 'checked' : '' }}
+                            {{ !$isAdmin ? 'disabled' : '' }}>
                             <span class="slider round"></span>
                         </label>
                         <span class="text-muted small">ON</span>
@@ -155,9 +162,11 @@ input:checked + .slider:before {
 
                 <!-- Save Button -->
                 <div class="text-end">
+                @if(auth()->user()->role == 1)
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
+                @endif
                 </div>
 
             </form>
@@ -245,7 +254,9 @@ input:checked + .slider:before {
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="text-muted small">OFF</span>
                                     <label class="switch m-0">
-                                        <input type="checkbox" name="is_active" value="1" {{ $bin->is_active ? 'checked' : '' }} onchange="this.form.submit()">
+                                        <input type="checkbox" name="is_active" value="1" {{ $bin->is_active ? 'checked' : '' }}
+                                        {{ !$isAdmin ? 'disabled' : '' }}
+                                        {{ $isAdmin ? 'onchange=this.form.submit()' : '' }}>
                                         <span class="slider round"></span>
                                     </label>
                                     <span class="text-muted small">ON</span>
@@ -276,7 +287,9 @@ input:checked + .slider:before {
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="text-muted small">OFF</span>
                                                         <label class="switch m-0">
-                                                            <input type="checkbox" name="is_active" value="1" {{ $device->is_active ? 'checked' : '' }} onchange="this.form.submit()">
+                                                            <input type="checkbox" name="is_active" value="1" {{ $device->is_active ? 'checked' : ''}}
+                                                            {{ !$isAdmin ? 'disabled' : '' }}
+                                                            {{ $isAdmin ? 'onchange=this.form.submit()' : '' }}>
                                                             <span class="slider round"></span>
                                                         </label>
                                                         <span class="text-muted small">ON</span>

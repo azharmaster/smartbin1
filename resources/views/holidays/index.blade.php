@@ -31,9 +31,11 @@
             <div class="card-header d-flex align-items-center">
                 <h5 class="mb-0">Holiday List</h5>
                 <div class="ml-auto">
+                    @if(auth()->user()->role == 1)
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHolidayModal">
                         <i class="fas fa-plus"></i> Add Holiday
                     </button>
+                    @endif
                 </div>
             </div>
 
@@ -74,7 +76,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-1">
-
+                                            @if(auth()->user()->role == 1)
                                             <!-- Edit Button triggers modal -->
                                             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#editHolidayModal{{ $holiday->id }}">
                                                 <i class="fas fa-edit"></i>
@@ -88,11 +90,13 @@
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
+                                            @endif
 
                                             <!-- Notification Toggle -->
                                             <form action="{{ route('holidays.toggle', $holiday->id) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-notification {{ $holiday->is_active ? 'btn-success' : 'btn-secondary' }}">
+                                                <button type="submit" class="btn btn-sm btn-notification {{ $holiday->is_active ? 'btn-success' : 'btn-secondary' }}
+                                                {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
                                                     {{ $holiday->is_active ? 'ON' : 'OFF' }}
                                                 </button>
                                             </form>
@@ -192,9 +196,11 @@
             <div class="card-header d-flex align-items-center">
                 <h5 class="mb-0">Events List</h5>
                 <div class="ms-auto">
+                @if(auth()->user()->role == 1)
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">
                         <i class="fas fa-plus"></i> Add Event
                     </button>
+                @endif
                 </div>
             </div>
 
@@ -231,6 +237,7 @@
                                 <td>
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <!-- EDIT -->
+                                        @if(auth()->user()->role == 1)
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editEventModal{{ $event->id }}">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
@@ -243,11 +250,13 @@
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
+                                        @endif
 
                                         <!-- Notification Toggle -->
                                         <form action="{{ route('events.toggle', $event->id) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}">
+                                            <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}
+                                                {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
                                                 {{ $event->is_active ? 'ON' : 'OFF' }}
                                             </button>
                                         </form>

@@ -6,7 +6,9 @@
     <h5 class="mb-0">Bins List</h5>
 
     <div class="ms-auto">
+    @if(auth()->user()->role == 1)
         <x-asset.form-asset :floors="$floors" />
+    @endif
     </div>
 </div>
     <div class="card-body">
@@ -55,9 +57,10 @@
                         </td>
                          <td>
                             <div class="d-flex align-items-center justify-content-center">
-                              
+                                @if(auth()->user()->role == 1)
                                 <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt text-white"></i>
+                                @endif
                             </a>&nbsp;
 
                             <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">

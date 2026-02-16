@@ -38,9 +38,9 @@ class LoginController extends Controller
                 return redirect()->route('staff.dashboard');
             }
 
-            // Role 3 = Guest → redirect to guest dashboard
+            // Role 3 = Client → redirect to guest dashboard
             if ($user->role == 3) {
-                return redirect()->route('guest.dashboard');
+                return redirect()->route('dashboard');
             }
 
             if ($user->role == 4) {
