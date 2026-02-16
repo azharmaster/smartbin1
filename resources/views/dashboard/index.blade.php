@@ -1377,16 +1377,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">SMARTBIN Dashboard – User Guide</h5>
+        <h5 class="modal-title">SMARTBIN Dashboard – User Guide (Latest Version)</h5>
       </div>
 
       <div class="modal-body" style="font-size: 14px;">
 
         <h6><i class="fas fa-tachometer-alt"></i> 1. Dashboard Overview</h6>
         <p>
-          The SMARTBIN Dashboard provides a real-time overview of smart bin sensors, system status, notifications, 
-          and abnormal conditions. It allows administrators to monitor bin conditions efficiently 
-          and take timely actions.
+          The SMARTBIN Dashboard provides real-time monitoring of all SmartBin units,
+          including sensor fill levels, notifications, asset locations, and event planning tools.
+          It helps administrators monitor operations efficiently and respond quickly.
         </p>
 
         <hr>
@@ -1394,110 +1394,97 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
         <h6><i class="fas fa-th-large"></i> 2. Top Summary Cards</h6>
         <p>Located at the top of the dashboard.</p>
         <ul>
-          <li><strong>🔢 Total Sensors</strong>: Displays the total number of sensors registered in the system.</li>
-          <li><strong>🟥 Full Sensors</strong>: Shows bins that have reached full capacity. Immediate action may be required.</li>
-          <li><strong>🟨 Half-Full Sensors</strong>: Indicates bins that are partially filled. Used for monitoring upcoming collection needs.</li>
-          <li><strong>🟩 Empty Sensors</strong>: Shows bins that are currently empty.</li>
-          <li><strong>⚪ Undetected Sensors</strong>: Sensors that are offline, disconnected, or not reporting data.</li>
+          <li><strong>Total Sensors</strong> – Total registered sensors in the system.</li>
+          <li><strong>Full Sensors</strong> – Bins that have reached critical capacity.</li>
+          <li><strong>Half-Full Sensors</strong> – Bins that are partially filled.</li>
+          <li><strong>Empty Sensors</strong> – Bins currently empty.</li>
+          <li><strong>Undetected</strong> – Sensors not reporting data (offline/disconnected).</li>
         </ul>
-        <p>👉 Click “More info” on any card to view the live data.</p>
+        <p>👉 Click <strong>More info</strong> to view detailed sensor data.</p>
 
         <hr>
 
-        <h6><i class="fas fa-chart-line"></i> 3. SmartBin Clear Time Chart</h6>
-        <p>Displays sensor clearing history.</p>
+        <h6><i class="fas fa-map-marked-alt"></i> 3. Assets Map</h6>
+        <p>
+          Displays the live location of SmartBins on the interactive map.
+        </p>
         <ul>
-          <li>Line chart showing hours taken to clear bins.</li>
-          <li>Each line represents a sensor (TRX1-1, TRX1-2, TRX1-3).</li>
-          <li>X-axis: Date in the week</li>
-          <li>Y-axis: Time (hours)</li>
+          <li>Zoom in/out using + and – buttons.</li>
+          <li>Click on a bin marker to identify the bin's name.</li>
+          <li>Reset button restores the default map position.</li>
         </ul>
-        <p><strong>Dropdown Filter:</strong> Select a specific SmartBin unit (e.g., TRX SmartBin 01) to view its data.</p>
-        <p><strong>Purpose:</strong> Track cleaning efficiency, identify delays, and support operational decisions.</p>
+        <p><strong>Purpose:</strong> Quickly locate bins and monitor geographical distribution.</p>
 
         <hr>
 
-        <h6><i class="fas fa-exclamation-triangle"></i> 4. Abnormal / Undetected Sensors Panel</h6>
-        <p>Located on the right side of the dashboard. Displays sensors that are:</p>
+        <h6><i class="fas fa-list"></i> 4. Sensor List Panel</h6>
+        <p>Located on the right side of the dashboard.</p>
         <ul>
-          <li>Offline</li>
-          <li>Undetected</li>
-          <li>Sending abnormal readings</li>
+          <li>Displays each SmartBin unit (e.g., TRX SmartBin 01).</li>
+          <li>Shows individual sensor types (General, Paper, Glass, etc.).</li>
+          <li>Displays current fill percentage with color indicators.</li>
+          <li>Shows last updated timestamp.</li>
+          <li>Eye icon button allows viewing detailed bin information.</li>
         </ul>
-        <p><strong>Information Shown:</strong> SmartBin name, Sensor ID (e.g., TRX1-1)</p>
-        <p><strong>Indicator:</strong> Red dot indicates critical attention required</p>
-        <p>👉 Action should be taken immediately to inspect the sensor or bin.</p>
+        <p><strong>Color Indicators:</strong></p>
+        <ul>
+          <li>🟢 Green – Safe level</li>
+          <li>🟡 Yellow – Moderate level</li>
+          <li>🔴 Red – Critical / Nearly Full</li>
+        </ul>
 
         <hr>
 
         <h6><i class="fas fa-envelope"></i> 5. Notification Sent Panel</h6>
-        <p>Shows the notification status for the current day.</p>
+        <p>
+          Displays the total number of notifications sent today.
+        </p>
         <ul>
-          <li>Number of alerts sent</li>
-          <li>Message status</li>
-          <li>If no notifications: “No notifications sent today”</li>
+          <li>Shows notification count badge.</li>
+          <li>If no alerts were sent: “No notifications sent today”.</li>
+          <li>Eye icon allows viewing notification history.</li>
         </ul>
 
         <hr>
 
-        <h6><i class="fas fa-mobile-alt"></i> 6. WhatsApp Notification Control</h6>
-        <p>Allows administrators to control WhatsApp alerts.</p>
+        <h6><i class="fab fa-whatsapp"></i> 6. WhatsApp Notification Control</h6>
+        <p>Allows administrators to enable or disable automatic WhatsApp alerts.</p>
         <ul>
-          <li><strong>ON</strong> – System sends WhatsApp alerts automatically</li>
-          <li><strong>OFF</strong> – Notifications are disabled</li>
+          <li><strong>ON</strong> – System sends alerts automatically when bins reach threshold.</li>
+          <li><strong>OFF</strong> – WhatsApp notifications are disabled.</li>
         </ul>
-        <p>Use Case: Enable alerts during operational hours, disable during maintenance or testing.</p>
+        <p>Recommended to keep ON during operational hours.</p>
 
         <hr>
 
-        <h6><i class="fas fa-broadcast-tower"></i> 7. Sensor Lists</h6>
-        <p>Displays sensors under each SmartBin unit.</p>
+        <h6><i class="fas fa-calendar-alt"></i> 7. Smart Calendar (Events & Notifications)</h6>
+        <p>
+          Interactive monthly/weekly calendar view.
+        </p>
         <ul>
-          <li>SmartBin name</li>
-          <li>Sensor ID</li>
-          <li>Current fill percentage</li>
+          <li>Displays public holidays and special events.</li>
+          <li>Shows grouped notification logs per day.</li>
+          <li>Click a notification label to view all alerts for that date.</li>
+          <li>Switch between Month and Week view.</li>
         </ul>
-        <p>Example:</p>
-        <pre>
-            TRX SmartBin 01
-            Sensor 1 – 17%
-            Sensor 2 – 5%
-            Sensor 3 – 12%
-        </pre>
+        <p><strong>Purpose:</strong> Assist planning during high-traffic events or holidays.</p>
 
         <hr>
 
-        <h6><i class="fas fa-users"></i> 8. Users Panel</h6>
-        <p>Shows system users and their roles.</p>
+        <h6><i class="fas fa-question-circle"></i> 8. Help Button</h6>
+        <p>
+          The orange <strong>?</strong> button at the bottom right opens this User Guide.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-check-circle"></i> 9. Best Practices</h6>
         <ul>
-          <li>Columns: Name, Role (Admin / Supervisor), Phone Number, Actions</li>
-          <li>Action Buttons: 📞 Call user, 💬 WhatsApp user (quick communication during alerts)</li>
-        </ul>
-
-        <hr>
-
-        <h6><i class="fas fa-calendar-alt"></i> 9. Calendar (Holiday & Event)</h6>
-        <p>Displays public holidays and scheduled events.</p>
-        <ul>
-          <li>Monthly & weekly view</li>
-          <li>Event and Holiday labels (e.g., Concert)</li>
-          <li>View notification logs by date</li>
-          <li>Used for planning collection schedules</li>
-        </ul>
-
-        <hr>
-
-        <h6><i class="fas fa-play-circle"></i> 10. Live Dashboard Button</h6>
-        <p>🟢 Live Dashboard opens real-time monitoring view and displays live sensor updates.</p>
-
-        <hr>
-
-        <h6><i class="fas fa-check-circle"></i> 11. Best Practices</h6>
-        <ul>
-          <li>✔ Check dashboard daily</li>
-          <li>✔ Monitor abnormal sensors immediately</li>
-          <li>✔ Keep notifications enabled</li>
-          <li>✔ Review clear time trends weekly</li>
+          <li>✔ Check dashboard daily.</li>
+          <li>✔ Respond immediately to red (critical) bins.</li>
+          <li>✔ Monitor undetected sensors.</li>
+          <li>✔ Keep WhatsApp notifications enabled.</li>
+          <li>✔ Review calendar before major events.</li>
         </ul>
 
       </div>
@@ -1505,6 +1492,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     </div>
   </div>
 </div>
+
 <!--OPEN HELP MODAL -->
 <script>
 function openHelp() {
