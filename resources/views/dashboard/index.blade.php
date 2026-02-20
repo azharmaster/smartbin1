@@ -743,17 +743,25 @@ function trend($current, $previous) {
             <div class="card card-success map-card mb-4">
                 <!-- Header -->
                 <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
+                    <div class="row">
+                        <div class="col-6">
+<h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
+                        </div><div class="col-6">
+ <div class="map-controls  float-right">
+                        <button id="zoomIn" class="btn btn-info btn-sm"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoomOut" class="btn btn-danger btn-sm"><i class="fas fa-search-minus"></i></button>
+                        <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
+                    </div>
+                        </div>
+                    </div>
+                    
+                   
                 </div>
 
                 <!-- Card Body -->
                 <div class="card-body map-card-body" style="height: 650px; position: relative;">
                     <!-- Controls -->
-                    <div class="map-controls mb-3 d-flex gap-2 align-items-center flex-wrap">
-                        <button id="zoomIn" class="btn btn-secondary btn-sm"><i class="fas fa-search-plus"></i></button>
-                        <button id="zoomOut" class="btn btn-secondary btn-sm"><i class="fas fa-search-minus"></i></button>
-                        <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
-                    </div>
+                    
 
                     <!-- Leaflet Map -->
                     <div id="dashboardMap"></div>
@@ -907,7 +915,7 @@ function trend($current, $previous) {
                                 default            => 'success',
                             };
                             $timestamp = $latest?->created_at
-                                ? $latest->created_at->format('Y-m-d H:i')
+                                ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i')
                                 : '—';
                         @endphp
 
@@ -996,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 }
 
-//whatsapp toggle responsive
+
 @media (max-width: 576px) {
     .card-body.d-flex {
         flex-direction: column;
@@ -1039,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                         data-bs-toggle="collapse"
                                         data-bs-target="#notif{{ $log->id }}">
 
-                                        <i class="fas fa-history"></i> {{ $log->sent_at->format('H:i:s') }}
+                                        <i class="fas fa-history"></i> {{ $log->sent_at->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
                                     </button>
 
                                     <div id="notif{{ $log->id }}" class="collapse mt-2">
