@@ -29,59 +29,76 @@ class DashboardController extends Controller
      * @return \Illuminate\View\View
      */
     public function index()
-    {
-        $devices = $this->loadDevicesWithLatestSensor();
+{
+    $devices = $this->loadDevicesWithLatestSensor();
 
-        // Floors and assets
-        $floors = Floor::all();
-        $assetsWithCoords = Asset::whereNotNull('x')
-                                ->whereNotNull('y')
-                                ->get();
-        $assetsWithDevices = Asset::with(['devices.sensors'])
-            ->whereHas('devices')
-            ->orderBy('asset_name')
-            ->get();
+    // Floors and assets
+    $floors = Floor::all();
+    $assetsWithCoords = Asset::whereNotNull('x')
+                            ->whereNotNull('y')
+                            ->get();
+    $assetsWithDevices = Asset::with(['devices.sensors'])
+        ->whereHas('devices')
+        ->orderBy('asset_name')
+        ->get();
 
-        // Todos and tasks
-        $todos = $this->loadTodosForUser(Auth::id());
-        $latestComplaints = $this->loadLatestComplaints();
-        $users = User::all();
-        $assignedTasks = $this->loadAssignedTasks();
-        $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
+    // Todos and tasks
+    $todos = $this->loadTodosForUser(Auth::id());
+    $latestComplaints = $this->loadLatestComplaints();
+    $users = User::all();
+    $assignedTasks = $this->loadAssignedTasks();
+    $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
 
-        // Smart bin clear times
-        $smartBinClearTimes = $this->calculateSmartBinClearTimes();
+    // Smart bin clear times
+    $smartBinClearTimes = $this->calculateSmartBinClearTimes();
 
-        // Calendar
-        $calendarCombined = $this->getCalendarEvents();
+    // Calendar
+    $calendarCombined = $this->getCalendarEvents();
 
-        // Today's notifications
-        $todayNotifications = $this->getTodayNotifications();
+    // Today's notifications
+    $todayNotifications = $this->getTodayNotifications();
 
-        $deviceStats = $this->getDeviceStats($devices);
-        $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
+    $deviceStats = $this->getDeviceStats($devices);
+    $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
-        $abnormalBins = $this->getAbnormalBins();
-        return view('dashboard.index', array_merge($deviceStats, [
-            
-            'todos' => $this->loadTodosForUser(Auth::id()),
-            'floors' => Floor::all(),
-            'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
-            'devices' => $devices,
-            'users' => User::all(),
-            'assignedTasks' => $this->loadAssignedTasks(),
-            'latestComplaints' => $this->loadLatestComplaints(),
-            'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
-            'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
-            'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
-            'calendarCombined' => $this->getCalendarEvents(),
-            'todayNotifications' => $this->getTodayNotifications(),
-            'whatsappNotificationActive'=> $whatsappNotificationActive,
-            'abnormalBins' => $abnormalBins,
-            'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
-        ]));
-    }
+    $abnormalBins = $this->getAbnormalBins();
 
+    // ✅ FULL ASSETS USING ADMIN CAPACITY SETTING & LATEST SENSOR
+    $fullAssets = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
+        ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
+        ->whereRaw('s1.time = (
+            SELECT MAX(s2.time)
+            FROM sensors s2
+            WHERE s2.device_id = s1.device_id
+        )')
+        ->whereColumn('s1.capacity', '>', 'capacity_settings.half_to')
+        ->distinct('assets.id')
+        ->count('assets.id');
+
+    return view('dashboard.index', array_merge($deviceStats, [
+        
+        'todos' => $this->loadTodosForUser(Auth::id()),
+        'floors' => Floor::all(),
+        'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
+        'devices' => $devices,
+        'users' => User::all(),
+        'assignedTasks' => $this->loadAssignedTasks(),
+        'latestComplaints' => $this->loadLatestComplaints(),
+        'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
+        'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
+        'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
+        'calendarCombined' => $this->getCalendarEvents(),
+        'todayNotifications' => $this->getTodayNotifications(),
+        'whatsappNotificationActive'=> $whatsappNotificationActive,
+        'abnormalBins' => $abnormalBins,
+        'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
+
+        // ✅ PASS FULL ASSETS TO VIEW
+        'fullAssets' => $fullAssets,
+    ]));
+}
     private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40)
     {
         $trend = collect();

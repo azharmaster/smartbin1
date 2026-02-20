@@ -1256,15 +1256,16 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener("DOMContentLoaded", function () {
 
     // 🔥 SWEETALERT POP-UP FOR FULL BINS
-    @if($fullDevices > 0)
+     @if($fullAssets > 0)
         Swal.fire({
             icon: 'warning',
             title: 'Full Trash Bins Detected!',
-            html: '<b>{{ $fullDevices }}</b> bin(s) are FULL and need to be cleared.',
+            html: '<b>{{ $fullAssets }}</b> bin(s) are FULL and need to be cleared.',
             confirmButtonText: 'OK',
             confirmButtonColor: '#d33',
         });
     @endif
+
 });
 </script>
 
