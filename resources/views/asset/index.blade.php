@@ -1,6 +1,29 @@
 @extends($layout)
 @section('content_title', 'Asset Management')
 @section('content')
+
+<!-- Floating Help Button -->
+<button type="button" data-bs-toggle="modal" data-bs-target="#holidaysHelpModal" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #faa70c;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="Asset Management"
+>
+    ?
+</button>
+
 <div class="card card-success card-outline">
    <div class="card-header d-flex align-items-center">
     <h5 class="mb-0">Bins List</h5>
@@ -147,4 +170,76 @@ function downloadQR(containerId, fileName) {
 }
 </script>
 
+<!-- Asset Management Help Modal -->
+<div class="modal fade" id="holidaysHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Asset Management – User Guide</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-info-circle"></i> Purpose</h6>
+        <p>
+          This page allows you to manage all registered <strong>bins/assets</strong> in the system.
+          You can view asset details, generate QR codes, and (Admin only) add or delete assets.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-list"></i> Bins List Table</h6>
+        <ul>
+          <li><strong>Name</strong> – The registered name of the bin/asset.</li>
+          <li><strong>Floor</strong> – The assigned floor location.</li>
+          <li><strong>Serial No</strong> – Unique serial number of the device.</li>
+          <li><strong>Location</strong> – Physical placement details.</li>
+          <li><strong>Model</strong> – Bin/device model type.</li>
+          <li><strong>Picture</strong> – Thumbnail image of the asset (if uploaded).</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-cogs"></i> Available Actions</h6>
+        <ul>
+          <li>
+            <strong>Add Asset (Admin Only)</strong> – Use the <strong>Add</strong> button at the top-right to register a new bin.
+          </li>
+          <li>
+            <strong>View Details</strong> – Click the <i class="far fa-eye"></i> button to see full asset information.
+          </li>
+          <li>
+            <strong>Delete Asset (Admin Only)</strong> – Click the <i class="fas fa-trash-alt"></i> button to remove an asset from the system.
+          </li>
+          <li>
+            <strong>Generate QR Code</strong> – Click the <i class="fas fa-qrcode"></i> button to open the QR code modal.
+          </li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-qrcode"></i> QR Code Function</h6>
+        <ul>
+          <li>Each asset has a unique QR code.</li>
+          <li>Scanning the QR code will open the asset’s detail page.</li>
+          <li>You can download the QR code as a PNG image using the <strong>Download QR</strong> button.</li>
+          <li>QR codes can be printed and attached to the physical bin for quick access.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-circle"></i> Notes</h6>
+        <ul>
+          <li>Only users with <strong>Admin role</strong> can add or delete assets.</li>
+          <li>Ensure serial numbers and locations are entered correctly during registration.</li>
+          <li>Deleting an asset may affect related monitoring or historical data.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 @endsection

@@ -3,6 +3,28 @@
 @section('content_title', 'QR Scanner')
 
 @section('content')
+
+<!-- Floating Help Button -->
+<button type="button" data-bs-toggle="modal" data-bs-target="#scannerHelpModal" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #faa70c;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="QR Scanner Guide">
+    ?
+</button>
+
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -115,4 +137,64 @@
     initScanner();
 </script>
 
+<!-- QR Scanner Help Modal -->
+<div class="modal fade" id="scannerHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">QR Scanner – User Guide</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-info-circle"></i> Purpose</h6>
+        <p>
+          This page allows you to scan a bin/asset QR code using your device camera.
+          Once scanned, the system will automatically redirect you to the asset’s detail page.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-camera"></i> How to Use</h6>
+        <ul>
+          <li>Allow camera permission when prompted by your browser.</li>
+          <li>Point your camera directly at the asset QR code.</li>
+          <li>Hold steady until the QR code is detected.</li>
+          <li>You will be automatically redirected once scanning is successful.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-sync-alt"></i> How It Works</h6>
+        <ul>
+          <li>The system activates your device camera.</li>
+          <li>When a QR code is detected, scanning stops automatically.</li>
+          <li>If the QR contains a full URL, you will be redirected to that link.</li>
+          <li>If it contains an asset ID or code, the system redirects to the related asset page.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-circle"></i> Troubleshooting</h6>
+        <ul>
+          <li><strong>No camera detected:</strong> Ensure your device has a working camera.</li>
+          <li><strong>Camera access denied:</strong> Enable camera permissions in your browser settings.</li>
+          <li><strong>QR not scanning:</strong> Improve lighting and ensure the QR code is clear and not damaged.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-lightbulb"></i> Tips</h6>
+        <ul>
+          <li>Use this feature for quick access to bin details during maintenance or inspection.</li>
+          <li>Ensure the QR code sticker on the bin is clean and visible.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 @endsection

@@ -1,6 +1,29 @@
 @extends('layouts.app')
 @section('content_title', 'Floor')
 @section('content')
+
+<!-- Floating Help Button -->
+<button type="button" data-bs-toggle="modal" data-bs-target="#floorHelpModal" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #faa70c;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="Floor Guide">
+    ?
+</button>
+
+
 <div class="card">
     <div class="card-header">
         <h4 class="card-title">Floor</h4>
@@ -73,5 +96,65 @@
             </table>
         </div>
     </div>
+</div>
+
+<!-- Floor Help Modal -->
+<div class="modal fade" id="floorHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Floor Management – User Guide</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-info-circle"></i> Purpose</h6>
+        <p>
+          This page allows you to manage building floors in the system.
+          Floors are used to organize and assign bins/assets to their correct locations.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-list"></i> Floor Table Overview</h6>
+        <ul>
+          <li><strong>Name</strong> – The registered floor name (e.g., Ground Floor, Level 1).</li>
+          <li><strong>Picture</strong> – Floor layout image (if uploaded).</li>
+          <li><strong>Option</strong> – Edit or delete actions (Admin only).</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-image"></i> Viewing Floor Picture</h6>
+        <ul>
+          <li>Click on the floor image thumbnail to enlarge it.</li>
+          <li>The image will open in a popup modal for better viewing.</li>
+          <li>If no image is uploaded, a dash (-) will be displayed.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-cogs"></i> Available Actions (Admin Only)</h6>
+        <ul>
+          <li><strong>Add Floor</strong> – Use the add button at the top-right to create a new floor.</li>
+          <li><strong>Edit Floor</strong> – Click the edit button to update floor details.</li>
+          <li><strong>Delete Floor</strong> – Click the delete button to remove a floor from the system.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-circle"></i> Notes</h6>
+        <ul>
+          <li>Only users with <strong>Admin role</strong> can add, edit, or delete floors.</li>
+          <li>Ensure floor names are accurate to avoid confusion when assigning assets.</li>
+          <li>Deleting a floor may affect assets assigned to that floor.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 @endsection
