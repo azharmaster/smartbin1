@@ -4,6 +4,28 @@
 @endsection
 
 @section('content')
+
+<!-- Floating Help Button -->
+<button type="button" data-bs-toggle="modal" data-bs-target="#summaryHelpModal" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #faa70c;
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+        z-index: 999;
+    "
+    title="Summary Report Guide">
+    ?
+</button>
+
 <div class="container-fluid">
 
     {{-- ================= HEADER ROW ================= --}}
@@ -425,4 +447,105 @@ function printDashboard() {
     border-radius: 3px;
 }
 </style>
+
+<!-- Summary Report Help Modal -->
+<div class="modal fade" id="summaryHelpModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Summary Report – User Guide</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="font-size: 14px;">
+
+        <h6><i class="fas fa-info-circle"></i> Purpose</h6>
+        <p>
+          This page provides an analytical summary of bin performance based on
+          sensor data and cleaning records. Reports can be viewed by
+          <strong>Today, Weekly, or Monthly</strong> period.
+        </p>
+
+        <hr>
+
+        <h6><i class="fas fa-calendar-alt"></i> Selecting Report Period</h6>
+        <ul>
+          <li><strong>Today</strong> – Shows data for the current day only.</li>
+          <li><strong>Weekly</strong> – Select a specific week to analyze performance.</li>
+          <li><strong>Monthly</strong> – Select a specific month for overall trend analysis.</li>
+          <li>The report updates automatically when you change the period.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-chart-line"></i> Charts Explanation</h6>
+        <ul>
+          <li>
+            <strong>Number of Times Each Bin Became Full</strong><br>
+            Shows how often each bin reached full capacity during the selected period.
+            High numbers indicate high-traffic areas.
+          </li>
+          <li>
+            <strong>Average Time to Become Full (Hours)</strong><br>
+            Displays the average duration it takes for a bin to fill up.
+            Shorter time means faster waste accumulation.
+          </li>
+          <li>
+            <strong>Average Bin Clear Time (Hours)</strong><br>
+            Shows the average time taken to clear a bin after it becomes full.
+            Longer times may indicate delayed cleaning response.
+          </li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-history"></i> Cleaning History Table</h6>
+        <ul>
+          <li>Displays all cleaning records within the selected period.</li>
+          <li>Shows asset name, device/compartment, and cleaning timestamp.</li>
+          <li>If no records appear, it means no cleaning activity was logged during that period.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-lightbulb"></i> Insights Section</h6>
+        <ul>
+          <li>Provides quick operational insights based on bin behavior.</li>
+          <li>Helps identify high-demand areas and optimize collection schedules.</li>
+          <li>Supports data-driven maintenance decisions.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-image"></i> Asset Images</h6>
+        <ul>
+          <li>Displays all registered bins with their images.</li>
+          <li>Click on an image to view it in full size.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-print"></i> Print & Email Report</h6>
+        <ul>
+          <li><strong>Print</strong> – Generates a printer-friendly version of the report.</li>
+          <li><strong>Send Report</strong> – Sends the report summary via email to the currently logged-in user’s registered email address.</li>
+          <li>Charts are automatically converted into images when printing.</li>
+        </ul>
+
+        <hr>
+
+        <h6><i class="fas fa-exclamation-circle"></i> Notes</h6>
+        <ul>
+          <li>All metrics are calculated based on bin sensor state changes.</li>
+          <li>Ensure correct period selection before printing or sending reports.</li>
+          <li>This report is useful for performance monitoring and operational planning.</li>
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
 @endsection
