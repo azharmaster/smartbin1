@@ -26,7 +26,7 @@
 
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h6 class="mb-0">Sensors List</h6>
+        <h5 class="mb-0">Sensors List</h5>
 
         <div class="ms-auto">
         @if(auth()->user()->role == 1)
