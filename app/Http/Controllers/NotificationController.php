@@ -44,8 +44,22 @@ class NotificationController extends Controller
         }
 
         // Order by latest
-        $notifications = $query->orderBy('sent_at', 'desc')->paginate(10);
+        $notifications = $query->orderBy('sent_at', 'desc')
+                               ->get()
+                               ->unique('message_preview') // ensure each message is unique
+                               ->values();                // reindex collection
 
-        return view('notification.index', compact('notifications'));
+        // paginate manually after unique
+        $perPage = 10;
+        $page = $request->get('page', 1);
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $notifications->forPage($page, $perPage),
+            $notifications->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('notification.index', ['todayNotifications' => $paginated]);
     }
 }

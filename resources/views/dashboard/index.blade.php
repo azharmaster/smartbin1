@@ -1020,49 +1020,55 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- LEFT COLUMN: MAP -->
         <div class="col-lg-6">
             <!-- NOTIFICATION LOGS-->
-            <div class="card mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
-                        <span>
-                            <i class="fas fa-inbox"></i> Notification Sent
-                            <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
-                        </span>
+<div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
+            <span>
+                <i class="fas fa-inbox"></i> Notification Sent
+                <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
+            </span>
 
-                        <a href="{{ route('notifications.index') }}"
-                        class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                    </h5>
-                </div>
+            <a href="{{ route('notifications.index') }}"
+            class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
+                <i class="fas fa-eye"></i>
+            </a>
+        </h5>
+    </div>
 
-                <div class="card-body p-3">
-                    <div class="notification-timeline">
-                        @forelse($todayNotifications->take(10) as $log)
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
+    <div class="card-body p-3">
+        <div class="notification-timeline">
+            @php
+                // Get unique messages by message_preview
+                $uniqueNotifications = $todayNotifications->unique('message_preview')->take(10);
+            @endphp
 
-                                <div class="timeline-content">
-                                    <button
-                                        class="timeline-button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#notif{{ $log->id }}">
+            @forelse($uniqueNotifications as $log)
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
 
-                                        <i class="fas fa-history"></i> {{ $log->sent_at->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
-                                    </button>
+                    <div class="timeline-content">
+                        <button
+                            class="timeline-button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#notif{{ $log->id }}">
 
-                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
-                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No notifications sent today
-                            </div>
-                        @endforelse
+                            <i class="fas fa-history"></i> 
+                            {{ $log->sent_at->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
+                        </button>
+
+                        <div id="notif{{ $log->id }}" class="collapse mt-2">
+                            <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="text-muted text-center py-3">
+                    No notifications sent today
+                </div>
+            @endforelse
+        </div>
+    </div>
+</div>
 
             <div class="card mb-4">
                 <div class="card-header smartbin-gradient">
