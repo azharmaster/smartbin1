@@ -299,12 +299,8 @@
 <script>
     const sensorData = @json($latestPerDevice);
 
-    // Combine device name and asset name for multi-line label
-    const labels = sensorData.map(item => {
-        const deviceName = item.device_name ?? 'Unknown Device';
-        const assetName = item.asset_name ?? 'Unknown Bin';
-        return deviceName + '\n(' + assetName + ')';
-    });
+    // Use last 4 digits of device_id for chart labels
+    const labels = sensorData.map(item => item.device_id_short);
     const capacities = sensorData.map(item => item.capacity);
     const timestamps = sensorData.map(item => item.created_at);
 </script>
@@ -370,17 +366,12 @@
                 x: {
                     title: {
                         display: true,
-                        text: 'Device / Asset'   // ✅ updated title
+                        text: 'Device ID (Last 4 Digits)'
                     },
                     ticks: {
-                        callback: function(value) {
-                            // Split multi-line labels by "\n"
-                            const label = this.getLabelForValue(value);
-                            return label.split('\n');
-                        },
                         autoSkip: false,
-                        maxRotation: 0,
-                        minRotation: 0
+                        maxRotation: 45,
+                        minRotation: 45
                     }
                 }
             }

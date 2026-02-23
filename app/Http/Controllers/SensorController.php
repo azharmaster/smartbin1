@@ -59,6 +59,10 @@ class SensorController extends Controller
                 // Add device_name and asset_name for chart labels
                 $item->device_name = $item->device_name ?? 'Unknown Device';
                 $item->asset_name = $item->asset_name ?? 'Unknown Bin';
+                
+                // Extract last 4 digits of device_id for chart label
+                $deviceId = (string)$item->device_id;
+                $item->device_id_short = strlen($deviceId) >= 4 ? substr($deviceId, -4) : $deviceId;
 
                 return $item;
             });
