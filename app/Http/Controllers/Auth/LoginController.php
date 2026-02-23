@@ -34,18 +34,18 @@ class LoginController extends Controller
             }
 
             // Role 2 = Staff → redirect to staff main menu
-            if ($user->role == 2) {
-                return redirect()->route('staff.dashboard');
-            }
+            // if ($user->role == 2) {
+            //     return redirect()->route('staff.dashboard');
+            // }
 
-            // Role 3 = Client → redirect to guest dashboard
+            // // Role 3 = Client → redirect to guest dashboard
             if ($user->role == 3) {
                 return redirect()->route('dashboard');
             }
 
-            if ($user->role == 4) {
-                return redirect()->route('supervisor.dashboard');
-            }
+            // if ($user->role == 4) {
+            //     return redirect()->route('supervisor.dashboard');
+            // }
 
             // fallback if role undefined
             return redirect('auth.login');
