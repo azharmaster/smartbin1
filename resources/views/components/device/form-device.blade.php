@@ -15,7 +15,7 @@
 
 {{-- Button --}}
 <button type="button"
-    class="btn  {{ $isEdit ? 'btn-outline-secondary' : 'btn-primary' }} {{ $attributes->get('class') }}"
+    class="btn  {{ $isEdit ? 'btn-secondary btn-sm' : 'btn-primary' }} {{ $attributes->get('class') }}"
     data-toggle="modal"
     data-target="#{{ $modalId }}">
     <i class="fas {{ $isEdit ? 'fa-pencil-alt' : 'fa-plus' }}"></i>

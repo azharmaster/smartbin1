@@ -1,6 +1,6 @@
 <div>
     <button type="button" 
-        class="{{ $id ? 'btn btn-default' : 'btn btn-primary' }}"
+        class="{{ $id ? 'btn btn-secondary btn-sm' : 'btn btn-primary' }}"
         data-toggle="modal" data-target="#formFloor{{ $id ?? '' }}">
         <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
         {{ $id ? '' : 'Add' }}
