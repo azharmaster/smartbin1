@@ -258,20 +258,23 @@ private function getCalendarEvents()
     });
 
     // Group notifications by date
-    $groupedNotifications = $notifications->groupBy(function($n) {
-        return Carbon::parse($n->sent_at)->toDateString();
-    });
+$groupedNotifications = $notifications->groupBy(function($n) {
+    return Carbon::parse($n->sent_at)->toDateString();
+});
 
-    // Map grouped notifications into one calendar event per day
-    $calendarNotifications = $groupedNotifications->map(function($items, $date) {
+// Map grouped notifications into one calendar event per day
+$calendarNotifications = $groupedNotifications->map(function($items, $date) {
+    // Make notifications unique by message_preview
+    $uniqueItems = $items->unique('message_preview')->values();
+
     return [
         'id' => 'notifications-' . $date,
-        'title' => '🔔 ' . $items->count() . ' Notifications',
+        'title' => '🔔 ' . $uniqueItems->count() . ' Notifications',
         'start' => $date,
         'allDay' => true,
         'color' => '#ffc107',
         'type' => 'notification_group',
-        'notifications' => $items->map(function($n) {
+        'notifications' => $uniqueItems->map(function($n) {
             return [
                 'message_preview' => $n->message_preview,
             ];
