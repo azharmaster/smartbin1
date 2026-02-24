@@ -355,12 +355,19 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 {{-- WhatsApp Help Modal --}}
-<div class="modal fade" id="whatsappHelpModal" tabindex="-1">
+<div class="modal fade" id="whatsappHelpModal" tabindex="-1" aria-labelledby="whatsappHelpModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">WhatsApp Notification – User Guide</h5>
-            </div>
+
+            <!-- Modal Header with Close Button -->
+           <div class="modal-header">
+    <h5 class="modal-title">WhatsApp Notification – User Guide</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+            <!-- Modal Body -->
             <div class="modal-body">
                 <p>
                     The <strong>WhatsApp Notification</strong> page allows you to monitor your bins and devices and receive alerts via WhatsApp when certain conditions are met. Follow the guide below to understand how to configure and manage notifications.
@@ -407,16 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     Following these steps ensures you receive accurate and timely WhatsApp alerts for your bins and devices.
                 </p>
             </div>
+
         </div>
     </div>
 </div>
-
 
 {{-- JS to open WhatsApp help modal --}}
 @push('scripts')
 <script>
 function openWhatsAppHelp() {
-    var modal = new bootstrap.Modal(document.getElementById('whatsappHelpModal'));
+    var modalEl = document.getElementById('whatsappHelpModal');
+    var modal = new bootstrap.Modal(modalEl);
     modal.show();
 }
 </script>

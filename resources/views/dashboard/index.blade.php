@@ -1400,6 +1400,8 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 
       <div class="modal-header">
         <h5 class="modal-title">SMARTBIN Dashboard – User Guide (Latest Version)</h5>
+        <!-- Close button -->
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="modal-body" style="font-size: 14px;">
@@ -1521,7 +1523,6 @@ function openHelp() {
     $('#helpModal').modal('show');
 }
 </script>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
