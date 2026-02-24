@@ -65,4 +65,9 @@ class LoginController extends Controller
         
         return redirect('/')->with('status', 'You have been logged out successfully.');
     }
+
+    public function showLoginForm()
+{
+    return view('auth.login');
+}
 }

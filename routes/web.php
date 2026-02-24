@@ -31,6 +31,8 @@ use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -355,3 +357,24 @@ Route::get('/assets/{id}', [AssetController::class, 'show'])->name('assets.show'
 Route::get('/qr-scanner', function () {
     return view('qr.scanner');
 })->name('qr.scanner');
+
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request');
+
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email');
+
+Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+
+Route::post('reset-password', [ResetPasswordController::class, 'reset'])
+    ->name('password.update');
+
+    /* Show login page */
+Route::get('/login', [LoginController::class, 'showLoginForm'])
+    ->name('login')
+    ->middleware('guest');
+
+/* Process login */
+Route::post('/login', [LoginController::class, 'handleLogin'])
+    ->middleware('guest');
