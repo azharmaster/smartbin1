@@ -68,8 +68,8 @@ class DashboardController extends Controller
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
         ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
         ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
-        ->whereRaw('s1.time = (
-            SELECT MAX(s2.time)
+        ->whereRaw('s1.created_at = (
+            SELECT MAX(s2.created_at)
             FROM sensors s2
             WHERE s2.device_id = s1.device_id
         )')
@@ -136,7 +136,7 @@ class DashboardController extends Controller
                     continue;
                 }
 
-                if (Carbon::parse($sensor->time)->lt(
+                if (Carbon::parse($sensor->created_at)->lt(
                     Carbon::parse($endOfDay)->subMinutes($minutesThreshold)
                 )) {
                     $undetected++;
@@ -175,14 +175,14 @@ class DashboardController extends Controller
                 // ⚠️ Abnormal
                 if (is_numeric($sensor->capacity) && $sensor->capacity < 0) {
                     $device->type = 'abnormal';
-                    $device->last_seen = $sensor->time;
+                    $device->last_seen = $sensor->created_at;
                     return true;
                 }
 
                 // 🚫 Undetected (no update > threshold)
-                if (Carbon::parse($sensor->time)->lt($threshold)) {
+                if (Carbon::parse($sensor->created_at)->lt($threshold)) {
                     $device->type = 'undetected';
-                    $device->last_seen = $sensor->time;
+                    $device->last_seen = $sensor->created_at;
                     return true;
                 }
 
@@ -305,7 +305,7 @@ private function loadDevicesWithLatestSensor($before = null)
         'asset.capacitySetting', 
         'latestSensor' => function ($q) use ($before) {
             if ($before) {
-                $q->where('time', '<=', $before);
+                $q->where('created_at', '<=', $before);
             }
         }
     ])->get();
@@ -444,7 +444,7 @@ private function calculateSmartBinClearTimes()
 
     $devices = Device::with([
         'asset.capacitySetting', // <-- corrected
-        'sensors' => fn ($q) => $q->orderBy('time', 'asc')
+        'sensors' => fn ($q) => $q->orderBy('created_at', 'asc')
     ])->get();
 
     foreach ($devices as $device) {
@@ -459,12 +459,12 @@ private function calculateSmartBinClearTimes()
 
             // Bin reaches full threshold
             if ($fullTimestamp === null && $sensor->capacity > $capacity->half_to) {
-                $fullTimestamp = Carbon::parse($sensor->time);
+                $fullTimestamp = Carbon::parse($sensor->created_at);
             }
 
             // Bin clears (drops below empty threshold)
             if ($fullTimestamp && $sensor->capacity <= $capacity->empty_to) {
-                $clearTime = Carbon::parse($sensor->time);
+                $clearTime = Carbon::parse($sensor->created_at);
 
                 if ($clearTime->between($startOfWeek, $endOfWeek)) {
                     $minutes = $fullTimestamp->diffInMinutes($clearTime);

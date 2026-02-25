@@ -159,9 +159,9 @@
                         <!-- Correct numbering across pages -->
                         <td>{{ $sensors->firstItem() + $index }}</td>
                         <td>
-                            {{ $sensor->device->device_name ?? 'Unknown Device' }}
+                            {{ $sensor->device->asset->asset_name ?? 'Unknown Bin' }}
                             <br>
-                            <small class="text-muted">{{ $sensor->device->asset->asset_name ?? 'Unknown Bin' }}</small>
+                            <small class="text-muted">{{ $sensor->device->device_name ?? 'Unknown Device' }}</small>
                         </td>
 
                         <td>{{ $sensor->device_id }}</td>

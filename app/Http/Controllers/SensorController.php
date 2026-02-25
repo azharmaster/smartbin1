@@ -87,7 +87,7 @@ class SensorController extends Controller
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
+        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'created_at', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;
@@ -127,7 +127,7 @@ class SensorController extends Controller
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        $sensor->update($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
+        $sensor->update($request->only('device_id', 'battery', 'capacity', 'created_at', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;
@@ -163,7 +163,7 @@ class SensorController extends Controller
         $message .= "Bin: {$asset->asset_name}\n";
         $message .= "Device: {$sensor->device->device_name}\n";
         $message .= "Current Capacity: {$sensor->capacity}%\n";
-        $message .= "Time: {$sensor->time}\n\n";
+        $message .= "Time: {$sensor->created_at}\n\n";
         $message .= "Please take immediate action.";
 
         foreach ($supervisors as $phone) {
