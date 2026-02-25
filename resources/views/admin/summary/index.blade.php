@@ -105,6 +105,94 @@
         </div>
     </div>
 
+    {{-- ================= SUMMARY METRICS CARDS ================= --}}
+    <div class="row g-4 mb-4 no-print">
+        {{-- Total Full Events --}}
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Total Full Events</h6>
+                            <h2 class="mb-0 fw-bold">{{ number_format($summaryMetrics->total_full_events) }}</h2>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Average Fill Time --}}
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Avg Fill Time</h6>
+                            <h2 class="mb-0 fw-bold">{{ $summaryMetrics->avg_fill_time }} <small class="fs-6">hrs</small></h2>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-hourglass-half fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Average Clear Time --}}
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Avg Clear Time</h6>
+                            <h2 class="mb-0 fw-bold">{{ $summaryMetrics->avg_clear_time }} <small class="fs-6">hrs</small></h2>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-broom fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Cleaning This Month --}}
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Total Cleaning</h6>
+                            <h2 class="mb-0 fw-bold">{{ number_format($summaryMetrics->total_cleaning) }}</h2>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-clipboard-check fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Active Bins --}}
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Total Active Bins</h6>
+                            <h2 class="mb-0 fw-bold">{{ number_format($summaryMetrics->total_active_bins) }}</h2>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-recycle fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- ================= CHART ROW 1 ================= --}}
     <div class="row g-4">
         {{-- Times Bin Became Full --}}
@@ -436,6 +524,14 @@ function printDashboard() {
 .card-body::-webkit-scrollbar-thumb {
     background: rgba(0,0,0,0.2);
     border-radius: 3px;
+}
+
+/* 5 equal columns for summary cards */
+@media (min-width: 768px) {
+    .col-md-2-4 {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
 }
 </style>
 

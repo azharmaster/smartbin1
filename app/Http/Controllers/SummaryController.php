@@ -186,8 +186,8 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         ])->get();
 
         $sensorData = DB::table('sensors')
-            ->whereBetween('time', [$start, $end])
-            ->orderBy('time')
+            ->whereBetween('created_at', [$start, $end])
+            ->orderBy('created_at')
             ->get()
             ->groupBy('device_id');
 
@@ -209,7 +209,7 @@ private function getCapacityStats(Carbon $baseDate, string $period)
                     if (!is_numeric($sensor->capacity)) continue;
 
                     $capacity = (float) $sensor->capacity;
-                    $time     = Carbon::parse($sensor->time);
+                    $time     = Carbon::parse($sensor->created_at);
 
                     if ($prevCapacity === null) {
                         $prevCapacity = $capacity;
@@ -263,6 +263,47 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         ];
     }
 
+private function computeSummaryMetrics(Carbon $baseDate, string $period)
+{
+    $binAnalytics = $this->computeBinAnalyticsPerAsset($baseDate, $period);
+    $cleaningLogs = $this->getCleaningLogs($baseDate, $period);
+
+    // Total full events across all bins
+    $totalFullEvents = $binAnalytics->sum('times_full');
+
+    // Average fill time across all bins (only bins with fill time > 0)
+    $fillTimes = $binAnalytics->filter(fn($item) => $item->avg_fill_time > 0);
+    $avgFillTime = $fillTimes->count() > 0
+        ? round($fillTimes->avg('avg_fill_time'), 2)
+        : 0;
+
+    // Average clear time across all bins (only bins with clear time > 0)
+    $clearTimes = $binAnalytics->filter(fn($item) => $item->avg_clear_time > 0);
+    $avgClearTime = $clearTimes->count() > 0
+        ? round($clearTimes->avg('avg_clear_time'), 2)
+        : 0;
+
+    // Total cleaning events
+    $totalCleaning = $cleaningLogs->count();
+
+    // Total active bins (bins with at least one sensor reading in the period)
+    [$start, $end] = $this->resolveDateRange($baseDate, $period);
+    $activeBins = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->join('sensors', 'sensors.device_id', '=', 'devices.id_device')
+        ->whereBetween('sensors.time', [$start, $end])
+        ->distinct('assets.id')
+        ->count('assets.id');
+
+    return (object) [
+        'total_full_events' => $totalFullEvents,
+        'avg_fill_time'     => $avgFillTime,
+        'avg_clear_time'    => $avgClearTime,
+        'total_cleaning'    => $totalCleaning,
+        'total_active_bins' => $activeBins,
+    ];
+}
+
 public function index(Request $request)
 {
     $period = $request->input('period', 'month');
@@ -293,6 +334,7 @@ public function index(Request $request)
     $binAnalytics   = $this->computeBinAnalyticsPerAsset($baseDate, $period);
     $assets         = $this->getAssets();
     $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
+    $summaryMetrics = $this->computeSummaryMetrics($baseDate, $period);
 
     return view('admin.summary.index', compact(
         'monthInput',
@@ -301,7 +343,8 @@ public function index(Request $request)
         'devicesByFloor',
         'binAnalytics',
         'assets',
-        'cleaningLogs'
+        'cleaningLogs',
+        'summaryMetrics'
     ));
 }
 
@@ -399,11 +442,11 @@ public function sendEmail(Request $request)
     $timesFullChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
             $generateChartUrl(
-                'line',
+                'bar',
                 'Times Became Full',
                 $binAnalytics->pluck('times_full')->values(),
                 '#8e44ad',
-                'rgba(142,68,173,0.2)'
+                'rgba(142,68,173,0.8)'
             )
         )
     );
@@ -411,11 +454,11 @@ public function sendEmail(Request $request)
     $avgFillChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
             $generateChartUrl(
-                'line',
+                'bar',
                 'Average Fill Time (Hours)',
                 $binAnalytics->pluck('avg_fill_time')->values(),
                 '#2ecc71',
-                'rgba(46,204,113,0.2)'
+                'rgba(46,204,113,0.8)'
             )
         )
     );
@@ -423,11 +466,11 @@ public function sendEmail(Request $request)
     $avgClearChartData = 'data:image/png;base64,' . base64_encode(
         file_get_contents(
             $generateChartUrl(
-                'line',
+                'bar',
                 'Average Clear Time (Hours)',
                 $binAnalytics->pluck('avg_clear_time')->values(),
                 '#e74c3c',
-                'rgba(231,76,60,0.2)'
+                'rgba(231,76,60,0.8)'
             )
         )
     );
@@ -445,6 +488,7 @@ public function sendEmail(Request $request)
         'timesFullChartData' => $timesFullChartData,
         'avgFillChartData'   => $avgFillChartData,
         'avgClearChartData'  => $avgClearChartData,
+        'summaryMetrics'     => $summaryMetrics,
     ])->setPaper('a4', 'portrait');
 
     Mail::to($user->email)->send(
