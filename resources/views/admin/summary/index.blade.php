@@ -443,7 +443,7 @@ function printDashboard() {
 
 <style>
 .summary-gradient {
-     background: linear-gradient(270deg, #1b5e20, #4bb352ff, #1b5e20);
+     background: linear-gradient(270deg, #9457b3, #672d84, #9457b3);
     background-size: 400% 400%;
     animation: smartbinGradient 8s ease infinite;
 }
