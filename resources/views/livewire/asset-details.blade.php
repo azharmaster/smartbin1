@@ -152,18 +152,6 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
         font-size: 14px;
     }
 }
-
-@media (max-width: 768px) {
-    .map-container img {
-        object-fit: contain !important;
-        height: auto !important;
-        max-height: 100%;
-    }
-
-    .map-container {
-        height: auto !important;
-    }
-}
 </style>
 
     <div class="page-wrapper" style="max-width: 1200px; display: flex; flex-direction: column; gap: 20px;">
@@ -193,13 +181,12 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             <div class="asset-layout">
                 <div class="left-column">
                     <!-- Map container -->
-                    <div class="map-container"
-                        style="position: relative; width: 100%;"
+                    <div class="map-container" style="position: relative; width: 100%; height: 600px;"
                         x-data="draggableMarker({{ $asset->id }}, {{ $asset->x ?? 0 }}, {{ $asset->y ?? 0 }})">
 
-                        <img src="{{ asset('floor_pictures/' . $asset->floor->picture) }}"
+                        <img src="{{ asset('uploads/floor/' . $asset->floor->picture) }}"
                             alt="Floor Map"
-                            style="width: 100%; height: auto; border-radius: 10px; display: block; pointer-events: none;">
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; pointer-events: none;">
 
                         @php
                             $maxCapacity = $asset->devices
@@ -294,14 +281,12 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
 
                                 <!-- Edit asset -->
                                 <div style="position: absolute; top: 0; right: 0;">
-                                @if(auth()->user()->role == 1)
                                     <x-asset.form-asset
                                         :id="$asset->id"
                                         :floors="$floors"
                                         :picture="$asset->picture"
                                         style="font-size: 11px; padding: 4px 8px;"
                                     />
-                                @endif
                                 </div>
 
                                 <div style="
@@ -395,40 +380,12 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                                 y="{{ $comp['capacityTextY'] }}"
                                                 text-anchor="middle"
                                                 fill="#000"
-                                                font-size="11"
+                                                font-size="13"
                                                 font-weight="600"
                                                 pointer-events="none"
                                             >
                                                 {{ $comp['capacity'] }}%
                                             </text>
-                                            <text
-                                                x="{{ $comp['labelPos'][0] }}"
-                                                y="{{ $comp['capacityTextY'] + 12 }}"
-                                                text-anchor="middle"
-                                                fill="#000"
-                                                font-size="10"
-                                                font-weight="normal"
-                                                pointer-events="none"
-                                            >
-                                                {{ number_format($comp['battery'], 2) }}V ({{ $comp['battery_percentage'] }}%)
-                                            </text>
-                                            @if($comp['battery_status'] == 'recommended_replacement')
-                                                <circle
-                                                    cx="{{ $comp['labelPos'][0] - 15 }}"
-                                                    cy="{{ $comp['capacityTextY'] - 15 }}"
-                                                    r="4"
-                                                    fill="orange"
-                                                    title="Battery replacement recommended"
-                                                />
-                                            @elseif($comp['battery_status'] == 'required_replacement')
-                                                <circle
-                                                    cx="{{ $comp['labelPos'][0] - 15 }}"
-                                                    cy="{{ $comp['capacityTextY'] - 15 }}"
-                                                    r="4"
-                                                    fill="red"
-                                                    title="Battery replacement required"
-                                                />
-                                            @endif
                                         @endforeach
 
                                         <!-- Compartment outlines and device names -->
@@ -515,20 +472,16 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     $capacityColor = $capacityValue <= $capacitySetting->empty_to ? '#1b4f1f' :
                                                     ($capacityValue <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c');
 
-                                    // Battery value (treating as voltage) and color
-                                    $batteryVoltage = $sensor?->battery ?? 0;
-                                    $batteryPercentage = $this->voltageToPercentage($batteryVoltage);
-                                    $batteryStatus = $this->getBatteryStatus($batteryVoltage);
-
-                                    // Determine battery color based on voltage
-                                    if ($batteryVoltage <= 3.1) {
-                                        $batteryColor = '#ff0000'; // red - low battery
-                                    } elseif ($batteryVoltage <= 3.3) {
-                                        $batteryColor = '#f97316'; // orange - medium low
-                                    } elseif ($batteryVoltage <= 3.5) {
-                                        $batteryColor = '#facc15'; // yellow - medium
+                                    // Battery value and color
+                                    $batteryValue = $sensor?->battery ?? 0;
+                                    if ($batteryValue <= 20) {
+                                        $batteryColor = '#ff0000'; // red
+                                    } elseif ($batteryValue <= 50) {
+                                        $batteryColor = '#f97316'; // orange
+                                    } elseif ($batteryValue <= 80) {
+                                        $batteryColor = '#facc15'; // yellow
                                     } else {
-                                        $batteryColor = '#10b981'; // green - good
+                                        $batteryColor = '#10b981'; // green
                                     }
 
                                     // RSRP value and color (wifi)
@@ -571,7 +524,6 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                         gap: 6px;
                                         z-index: 5;
                                     ">
-                                    @if(auth()->user()->role == 1)
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-secondary"
                                                 data-toggle="modal"
@@ -599,22 +551,14 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                                 <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
                                             </button>
                                         </form>
-                                    @endif
                                     </div>
-                                    @php
-                                        $status = $deviceStatuses[$device->id_device] ?? ['last_full' => null, 'last_clear' => null];
-                                    @endphp
+
                                     {{-- Device name --}}
                                     <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #121010;">
                                         {{ $device->device_name }}
                                     </h3>
-                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
-                                        <i class="fas fa-trash-alt" style="color: red"></i> 
-                                        {{ $status['last_full'] ? \Carbon\Carbon::parse($status['last_full'])->format('Y-m-d H:i') : 'Never' }}
-                                    </p>
-                                    <p style="margin: 2px 0; font-size: 12px; color: #777;">
-                                        <i class="fas fa-trash-restore" style="color: green"></i> 
-                                        {{ $status['last_clear'] ? \Carbon\Carbon::parse($status['last_clear'])->format('Y-m-d H:i') : 'Never' }}
+                                    <p style="margin: 2px 0 10px; font-size: 12px; color: #777;">
+                                        Last updated: {{ $sensor?->created_at ?? 'N/A' }}
                                     </p>
                                     <div style="
                                         display: grid;
@@ -625,12 +569,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     ">
                                         <div>
                                             <i class="fas fa-battery-full" style="color: {{ $batteryColor }};" title="Battery level"></i>
-                                            <strong>{{ number_format($batteryVoltage, 2) }}V ({{ $batteryPercentage }}%)</strong>
-                                            @if($batteryStatus == 'recommended_replacement')
-                                                <br><small style="color: orange;">Battery replacement recommended</small>
-                                            @elseif($batteryStatus == 'required_replacement')
-                                                <br><small style="color: red;">Battery replacement required</small>
-                                            @endif
+                                            <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong>
                                         </div>
                                         <div>
                                             <i class="fas fa-trash-alt" style="color: {{ $capacityColor }};" title="Current capacity"></i>
@@ -649,35 +588,32 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                 @endforeach
                             </div>
                         </div>
-                        <p style="font-size: 12px; color: #777;">
-                            Last updated: {{ $sensor?->created_at ?? 'N/A' }}
-                        </p>
                     </div>
                 </div>
             </div>
 
         <!-- daily graph-->
-<div style="
-    margin-top: 10px;
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-">
-    <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">
-        Today's Capacity Levels (7AM - 7PM)
-    </h4>
+        <div style="
+            margin-top: 10px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        ">
+            <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">
+                Today's Capacity Levels (7AM - 7PM)
+            </h4>
 
-    <div style="position: relative; height: 320px;">
-        <canvas id="weeklyBinChart"></canvas>
-    </div>
+            <div style="position: relative; height: 320px;">
+                <canvas id="weeklyBinChart"></canvas>
+            </div>
 
-    <p style="font-size: 12px; color: #777; margin-top: 6px;">
-        Scroll to zoom • Drag to pan • Double-click to reset
-    </p>
-</div>
+            <p style="font-size: 12px; color: #777; margin-top: 6px;">
+                Scroll to zoom • Drag to pan • Double-click to reset
+            </p>
+        </div>
 
-</div>
+        </div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -820,7 +756,7 @@ function openHelp() {
             <form method="POST" action="{{ route('devices.update', $device->id) }}">
                 @csrf
                 @method('PUT')
-
+                
                 <input type="hidden" name="asset_id" value="{{ $device->asset_id }}">
 
                 <div class="modal-header">
@@ -840,59 +776,24 @@ function openHelp() {
                                readonly>
                     </div>
 
-                    {{-- Serial Number --}}
-                    <div class="form-group">
-                        <label>Serial Number</label>
-                        <input type="text"
-                               name="serialno"
-                               class="form-control"
-                               value="{{ $device->serialno }}">
-                    </div>
-
-                    {{-- SIM Card --}}
-                    <div class="form-group">
-                        <label>SIM Card</label>
-                        <input type="text"
-                               name="simcard"
-                               class="form-control"
-                               value="{{ $device->simcard }}">
-                    </div>
-
-                    {{-- Device Name --}}
                     <div class="form-group">
                         <label>Device Name</label>
-                        <select name="device_name" class="form-control">
-                            <option value="GLASS" {{ $device->device_name === 'GLASS' ? 'selected' : '' }}>
-                                GLASS
-                            </option>
-                            <option value="PAPER" {{ $device->device_name === 'PAPER' ? 'selected' : '' }}>
-                                PAPER
-                            </option>
-                            <option value="GENERAL" {{ $device->device_name === 'GENERAL' ? 'selected' : '' }}>
-                                GENERAL
-                            </option>
-                        </select>
+                        <input type="text"
+                               class="form-control"
+                               name="device_name"
+                               value="{{ $device->device_name }}">
                     </div>
-
+                    <!-- Add other device fields here if needed -->
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Save changes
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-@endforeach
-
 
 <!-- help modal -->
 <div class="modal fade" id="helpModal" tabindex="-1">
@@ -963,6 +864,7 @@ function openHelp() {
   </div>
 </div>
 
+@endforeach
 
 </div> {{-- Single Livewire root wrapper end --}}
 
