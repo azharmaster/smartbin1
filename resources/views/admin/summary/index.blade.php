@@ -244,18 +244,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     /* Times Full */
     new Chart(document.getElementById('timesFullChart'), {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Times Became Full',
                 data: @json($binAnalytics->pluck('times_full')),
+                backgroundColor: 'rgba(142,68,173,0.8)',
                 borderColor: '#8e44ad',
-                backgroundColor: 'rgba(142,68,173,0.2)',
-                fill: true,
-                tension: 0.3,       // smooth curve
-                pointRadius: 5,
-                pointBackgroundColor: '#8e44ad'
+                borderWidth: 1
             }]
         },
         options: {
@@ -269,18 +266,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     /* Avg Fill Time */
     new Chart(document.getElementById('avgFillChart'), {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Average Fill Time (Hours)',
                 data: @json($binAnalytics->pluck('avg_fill_time')),
+                backgroundColor: 'rgba(46,204,113,0.8)',
                 borderColor: '#2ecc71',
-                backgroundColor: 'rgba(46,204,113,0.2)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointBackgroundColor: '#2ecc71'
+                borderWidth: 1
             }]
         },
         options: {
@@ -294,18 +288,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     /* Avg Clear Time */
     new Chart(document.getElementById('avgClearChart'), {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Average Clear Time (Hours)',
                 data: @json($binAnalytics->pluck('avg_clear_time')),
+                backgroundColor: 'rgba(231,76,60,0.8)',
                 borderColor: '#e74c3c',
-                backgroundColor: 'rgba(231,76,60,0.2)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointBackgroundColor: '#e74c3c'
+                borderWidth: 1
             }]
         },
         options: {
