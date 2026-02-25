@@ -562,30 +562,171 @@ input:checked + .slider:before {
 /* Card body */
 .map-card-body {
     position: relative;
-    padding: 15px;    
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px; 
+    gap: 0;
     height: 100%;
+    background: transparent;
 }
 
 /* Map container */
 #dashboardMap {
     width: 100%;
-    flex-grow: 1;  
-    border-radius: 10px;
+    flex-grow: 1;
+    border-radius: 12px;
     overflow: hidden;
-    min-height: 200px;         
+    min-height: 200px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Map controls styling */
+.map-controls button {
+    margin-left: 4px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.map-controls button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Leaflet popup styling */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    padding: 0;
+    overflow: hidden;
+}
+
+.leaflet-popup-content {
+    margin: 0;
+    padding: 0;
+    width: 220px !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.leaflet-popup-tip {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Custom popup header */
+.popup-header {
+    background: linear-gradient(135deg, #103913ff, #1f6423ff);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+}
+
+.popup-body {
+    padding: 12px 16px;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+}
+
+.popup-body p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Custom marker styles */
+.custom-marker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.custom-marker:hover {
+    transform: scale(1.15);
+    z-index: 1000;
+}
+
+.marker-pin {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% 50% 50% 0;
+    background: #fff;
+    position: absolute;
+    transform: rotate(-45deg);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border: 3px solid #fff;
+}
+
+.marker-pin::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: rgba(255,255,255,0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border-radius: 50%;
+}
+
+.marker-icon {
+    position: relative;
+    z-index: 2;
+    font-size: 18px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Pulse animation for critical markers */
+.marker-pulse {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 0, 0, 0.4);
+    animation: markerPulse 1.5s infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes markerPulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Color variants */
+.marker-red .marker-pin {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    border-color: #ff416c;
+}
+
+.marker-orange .marker-pin {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    border-color: #f7971e;
+}
+
+.marker-green .marker-pin {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    border-color: #11998e;
 }
 
 /* Responsive adjustments */
-@media (max-width: 992px) { 
+@media (max-width: 992px) {
     #dashboardMap {
         height: 450px;
     }
 }
 
-@media (max-width: 576px) { 
+@media (max-width: 576px) {
     #dashboardMap {
         height: 300px;
     }
@@ -1282,64 +1423,92 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const map = L.map('dashboardMap').setView([3.1427, 101.7176], 17.5);//default trx
+    const map = L.map('dashboardMap').setView([3.1427, 101.7176], 17.5);
 
-    // Add OpenStreetMap tiles
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-}).addTo(map);
+    // Add OpenStreetMap tiles with modern CartoDB Voyager
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
 
+    // Map controls
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
     document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
     document.getElementById('resetView').addEventListener('click', () => map.setView([3.1427, 101.7181], 17.5));
+
+    // Custom marker icon factory
+    function createCustomMarker(color, assetName, deviceCount) {
+        const pulseHtml = color === 'red' ? '<div class="marker-pulse"></div>' : '';
+        
+        return L.divIcon({
+            html: `
+                <div class="custom-marker marker-${color}">
+                    ${pulseHtml}
+                    <div class="marker-pin"></div>
+                    <i class="fas fa-trash marker-icon"></i>
+                </div>
+            `,
+            className: '',
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -42]
+        });
+    }
 
     @foreach($assetsWithCoords as $asset)
         @php
             $devices = $asset->devices;
 
-            $fullCount = $devices->filter(fn($device) => 
-                $device->latestSensor && $device->asset->capacitySetting && 
+            $fullCount = $devices->filter(fn($device) =>
+                $device->latestSensor && $device->asset->capacitySetting &&
                 $device->latestSensor->capacity > $device->asset->capacitySetting->half_to
             )->count();
 
-            $halfCount = $devices->filter(fn($device) => 
-                $device->latestSensor && $device->asset->capacitySetting && 
+            $halfCount = $devices->filter(fn($device) =>
+                $device->latestSensor && $device->asset->capacitySetting &&
                 $device->latestSensor->capacity > $device->asset->capacitySetting->empty_to &&
                 $device->latestSensor->capacity <= $device->asset->capacitySetting->half_to
             )->count();
 
+            $emptyCount = $devices->filter(fn($device) =>
+                $device->latestSensor && $device->asset->capacitySetting &&
+                $device->latestSensor->capacity <= $device->asset->capacitySetting->empty_to
+            )->count();
+
             if($fullCount > 0) {
                 $color = 'red';
+                $statusText = 'Critical';
             } elseif($halfCount > 0) {
                 $color = 'orange';
+                $statusText = 'Moderate';
             } else {
                 $color = 'green';
+                $statusText = 'Normal';
             }
+            
+            $totalDevices = $devices->count();
         @endphp
 
         @if($asset->latitude && $asset->longitude)
             L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
-                icon: L.divIcon({
-                    html: `
-                    <i class="fas fa-trash
-                        {{ $color === 'red' ? 'radar-icon' : '' }}"
-                        style="
-                            font-size:22px; 
-                            color: {{ $color }};
-                            -webkit-text-stroke: 0.3px white; /* thinner outline */
-                            text-stroke: 0.3px white;        /* fallback */
-                            text-shadow: 0 0 1px white;      /* subtle glow */
-                        ">
-                    </i>
-                    `,
-                    className: '',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                }),
-                title: "{{ $asset->asset_name ?? 'Asset' }}"
-            }).addTo(map).bindPopup(`<b>{{ $asset->asset_name ?? 'Asset' }}</b>`);
+                icon: createCustomMarker('{{ $color }}', '{{ $asset->asset_name ?? 'Asset' }}', {{ $totalDevices }})
+            }).addTo(map).bindPopup(`
+                <div class="popup-header">
+                    <i class="fas fa-trash"></i> {{ $asset->asset_name ?? 'Asset' }}
+                </div>
+                <div class="popup-body">
+                    <p><i class="fas fa-box"></i> <strong>Devices:</strong> {{ $totalDevices }}</p>
+                    <p><i class="fas fa-chart-bar"></i> <strong>Status:</strong> 
+                        <span style="color: {{ $color === 'red' ? '#dc3545' : ($color === 'orange' ? '#fd7e14' : '#28a745') }}; font-weight: 600;">
+                            {{ $statusText }}
+                        </span>
+                    </p>
+                    <p style="margin-top: 8px; font-size: 11px; color: #666;">
+                        <i class="fas fa-map-marker-alt"></i> Lat: {{ $asset->latitude }}, Lng: {{ $asset->longitude }}
+                    </p>
+                </div>
+            `);
         @endif
     @endforeach
 });
@@ -1692,41 +1861,5 @@ document.addEventListener('DOMContentLoaded', () => {
     filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
 });
 </script>
-
-<style>
-/* Radar pulse - crisp thick expanding circle */
-.radar-icon {
-    position: relative;
-    font-size: 22px;
-    color: red; /* icon color */
-    display: inline-block;
-}
-
-/* Expanding thick ring */
-.radar-icon::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;           /* really small start */
-    height: 5px;          /* make it equal to width for a circle */
-    border: 6px solid currentColor; /* thick ring */
-    border-radius: 50%;    /* keeps it circular */
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.8;
-    pointer-events: none;
-    animation: radarPing 1.5s infinite;
-}
-@keyframes radarPing {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0.8;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(6); /* expand far */
-        opacity: 0; /* fade out */
-    }
-}
-</style>
 
 @endsection
