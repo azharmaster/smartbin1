@@ -76,4 +76,14 @@ class UserController extends Controller
 
         return back()->with('success', 'Password has been reset to default (12345678)');
     }
+
+    public function toggleWhatsapp($id)
+{
+    $user = User::findOrFail($id);
+
+    $user->whatsapp_notify = !$user->whatsapp_notify;
+    $user->save();
+
+    return back()->with('success', 'WhatsApp notification setting updated.');
+}
 }

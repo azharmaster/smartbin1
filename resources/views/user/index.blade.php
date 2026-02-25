@@ -53,6 +53,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Role</th>
+                        <th>WhatsApp Notification</th>
                         @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
                 </thead>
@@ -72,26 +73,64 @@
                                 <span class="badge bg-secondary">Client</span>
                             @endif
                         </td>
-                        @if(auth()->user()->role == 1)<td>
+
+                        {{-- WhatsApp Toggle Column --}}
+                        <td class="text-center">
+                            @if(auth()->user()->role == 1)
+                                <form action="{{ route('users.toggleWhatsapp', $user->id) }}" method="POST" class="d-inline-block">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <label class="custom-switch">
+                                        <input type="checkbox"
+                                              onchange="this.form.submit()"
+                                              {{ $user->whatsapp_notify ? 'checked' : '' }}
+                                              {{ empty($user->phone) ? 'disabled title=Phone required' : '' }}>
+                                        <span class="slider">
+                                            <span class="switch-text switch-off">OFF</span>
+                                            <span class="switch-text switch-on">ON</span>
+                                        </span>
+                                    </label>
+                                </form>
+                            @else
+                                @if($user->whatsapp_notify)
+                                    <span class="badge bg-success">ON</span>
+                                @else
+                                    <span class="badge bg-secondary">OFF</span>
+                                @endif
+                            @endif
+                        </td>
+
+                        @if(auth()->user()->role == 1)
+                        <td>
                             <div class="d-flex gap-1 align-items-center justify-content-center">
 
-                    
-                    <x-user.form-user :id="$user->id" :name="$user->name" :email="$user->email" :phone="$user->phone" :role="$user->role" />
-                    
+                                <x-user.form-user 
+                                    :id="$user->id" 
+                                    :name="$user->name" 
+                                    :email="$user->email" 
+                                    :phone="$user->phone" 
+                                    :role="$user->role" 
+                                />
 
-                     <a href="{{ route('users.destroy', $user->id) }}"class="btn btn-danger btn-sm" data-confirm-delete="true">
-                    <i class="fas fa-trash-alt text-white"></i></a>
-                    
-                    @csrf
-                     @method('DELETE')
-                        </form>
+                                <a href="{{ route('users.destroy', $user->id) }}" 
+                                   class="btn btn-danger btn-sm" 
+                                   data-confirm-delete="true">
+                                    <i class="fas fa-trash-alt text-white"></i>
+                                </a>
+
+                                @csrf
+                                @method('DELETE')
 
                                 {{-- VIEW DETAILS --}}
-                                <a href="{{ route('users.details', $user->id) }}" class="btn btn-info btn-sm">
+                                <a href="{{ route('users.details', $user->id) }}" 
+                                   class="btn btn-info btn-sm">
                                     <i class="far fa-eye"></i>
                                 </a>
                             </div>
-                        </td>@endif
+                        </td>
+                        @endif
+
                     </tr>
                     @endforeach
                 </tbody>
@@ -135,8 +174,7 @@
           <li>
             <strong>Supervisor</strong>
             <ul>
-              <li>Does not use the web application dashboard.</li>
-              <li>Receives bin/alert notifications via <strong>WhatsApp only</strong>.</li>
+              <li>Receives bin/alert notifications via <strong>WhatsApp</strong> if toggle is ON.</li>
               <li>Must have a valid phone number registered in the system.</li>
             </ul>
           </li>
@@ -153,30 +191,10 @@
 
         <hr>
 
-        <h6><i class="fas fa-list"></i> User Table Overview</h6>
-        <ul>
-          <li><strong>Name</strong> – User’s full name.</li>
-          <li><strong>Email</strong> – Used for login authentication.</li>
-          <li><strong>Phone</strong> – Required for Supervisor WhatsApp notifications.</li>
-          <li><strong>Role</strong> – Determines system access level.</li>
-        </ul>
-
-        <hr>
-
-        <h6><i class="fas fa-cogs"></i> Available Actions (Admin Only)</h6>
-        <ul>
-          <li><strong>Add User</strong> – Create a new user account.</li>
-          <li><strong>Edit User</strong> – Update user information and role.</li>
-          <li><strong>Delete User</strong> – Remove user access from the system.</li>
-          <li><strong>View Details</strong> – View complete user information.</li>
-        </ul>
-
-        <hr>
-
         <h6><i class="fas fa-exclamation-circle"></i> Important Notes</h6>
         <ul>
-          <li>Ensure Supervisor phone numbers are correct for WhatsApp alerts.</li>
-          <li>Assign roles carefully to prevent unauthorized access.</li>
+          <li>Users will only receive WhatsApp alerts if the toggle is set to ON.</li>
+          <li>Phone number must be filled to enable notifications.</li>
           <li>Only Admin users can manage user accounts.</li>
         </ul>
 
@@ -186,5 +204,68 @@
   </div>
 </div>
 
+<style>
+/* Custom medium ON/OFF switch */
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;   /* medium width */
+    height: 28px;  /* medium height */
+}
 
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background-color: #ccc;
+    border-radius: 14px;  /* half of height for rounded edges */
+    transition: 0.4s;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 22px;          /* slightly smaller knob */
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+.custom-switch input:checked + .slider {
+    background-color: #28a745;
+}
+
+.custom-switch input:checked + .slider::before {
+    transform: translateX(32px); /* adjust according to width */
+}
+
+/* Text inside switch */
+.switch-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;       /* smaller font for medium size */
+    font-weight: bold;
+    color: white;
+    pointer-events: none;
+}
+
+.switch-off {
+    left: 6px;             /* adjust padding */
+}
+
+.switch-on {
+    right: 6px;            /* adjust padding */
+}
+</style>
 @endsection

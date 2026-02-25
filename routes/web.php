@@ -378,3 +378,6 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])
 /* Process login */
 Route::post('/login', [LoginController::class, 'handleLogin'])
     ->middleware('guest');
+
+    Route::patch('/users/{id}/toggle-whatsapp', [UserController::class, 'toggleWhatsapp'])
+    ->name('users.toggleWhatsapp');

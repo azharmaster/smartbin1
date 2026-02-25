@@ -25,6 +25,7 @@ class User extends Authenticatable
         'profile_photo',
         'phone', // added
         'role',  // added
+        'whatsapp_notify', // ✅ ADDED
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'whatsapp_notify' => 'boolean', // ✅ ADDED
         ];
     }
 

@@ -2,7 +2,7 @@
 
 <div>
     <button type="button" 
-        class="{{ $id ? 'btn btn-outline-secondary' : 'btn btn-primary' }}"
+        class="{{ $id ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm' }}"
         data-toggle="modal" data-target="#formUser{{ $id ?? '' }}">
         <i class="fas {{ $id ? 'fa-pencil-alt' : 'fa-plus' }}"></i>
         {{ $id ? '' : 'Add' }}

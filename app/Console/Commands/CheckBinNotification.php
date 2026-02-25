@@ -54,7 +54,7 @@ class CheckBinStatus extends Command
     {
         $token = "PDVc#7eH-4YXkXcR5Yvn";
 
-        $supervisors = User::where('role', 4)
+        $recipients = User::where('whatsapp_notify', 1)
             ->whereNotNull('phone')
             ->pluck('phone');
 
