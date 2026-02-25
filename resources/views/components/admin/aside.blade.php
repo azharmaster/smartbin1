@@ -94,7 +94,7 @@ body.sidebar-collapse .brand-link {
 
 /* Base sidebar */
 .main-sidebar {
-    background: linear-gradient(135deg, #103913ff, #1f6423ff);
+    background: linear-gradient(135deg, #672d84, #9457b3);
     transition: width 0.25s ease-in-out;
 }
 
