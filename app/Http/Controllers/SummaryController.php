@@ -186,8 +186,8 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         ])->get();
 
         $sensorData = DB::table('sensors')
-            ->whereBetween('time', [$start, $end])
-            ->orderBy('time')
+            ->whereBetween('created_at', [$start, $end])
+            ->orderBy('created_at')
             ->get()
             ->groupBy('device_id');
 
@@ -209,7 +209,7 @@ private function getCapacityStats(Carbon $baseDate, string $period)
                     if (!is_numeric($sensor->capacity)) continue;
 
                     $capacity = (float) $sensor->capacity;
-                    $time     = Carbon::parse($sensor->time);
+                    $time     = Carbon::parse($sensor->created_at);
 
                     if ($prevCapacity === null) {
                         $prevCapacity = $capacity;
