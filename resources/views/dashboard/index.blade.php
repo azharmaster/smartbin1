@@ -1055,12 +1055,17 @@ function trend($current, $previous) {
                                 $level > $emptyTo  => 'warning',
                                 default            => 'success',
                             };
+                            
                             $timestamp = $latest?->created_at
                                 ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i')
                                 : '—';
+                            
+                            // Check if data is from today
+                            $isToday = $latest && $latest->created_at->isToday();
+                            $isActive = $latest !== null && $isToday;
                         @endphp
 
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center" style="{{ !$isActive ? 'opacity: 0.5;' : '' }}">
                             <span class="badge bg-{{ $badge }} px-2 py-1">
                                 {{ $device->device_name }}
                                 {{ $level !== null ? '· '.number_format($level, 0).'%' : '· Undetected' }}
@@ -1068,6 +1073,9 @@ function trend($current, $previous) {
 
                             <small class="text-muted" style="font-size: 0.65rem;">
                                 {{ $timestamp }}
+                                @if(!$isActive && $timestamp !== '—')
+                                    <i class="fas fa-clock ms-1" title="Old data"></i>
+                                @endif
                             </small>
                         </div>
                     @endforeach
