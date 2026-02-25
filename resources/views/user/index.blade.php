@@ -53,7 +53,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Role</th>
-                        <th>WhatsApp Notification</th>
+                        <th>Notify</th>
                         @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
                 </thead>
@@ -268,4 +268,5 @@
     right: 6px;            /* adjust padding */
 }
 </style>
+
 @endsection
