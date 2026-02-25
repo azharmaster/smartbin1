@@ -145,10 +145,10 @@ $fullBins = [];
 while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     // Get latest sensor reading
     $sensorStmt = $db->prepare("
-        SELECT capacity, time
+        SELECT capacity, created_at
         FROM sensors
         WHERE device_id = ?
-        ORDER BY time DESC
+        ORDER BY created_at DESC
         LIMIT 1
     ");
     $sensorStmt->execute([$device['id_device']]);
@@ -171,7 +171,7 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     // FULL condition
     if ($sensor['capacity'] > $cap['half_to']) {
         $device['capacity'] = $sensor['capacity'];
-        $device['full_time'] = $sensor['time'];
+        $device['full_time'] = $sensor['created_at'];
         $fullBins[] = $device;
     }
 }
@@ -188,8 +188,10 @@ file_put_contents($logFile, date('Y-m-d H:i')." | Full bins detected: ".count($f
 if ($canSend && count($fullBins)) {
     $supervisors = $db->query("
         SELECT DISTINCT phone, email
-        FROM users
-        WHERE role=4 AND (phone IS NOT NULL OR email IS NOT NULL)
+FROM users
+WHERE role = 4 
+ AND phone IS NOT NULL
+ AND email IS NOT NULL
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($supervisors)) {
@@ -219,12 +221,29 @@ if ($canSend && count($fullBins)) {
 
         if (count($sendBins)) {
             // Build combined message
-            $assetList = '';
+            // Group by asset_id (so same bin only appears once)
+            $groupedAssets = [];
+
             foreach ($sendBins as $device) {
-                $ts = Carbon::parse($device['full_time']);
-                $assetList .= "{$device['asset_name']}\nLocation: {$device['location']}\nDate: ".$ts->format('d-m-Y')."\nTime: ".$ts->format('H:i')."\n\n";
+                $assetId = $device['asset_id'];
+
+                if (!isset($groupedAssets[$assetId])) {
+                    $groupedAssets[$assetId] = [
+                        'asset_name' => $device['asset_name'],
+                        'location'   => $device['location'],
+                        'full_time'  => $device['full_time']
+                    ];
+                }
             }
-            $msg = "*".count($sendBins)."* *FULL BINS*\n\n".$assetList;
+
+            // Build message using unique assets only
+            $assetList = '';
+            foreach ($groupedAssets as $asset) {
+                $ts = Carbon::parse($asset['full_time']);
+                $assetList .= "{$asset['asset_name']}\nLocation: {$asset['location']}\nDate: ".$ts->format('d-m-Y')."\nTime: ".$ts->format('H:i A')."\n\n";
+            }
+
+            $msg = "*".count($groupedAssets)."* *FULL BINS*\n\n".$assetList;
 
             file_put_contents($logFile, date('Y-m-d H:i')." | Message prepared:\n".$msg."\n", FILE_APPEND);
 
@@ -258,9 +277,10 @@ if ($canSend && count($fullBins)) {
             // Log to DB (one row per device)
             // -------------------------
             try {
+                $timedate=date('Y-m-d H:i:s');
                 $logStmt = $db->prepare("
                     INSERT INTO notification_logs (device_id, channel, message_preview, message_full, sent_at)
-                    VALUES (?, 'whatsapp+email', ?, ?, NOW())
+                    VALUES (?, 'whatsapp+email', ?, ?, '$timedate')
                 ");
                 foreach ($sendBins as $device) {
                     $logStmt->execute([
