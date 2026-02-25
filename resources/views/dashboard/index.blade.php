@@ -986,9 +986,9 @@ function trend($current, $previous) {
 
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="progress flex-grow-1 me-2" style="height: 8px; border-radius: 999px;">
-                                                    <div class="progress-bar {{ $barClass }}" style="width: {{ $capacity }}%;"></div>
+                                                    <div class="progress-bar {{ $barClass }}" style="width: {{ number_format($capacity, 0) }}%;"></div>
                                                 </div>
-                                                <div class="text-white small fw-bold ms-1">{{ $capacity }}%</div>
+                                                <div class="text-white small fw-bold ms-1">{{ number_format($capacity, 0) }}%</div>
                                             </div>
 
                                             @if($sensor && $sensor->battery)
@@ -1063,7 +1063,7 @@ function trend($current, $previous) {
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-{{ $badge }} px-2 py-1">
                                 {{ $device->device_name }}
-                                {{ $level !== null ? '· '.$level.'%' : '· Undetected' }}
+                                {{ $level !== null ? '· '.number_format($level, 0).'%' : '· Undetected' }}
                             </span>
 
                             <small class="text-muted" style="font-size: 0.65rem;">

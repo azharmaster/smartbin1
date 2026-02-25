@@ -289,12 +289,15 @@ $calendarNotifications = $groupedNotifications->map(function($items, $date) {
             ->values();
     }
 
-/** Today's notifications */
+/** Today's notifications grouped by date */
 private function getTodayNotifications()
 {
     return NotificationLog::whereDate('sent_at', now()->toDateString())
         ->orderBy('sent_at', 'desc')
-        ->get();
+        ->get()
+        ->groupBy(function($n) {
+            return Carbon::parse($n->sent_at)->format('Y-m-d');
+        });
 }
 
     /** Load devices with latest sensor and optional before date */
