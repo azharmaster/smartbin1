@@ -12,6 +12,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('smartbin:simulate')
                  ->everyMinute()       // or ->everyThirtyMinutes()
                  ->withoutOverlapping();
+
+        // Send monthly summary email on the last day of each month at 5:00 PM
+        $schedule->command('summary:send-monthly')
+                 ->monthlyOnLastDayAt('17:00');
     }
 
     protected function commands()

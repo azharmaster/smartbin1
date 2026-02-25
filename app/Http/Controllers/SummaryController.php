@@ -14,7 +14,7 @@ use QuickChart\Quickchart;
 
 class SummaryController extends Controller
 {
-private function getCapacityStats(Carbon $baseDate, string $period)
+private function _getCapacityStats(Carbon $baseDate, string $period): object
 {
     $assets = Asset::with([
         'capacitySetting',
@@ -50,7 +50,12 @@ private function getCapacityStats(Carbon $baseDate, string $period)
     ];
 }
 
-    private function getDevicesByFloor()
+    public function getCapacityStats(Carbon $baseDate, string $period): object
+    {
+        return $this->_getCapacityStats($baseDate, $period);
+    }
+
+    private function _getDevicesByFloor()
     {
         return DB::table('assets')
             ->join('floor', 'assets.floor_id', '=', 'floor.id')
@@ -60,7 +65,12 @@ private function getCapacityStats(Carbon $baseDate, string $period)
             ->get();
     }
 
-    private function computeBinAnalyticsPerAsset(Carbon $baseDate, string $period)
+    public function getDevicesByFloor()
+    {
+        return $this->_getDevicesByFloor();
+    }
+
+    private function _computeBinAnalyticsPerAsset(Carbon $baseDate, string $period)
     {
         [$start, $end] = $this->resolveDateRange($baseDate, $period);
 
@@ -176,7 +186,12 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         return collect($results);
     }
 
-    private function getCleaningLogs(Carbon $baseDate, string $period)
+    public function computeBinAnalyticsPerAsset(Carbon $baseDate, string $period)
+    {
+        return $this->_computeBinAnalyticsPerAsset($baseDate, $period);
+    }
+
+    private function _getCleaningLogs(Carbon $baseDate, string $period)
     {
         [$start, $end] = $this->resolveDateRange($baseDate, $period);
 
@@ -236,9 +251,19 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         return collect($logs)->sortByDesc('cleaned_at');
     }
 
+    public function getCleaningLogs(Carbon $baseDate, string $period)
+    {
+        return $this->_getCleaningLogs($baseDate, $period);
+    }
+
     private function getAssets()
     {
         return Asset::with('floor')->get();
+    }
+
+    public function getAssetsPublic()
+    {
+        return $this->getAssets();
     }
 
     private function resolveDateRange(Carbon $baseDate, string $period)
@@ -263,10 +288,10 @@ private function getCapacityStats(Carbon $baseDate, string $period)
         ];
     }
 
-private function computeSummaryMetrics(Carbon $baseDate, string $period)
+private function _computeSummaryMetrics(Carbon $baseDate, string $period)
 {
-    $binAnalytics = $this->computeBinAnalyticsPerAsset($baseDate, $period);
-    $cleaningLogs = $this->getCleaningLogs($baseDate, $period);
+    $binAnalytics = $this->_computeBinAnalyticsPerAsset($baseDate, $period);
+    $cleaningLogs = $this->_getCleaningLogs($baseDate, $period);
 
     // Total full events across all bins
     $totalFullEvents = $binAnalytics->sum('times_full');
@@ -302,6 +327,11 @@ private function computeSummaryMetrics(Carbon $baseDate, string $period)
         'total_cleaning'    => $totalCleaning,
         'total_active_bins' => $activeBins,
     ];
+}
+
+public function computeSummaryMetrics(Carbon $baseDate, string $period)
+{
+    return $this->_computeSummaryMetrics($baseDate, $period);
 }
 
 public function index(Request $request)
@@ -401,6 +431,7 @@ public function sendEmail(Request $request)
     $binAnalytics   = $this->computeBinAnalyticsPerAsset($baseDate, $period);
     $assets         = $this->getAssets();
     $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
+    $summaryMetrics = $this->computeSummaryMetrics($baseDate, $period);
 
     // Helper to generate QuickChart URL
     $generateChartUrl = function ($type, $labels, $label, $data, $borderColor, $bgColor) {
