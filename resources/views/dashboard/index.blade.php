@@ -1166,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
             <span>
                 <i class="fas fa-inbox"></i> Notification Sent
-                <span class="badge badge-info">{{ $todayNotifications->count() }}</span>
+                <span class="badge badge-info">{{ $todayNotifications->flatten()->count() }}</span>
             </span>
 
             <a href="{{ route('notifications.index') }}"
@@ -1177,37 +1177,78 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 
     <div class="card-body p-3">
-        <div class="notification-timeline">
-            @php
-                // Get unique messages by message_preview
-                $uniqueNotifications = $todayNotifications->unique('message_preview')->take(10);
-            @endphp
-
-            @forelse($uniqueNotifications as $log)
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-
-                    <div class="timeline-content">
-                        <button
-                            class="timeline-button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#notif{{ $log->id }}">
-
-                            <i class="fas fa-history"></i> 
-                            {{ $log->sent_at->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
-                        </button>
-
-                        <div id="notif{{ $log->id }}" class="collapse mt-2">
-                            <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+        @if($todayNotifications->isNotEmpty())
+            @foreach($todayNotifications as $date => $logs)
+                <div class="mb-3">
+                    <!-- Date Header -->
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-calendar-day text-success"></i>
+                                @if(Carbon\Carbon::parse($date)->isToday())
+                                    Today
+                                @elseif(Carbon\Carbon::parse($date)->isYesterday())
+                                    Yesterday
+                                @else
+                                    {{ Carbon\Carbon::parse($date)->format('d M Y') }}
+                                @endif
+                            </h6>
                         </div>
+                        <span class="badge bg-success">{{ $logs->count() }} notifications</span>
+                    </div>
+
+                    <!-- Notification Timeline for this date -->
+                    <div class="notification-timeline">
+                        @php
+                            // Get unique messages by message_preview for summary
+                            $uniqueLogs = $logs->unique('message_preview')->take(10);
+                            $totalCount = $logs->unique('message_preview')->count();
+                        @endphp
+
+                        @forelse($uniqueLogs as $log)
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+
+                                <div class="timeline-content">
+                                    <button
+                                        class="timeline-button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#notif{{ $log->id }}">
+
+                                        <i class="fas fa-history"></i>
+                                        {{ Carbon\Carbon::parse($log->sent_at)->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
+                                        <span class="text-muted small">({{ $logs->where('message_preview', $log->message_preview)->count() }}x)</span>
+                                    </button>
+
+                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
+                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No notifications for this date
+                            </div>
+                        @endforelse
+
+                        @if($totalCount > 10)
+                            <div class="text-center mt-2">
+                                <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-success">
+                                    View all {{ $totalCount }} notifications <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
-            @empty
-                <div class="text-muted text-center py-3">
-                    No notifications sent today
-                </div>
-            @endforelse
-        </div>
+
+                <hr class="my-3">
+            @endforeach
+        @else
+            <div class="text-muted text-center py-4">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                <p>No notifications sent today</p>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -1710,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', function () {
         headerToolbar: {
             left: 'prev,next',
             center: 'title',
-            right: isMobile ? '' : 'dayGridMonth,timeGridWeek'
+            right: isMobile ? '' : 'dayGridMonth'
         },
         eventDisplay: 'block',
 
@@ -1722,18 +1763,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
         eventClick: function(info) {
     if (info.event.extendedProps.type === 'notification_group') {
-
-        let html = '<ul class="list-group list-group-flush">';
-
+        // Group notifications by date
+        const notificationsByDate = {};
+        
         info.event.extendedProps.notifications.forEach(n => {
-            // Split the message_preview by "🆔" or any separator if needed
             let messages = n.message_preview.split('🆔').filter(m => m.trim() !== '');
             messages.forEach(msg => {
-                html += `<li class="list-group-item">🆔 ${msg.trim()}</li>`;
+                const date = info.event.start.toLocaleDateString();
+                if (!notificationsByDate[date]) {
+                    notificationsByDate[date] = [];
+                }
+                notificationsByDate[date].push(msg.trim());
             });
         });
 
-        html += '</ul>';
+        // Build HTML grouped by date
+        let html = '';
+        Object.entries(notificationsByDate).forEach(([date, msgs]) => {
+            const dateObj = new Date(date);
+            const isToday = dateObj.toDateString() === new Date().toDateString();
+            const isYesterday = new Date(Date.now() - 86400000).toDateString() === dateObj.toDateString();
+            
+            let dateLabel = isToday ? 'Today' : (isYesterday ? 'Yesterday' : date);
+            
+            html += `<div class="mb-3">
+                <h6 class="fw-semibold mb-2"><i class="fas fa-calendar-day text-success"></i> ${dateLabel}</h6>
+                <div class="badge bg-success mb-2">${msgs.length} notifications</div>
+                <ul class="list-group list-group-flush">`;
+            
+            msgs.forEach(msg => {
+                html += `<li class="list-group-item">🆔 ${msg}</li>`;
+            });
+            
+            html += `</ul></div><hr class="my-3">`;
+        });
 
         $('#notificationListContainer').html(html);
         $('#notificationModal').modal('show');
