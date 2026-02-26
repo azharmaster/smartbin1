@@ -1166,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <!-- ROW 2: USERS + TODO -->
     <div class="row">
         <!-- LEFT COLUMN: MAP -->
-        <div class="col-lg-6">
+        <div class="col-lg-8">
             <!-- NOTIFICATION LOGS-->
 <div class="card mb-4">
     <div class="card-header smartbin-gradient">
@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
        <!-- RIGHT COLUMN -->
-        <div class="col-lg-6">
+        <div class="col-lg-4">
 
         <!-- Upcoming Holidays and Events -->
             <div class="card shadow-sm mb-4">
