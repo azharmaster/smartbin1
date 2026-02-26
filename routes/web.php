@@ -348,7 +348,8 @@ Route::post('/holidays/{holiday}/toggle', [HolidayController::class, 'toggle'])-
 Route::post('/events/{event}/toggle', [EventController::class, 'toggle'])->name('events.toggle');
 
 Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
-    ->name('notifications.index');
+    ->name('notifications.index')
+    ->middleware('auth');
 
 //qr code
 Route::get('/assets/{id}', [AssetController::class, 'show'])->name('assets.show');
