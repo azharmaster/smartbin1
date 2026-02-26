@@ -58,6 +58,9 @@ class DashboardController extends Controller
     // Today's notifications
     $todayNotifications = $this->getTodayNotifications();
 
+    // Upcoming holidays and events
+    $upcomingHolidaysAndEvents = $this->getUpcomingHolidaysAndEvents();
+
     $deviceStats = $this->getDeviceStats($devices);
     $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
@@ -94,6 +97,7 @@ class DashboardController extends Controller
         'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
         'calendarCombined' => $this->getCalendarEvents(),
         'todayNotifications' => $this->getTodayNotifications(),
+        'upcomingHolidaysAndEvents' => $upcomingHolidaysAndEvents,
         'whatsappNotificationActive'=> $whatsappNotificationActive,
         'abnormalBins' => $abnormalBins,
         'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
@@ -400,6 +404,49 @@ private function getTodayNotifications()
         ->groupBy(function($n) {
             return Carbon::parse($n->sent_at)->format('Y-m-d');
         });
+}
+
+/** Get upcoming holidays and events (starting within next 7 days) */
+private function getUpcomingHolidaysAndEvents()
+{
+    $today = Carbon::today();
+    $nextWeek = Carbon::today()->addDays(7);
+
+    $upcomingItems = collect();
+
+    // Upcoming holidays
+    $holidays = Holiday::where('is_active', true)
+        ->whereBetween('start_date', [$today, $nextWeek])
+        ->orderBy('start_date', 'asc')
+        ->get();
+
+    foreach ($holidays as $holiday) {
+        $upcomingItems->push([
+            'type' => 'holiday',
+            'name' => $holiday->name,
+            'start_date' => $holiday->start_date,
+            'end_date' => $holiday->end_date,
+        ]);
+    }
+
+    // Upcoming events
+    $events = Event::whereBetween('start_date', [$today, $nextWeek])
+        ->orderBy('start_date', 'asc')
+        ->get();
+
+    foreach ($events as $event) {
+        $upcomingItems->push([
+            'type' => 'event',
+            'name' => $event->event_name,
+            'start_date' => $event->start_date,
+            'end_date' => $event->end_date,
+            'location' => $event->location,
+            'pic_phone' => $event->pic_phone,
+        ]);
+    }
+
+    // Sort by start date
+    return $upcomingItems->sortBy('start_date')->values();
 }
 
     /** Load devices with latest sensor and optional before date */
