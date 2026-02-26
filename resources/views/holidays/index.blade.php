@@ -191,99 +191,100 @@
     </div>
 
     <!-- EVENTS RIGHT COLUMN -->
-    <div class="col-md-6">
-        <div class="card card-success card-outline mb-4 flex-fill">
-            <div class="card-header d-flex align-items-center">
-                <h5 class="mb-0">Events List</h5>
-                <div class="ms-auto">
-                @if(auth()->user()->role == 1)
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">
-                        <i class="fas fa-plus"></i> Add Event
-                    </button>
-                @endif
-                </div>
-            </div>
-
-            <div class="card-body scrollable">
-
-                {{-- Success Message --}}
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                {{-- EVENTS TABLE --}}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable" id="eventsTable">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Event Name</th>
-                                <th>PIC Phone</th>
-                                <th>Location</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Option</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($events as $index => $event)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $event->event_name }}</td>
-                                <td>{{ $event->pic_phone }}</td>
-                                <td>{{ $event->location }}</td>
-                                <td>{{ \Carbon\Carbon::parse($event->start_date)->format('Y-m-d') }}</td>
-                                <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center justify-content-center gap-1">
-                                        <!-- EDIT -->
-                                        @if(auth()->user()->role == 1)
-                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editEventModal{{ $event->id }}">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </button>
-
-                                        <!-- DELETE -->
-                                        <form action="{{ route('events.destroy', $event->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                        @endif
-
-                                        <!-- Notification Toggle -->
-                                        <form action="{{ route('events.toggle', $event->id) }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}
-                                                {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
-                                                {{ $event->is_active ? 'ON' : 'OFF' }}
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            {{-- EDIT MODAL --}}
-                            <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    @include('events.edit', ['event' => $event])
-                                </div>
-                            </div>
-
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
+<div class="col-md-6">
+    <div class="card card-success card-outline mb-4 flex-fill">
+        <div class="card-header d-flex align-items-center">
+            <h5 class="mb-0">Events List</h5>
+            <div class="ms-auto">
+            @if(auth()->user()->role == 1)
+                <!-- ✅ Bootstrap 4 syntax -->
+                <button class="btn btn-primary" data-toggle="modal" data-target="#createEventModal">
+                    <i class="fas fa-plus"></i> Add Event
+                </button>
+            @endif
             </div>
         </div>
 
-        {{-- CREATE MODAL --}}
-        <div class="modal fade" id="createEventModal" tabindex="-1">
-            <div class="modal-dialog">
-                @include('events.create')
+        <div class="card-body scrollable">
+
+            {{-- Success Message --}}
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            {{-- EVENTS TABLE --}}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable" id="eventsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Event Name</th>
+                            <th>PIC Phone</th>
+                            <th>Location</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Option</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($events as $index => $event)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $event->event_name }}</td>
+                            <td>{{ $event->pic_phone }}</td>
+                            <td>{{ $event->location }}</td>
+                            <td>{{ \Carbon\Carbon::parse($event->start_date)->format('Y-m-d') }}</td>
+                            <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <!-- EDIT -->
+                                    @if(auth()->user()->role == 1)
+                                    <!-- ✅ Bootstrap 4 syntax -->
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editEventModal{{ $event->id }}">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+
+                                    <!-- DELETE -->
+                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+
+                                    <!-- Notification Toggle -->
+                                    <form action="{{ route('events.toggle', $event->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}
+                                            {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
+                                            {{ $event->is_active ? 'ON' : 'OFF' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{-- EDIT MODAL --}}
+                        <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                @include('events.edit', ['event' => $event])
+                            </div>
+                        </div>
+
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+
+        </div>
+    </div>
+
+    {{-- CREATE MODAL --}}
+    <div class="modal fade" id="createEventModal" tabindex="-1">
+        <div class="modal-dialog">
+            @include('events.create')
         </div>
     </div>
 </div>
