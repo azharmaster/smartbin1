@@ -60,6 +60,6 @@ class NotificationController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        return view('notification.index', ['todayNotifications' => $paginated]);
+        return view('notification.index', ['notifications' => $paginated]);
     }
 }
