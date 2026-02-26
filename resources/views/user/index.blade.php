@@ -54,6 +54,7 @@
                         <th>Phone</th>
                         <th>Role</th>
                         <th>Notify</th>
+                        <th>Last Active</th>
                         @if(auth()->user()->role == 1)<th>Option</th>@endif
                     </tr>
                 </thead>
@@ -98,6 +99,23 @@
                                 @else
                                     <span class="badge bg-secondary">OFF</span>
                                 @endif
+                            @endif
+                        </td>
+
+                        {{-- ✅ LAST ACTIVE COLUMN --}}
+                        <td class="text-center">
+                            @if($user->last_active)
+
+                                @if($user->last_active >= now()->subMinutes(5))
+                                    <span class="badge bg-success">Online</span>
+                                @else
+                                    <span class="badge bg-secondary">
+                                        {{ \Carbon\Carbon::parse($user->last_active)->diffForHumans() }}
+                                    </span>
+                                @endif
+
+                            @else
+                                <span class="badge bg-light text-dark">Never</span>
                             @endif
                         </td>
 
@@ -205,12 +223,11 @@
 </div>
 
 <style>
-/* Custom medium ON/OFF switch */
 .custom-switch {
     position: relative;
     display: inline-block;
-    width: 60px;   /* medium width */
-    height: 28px;  /* medium height */
+    width: 60px;
+    height: 28px;
 }
 
 .custom-switch input {
@@ -225,14 +242,14 @@
     top: 0; left: 0;
     right: 0; bottom: 0;
     background-color: #ccc;
-    border-radius: 14px;  /* half of height for rounded edges */
+    border-radius: 14px;
     transition: 0.4s;
 }
 
 .slider::before {
     position: absolute;
     content: "";
-    height: 22px;          /* slightly smaller knob */
+    height: 22px;
     width: 22px;
     left: 3px;
     bottom: 3px;
@@ -246,26 +263,25 @@
 }
 
 .custom-switch input:checked + .slider::before {
-    transform: translateX(32px); /* adjust according to width */
+    transform: translateX(32px);
 }
 
-/* Text inside switch */
 .switch-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 10px;       /* smaller font for medium size */
+    font-size: 10px;
     font-weight: bold;
     color: white;
     pointer-events: none;
 }
 
 .switch-off {
-    left: 6px;             /* adjust padding */
+    left: 6px;
 }
 
 .switch-on {
-    right: 6px;            /* adjust padding */
+    right: 6px;
 }
 </style>
 

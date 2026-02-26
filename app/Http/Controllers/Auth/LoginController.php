@@ -28,6 +28,11 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
+            // ✅ UPDATE LAST ACTIVE IMMEDIATELY AFTER LOGIN
+            $user->update([
+                'last_active' => now()
+            ]);
+
             // Role 1 = Admin → redirect to admin main menu
             if ($user->role == 1) {
                 return redirect()->route('dashboard');
@@ -67,7 +72,7 @@ class LoginController extends Controller
     }
 
     public function showLoginForm()
-{
-    return view('auth.login');
-}
+    {
+        return view('auth.login');
+    }
 }

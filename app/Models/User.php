@@ -26,6 +26,7 @@ class User extends Authenticatable
         'phone', // added
         'role',  // added
         'whatsapp_notify', // ✅ ADDED
+        'last_active',
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'whatsapp_notify' => 'boolean', // ✅ ADDED
+            'last_active' => 'datetime',
         ];
     }
 
