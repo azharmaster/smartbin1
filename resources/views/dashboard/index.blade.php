@@ -778,36 +778,18 @@ function trend($current, $previous) {
         </button>
 
 <div class="d-flex flex-wrap">
+  
+
     <div class="status-card card-total">
         <div class="status-body">
-            <div class="status-title">Total Sensors</div>
+            <div class="status-title">Total Bins Installed</div>
             <div class="status-content">
-                <i class="fas fa-satellite-dish status-icon"></i>
-                <span class="status-number">{{ $totalDevices }}</span>
+                <i class="fas fa-box status-icon"></i>
+                <span class="status-number">{{ $totalBinsInstalled }}</span>
             </div>
         </div>
         <div class="status-footer">
-            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
-                <span class="status-trend-footer">
-                </span>
-
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-
-    <div class="status-card card-full">
-        <div class="status-body">
-            <div class="status-title">Full Sensors</div>
-            <div class="status-content">
-            <i class="fas fa-trash status-icon full"></i>
-                <span class="status-number">{{ $fullDevices }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+            <a href="{{ url('/admin/assets') }}" class="status-footer">
                 <span class="status-trend-footer"></span>
                 <span class="status-more">
                     More info <i class="fas fa-arrow-circle-right"></i>
@@ -818,14 +800,49 @@ function trend($current, $previous) {
 
     <div class="status-card card-half">
         <div class="status-body">
-            <div class="status-title">Half-Full Sensors</div>
+            <div class="status-title">Active Bins</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon half"></i>
-                <span class="status-number">{{ $halfDevices }}</span>
+                <i class="fas fa-wifi status-icon"></i>
+                <span class="status-number">{{ $activeBins }}</span>
             </div>
         </div>
         <div class="status-footer">
             <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <div class="status-card card-full">
+        <div class="status-body">
+            <div class="status-title">Full Bins</div>
+            <div class="status-content">
+                <i class="fas fa-trash status-icon full"></i>
+                <span class="status-number">{{ $fullBins }}</span>
+            </div>
+        </div>
+        <div class="status-footer">
+            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
+                <span class="status-trend-footer"></span>
+                <span class="status-more">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+      <div class="status-card card-undetected">
+        <div class="status-body">
+            <div class="status-title">Undetected (30min)</div>
+            <div class="status-content">
+                <i class="fas fa-minus-circle status-icon"></i>
+                <span class="status-number">{{ $undetectedDevices }}</span>
+            </div>
+        </div>
+        <div class="status-footer">
+            <a href="#" class="status-footer">
                 <span class="status-trend-footer"></span>
                 <span class="status-more">
                     More info <i class="fas fa-arrow-circle-right"></i>
@@ -836,32 +853,14 @@ function trend($current, $previous) {
 
     <div class="status-card card-empty">
         <div class="status-body">
-            <div class="status-title">Empty Sensors</div>
+            <div class="status-title">Collection Trip Today</div>
             <div class="status-content">
-                <i class="fas fa-trash status-icon empty"></i>
-                <span class="status-number">{{ $emptyDevices }}</span>
+                <i class="fas fa-truck status-icon empty"></i>
+                <span class="status-number">{{ $collectionTripToday }}</span>
             </div>
         </div>
         <div class="status-footer">
-            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-
-    <div class="status-card card-undetected">
-        <div class="status-body">
-            <div class="status-title">Undetected</div>
-            <div class="status-content">
-                <i class="fas fa-minus-circle status-icon"></i>
-                <span class="status-number">{{ $undetectedDevices }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="#" class="status-footer">
+            <a href="{{ route('notifications.index') }}" class="status-footer">
                 <span class="status-trend-footer"></span>
                 <span class="status-more">
                     More info <i class="fas fa-arrow-circle-right"></i>

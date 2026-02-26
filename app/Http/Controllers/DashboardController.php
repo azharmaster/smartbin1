@@ -63,6 +63,9 @@ class DashboardController extends Controller
 
     $abnormalBins = $this->getAbnormalBins();
 
+    // Get bin statistics
+    $binStatistics = $this->getBinStatistics();
+
     // ✅ FULL ASSETS USING ADMIN CAPACITY SETTING & LATEST SENSOR
     $fullAssets = DB::table('devices')
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
@@ -77,8 +80,8 @@ class DashboardController extends Controller
         ->distinct('assets.id')
         ->count('assets.id');
 
-    return view('dashboard.index', array_merge($deviceStats, [
-        
+    return view('dashboard.index', array_merge($deviceStats, $binStatistics, [
+
         'todos' => $this->loadTodosForUser(Auth::id()),
         'floors' => Floor::all(),
         'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
@@ -215,6 +218,105 @@ private function getDeviceStats($devices): array
 
         'undetectedDevices' => $undetectedDevices,
     ];
+}
+
+/**
+ * Get bin statistics for the dashboard.
+ *
+ * @return array
+ */
+private function getBinStatistics(): array
+{
+    // 1. Total Bins Installed - Count of all active assets
+    $totalBinsInstalled = Asset::where('is_active', 1)->count();
+
+    // 2. Active Bins - Count of bins that have devices with recent sensor data
+    $activeBins = Asset::where('is_active', 1)
+        ->whereHas('devices', function ($query) {
+            $query->where('is_active', 1)
+                ->whereHas('sensors');
+        })
+        ->count();
+
+    // 3. Full Bins - Count of bins where latest sensor capacity is above half_to threshold
+    $fullBins = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
+        ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
+        ->whereRaw('s1.created_at = (
+            SELECT MAX(s2.created_at)
+            FROM sensors s2
+            WHERE s2.device_id = s1.device_id
+        )')
+        ->whereColumn('s1.capacity', '>', 'capacity_settings.half_to')
+        ->where('assets.is_active', 1)
+        ->where('devices.is_active', 1)
+        ->distinct('assets.id')
+        ->count('assets.id');
+
+    // 4. Collection Trip Today - Count of bins that went from full to empty today
+    $collectionTripToday = $this->getCollectionTripsToday();
+
+    return [
+        'totalBinsInstalled' => $totalBinsInstalled,
+        'activeBins' => $activeBins,
+        'fullBins' => $fullBins,
+        'collectionTripToday' => $collectionTripToday,
+    ];
+}
+
+/**
+ * Count bins that went from full to empty today.
+ *
+ * @return int
+ */
+private function getCollectionTripsToday(): int
+{
+    $startDate = Carbon::today()->startOfDay();
+    $endDate = Carbon::today()->endOfDay();
+
+    $devices = Device::with([
+        'asset.capacitySetting',
+        'sensors' => function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate])
+                  ->orderBy('created_at', 'asc');
+        }
+    ])->whereHas('asset', fn($q) => $q->where('is_active', 1))
+      ->where('is_active', 1)
+      ->get();
+
+    $collectionCount = 0;
+
+    foreach ($devices as $device) {
+        if (!$device->asset || !$device->asset->capacitySetting) {
+            continue;
+        }
+
+        $capacitySetting = $device->asset->capacitySetting;
+        $halfTo = $capacitySetting->half_to;
+        $emptyTo = $capacitySetting->empty_to;
+
+        $wasFull = false;
+
+        foreach ($device->sensors as $sensor) {
+            if (!is_numeric($sensor->capacity)) {
+                continue;
+            }
+
+            // Bin became full
+            if (!$wasFull && $sensor->capacity > $halfTo) {
+                $wasFull = true;
+            }
+
+            // Bin emptied after being full - count as one collection trip
+            if ($wasFull && $sensor->capacity <= $emptyTo) {
+                $collectionCount++;
+                $wasFull = false; // Reset for next cycle
+            }
+        }
+    }
+
+    return $collectionCount;
 }
 
 // ------------------- UPDATED CALENDAR METHOD -------------------
