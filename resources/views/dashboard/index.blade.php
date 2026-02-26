@@ -1056,7 +1056,7 @@ function trend($current, $previous) {
                             };
                             
                             $timestamp = $latest?->created_at
-                                ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('Y-m-d H:i')
+                                ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m H:i')
                                 : '—';
                             
                             // Check if data is from today
