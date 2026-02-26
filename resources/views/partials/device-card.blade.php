@@ -5,7 +5,7 @@
     <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
         <div class="d-flex justify-content-between align-items-start">
             <div class="fw-bold fs-4 text-white">
-                {{ $device->device_name }}
+                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
             </div>
             <div class="badge {{ $badgeClass }}">
                 {{ $badge }}
@@ -14,7 +14,7 @@
 
         <div class="mt-1 text-white">
             <i class="fas fa-map-marker-alt"></i>
-            {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+            {{ $device->device_name }}
         </div>
 
 <div class="mt-2">

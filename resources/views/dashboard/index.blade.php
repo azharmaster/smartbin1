@@ -34,7 +34,7 @@
 }
 
 .status-card:hover {
-    background: #319237ff; /* DARK GREEN */
+    background: #9457b3; /* DARK GREEN */
     color: #ffffff;
 
     transform: translateY(-4px);

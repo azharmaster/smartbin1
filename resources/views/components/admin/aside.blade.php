@@ -71,18 +71,16 @@
 <!-- /.sidebar-menu -->
 
 <style>
-/* ===== Brand logo behavior ===== */
+
+/* ===================================================== */
+/* ===== Brand Logo behavior =========================== */
+/* ===================================================== */
 
 /* Default: show both */
-.brand-logo-img {
-    display: inline-block;
-}
+.brand-logo-img { display: inline-block; }
+.brand-text-img { display: inline-block; }
 
-.brand-text-img {
-    display: inline-block;
-}
-
-/* Sidebar collapsed: hide text image */
+/* Hide text when collapsed */
 body.sidebar-collapse .brand-text-img {
     display: none !important;
 }
@@ -92,16 +90,24 @@ body.sidebar-collapse .brand-link {
     justify-content: center !important;
 }
 
-/* Base sidebar */
+/* ===================================================== */
+/* ===== Base Sidebar Styling ========================== */
+/* ===================================================== */
+
 .main-sidebar {
     background: linear-gradient(135deg, #672d84, #9457b3);
-    transition: width 0.25s ease-in-out;
+
+    /* 🧈 BUTTER SMOOTH WIDTH TRANSITION */
+    transition: width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Links */
 .nav-sidebar .nav-link {
     margin: 3px 8px;
     padding: 7px 10px;
+
+    /* Smooth padding animation */
+    transition: padding 0.25s ease, justify-content 0.25s ease;
 }
 
 .nav-sidebar .nav-link p {
@@ -136,7 +142,10 @@ body.sidebar-collapse .brand-link {
     background: transparent !important;
 }
 
-/* Collapsed sidebar */
+/* ===================================================== */
+/* ===== Collapsed Sidebar ============================= */
+/* ===================================================== */
+
 body.sidebar-collapse .main-sidebar {
     width: 4.6rem !important;
 }
@@ -158,7 +167,10 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     font-size: 1rem;
 }
 
-/* Page Indicator */
+/* ===================================================== */
+/* ===== Page Indicator ================================ */
+/* ===================================================== */
+
 .nav-sidebar .nav-link.active::before {
     content: '';
     position: absolute;
@@ -171,15 +183,17 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     transition: background 0.3s ease, height 0.3s ease;
 }
 
+/* ===================================================== */
+/* ===== Logout Styling ================================ */
+/* ===================================================== */
+
 .logout-link {
     background: transparent;
     border: none;
     color: #ffffff;
 }
 
-.logout-link i {
-    color: #ffffff;
-}
+.logout-link i { color: #ffffff; }
 
 .logout-link:hover {
     background: rgba(255, 255, 255, 0.08);
@@ -199,9 +213,9 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     color: #ffffff !important;
 }
 
-/* ============================= */
-/* ✅ SCROLLABLE SIDEBAR (NEW)   */
-/* ============================= */
+/* ===================================================== */
+/* ===== Scrollable Sidebar ============================ */
+/* ===================================================== */
 
 .main-sidebar {
     height: 100vh;
@@ -209,25 +223,109 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
 }
 
 .main-sidebar .sidebar {
-    height: calc(100vh - 70px); /* adjust if brand height changes */
+    height: calc(100vh - 70px);
     overflow-y: auto;
     overflow-x: hidden;
     padding-bottom: 20px;
 }
 
-/* Optional: nice scrollbar */
+/* Nice scrollbar */
 .main-sidebar .sidebar::-webkit-scrollbar {
     width: 6px;
 }
-
 .main-sidebar .sidebar::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
 }
-
 .main-sidebar .sidebar::-webkit-scrollbar-track {
     background: transparent;
 }
+
+/* ===================================================== */
+/* 🔥 BUTTER TEXT FADE + SLIDE ANIMATION =============== */
+/* ===================================================== */
+
+.nav-sidebar .nav-link p,
+.nav-header,
+.brand-text-img {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+body.sidebar-collapse .nav-sidebar .nav-link p,
+body.sidebar-collapse .nav-header,
+body.sidebar-collapse .brand-text-img {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+body:not(.sidebar-collapse) .nav-sidebar .nav-link p,
+body:not(.sidebar-collapse) .nav-header,
+body:not(.sidebar-collapse) .brand-text-img {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===================================================== */
+/* 🔥 Hover Auto Open ================================== */
+/* ===================================================== */
+
+body.sidebar-hover-open .main-sidebar {
+    width: 250px !important;
+}
+
+body.sidebar-hover-open .nav-sidebar .nav-link p,
+body.sidebar-hover-open .nav-header,
+body.sidebar-hover-open .brand-text-img {
+    display: inline-block !important;
+}
+
+body.sidebar-hover-open .nav-sidebar .nav-link {
+    justify-content: flex-start;
+    padding: 7px 10px;
+}
+
+body.sidebar-hover-open .nav-sidebar .nav-icon {
+    margin-right: 8px;
+}
+
 </style>
 
-<!-- /.sidebar -->
+<script>
+
+/* ===================================================== */
+/* 🔥 Smooth Hover Auto Expand Logic =================== */
+/* ===================================================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const body = document.body;
+    const sidebar = document.querySelector('.main-sidebar');
+    let hoverTimeout;
+
+    /* When mouse enters sidebar */
+    sidebar.addEventListener('mouseenter', function () {
+
+        if (body.classList.contains('sidebar-collapse')) {
+
+            clearTimeout(hoverTimeout);
+
+            body.classList.remove('sidebar-collapse');
+            body.classList.add('sidebar-hover-open');
+        }
+    });
+
+    /* When mouse leaves sidebar */
+    sidebar.addEventListener('mouseleave', function () {
+
+        if (body.classList.contains('sidebar-hover-open')) {
+
+            hoverTimeout = setTimeout(() => {
+                body.classList.remove('sidebar-hover-open');
+                body.classList.add('sidebar-collapse');
+            }, 120); // Reduced delay = smoother close
+        }
+    });
+
+});
+
+</script>
