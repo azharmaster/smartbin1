@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('content_title', 'Floor')
+@section('content_title', 'Floor Management')
 @section('content')
 
 <!-- Floating Help Button -->
@@ -24,9 +24,9 @@
 </button>
 
 
-<div class="card">
+<div class="card card-success card-outline">
     <div class="card-header">
-        <h4 class="card-title">Floor</h4>
+        <h4 class="card-title">List Of Floor</h4>
     </div>
     <div class="card-body">
         @if ($errors->any())
