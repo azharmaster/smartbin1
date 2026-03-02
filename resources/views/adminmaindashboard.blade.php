@@ -485,6 +485,7 @@
                         $binClass = $binStatus === 'full' ? 'border-danger' : ($binStatus === 'half' ? 'border-warning' : 'border-success');
                         $firstDevice = $compartments->flatten()->first();
                         $floorName = $firstDevice?->asset?->floor?->floor_name ?? 'Unknown Floor';
+                        $assetLocation = $firstDevice?->asset?->location ?? 'Unknown location';
                         
                         // Get last emptied time for this bin
                         $binLastEmptied = $lastEmptiedTimesByBin->get($firstDevice?->asset?->id);
@@ -517,11 +518,11 @@
                                         </h6>
                                          
                                         <small style="opacity: 0.9;">
-                                            <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
+                                            <i class="fas fa-map-marker-alt"></i> {{ $assetLocation }}
                                             <span class="ms-2">
                                                 <i class="fas fa-microchip"></i> {{ $compartments->flatten()->count() }} compartments
                                             </span>
-                                           
+
                                         </small>
                                     </div>
                                     <div class="text-end">
