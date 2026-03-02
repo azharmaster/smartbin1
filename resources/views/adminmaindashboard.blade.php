@@ -414,7 +414,7 @@
     </div>
 @endif
 
-<div class="dashboard-cards mb-4">
+<!-- <div class="dashboard-cards mb-4">
     @php
         $statuses = [
             ['title' => 'Total Sensors', 'count' => $totalDevices, 'icon' => 'fa-satellite-dish', 'class' => 'card-total'],
@@ -434,7 +434,7 @@
             </div>
         </div>
     @endforeach
-</div>
+</div> -->
 
 <div id="static-device-grid">
     <div class="card mb-4" style="background-color: transparent;">
@@ -557,7 +557,9 @@
                                                         <div class="flex-grow-1">
                                                             <div class="d-flex align-items-center gap-2 mb-1">
                                                                 <i class="fas fa-recycle" style="color: #6c757d;"></i>&nbsp;
-                                                                <span class="fw-semibold" style="font-size: 0.85rem; color:black">{{ $compartmentName }}</span>&nbsp;
+                                                               <span class="fw-semibold" style="font-size: bold; color:black">
+                                                                    <strong>{{ $compartmentName }}</strong>
+                                                                </span>&nbsp;
                                                                 <span class="badge {{ $compBadge }} badge-sm">{{ strtoupper($compStatus) }}</span>
                                                             </div>
                                                             <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem; color: #6c757d;">
@@ -567,6 +569,7 @@
                                                                     {{ $battery }}%
                                                                 </span>
                                                                 @endif
+                                                                &nbsp;
                                                                 <span>
                                                                     <i class="fas fa-clock"></i>
                                                                     {{ $latest?->created_at ? $latest->created_at->diffForHumans() : 'No data' }}
@@ -574,7 +577,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="text-end" style="min-width: 60px;">
-                                                            <div class="fw-bold" style="font-size: 0.95rem;">{{ number_format($capacity, 0) }}%</div>
+                                                            <div class="fw-bold" style="font-size: 0.95rem; color:black;">{{ number_format($capacity, 0) }}%</div>
                                                             <div class="progress" style="height: 5px;">
                                                                 <div class="progress-bar {{ $compBarClass }}"
                                                                      style="width: {{ $capacity }}%;"></div>
