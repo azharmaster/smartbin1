@@ -347,6 +347,7 @@
 
 .bin-section {
     transition: all 0.3s ease;
+    height: 100%;
 }
 
 .bin-section-header {
@@ -366,6 +367,7 @@
 .compartment-card {
     transition: all 0.2s ease;
     border: 1px solid #e9ecef;
+    height: 100%;
 }
 
 .compartment-card:hover {
@@ -393,6 +395,14 @@
 
 .bin-section[data-bin-status="undetected"] {
     display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -443,7 +453,7 @@
             </div>
 
             {{-- ORGANIZED BIN SECTIONS --}}
-            <div class="bins-organized-grid">
+            <div class="row g-3">
                 @forelse($groupedDevices as $binName => $compartments)
                     @php
                         // Determine overall bin status
@@ -451,7 +461,7 @@
                         $hasHalf = false;
                         $hasEmpty = false;
                         $hasUndetected = false;
-                        
+
                         foreach($compartments as $compartment => $devices) {
                             foreach($devices as $device) {
                                 $status = null;
@@ -466,117 +476,125 @@
                                 }
                             }
                         }
-                        
+
                         if ($hasFull) $binStatus = 'full';
                         elseif ($hasHalf) $binStatus = 'half';
                         elseif ($hasUndetected) $binStatus = 'undetected';
                         else $binStatus = 'empty';
-                        
+
                         $binClass = $binStatus === 'full' ? 'border-danger' : ($binStatus === 'half' ? 'border-warning' : 'border-success');
                         $firstDevice = $compartments->flatten()->first();
                         $floorName = $firstDevice?->asset?->floor?->floor_name ?? 'Unknown Floor';
                     @endphp
-                    
-                    <div class="bin-section mb-3" data-bin-status="{{ $binStatus }}">
-                        <!-- Bin Header -->
-                        <div class="bin-section-header p-3 rounded-top {{ $binClass }}" 
-                             style="background: linear-gradient(135deg, {{ $binStatus === 'full' ? '#dc3545' : ($binStatus === 'half' ? '#ffc107' : '#28a745') }}, #fff); 
-                                    color: {{ $binStatus === 'half' ? '#000' : '#fff' }};
-                                    cursor: pointer;"
-                             data-bs-toggle="collapse"
-                             data-bs-target="#binSection{{ str_replace(' ', '', $binName) }}"
-                             role="button">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0 fw-bold">
-                                        <i class="fas fa-trash-alt"></i> {{ $binName }}
-                                    </h6>
-                                    <small style="opacity: 0.9;">
-                                        <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
-                                        <span class="ms-2">
-                                            <i class="fas fa-microchip"></i> {{ $compartments->flatten()->count() }} compartments
+
+                    <div class="col-6 p-2">
+                        <div class="bin-section h-100" data-bin-status="{{ $binStatus }}">
+                            <!-- Bin Header -->
+                            <div class="bin-section-header p-3 rounded-top {{ $binClass }}"
+                                 style="background: linear-gradient(135deg, {{ $binStatus === 'full' ? '#dc3545' : ($binStatus === 'half' ? '#ffc107' : '#28a745') }}, #fff);
+                                        color: {{ $binStatus === 'half' ? '#000' : '#fff' }};
+                                        cursor: pointer;"
+                                 data-bs-toggle="collapse"
+                                 data-bs-target="#binSection{{ str_replace(' ', '', $binName) }}"
+                                 role="button">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">
+                                            <i class="fas fa-trash-alt"></i> {{ $binName }}
+                                        </h6>
+                                        <small style="opacity: 0.9;">
+                                            <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
+                                            <span class="ms-2">
+                                                <i class="fas fa-microchip"></i> {{ $compartments->flatten()->count() }} compartments
+                                            </span>
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge {{ $binStatus === 'full' ? 'bg-danger' : ($binStatus === 'half' ? 'bg-warning text-dark' : 'bg-success') }} px-3 py-2">
+                                            @if($binStatus === 'full')
+                                                <i class="fas fa-exclamation-triangle"></i> CRITICAL
+                                            @elseif($binStatus === 'half')
+                                                <i class="fas fa-exclamation-circle"></i> MODERATE
+                                            @else
+                                                <i class="fas fa-check-circle"></i> NORMAL
+                                            @endif
                                         </span>
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge {{ $binStatus === 'full' ? 'bg-danger' : ($binStatus === 'half' ? 'bg-warning text-dark' : 'bg-success') }} px-3 py-2">
-                                        @if($binStatus === 'full')
-                                            <i class="fas fa-exclamation-triangle"></i> CRITICAL
-                                        @elseif($binStatus === 'half')
-                                            <i class="fas fa-exclamation-circle"></i> MODERATE
-                                        @else
-                                            <i class="fas fa-check-circle"></i> NORMAL
-                                        @endif
-                                    </span>
-                                    <i class="fas fa-chevron-down ms-2"></i>
+                                        <i class="fas fa-chevron-down ms-2"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Compartments List -->
-                        <div class="collapse show" id="binSection{{ str_replace(' ', '', $binName) }}">
-                            <div class="bin-section-body p-2 border border-top-0 rounded-bottom" style="background: #f8f9fa;">
-                                @foreach($compartments as $compartmentName => $devices)
-                                    @php
-                                        $compDevice = $devices->first();
-                                        $latest = $compDevice?->latestSensor;
-                                        $capacity = $latest?->capacity ?? 0;
-                                        $battery = $latest?->battery_percentage ?? null;
-                                        
-                                        if ($capacity > $compDevice?->asset?->capacitySetting?->half_to) {
-                                            $compStatus = 'full';
-                                            $compBadge = 'bg-danger';
-                                            $compBarClass = 'bg-danger';
-                                        } elseif ($capacity > $compDevice?->asset?->capacitySetting?->empty_to) {
-                                            $compStatus = 'half';
-                                            $compBadge = 'bg-warning';
-                                            $compBarClass = 'bg-warning';
-                                        } else {
-                                            $compStatus = 'empty';
-                                            $compBadge = 'bg-success';
-                                            $compBarClass = 'bg-success';
-                                        }
-                                    @endphp
-                                    
-                                    <div class="compartment-card p-2 mb-2 rounded" 
-                                         style="background: #fff; border-left: 4px solid {{ $compStatus === 'full' ? '#dc3545' : ($compStatus === 'half' ? '#ffc107' : '#28a745') }};">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="flex-grow-1">
-                                                <div class="d-flex align-items-center gap-2 mb-1">
-                                                    <i class="fas fa-recycle" style="color: #6c757d;"></i>
-                                                    <span class="fw-semibold">{{ $compartmentName }}</span>
-                                                    <span class="badge {{ $compBadge }} badge-sm">{{ strtoupper($compStatus) }}</span>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-3" style="font-size: 0.75rem; color: #6c757d;">
-                                                    @if($battery !== null)
-                                                    <span>
-                                                        <i class="fas fa-battery-three-quarters" style="color: {{ $battery <= 20 ? '#dc3545' : ($battery <= 50 ? '#fd7e14' : '#28a745') }};"></i>
-                                                        {{ $battery }}%
-                                                    </span>
-                                                    @endif
-                                                    <span>
-                                                        <i class="fas fa-clock"></i>
-                                                        {{ $latest?->created_at ? $latest->created_at->diffForHumans() : 'No data' }}
-                                                    </span>
+
+                            <!-- Compartments List -->
+                            <div class="collapse show" id="binSection{{ str_replace(' ', '', $binName) }}">
+                                <div class="bin-section-body p-2 border border-top-0 rounded-bottom" style="background: #f8f9fa;">
+                                    <div class="row g-2">
+                                        @foreach($compartments as $compartmentName => $devices)
+                                            @php
+                                                $compDevice = $devices->first();
+                                                $latest = $compDevice?->latestSensor;
+                                                $capacity = $latest?->capacity ?? 0;
+                                                $battery = $latest?->battery_percentage ?? null;
+
+                                                if ($capacity > $compDevice?->asset?->capacitySetting?->half_to) {
+                                                    $compStatus = 'full';
+                                                    $compBadge = 'bg-danger';
+                                                    $compBarClass = 'bg-danger';
+                                                } elseif ($capacity > $compDevice?->asset?->capacitySetting?->empty_to) {
+                                                    $compStatus = 'half';
+                                                    $compBadge = 'bg-warning';
+                                                    $compBarClass = 'bg-warning';
+                                                } else {
+                                                    $compStatus = 'empty';
+                                                    $compBadge = 'bg-success';
+                                                    $compBarClass = 'bg-success';
+                                                }
+                                            @endphp
+
+                                            <div class="col-6">
+                                                <div class="compartment-card p-2 rounded"
+                                                     style="background: #fff; border-left: 4px solid {{ $compStatus === 'full' ? '#dc3545' : ($compStatus === 'half' ? '#ffc107' : '#28a745') }};">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="flex-grow-1">
+                                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                                <i class="fas fa-recycle" style="color: #6c757d;"></i>
+                                                                <span class="fw-semibold" style="font-size: 0.85rem;">{{ $compartmentName }}</span>
+                                                                <span class="badge {{ $compBadge }} badge-sm">{{ strtoupper($compStatus) }}</span>
+                                                            </div>
+                                                            <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem; color: #6c757d;">
+                                                                @if($battery !== null)
+                                                                <span>
+                                                                    <i class="fas fa-battery-three-quarters" style="color: {{ $battery <= 20 ? '#dc3545' : ($battery <= 50 ? '#fd7e14' : '#28a745') }};"></i>
+                                                                    {{ $battery }}%
+                                                                </span>
+                                                                @endif
+                                                                <span>
+                                                                    <i class="fas fa-clock"></i>
+                                                                    {{ $latest?->created_at ? $latest->created_at->diffForHumans() : 'No data' }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-end" style="min-width: 60px;">
+                                                            <div class="fw-bold" style="font-size: 0.95rem;">{{ number_format($capacity, 0) }}%</div>
+                                                            <div class="progress" style="height: 5px;">
+                                                                <div class="progress-bar {{ $compBarClass }}"
+                                                                     style="width: {{ $capacity }}%;"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="text-end" style="min-width: 80px;">
-                                                <div class="fw-bold" style="font-size: 1.1rem;">{{ number_format($capacity, 0) }}%</div>
-                                                <div class="progress" style="height: 6px;">
-                                                    <div class="progress-bar {{ $compBarClass }}" 
-                                                         style="width: {{ $capacity }}%;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
+                                </div>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <p>No bins found</p>
+                    <div class="col-12">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No bins found</p>
+                        </div>
                     </div>
                 @endforelse
             </div>
