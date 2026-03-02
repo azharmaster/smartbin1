@@ -1720,7 +1720,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-bell"></i> Notifications for the Day</h5>
+        <h5 class="modal-title"><i class="fas fa-chart-pie"></i> Summary </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -1902,7 +1902,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (info.event.extendedProps.type === 'notification_group') {
         // Group notifications by date
         const notificationsByDate = {};
-        
+        let totalNotifications = 0;
+        let fullBinsCount = 0;
+        let halfBinsCount = 0;
+        let emptyBinsCount = 0;
+        let otherCount = 0;
+
         info.event.extendedProps.notifications.forEach(n => {
             let messages = n.message_preview.split('🆔').filter(m => m.trim() !== '');
             messages.forEach(msg => {
@@ -1911,29 +1916,122 @@ document.addEventListener('DOMContentLoaded', function () {
                     notificationsByDate[date] = [];
                 }
                 notificationsByDate[date].push(msg.trim());
+                totalNotifications++;
+                
+                // Categorize notifications
+                const msgLower = msg.toLowerCase();
+                if (msgLower.includes('full') || msgLower.includes('critical')) {
+                    fullBinsCount++;
+                } else if (msgLower.includes('half') || msgLower.includes('moderate')) {
+                    halfBinsCount++;
+                } else if (msgLower.includes('empty') || msgLower.includes('cleared')) {
+                    emptyBinsCount++;
+                } else {
+                    otherCount++;
+                }
             });
         });
 
-        // Build HTML grouped by date
+        // Build HTML grouped by date with summary
         let html = '';
+        
+        // Summary Section
+        html += `<div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie"></i> Summary for the Day</h6>
+                <div class="row g-3">
+                    <div class="col-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-primary">${totalNotifications}</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-danger">${fullBinsCount}</div>
+                            <small class="text-muted">Full Bins</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-warning">${halfBinsCount}</div>
+                            <small class="text-muted">Half Full</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-success">${emptyBinsCount}</div>
+                            <small class="text-muted">Emptied</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        
+        // Notifications by Date
+        // Object.entries(notificationsByDate).forEach(([date, msgs]) => {
+        //     const dateObj = new Date(date);
+        //     const isToday = dateObj.toDateString() === new Date().toDateString();
+        //     const isYesterday = new Date(Date.now() - 86400000).toDateString() === dateObj.toDateString();
+
+        //     let dateLabel = isToday ? 'Today' : (isYesterday ? 'Yesterday' : date);
+
+        //     html += `<div class="mb-3">
+        //         <h6 class="fw-semibold mb-2"><i class="fas fa-calendar-day text-success"></i> ${dateLabel}</h6>
+        //         <div class="badge bg-success mb-2">${msgs.length} notifications</div>
+        //         <ul class="list-group list-group-flush">`;
+
+        //     msgs.forEach(msg => {
+        //         html += `<li class="list-group-item">🆔 ${msg}</li>`;
+        //     });
+
+        //     html += `</ul></div><hr class="my-3">`;
+        // });
+
+        // Detailed Table Section
+        html += `<div class="card mb-3">
+            <div class="card-header bg-white fw-bold">
+                <i class="fas fa-table"></i> Notification Details
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 60px;">#</th>
+                                <th>Message</th>
+                                <th style="width: 120px;">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+        let tableRowNum = 1;
         Object.entries(notificationsByDate).forEach(([date, msgs]) => {
-            const dateObj = new Date(date);
-            const isToday = dateObj.toDateString() === new Date().toDateString();
-            const isYesterday = new Date(Date.now() - 86400000).toDateString() === dateObj.toDateString();
-            
-            let dateLabel = isToday ? 'Today' : (isYesterday ? 'Yesterday' : date);
-            
-            html += `<div class="mb-3">
-                <h6 class="fw-semibold mb-2"><i class="fas fa-calendar-day text-success"></i> ${dateLabel}</h6>
-                <div class="badge bg-success mb-2">${msgs.length} notifications</div>
-                <ul class="list-group list-group-flush">`;
-            
             msgs.forEach(msg => {
-                html += `<li class="list-group-item">🆔 ${msg}</li>`;
+                // Determine category
+                const msgLower = msg.toLowerCase();
+                let category = '<span class="badge bg-secondary">Other</span>';
+                if (msgLower.includes('full') || msgLower.includes('critical')) {
+                    category = '<span class="badge bg-danger">Full Bin</span>';
+                } else if (msgLower.includes('half') || msgLower.includes('moderate')) {
+                    category = '<span class="badge bg-warning text-dark">Half Full</span>';
+                } else if (msgLower.includes('empty') || msgLower.includes('cleared')) {
+                    category = '<span class="badge bg-success">Emptied</span>';
+                }
+
+                html += `<tr>
+                    <td><strong>${tableRowNum++}</strong></td>
+                    <td>${msg}</td>
+                    <td class="text-center">${category}</td>
+                </tr>`;
             });
-            
-            html += `</ul></div><hr class="my-3">`;
         });
+
+        html += `</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
 
         $('#notificationListContainer').html(html);
         $('#notificationModal').modal('show');
