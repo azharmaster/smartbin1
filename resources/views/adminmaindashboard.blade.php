@@ -490,7 +490,7 @@
                     <div class="col-6 p-2">
                         <div class="bin-section h-100" data-bin-status="{{ $binStatus }}">
                             <!-- Bin Header -->
-                            <div class="bin-section-header p-3 rounded-top {{ $binClass }}"
+                            <div class="bin-section-header p-3 rounded-top  {{ $binClass }}"
                                  style="background: linear-gradient(135deg, {{ $binStatus === 'full' ? '#dc3545' : ($binStatus === 'half' ? '#ffc107' : '#28a745') }}, #fff);
                                         color: {{ $binStatus === 'half' ? '#000' : '#fff' }};
                                         cursor: pointer;"
@@ -499,8 +499,8 @@
                                  role="button">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-0 fw-bold">
-                                            <i class="fas fa-trash-alt"></i> {{ $binName }}
+                                        <h6 class="mb-0 fw-bold " >
+                                            <i class="fas fa-trash-alt "></i> {{ $binName }}
                                         </h6>
                                         <small style="opacity: 0.9;">
                                             <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
@@ -550,14 +550,14 @@
                                                 }
                                             @endphp
 
-                                            <div class="col-6">
+                                            <div class="col-12">
                                                 <div class="compartment-card p-2 rounded"
                                                      style="background: #fff; border-left: 4px solid {{ $compStatus === 'full' ? '#dc3545' : ($compStatus === 'half' ? '#ffc107' : '#28a745') }};">
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div class="flex-grow-1">
                                                             <div class="d-flex align-items-center gap-2 mb-1">
-                                                                <i class="fas fa-recycle" style="color: #6c757d;"></i>
-                                                                <span class="fw-semibold" style="font-size: 0.85rem;">{{ $compartmentName }}</span>
+                                                                <i class="fas fa-recycle" style="color: #6c757d;"></i>&nbsp;
+                                                                <span class="fw-semibold" style="font-size: 0.85rem; color:black">{{ $compartmentName }}</span>&nbsp;
                                                                 <span class="badge {{ $compBadge }} badge-sm">{{ strtoupper($compStatus) }}</span>
                                                             </div>
                                                             <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem; color: #6c757d;">
