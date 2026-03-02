@@ -485,6 +485,11 @@
                         $binClass = $binStatus === 'full' ? 'border-danger' : ($binStatus === 'half' ? 'border-warning' : 'border-success');
                         $firstDevice = $compartments->flatten()->first();
                         $floorName = $firstDevice?->asset?->floor?->floor_name ?? 'Unknown Floor';
+                        
+                        // Get last emptied time for this bin
+                        $binLastEmptied = $lastEmptiedTimesByBin->get($firstDevice?->asset?->id);
+                        $binLastEmptiedShort = $binLastEmptied ? $binLastEmptied->format('d/m H:i') : '—';
+                        $binLastEmptiedRelative = $binLastEmptied ? $binLastEmptied->diffForHumans() : null;
                     @endphp
 
                     <div class="col-6 p-2">
@@ -500,13 +505,23 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-0 fw-bold " >
-                                            <i class="fas fa-trash-alt "></i> {{ $binName }}
+                                            <i class="fas fa-trash-alt "></i> {{ $binName }} &nbsp; 
+                                            @if($binLastEmptied)
+                                         <small style="opacity: 0.9;">
+                                            <span class="ms-2 d-inline-block">
+                                                <i class="fas fa-history"></i> Last emptied: {{ $binLastEmptiedShort }}
+                                                <small style="opacity: 0.7;">({{ $binLastEmptiedRelative }})</small>
+                                            </span>
+                                            </small>
+                                            @endif
                                         </h6>
+                                         
                                         <small style="opacity: 0.9;">
                                             <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
                                             <span class="ms-2">
                                                 <i class="fas fa-microchip"></i> {{ $compartments->flatten()->count() }} compartments
                                             </span>
+                                           
                                         </small>
                                     </div>
                                     <div class="text-end">
@@ -519,7 +534,7 @@
                                                 <i class="fas fa-check-circle"></i> NORMAL
                                             @endif
                                         </span>
-                                        <i class="fas fa-chevron-down ms-2"></i>
+                                        <!-- <i class="fas fa-chevron-down ms-2"></i> -->
                                     </div>
                                 </div>
                             </div>

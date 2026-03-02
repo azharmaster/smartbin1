@@ -53,6 +53,12 @@ class AdminMainDashboardController extends Controller
                 });
             });
 
+        // Get last emptied times for each device (compartment)
+        $lastEmptiedTimes = $this->getLastEmptiedTimesByDevice();
+        
+        // Get last emptied times for each bin (asset)
+        $lastEmptiedTimesByBin = $this->getLastEmptiedTimesByBin();
+
         $lastUpdated = Sensor::latest('created_at')->value('created_at');
 
         $floors = Floor::all();
@@ -61,6 +67,8 @@ class AdminMainDashboardController extends Controller
         return view('adminmaindashboard', compact(
             'devices',
             'groupedDevices',
+            'lastEmptiedTimes',
+            'lastEmptiedTimesByBin',
             'floors',
             'assetsWithCoords',
             'totalDevices',
@@ -153,5 +161,113 @@ class AdminMainDashboardController extends Controller
         return Asset::whereNotNull('x')
             ->whereNotNull('y')
             ->get();
+    }
+
+    /**
+     * Get the last emptied time for each bin (asset).
+     * Tracks when any compartment in the bin went from full to empty.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getLastEmptiedTimesByBin()
+    {
+        $result = [];
+
+        $devices = Device::with([
+            'asset.capacitySetting',
+            'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
+        ])->get();
+
+        foreach ($devices as $device) {
+            if (!$device->asset || !$device->asset->capacitySetting) continue;
+
+            $assetId = $device->asset->id;
+            $capacity = $device->asset->capacitySetting;
+            $sensors = $device->sensors;
+
+            // Initialize if not set
+            if (!isset($result[$assetId])) {
+                $result[$assetId] = null;
+            }
+
+            $wasFull = false;
+
+            foreach ($sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) continue;
+
+                // Check if compartment was full
+                if (!$wasFull && $sensor->capacity > $capacity->half_to) {
+                    $wasFull = true;
+                }
+
+                // Check if compartment was emptied after being full
+                if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+                    $emptiedTime = \Carbon\Carbon::parse($sensor->created_at);
+
+                    // Keep the most recent emptied time for this bin
+                    if (!$result[$assetId] || $emptiedTime > $result[$assetId]) {
+                        $result[$assetId] = $emptiedTime;
+                    }
+
+                    $wasFull = false; // reset for next cycle
+                }
+            }
+        }
+
+        return collect($result);
+    }
+
+    /**
+     * Get the last emptied time for each device (compartment).
+     * Tracks when each compartment went from full to empty.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getLastEmptiedTimesByDevice()
+    {
+        $result = [];
+
+        $devices = Device::with([
+            'asset.capacitySetting',
+            'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
+        ])->get();
+
+        foreach ($devices as $device) {
+            if (!$device->asset || !$device->asset->capacitySetting) continue;
+
+            $deviceId = $device->id_device;
+            $capacity = $device->asset->capacitySetting;
+            $sensors = $device->sensors;
+
+            // Initialize if not set
+            if (!isset($result[$deviceId])) {
+                $result[$deviceId] = null;
+            }
+
+            $wasFull = false;
+
+            foreach ($sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) continue;
+
+                // Check if compartment was full
+                if (!$wasFull && $sensor->capacity > $capacity->half_to) {
+                    $wasFull = true;
+                }
+
+                // Check if compartment was emptied after being full
+                if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+                    $emptiedTime = \Carbon\Carbon::parse($sensor->created_at);
+
+                    // Keep the most recent emptied time
+                    if (!$result[$deviceId] || $emptiedTime > $result[$deviceId]) {
+                        $result[$deviceId] = $emptiedTime;
+                    }
+
+                    $wasFull = false; // reset for next cycle
+                }
+            }
+        }
+
+        return collect($result);
     }
 }
