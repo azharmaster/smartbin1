@@ -1881,9 +1881,16 @@ document.addEventListener('DOMContentLoaded', function () {
         headerToolbar: {
             left: 'prev,next',
             center: 'title',
-            right: isMobile ? '' : 'dayGridMonth'
+            right: isMobile ? 'dayGridWeek,dayGridMonth' : 'dayGridMonth,dayGridWeek'
         },
         eventDisplay: 'block',
+        
+        buttonText: {
+            month: 'Month',
+            week: 'Week',
+            day: 'DAY',
+            list: 'LIST'
+        },
 
         events: calendarEvents,
 
