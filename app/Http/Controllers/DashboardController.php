@@ -69,6 +69,12 @@ class DashboardController extends Controller
     // Get bin statistics
     $binStatistics = $this->getBinStatistics();
 
+    // Last emptied times for each asset
+    $lastEmptiedTimes = $this->getLastEmptiedTimes();
+
+    // Predicted full times for each asset
+    $predictedFullTimes = $this->getPredictedFullTimes();
+
     // ✅ FULL ASSETS USING ADMIN CAPACITY SETTING & LATEST SENSOR
     $fullAssets = DB::table('devices')
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
@@ -104,6 +110,8 @@ class DashboardController extends Controller
 
         // ✅ PASS FULL ASSETS TO VIEW
         'fullAssets' => $fullAssets,
+        'lastEmptiedTimes' => $lastEmptiedTimes,
+        'predictedFullTimes' => $predictedFullTimes,
     ]));
 }
     private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40)
@@ -632,6 +640,121 @@ private function calculateSmartBinClearTimes()
 
         if (!empty($clears)) {
             $result[$device->asset->asset_name][$device->device_name] = $clears;
+        }
+    }
+
+    return collect($result);
+}
+
+/**
+ * Get the last emptied time for each asset.
+ *
+ * @return \Illuminate\Support\Collection
+ */
+private function getLastEmptiedTimes()
+{
+    $result = [];
+
+    $devices = Device::with([
+        'asset',
+        'asset.capacitySetting',
+        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
+    ])->get();
+
+    foreach ($devices as $device) {
+        if (!$device->asset || !$device->asset->capacitySetting) continue;
+
+        $assetId = $device->asset->id;
+        $capacity = $device->asset->capacitySetting;
+        $sensors = $device->sensors;
+
+        // Initialize if not set
+        if (!isset($result[$assetId])) {
+            $result[$assetId] = null;
+        }
+
+        $wasFull = false;
+
+        foreach ($sensors as $sensor) {
+            if (!is_numeric($sensor->capacity)) continue;
+
+            // Check if bin was full
+            if (!$wasFull && $sensor->capacity > $capacity->half_to) {
+                $wasFull = true;
+            }
+
+            // Check if bin was emptied after being full
+            if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+                $emptiedTime = Carbon::parse($sensor->created_at);
+
+                // Keep the most recent emptied time
+                if (!$result[$assetId] || $emptiedTime > $result[$assetId]) {
+                    $result[$assetId] = $emptiedTime;
+                }
+
+                $wasFull = false; // reset for next cycle
+            }
+        }
+    }
+
+    return collect($result);
+}
+
+/**
+ * Get predicted full time for each asset based on fill rate.
+ *
+ * @return \Illuminate\Support\Collection
+ */
+private function getPredictedFullTimes()
+{
+    $result = [];
+
+    $devices = Device::with([
+        'asset',
+        'asset.capacitySetting',
+        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')->limit(10)
+    ])->get();
+
+    foreach ($devices as $device) {
+        if (!$device->asset || !$device->asset->capacitySetting) continue;
+
+        $assetId = $device->asset->id;
+        $capacity = $device->asset->capacitySetting;
+        $sensors = $device->sensors;
+
+        // Need at least 2 sensor readings to calculate fill rate
+        if ($sensors->count() < 2) continue;
+
+        $sensors = $sensors->filter(fn($s) => is_numeric($s->capacity))->values();
+
+        if ($sensors->count() < 2) continue;
+
+        // Get the latest sensor reading
+        $latestSensor = $sensors->first();
+        $currentCapacity = $latestSensor->capacity;
+
+        // Skip if already full
+        if ($currentCapacity > $capacity->half_to) continue;
+
+        // Calculate fill rate (capacity change per hour)
+        $oldestSensor = $sensors->last();
+        $timeDiffHours = max(1, Carbon::parse($oldestSensor->created_at)->diffInMinutes($latestSensor->created_at) / 60);
+        $capacityChange = $currentCapacity - $oldestSensor->capacity;
+        $fillRatePerHour = $capacityChange / $timeDiffHours;
+
+        // Skip if not filling (negative or zero rate)
+        if ($fillRatePerHour <= 0) continue;
+
+        // Calculate hours until full
+        $remainingCapacity = $capacity->half_to - $currentCapacity;
+        $hoursUntilFull = $remainingCapacity / $fillRatePerHour;
+
+        // Predicted full time
+        $predictedFullTime = Carbon::now()->addHours($hoursUntilFull);
+
+        // Store if this is the earliest predicted full time for this asset
+        if (!isset($result[$assetId]) || $predictedFullTime < $result[$assetId]) {
+            $result[$assetId] = $predictedFullTime;
         }
     }
 

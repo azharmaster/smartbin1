@@ -1598,8 +1598,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 $color = 'green';
                 $statusText = 'Normal';
             }
-            
+
             $totalDevices = $devices->count();
+            
+            // Get average battery percentage
+            $batteryLevels = $devices->filter(fn($d) => 
+                $d->latestSensor && $d->latestSensor->battery !== null
+            )->map(fn($d) => $d->latestSensor->battery_percentage);
+            $avgBattery = $batteryLevels->isNotEmpty() ? round($batteryLevels->avg()) : null;
+            
+            // Get last emptied time
+            $lastEmptied = $lastEmptiedTimes->get($asset->id);
+            $lastEmptiedFormatted = $lastEmptied ? $lastEmptied->format('d/m/Y H:i') : 'Never';
+            $lastEmptiedRelative = $lastEmptied ? $lastEmptied->diffForHumans() : null;
+            
+            // Get predicted full time
+            $predictedFull = $predictedFullTimes->get($asset->id);
+            $predictedFullFormatted = $predictedFull ? $predictedFull->format('d/m/Y H:i') : 'N/A';
+            $predictedFullRelative = $predictedFull ? $predictedFull->diffForHumans() : null;
         @endphp
 
         @if($asset->latitude && $asset->longitude)
@@ -1609,16 +1625,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="popup-header">
                     <i class="fas fa-trash"></i> {{ $asset->asset_name ?? 'Asset' }}
                 </div>
-                <div class="popup-body">
-                    <p><i class="fas fa-box"></i> <strong>Devices:</strong> {{ $totalDevices }}</p>
-                    <p><i class="fas fa-chart-bar"></i> <strong>Status:</strong> 
-                        <span style="color: {{ $color === 'red' ? '#dc3545' : ($color === 'orange' ? '#fd7e14' : '#28a745') }}; font-weight: 600;">
-                            {{ $statusText }}
-                        </span>
-                    </p>
-                    <p style="margin-top: 8px; font-size: 11px; color: #666;">
-                        <i class="fas fa-map-marker-alt"></i> Lat: {{ $asset->latitude }}, Lng: {{ $asset->longitude }}
-                    </p>
+                <div class="popup-body" style="padding: 0;">
+                    <!-- Status Section -->
+                    <div style="padding: 12px 16px; border-bottom: 1px solid #e9ecef; background: #f8f9fa;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #666;"><i class="fas fa-chart-bar"></i> Status</span>
+                            <span style="color: {{ $color === 'red' ? '#dc3545' : ($color === 'orange' ? '#fd7e14' : '#28a745') }}; font-weight: 700; font-size: 13px;">
+                                {{ $statusText }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Rows -->
+                    <div style="padding: 12px 16px;">
+                        <!-- Devices Count -->
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                            <span style="font-size: 12px; color: #666;"><i class="fas fa-box"></i> Devices</span>
+                            <span style="font-weight: 600; font-size: 13px;">{{ $totalDevices }}</span>
+                        </div>
+                        
+                        <!-- Battery Level -->
+                        @if($avgBattery !== null)
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                            <span style="font-size: 12px; color: #666;">
+                                <i class="fas fa-battery-three-quarters" style="color: {{ $avgBattery <= 20 ? '#dc3545' : ($avgBattery <= 50 ? '#fd7e14' : '#28a745') }};"></i> Battery
+                            </span>
+                            <span style="font-weight: 600; font-size: 13px; color: {{ $avgBattery <= 20 ? '#dc3545' : ($avgBattery <= 50 ? '#fd7e14' : '#28a745') }};">{{ $avgBattery }}%</span>
+                        </div>
+                        @endif
+                        
+                        <!-- Last Emptied -->
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                            <span style="font-size: 12px; color: #666;"><i class="fas fa-history"></i> Last Emptied</span>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 12px;">{{ $lastEmptiedFormatted }}</div>
+                                @if($lastEmptiedRelative)
+                                <div style="font-size: 10px; color: #999;">{{ $lastEmptiedRelative }}</div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Predicted Full -->
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span style="font-size: 12px; color: #666;">
+                                <i class="fas fa-clock" style="color: {{ $predictedFull && $predictedFull->diffInHours(now()) <= 24 ? '#dc3545' : '#28a745' }};"></i> Predicted Full
+                            </span>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; font-size: 12px; color: {{ $predictedFull && $predictedFull->diffInHours(now()) <= 24 ? '#dc3545' : '#28a745' }};">{{ $predictedFullFormatted }}</div>
+                                @if($predictedFullRelative)
+                                <div style="font-size: 10px; color: #999;">{{ $predictedFullRelative }}</div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `);
         @endif
