@@ -36,6 +36,23 @@ class AdminMainDashboardController extends Controller
         $emptyDevices = $emptyDevicesCollection->count();
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
+        // Group devices by asset (bin name) and then by compartment type
+        $groupedDevices = $devices->filter(fn($d) => $d->asset && $d->asset->is_active)
+            ->groupBy(function($device) {
+                // Group by asset name first
+                return $device->asset->asset_name ?? 'Unknown Bin';
+            })
+            ->map(function($assetGroup) {
+                // Within each asset, group by device/compartment type
+                return $assetGroup->groupBy(function($device) {
+                    // Extract compartment type from device_name
+                    // e.g., "TRX Bin 01 - General" -> "General"
+                    $parts = explode('-', $device->device_name ?? '');
+                    $compartment = trim(end($parts));
+                    return $compartment ?: 'Unknown';
+                });
+            });
+
         $lastUpdated = Sensor::latest('created_at')->value('created_at');
 
         $floors = Floor::all();
@@ -43,6 +60,7 @@ class AdminMainDashboardController extends Controller
 
         return view('adminmaindashboard', compact(
             'devices',
+            'groupedDevices',
             'floors',
             'assetsWithCoords',
             'totalDevices',
@@ -51,7 +69,7 @@ class AdminMainDashboardController extends Controller
             'halfDevices',
             'halfDevicesCollection',
             'emptyDevices',
-            'emptyDevicesCollection', 
+            'emptyDevicesCollection',
             'undetectedDevices',
             'lastUpdated',
         ));

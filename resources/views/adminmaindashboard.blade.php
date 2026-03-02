@@ -337,6 +337,63 @@
 #deviceFilter:focus {
     box-shadow: 0 0 0 0.15rem rgba(108, 117, 125, 0.25); /* subtle */
 }
+
+/* Organized Bins Grid */
+.bins-organized-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.bin-section {
+    transition: all 0.3s ease;
+}
+
+.bin-section-header {
+    transition: all 0.2s ease;
+}
+
+.bin-section-header:hover {
+    filter: brightness(1.1);
+}
+
+.bin-section-header .badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.compartment-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.compartment-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.badge-sm {
+    font-size: 0.65rem;
+    padding: 0.25em 0.5em;
+}
+
+/* Filter visibility */
+.bin-section[data-bin-status="full"] {
+    display: block;
+}
+
+.bin-section[data-bin-status="half"] {
+    display: block;
+}
+
+.bin-section[data-bin-status="empty"] {
+    display: block;
+}
+
+.bin-section[data-bin-status="undetected"] {
+    display: block;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -374,53 +431,154 @@
         <div class="p-3 scroll-body" style="overflow-y: auto;">
 
             {{-- FILTER DROPDOWN --}}
-            <div class="d-flex justify-content-end mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-warehouse"></i> Bins by Compartment</h5>
                 <select id="deviceFilter" class="form-select form-select-md w-auto px-2">
-                    <option value="critical">Default</option>
-                    <option value="all">All Devices</option>
-                    <option value="full">Full</option>
-                    <option value="half">Half</option>
-                    <option value="empty">Empty</option>
+                    <option value="all">All Bins</option>
+                    <option value="critical">Critical First</option>
+                    <option value="full">Full Only</option>
+                    <option value="half">Half Full Only</option>
+                    <option value="empty">Empty Only</option>
                 </select>
             </div>
 
-            {{-- DEVICES GRID --}}
-            <div class="devices-grid">
-                {{-- FULL DEVICES --}}
-                @foreach ($fullDevicesCollection as $device)
-                    @include('partials.device-card', [
-                        'device' => $device,
-                        'status' => 'full',
-                        'badge'  => 'FULL',
-                        'badgeClass' => 'full-status text-white',
-                        'cardClass'  => 'full-device-card',
-                        'barClass'   => 'bg-danger',
-                    ])
-                @endforeach
-
-                {{-- HALF DEVICES --}}
-                @foreach ($halfDevicesCollection as $device)
-                    @include('partials.device-card', [
-                        'device' => $device,
-                        'status' => 'half',
-                        'badge'  => 'HALF',
-                        'badgeClass' => 'half-status text-dark',
-                        'cardClass'  => 'half-device-card',
-                        'barClass'   => 'bg-warning',
-                    ])
-                @endforeach
-
-                {{-- EMPTY DEVICES --}}
-                @foreach ($emptyDevicesCollection as $device)
-                    @include('partials.device-card', [
-                        'device' => $device,
-                        'status' => 'empty',
-                        'badge'  => 'EMPTY',
-                        'badgeClass' => 'empty-status text-dark',
-                        'cardClass'  => 'empty-device-card',
-                        'barClass'   => 'bg-success',
-                    ])
-                @endforeach
+            {{-- ORGANIZED BIN SECTIONS --}}
+            <div class="bins-organized-grid">
+                @forelse($groupedDevices as $binName => $compartments)
+                    @php
+                        // Determine overall bin status
+                        $hasFull = false;
+                        $hasHalf = false;
+                        $hasEmpty = false;
+                        $hasUndetected = false;
+                        
+                        foreach($compartments as $compartment => $devices) {
+                            foreach($devices as $device) {
+                                $status = null;
+                                if (!$device->latestSensor || !is_numeric($device->latestSensor->capacity)) {
+                                    $hasUndetected = true;
+                                } elseif ($device->latestSensor->capacity > $device->asset->capacitySetting->half_to) {
+                                    $hasFull = true;
+                                } elseif ($device->latestSensor->capacity > $device->asset->capacitySetting->empty_to) {
+                                    $hasHalf = true;
+                                } else {
+                                    $hasEmpty = true;
+                                }
+                            }
+                        }
+                        
+                        if ($hasFull) $binStatus = 'full';
+                        elseif ($hasHalf) $binStatus = 'half';
+                        elseif ($hasUndetected) $binStatus = 'undetected';
+                        else $binStatus = 'empty';
+                        
+                        $binClass = $binStatus === 'full' ? 'border-danger' : ($binStatus === 'half' ? 'border-warning' : 'border-success');
+                        $firstDevice = $compartments->flatten()->first();
+                        $floorName = $firstDevice?->asset?->floor?->floor_name ?? 'Unknown Floor';
+                    @endphp
+                    
+                    <div class="bin-section mb-3" data-bin-status="{{ $binStatus }}">
+                        <!-- Bin Header -->
+                        <div class="bin-section-header p-3 rounded-top {{ $binClass }}" 
+                             style="background: linear-gradient(135deg, {{ $binStatus === 'full' ? '#dc3545' : ($binStatus === 'half' ? '#ffc107' : '#28a745') }}, #fff); 
+                                    color: {{ $binStatus === 'half' ? '#000' : '#fff' }};
+                                    cursor: pointer;"
+                             data-bs-toggle="collapse"
+                             data-bs-target="#binSection{{ str_replace(' ', '', $binName) }}"
+                             role="button">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="fas fa-trash-alt"></i> {{ $binName }}
+                                    </h6>
+                                    <small style="opacity: 0.9;">
+                                        <i class="fas fa-map-marker-alt"></i> {{ $floorName }}
+                                        <span class="ms-2">
+                                            <i class="fas fa-microchip"></i> {{ $compartments->flatten()->count() }} compartments
+                                        </span>
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge {{ $binStatus === 'full' ? 'bg-danger' : ($binStatus === 'half' ? 'bg-warning text-dark' : 'bg-success') }} px-3 py-2">
+                                        @if($binStatus === 'full')
+                                            <i class="fas fa-exclamation-triangle"></i> CRITICAL
+                                        @elseif($binStatus === 'half')
+                                            <i class="fas fa-exclamation-circle"></i> MODERATE
+                                        @else
+                                            <i class="fas fa-check-circle"></i> NORMAL
+                                        @endif
+                                    </span>
+                                    <i class="fas fa-chevron-down ms-2"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Compartments List -->
+                        <div class="collapse show" id="binSection{{ str_replace(' ', '', $binName) }}">
+                            <div class="bin-section-body p-2 border border-top-0 rounded-bottom" style="background: #f8f9fa;">
+                                @foreach($compartments as $compartmentName => $devices)
+                                    @php
+                                        $compDevice = $devices->first();
+                                        $latest = $compDevice?->latestSensor;
+                                        $capacity = $latest?->capacity ?? 0;
+                                        $battery = $latest?->battery_percentage ?? null;
+                                        
+                                        if ($capacity > $compDevice?->asset?->capacitySetting?->half_to) {
+                                            $compStatus = 'full';
+                                            $compBadge = 'bg-danger';
+                                            $compBarClass = 'bg-danger';
+                                        } elseif ($capacity > $compDevice?->asset?->capacitySetting?->empty_to) {
+                                            $compStatus = 'half';
+                                            $compBadge = 'bg-warning';
+                                            $compBarClass = 'bg-warning';
+                                        } else {
+                                            $compStatus = 'empty';
+                                            $compBadge = 'bg-success';
+                                            $compBarClass = 'bg-success';
+                                        }
+                                    @endphp
+                                    
+                                    <div class="compartment-card p-2 mb-2 rounded" 
+                                         style="background: #fff; border-left: 4px solid {{ $compStatus === 'full' ? '#dc3545' : ($compStatus === 'half' ? '#ffc107' : '#28a745') }};">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center gap-2 mb-1">
+                                                    <i class="fas fa-recycle" style="color: #6c757d;"></i>
+                                                    <span class="fw-semibold">{{ $compartmentName }}</span>
+                                                    <span class="badge {{ $compBadge }} badge-sm">{{ strtoupper($compStatus) }}</span>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-3" style="font-size: 0.75rem; color: #6c757d;">
+                                                    @if($battery !== null)
+                                                    <span>
+                                                        <i class="fas fa-battery-three-quarters" style="color: {{ $battery <= 20 ? '#dc3545' : ($battery <= 50 ? '#fd7e14' : '#28a745') }};"></i>
+                                                        {{ $battery }}%
+                                                    </span>
+                                                    @endif
+                                                    <span>
+                                                        <i class="fas fa-clock"></i>
+                                                        {{ $latest?->created_at ? $latest->created_at->diffForHumans() : 'No data' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="text-end" style="min-width: 80px;">
+                                                <div class="fw-bold" style="font-size: 1.1rem;">{{ number_format($capacity, 0) }}%</div>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar {{ $compBarClass }}" 
+                                                         style="width: {{ $capacity }}%;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No bins found</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -432,21 +590,49 @@ function openAssetDetails(url) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const grid = document.querySelector('#static-device-grid .devices-grid');
     const filterSelect = document.getElementById('deviceFilter');
-    let currentFilter = 'critical';
+    let currentFilter = 'all';
 
-    // FILTER FUNCTION
-    function applyFilter(filter = 'critical') {
+    // FILTER FUNCTION - Filter bins by status
+    function applyFilter(filter = 'all') {
         currentFilter = filter;
-        grid.querySelectorAll('.device-card').forEach(card => {
-            const status = card.dataset.status;
-            const show =
-                filter === 'all' ||
-                (filter === 'critical' && ['full','half','empty'].includes(status)) ||
-                status === filter;
-            card.style.display = show ? '' : 'none';
+        
+        document.querySelectorAll('.bin-section').forEach(section => {
+            const binStatus = section.getAttribute('data-bin-status');
+            
+            let show = false;
+            
+            if (filter === 'all') {
+                show = true;
+            } else if (filter === 'critical') {
+                // Show full first, then half, then others
+                show = true;
+            } else if (filter === 'full') {
+                show = binStatus === 'full';
+            } else if (filter === 'half') {
+                show = binStatus === 'half';
+            } else if (filter === 'empty') {
+                show = binStatus === 'empty' || binStatus === 'undetected';
+            }
+            
+            section.style.display = show ? 'block' : 'none';
         });
+        
+        // Sort for critical filter
+        if (filter === 'critical') {
+            const container = document.querySelector('.bins-organized-grid');
+            const sections = Array.from(container.querySelectorAll('.bin-section'));
+            
+            sections.sort((a, b) => {
+                const statusA = a.getAttribute('data-bin-status');
+                const statusB = b.getAttribute('data-bin-status');
+                
+                const priority = { 'full': 1, 'half': 2, 'undetected': 3, 'empty': 4 };
+                return (priority[statusA] || 4) - (priority[statusB] || 4);
+            });
+            
+            sections.forEach(section => container.appendChild(section));
+        }
     }
 
     // INITIAL FILTER
@@ -456,32 +642,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 @endsection
-
-<script>
-function openAssetDetails(url) {
-    window.open(url, '_blank');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const grid = document.querySelector('#static-device-grid .devices-grid');
-    const filterSelect = document.getElementById('deviceFilter');
-    let currentFilter = 'critical';
-
-    // FILTER FUNCTION
-    function applyFilter(filter = 'critical') {
-        currentFilter = filter;
-        grid.querySelectorAll('.device-card').forEach(card => {
-            const status = card.dataset.status;
-            const show =
-                filter === 'all' ||
-                (filter === 'critical' && ['full','half','empty'].includes(status)) ||
-                status === filter;
-            card.style.display = show ? '' : 'none';
-        });
-    }
-
-    // INITIAL FILTER
-    applyFilter(currentFilter);
-    filterSelect?.addEventListener('change', () => applyFilter(filterSelect.value));
-});
-</script>
