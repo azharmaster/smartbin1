@@ -95,9 +95,9 @@
                                             <!-- Notification Toggle -->
                                             <form action="{{ route('holidays.toggle', $holiday->id) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm btn-notification {{ $holiday->is_active ? 'btn-success' : 'btn-secondary' }}
+                                                <button type="submit" class="btn btn-sm btn-notification {{ $holiday->is_active ? 'btn-secondary' : 'btn-success' }}
                                                 {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
-                                                    {{ $holiday->is_active ? 'ON' : 'OFF' }}
+                                                    {{ $holiday->is_active ? 'OFF' : 'ON' }}
                                                 </button>
                                             </form>
 
@@ -257,9 +257,9 @@
                                     <!-- Notification Toggle -->
                                     <form action="{{ route('events.toggle', $event->id) }}" method="POST">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}
+                                        <button type="submit" class="btn btn-sm btn-notification {{ $event->is_active ? 'btn-secondary' : 'btn-success' }}
                                             {{ auth()->user()->role != 1 ? 'disabled' : '' }}">
-                                            {{ $event->is_active ? 'ON' : 'OFF' }}
+                                            {{ $event->is_active ? 'OFF' : 'ON' }}
                                         </button>
                                     </form>
                                 </div>

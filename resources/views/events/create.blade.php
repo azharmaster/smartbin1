@@ -30,6 +30,7 @@
             <div class="form-group">
                 <label>End Date</label>
                 <input type="date" name="end_date" class="form-control">
+                <small class="text-muted">Leave empty if single-day event</small>
             </div>
         </div>
 
