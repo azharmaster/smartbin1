@@ -192,6 +192,7 @@ FROM users
 WHERE role = 4 
  AND phone IS NOT NULL
  AND email IS NOT NULL
+ AND whatsapp_notify=1
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($supervisors)) {

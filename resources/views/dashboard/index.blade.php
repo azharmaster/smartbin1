@@ -449,6 +449,49 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
+/* Larger switch for WhatsApp notification */
+.switch-lg {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch-lg input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-lg .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.switch-lg .slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.switch-lg input:checked + .slider {
+  background-color: #28a745;
+}
+
+.switch-lg input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
 .save-bookmark i {
     color: #28a745; /* normal green outline */
     transition: color 0.2s ease, transform 0.2s ease;
@@ -1259,36 +1302,34 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-            <div class="card mb-4">
-                <div class="card-header smartbin-gradient">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header smartbin-gradient border-0">
                     <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-sms"></i> WhatsApp Notification
+                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
                     </h5>
                 </div>
-                <div class="card-body d-flex justify-content-between align-items-center" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
-                    
-                    <!-- Left: Label -->
-                    <span class="fw-semibold">Notification Status</span>
+                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-semibold">
+                                <i class="fas fa-bell text-success"></i> Notification Status
+                            </h6>
+                            <small class="text-muted">
+                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
+                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
+                                </span>
+                            </small>
+                        </div>
 
-                    <!-- Right: Toggle + ON/OFF + Save -->
-                    <div class="d-flex align-items-center ml-auto">
-                        <span class="text-muted small mr-1">OFF</span>
-
-                        <label class="switch m-0 mx-2">
-                            <input type="checkbox" id="whatsappNotificationSwitch" 
-                                {{ $whatsappNotificationActive ? 'checked' : '' }}
-                                {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
-                            <span class="slider round"></span>
-                        </label>
-
-                        <span class="text-muted small ml-1">ON</span>
-
-                        <!-- Save icon -->
-                        <button id="saveWhatsappNotification" class="btn p-0 ml-3 save-bookmark"
-                            title="{{ !$isAdmin ? 'No authorization' : 'Save' }}"
-                            {{ !$isAdmin ? 'disabled' : '' }}>
-                            <i class="far fa-bookmark fa-lg"></i>
-                        </button>
+                        <!-- Toggle Switch -->
+                        <div>
+                            <label class="switch switch-lg">
+                                <input type="checkbox" id="whatsappNotificationSwitch"
+                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2094,9 +2135,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const whatsappSwitch = document.getElementById('whatsappNotificationSwitch');
-    const saveButton = document.getElementById('saveWhatsappNotification');
+    const whatsappStatusText = document.getElementById('whatsappStatusText');
 
-    saveButton.addEventListener('click', function() {
+    // Auto-save when toggle changes
+    whatsappSwitch.addEventListener('change', function() {
+        const isActive = whatsappSwitch.checked;
+        
+        // Update status text immediately
+        if (isActive) {
+            whatsappStatusText.textContent = '● Active';
+            whatsappStatusText.className = 'fw-bold text-success';
+        } else {
+            whatsappStatusText.textContent = '○ Inactive';
+            whatsappStatusText.className = 'fw-bold text-muted';
+        }
+
+        // Auto-save to server
         fetch('{{ route("dashboard.toggleWhatsappNotification") }}', {
             method: 'POST',
             headers: {
@@ -2104,17 +2158,65 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Accept': 'application/json',
             },
             body: JSON.stringify({
-                is_active: whatsappSwitch.checked
+                is_active: isActive
             }),
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                whatsappSwitch.checked = data.is_active;
-                alert('Notification status saved!');
+                // Success notification
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'WhatsApp notification status updated to ' + (data.is_active ? 'Active' : 'Inactive'),
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            } else {
+                // Revert if failed
+                whatsappSwitch.checked = !isActive;
+                if (whatsappSwitch.checked) {
+                    whatsappStatusText.textContent = '● Active';
+                    whatsappStatusText.className = 'fw-bold text-success';
+                } else {
+                    whatsappStatusText.textContent = '○ Inactive';
+                    whatsappStatusText.className = 'fw-bold text-muted';
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to update notification status',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
             }
         })
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            // Revert if failed
+            whatsappSwitch.checked = !isActive;
+            if (whatsappSwitch.checked) {
+                whatsappStatusText.textContent = '● Active';
+                whatsappStatusText.className = 'fw-bold text-success';
+            } else {
+                whatsappStatusText.textContent = '○ Inactive';
+                whatsappStatusText.className = 'fw-bold text-muted';
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update notification status',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        });
     });
 });
 </script>
