@@ -334,6 +334,79 @@ public function computeSummaryMetrics(Carbon $baseDate, string $period)
     return $this->_computeSummaryMetrics($baseDate, $period);
 }
 
+private function _computeMonthInsights(Carbon $baseDate, string $period)
+{
+    $binAnalytics = $this->_computeBinAnalyticsPerAsset($baseDate, $period);
+    $cleaningLogs = $this->_getCleaningLogs($baseDate, $period);
+    [$start, $end] = $this->resolveDateRange($baseDate, $period);
+
+    $insights = [];
+
+    // Find bins that reached full capacity most often
+    $maxFullEvents = $binAnalytics->max('times_full');
+    if ($maxFullEvents > 0) {
+        $topBins = $binAnalytics
+            ->filter(fn($item) => $item->times_full === $maxFullEvents)
+            ->pluck('asset_name');
+
+        if ($topBins->count() === 1) {
+            $insights[] = $topBins->first() . " reached full capacity " . $maxFullEvents . " time" . ($maxFullEvents > 1 ? 's' : '') . " this " . ($period === 'month' ? 'month' : ($period === 'week' ? 'week' : 'day')) . ".";
+        } else {
+            $insights[] = $topBins->join(', ') . " each reached full capacity " . $maxFullEvents . " times this " . ($period === 'month' ? 'month' : ($period === 'week' ? 'week' : 'day')) . ".";
+        }
+    }
+
+    // Higher fill frequency detection
+    $avgFullEvents = $binAnalytics->avg('times_full') ?? 0;
+    $highFrequencyBins = $binAnalytics
+        ->filter(fn($item) => $item->times_full > $avgFullEvents && $item->times_full > 0)
+        ->pluck('asset_name');
+
+    if ($highFrequencyBins->count() > 0) {
+        $insights[] = "Higher fill frequency detected at " . $highFrequencyBins->join(', ') . ". Consider increasing collection frequency in " . ($highFrequencyBins->count() === 1 ? 'this' : 'these') . " area" . ($highFrequencyBins->count() > 1 ? 's' : '') . ".";
+    }
+
+    // Calculate average clear time improvement (compare with previous period)
+    $previousBaseDate = $baseDate->copy();
+    if ($period === 'month') {
+        $previousBaseDate->subMonth();
+    } elseif ($period === 'week') {
+        $previousBaseDate->subWeek();
+    } else {
+        $previousBaseDate->subDay();
+    }
+
+    $currentAvgClear = $binAnalytics
+        ->filter(fn($item) => $item->avg_clear_time > 0)
+        ->avg('avg_clear_time') ?? 0;
+
+    $previousBinAnalytics = $this->_computeBinAnalyticsPerAsset($previousBaseDate, $period);
+    $previousAvgClear = $previousBinAnalytics
+        ->filter(fn($item) => $item->avg_clear_time > 0)
+        ->avg('avg_clear_time') ?? 0;
+
+    if ($currentAvgClear > 0 && $previousAvgClear > 0) {
+        $percentageChange = round((($previousAvgClear - $currentAvgClear) / $previousAvgClear) * 100);
+        $improvementWord = $percentageChange >= 0 ? 'faster' : 'slower';
+        $absPercentage = abs($percentageChange);
+
+        if ($percentageChange > 0) {
+            $insights[] = "Average clear time improved to " . $currentAvgClear . " hours, " . $absPercentage . "% " . $improvementWord . " than last " . ($period === 'month' ? 'month' : ($period === 'week' ? 'week' : 'day')) . ".";
+        } elseif ($percentageChange < 0) {
+            $insights[] = "Average clear time is " . $currentAvgClear . " hours, " . $absPercentage . "% " . $improvementWord . " than last " . ($period === 'month' ? 'month' : ($period === 'week' ? 'week' : 'day')) . ".";
+        }
+    } elseif ($currentAvgClear > 0) {
+        $insights[] = "Average clear time is " . $currentAvgClear . " hours this " . ($period === 'month' ? 'month' : ($period === 'week' ? 'week' : 'day')) . ".";
+    }
+
+    return $insights;
+}
+
+public function computeMonthInsights(Carbon $baseDate, string $period)
+{
+    return $this->_computeMonthInsights($baseDate, $period);
+}
+
 public function index(Request $request)
 {
     $period = $request->input('period', 'month');
@@ -365,6 +438,7 @@ public function index(Request $request)
     $assets         = $this->getAssets();
     $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
     $summaryMetrics = $this->computeSummaryMetrics($baseDate, $period);
+    $monthInsights  = $this->computeMonthInsights($baseDate, $period);
 
     return view('admin.summary.index', compact(
         'monthInput',
@@ -374,7 +448,8 @@ public function index(Request $request)
         'binAnalytics',
         'assets',
         'cleaningLogs',
-        'summaryMetrics'
+        'summaryMetrics',
+        'monthInsights'
     ));
 }
 
