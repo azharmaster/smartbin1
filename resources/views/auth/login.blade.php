@@ -20,10 +20,10 @@
     /* ---------- Page background image ---------- */
     body.login-page {
       background: linear-gradient(
-          rgba(0, 0, 0, 0.55),
-          rgba(0, 0, 0, 0.55)
+          rgba(213, 208, 208, 0.55),
+          rgba(236, 229, 229, 0.55)
         ),
-        url("{{ asset('uploads/images/mrt-plaza-entrance-of.jpg') }}") no-repeat center center fixed;
+        url("{{ asset('uploads/images/wall2.png') }}") no-repeat center center fixed;
       background-size: cover;
     }
 

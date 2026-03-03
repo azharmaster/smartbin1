@@ -49,7 +49,6 @@
                   <select name="role" class="form-control">
                       <option value="1" {{ isset($role) && $role == 1 ? 'selected' : '' }}>Admin</option>
                       <option value="4" {{ isset($role) && $role == 4 ? 'selected' : '' }}>Supervisor</option>
-                      <option value="3" {{ isset($role) && $role == 3 ? 'selected' : '' }}>Client</option>
                       <!-- Add other roles if needed -->
                   </select>
                 </div>
