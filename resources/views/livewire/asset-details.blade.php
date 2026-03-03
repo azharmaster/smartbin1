@@ -472,13 +472,19 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     $capacityColor = $capacityValue <= $capacitySetting->empty_to ? '#1b4f1f' :
                                                     ($capacityValue <= $capacitySetting->half_to ? '#f2c224' : '#e74c3c');
 
+                                    // Battery voltage to percentage conversion
+                                    $batteryVoltage = $sensor?->battery ?? 0;
+                                    $batteryPercentage = is_numeric($batteryVoltage) && $batteryVoltage > 0
+                                        ? round((($batteryVoltage - 2.8) / (3.7 - 2.8)) * 100)
+                                        : 0;
+                                    $batteryPercentage = max(0, min(100, $batteryPercentage));
+
                                     // Battery value and color
-                                    $batteryValue = $sensor?->battery ?? 0;
-                                    if ($batteryValue <= 20) {
+                                    if ($batteryPercentage <= 20) {
                                         $batteryColor = '#ff0000'; // red
-                                    } elseif ($batteryValue <= 50) {
+                                    } elseif ($batteryPercentage <= 50) {
                                         $batteryColor = '#f97316'; // orange
-                                    } elseif ($batteryValue <= 80) {
+                                    } elseif ($batteryPercentage <= 80) {
                                         $batteryColor = '#facc15'; // yellow
                                     } else {
                                         $batteryColor = '#10b981'; // green
@@ -569,11 +575,11 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                     ">
                                         <div>
                                             <i class="fas fa-battery-full" style="color: {{ $batteryColor }};" title="Battery level"></i>
-                                            <strong>{{ $sensor?->battery ?? 'N/A' }}%</strong>
+                                            <strong>{{ $sensor?->battery !== null && is_numeric($sensor?->battery) ? $batteryPercentage : 'N/A' }}%</strong>
                                         </div>
                                         <div>
                                             <i class="fas fa-trash-alt" style="color: {{ $capacityColor }};" title="Current capacity"></i>
-                                            <strong>{{ $sensor?->capacity ?? 'N/A' }}%</strong>
+                                            <strong>{{ $sensor?->capacity !== null && is_numeric($sensor?->capacity) ? number_format($sensor?->capacity, 0) : 'N/A' }}%</strong>
                                         </div>
                                         <div>
                                             <i class="fas fa-wifi" style="color: {{ $wifiColor }};" title="{{ $wifiTooltip }}"></i>
