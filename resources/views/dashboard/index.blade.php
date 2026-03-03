@@ -1097,14 +1097,20 @@ function trend($current, $previous) {
                                 $level > $emptyTo  => 'warning',
                                 default            => 'success',
                             };
-                            
+
                             $timestamp = $latest?->created_at
                                 ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m h:i')
                                 : '—';
-                            
+
                             // Check if data is from today
                             $isToday = $latest && $latest->created_at->isToday();
                             $isActive = $latest !== null && $isToday;
+
+                            // Get last emptied time for this asset
+                            $lastEmptied = $lastEmptiedTimes->get($asset->id);
+                            $lastEmptiedDisplay = $lastEmptied
+                                ? $lastEmptied->diffForHumans()
+                                : 'Never';
                         @endphp
 
                         <div class="d-flex justify-content-between align-items-center" style="{{ !$isActive ? 'opacity: 0.5;' : '' }}">
@@ -1121,6 +1127,14 @@ function trend($current, $previous) {
                             </small>
                         </div>
                     @endforeach
+                </div>
+
+                <!-- LAST EMPTIED -->
+                <div class="mt-2 pt-2 border-top">
+                    <small class="text-muted" style="font-size: 0.65rem;">
+                        <i class="fas fa-history"></i> Last emptied: 
+                        <span class="fw-medium">{{ $lastEmptiedTimes->get($asset->id) ? $lastEmptiedTimes->get($asset->id)->diffForHumans() : 'Never' }}</span>
+                    </small>
                 </div>
 
             </div>
