@@ -328,10 +328,14 @@
 
 {{-- ================= CHARTS ================= --}}
 <script src="//unpkg.com/alpinejs" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     const labels = @json($binAnalytics->pluck('asset_name'));
+
+    // Register datalabels plugin globally
+    Chart.register(ChartDataLabels);
 
     /* Times Full */
     new Chart(document.getElementById('timesFullChart'), {
@@ -351,6 +355,18 @@ window.addEventListener('DOMContentLoaded', () => {
             maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, min: 0 }
+            },
+            plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: Math.round
+                }
             }
         }
     });
@@ -373,6 +389,20 @@ window.addEventListener('DOMContentLoaded', () => {
             maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, min: 0 }
+            },
+            plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: function(value) {
+                        return value > 0 ? value.toFixed(1) : '';
+                    }
+                }
             }
         }
     });
@@ -395,6 +425,20 @@ window.addEventListener('DOMContentLoaded', () => {
             maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: true, min: 0 }
+            },
+            plugins: {
+                datalabels: {
+                    anchor: 'center',
+                    align: 'center',
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
+                    formatter: function(value) {
+                        return value > 0 ? value.toFixed(1) : '';
+                    }
+                }
             }
         }
     });
