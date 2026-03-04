@@ -1120,6 +1120,11 @@ function trend($current, $previous) {
                             </span>
 
                             <small class="text-muted" style="font-size: 0.65rem;">
+                                @if($latest && $latest->battery !== null)
+                                    <span class="{{ $latest->battery_percentage <= 10 ? 'text-danger fw-bold' : '' }}">
+                                        <i class="fas fa-battery-{{ $latest->battery_percentage >= 90 ? 'full' : ($latest->battery_percentage >= 50 ? 'three-quarters' : ($latest->battery_percentage >= 20 ? 'half' : ($latest->battery_percentage >= 10 ? 'quarter' : 'empty'))) }} me-1"></i>{{ $latest->battery_percentage }}%
+                                    </span>
+                                @endif
                                 {{ $timestamp }}
                                 @if(!$isActive && $timestamp !== '—')
                                     <i class="fas fa-clock ms-1" title="Old data"></i>
