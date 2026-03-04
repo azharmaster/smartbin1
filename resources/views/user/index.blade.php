@@ -70,6 +70,8 @@
                                 <span class="badge bg-primary">Admin</span>
                             @elseif($user->role == 4)
                                 <span class="badge bg-info">Supervisor</span>
+                            @else
+                                <span class="badge bg-secondary">Client</span>
                             @endif    
                         </td>
 
@@ -192,6 +194,15 @@
             <ul>
               <li>Receives bin/alert notifications via <strong>WhatsApp</strong> if toggle is ON.</li>
               <li>Must have a valid phone number registered in the system.</li>
+              <li>Can log in to the system.</li>
+              <li>Can view the dashboard and monitoring data only.</li>
+              <li>Cannot manage users, floors, or assets.</li>
+            </ul>
+          </li>
+
+          <li>
+            <strong>Client</strong>
+            <ul>
               <li>Can log in to the system.</li>
               <li>Can view the dashboard and monitoring data only.</li>
               <li>Cannot manage users, floors, or assets.</li>
