@@ -474,10 +474,32 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
 
                                     // Battery voltage to percentage conversion
                                     $batteryVoltage = $sensor?->battery ?? 0;
-                                    $batteryPercentage = is_numeric($batteryVoltage) && $batteryVoltage > 0
-                                        ? round((($batteryVoltage - 2.8) / (3.7 - 2.8)) * 100)
-                                        : 0;
-                                    $batteryPercentage = max(0, min(100, $batteryPercentage));
+                                    $batteryPercentage = 0;
+                                    if (is_numeric($batteryVoltage) && $batteryVoltage > 0) {
+                                        if ($batteryVoltage >= 3.7) {
+                                            $batteryPercentage = 100;
+                                        } elseif ($batteryVoltage >= 3.6) {
+                                            $batteryPercentage = 98;
+                                        } elseif ($batteryVoltage >= 3.5) {
+                                            $batteryPercentage = 95;
+                                        } elseif ($batteryVoltage >= 3.4) {
+                                            $batteryPercentage = 80;
+                                        } elseif ($batteryVoltage >= 3.3) {
+                                            $batteryPercentage = 20;
+                                        } elseif ($batteryVoltage >= 3.2) {
+                                            $batteryPercentage = 10;
+                                        } elseif ($batteryVoltage >= 3.1) {
+                                            $batteryPercentage = 8;
+                                        } elseif ($batteryVoltage >= 3.0) {
+                                            $batteryPercentage = 5;
+                                        } elseif ($batteryVoltage >= 2.9) {
+                                            $batteryPercentage = 3;
+                                        } elseif ($batteryVoltage >= 2.8) {
+                                            $batteryPercentage = 1;
+                                        } else {
+                                            $batteryPercentage = 0;
+                                        }
+                                    }
 
                                     // Battery value and color
                                     if ($batteryPercentage <= 20) {
