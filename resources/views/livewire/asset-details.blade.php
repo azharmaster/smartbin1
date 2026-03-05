@@ -553,7 +553,17 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                                         z-index: 5;
                                     ">
                                         <button type="button"
-                                                class="btn btn-sm btn-outline-secondary"
+                                                style="
+                                                width: 26px;
+                                                height: 26px;
+                                                border-radius: 8px;
+                                                border: none;
+                                                background: #f4ffc5;
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                cursor: pointer;
+                                            "
                                                 data-toggle="modal"
                                                 data-target="#deviceModal{{ $device->id }}">
                                             <i class="fas fa-pencil-alt"></i>
