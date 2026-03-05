@@ -670,17 +670,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    // 🔥 SWEETALERT POP-UP FOR FULL BINS
-    @if($fullDevices > 0)
-        Swal.fire({
-            icon: 'warning',
-            title: 'Full Trash Bins Detected!',
-            html: '<b>{{ $fullDevices }}</b> bin(s) are FULL and need to be cleared.',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#d33',
-        });
-    @endif
-
     // ✅ ZOOM SETUP
     let scale = 1;
     const mapInner = document.getElementById('dashboardMapInner');   // ✅ FIXED

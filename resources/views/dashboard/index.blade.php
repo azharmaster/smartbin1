@@ -1571,22 +1571,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    // 🔥 SWEETALERT POP-UP FOR FULL BINS
-     @if($fullAssets > 0)
-        Swal.fire({
-            icon: 'warning',
-            title: 'Full Trash Bins Detected!',
-            html: '<b>{{ $fullAssets }}</b> bin(s) are FULL and need to be cleared.',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#d33',
-        });
-    @endif
-
-});
-</script>
 
 <!-- Leaflet JS & CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
