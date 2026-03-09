@@ -2003,48 +2003,67 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         </div>`;
 
-        // Detailed Table Section
+        // Pie Chart Section
         html += `<div class="card mb-3">
             <div class="card-header bg-white fw-bold">
-                <i class="fas fa-table"></i> Notification Details
+                <i class="fas fa-chart-pie"></i> Notification Details
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0" style="font-size: 0.85rem;">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 60px;">#</th>
-                                <th>Message</th>
-                                <th style="width: 120px;">Category</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-
-        let tableRowNum = 1;
-        notificationsForDate.forEach(msg => {
-            // Determine category
-            const msgLower = msg.toLowerCase();
-            //let category = '<span class="badge bg-secondary">Other</span>';
-            if (msgLower.includes('empty') || msgLower.includes('cleared')) {
-                category = '<span class="badge bg-success">Emptied</span>';
-            }else{
-                category = '<span class="badge bg-danger">Full Bin</span>';
-            }
-
-            html += `<tr>
-                <td><strong>${tableRowNum++}</strong></td>
-                <td>${msg}</td>
-                <td class="text-center">${category}</td>
-            </tr>`;
-        });
-
-        html += `</tbody>
-                    </table>
-                </div>
+            <div class="card-body">
+                <canvas id="notificationPieChart" height="250"></canvas>
             </div>
         </div>`;
 
         $('#notificationListContainer').html(html);
+        
+        // Render Pie Chart
+        const ctx = document.getElementById('notificationPieChart').getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (window.notificationChartInstance) {
+            window.notificationChartInstance.destroy();
+        }
+        
+        window.notificationChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Full Bins', 'Emptied'],
+                datasets: [{
+                    data: [otherCount, emptyBinsCount],
+                    backgroundColor: [
+                        '#dc3545',  // Red for Full Bins
+                        '#28a745'   // Green for Emptied
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
         $('#notificationModal').modal('show');
         info.jsEvent.preventDefault();
         return;
