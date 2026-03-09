@@ -1582,10 +1582,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const map = L.map('dashboardMap').setView([3.1427, 101.7176], 17.5);
 
     // Add OpenStreetMap tiles with modern CartoDB Voyager
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
+       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: 'TRX SmartBin'
     }).addTo(map);
 
     // Map controls
