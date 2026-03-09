@@ -1763,7 +1763,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-chart-pie"></i> Summary </h5>
+        <h5 class="modal-title"><i class="fas fa-chart-pie"></i> Summary Notification</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -1950,7 +1950,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const notificationsForDate = [];
         let totalNotifications = 0;
         let fullBinsCount = 0;
-        let halfBinsCount = 0;
         let emptyBinsCount = 0;
         let otherCount = 0;
 
@@ -1982,25 +1981,19 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="card-body">
                 <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie"></i> Summary for ${clickedDate}</h6>
                 <div class="row g-3">
-                    <div class="col-3">
+                    <div class="col-4">
                         <div class="text-center">
                             <div class="display-6 fw-bold text-primary">${totalNotifications}</div>
                             <small class="text-muted">Total</small>
                         </div>
                     </div>
-                    <div class="col-3">
+                    <div class="col-4">
                         <div class="text-center">
-                            <div class="display-6 fw-bold text-danger">${fullBinsCount}</div>
+                            <div class="display-6 fw-bold text-danger">${otherCount}</div>
                             <small class="text-muted">Full Bins</small>
                         </div>
                     </div>
-                    <div class="col-3">
-                        <div class="text-center">
-                            <div class="display-6 fw-bold text-warning">${halfBinsCount}</div>
-                            <small class="text-muted">Half Full</small>
-                        </div>
-                    </div>
-                    <div class="col-3">
+                    <div class="col-4">
                         <div class="text-center">
                             <div class="display-6 fw-bold text-success">${emptyBinsCount}</div>
                             <small class="text-muted">Emptied</small>
@@ -2031,13 +2024,11 @@ document.addEventListener('DOMContentLoaded', function () {
         notificationsForDate.forEach(msg => {
             // Determine category
             const msgLower = msg.toLowerCase();
-            let category = '<span class="badge bg-secondary">Other</span>';
-            if (msgLower.includes('full') || msgLower.includes('critical')) {
-                category = '<span class="badge bg-danger">Full Bin</span>';
-            } else if (msgLower.includes('half') || msgLower.includes('moderate')) {
-                category = '<span class="badge bg-warning text-dark">Half Full</span>';
-            } else if (msgLower.includes('empty') || msgLower.includes('cleared')) {
+            //let category = '<span class="badge bg-secondary">Other</span>';
+            if (msgLower.includes('empty') || msgLower.includes('cleared')) {
                 category = '<span class="badge bg-success">Emptied</span>';
+            }else{
+                category = '<span class="badge bg-danger">Full Bin</span>';
             }
 
             html += `<tr>
