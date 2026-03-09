@@ -1944,8 +1944,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         eventClick: function(info) {
     if (info.event.extendedProps.type === 'notification_group') {
-        // Group notifications by date
-        const notificationsByDate = {};
+        // Get the clicked date
+        const clickedDate = info.event.start.toLocaleDateString();
+        
+        // Filter notifications for the clicked date only
+        const notificationsForDate = [];
         let totalNotifications = 0;
         let fullBinsCount = 0;
         let halfBinsCount = 0;
@@ -1955,13 +1958,9 @@ document.addEventListener('DOMContentLoaded', function () {
         info.event.extendedProps.notifications.forEach(n => {
             let messages = n.message_preview.split('🆔').filter(m => m.trim() !== '');
             messages.forEach(msg => {
-                const date = info.event.start.toLocaleDateString();
-                if (!notificationsByDate[date]) {
-                    notificationsByDate[date] = [];
-                }
-                notificationsByDate[date].push(msg.trim());
+                notificationsForDate.push(msg.trim());
                 totalNotifications++;
-                
+
                 // Categorize notifications
                 const msgLower = msg.toLowerCase();
                 if (msgLower.includes('full') || msgLower.includes('critical')) {
@@ -1976,13 +1975,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Build HTML grouped by date with summary
+        // Build HTML for the clicked date
         let html = '';
-        
+
         // Summary Section
         html += `<div class="card bg-light mb-3">
             <div class="card-body">
-                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie"></i> Summary for the Day</h6>
+                <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie"></i> Summary for ${clickedDate}</h6>
                 <div class="row g-3">
                     <div class="col-3">
                         <div class="text-center">
@@ -2011,26 +2010,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
         </div>`;
-        
-        // Notifications by Date
-        // Object.entries(notificationsByDate).forEach(([date, msgs]) => {
-        //     const dateObj = new Date(date);
-        //     const isToday = dateObj.toDateString() === new Date().toDateString();
-        //     const isYesterday = new Date(Date.now() - 86400000).toDateString() === dateObj.toDateString();
-
-        //     let dateLabel = isToday ? 'Today' : (isYesterday ? 'Yesterday' : date);
-
-        //     html += `<div class="mb-3">
-        //         <h6 class="fw-semibold mb-2"><i class="fas fa-calendar-day text-success"></i> ${dateLabel}</h6>
-        //         <div class="badge bg-success mb-2">${msgs.length} notifications</div>
-        //         <ul class="list-group list-group-flush">`;
-
-        //     msgs.forEach(msg => {
-        //         html += `<li class="list-group-item">🆔 ${msg}</li>`;
-        //     });
-
-        //     html += `</ul></div><hr class="my-3">`;
-        // });
 
         // Detailed Table Section
         html += `<div class="card mb-3">
@@ -2050,25 +2029,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         <tbody>`;
 
         let tableRowNum = 1;
-        Object.entries(notificationsByDate).forEach(([date, msgs]) => {
-            msgs.forEach(msg => {
-                // Determine category
-                const msgLower = msg.toLowerCase();
-                let category = '<span class="badge bg-secondary">Other</span>';
-                if (msgLower.includes('full') || msgLower.includes('critical')) {
-                    category = '<span class="badge bg-danger">Full Bin</span>';
-                } else if (msgLower.includes('half') || msgLower.includes('moderate')) {
-                    category = '<span class="badge bg-warning text-dark">Half Full</span>';
-                } else if (msgLower.includes('empty') || msgLower.includes('cleared')) {
-                    category = '<span class="badge bg-success">Emptied</span>';
-                }
+        notificationsForDate.forEach(msg => {
+            // Determine category
+            const msgLower = msg.toLowerCase();
+            let category = '<span class="badge bg-secondary">Other</span>';
+            if (msgLower.includes('full') || msgLower.includes('critical')) {
+                category = '<span class="badge bg-danger">Full Bin</span>';
+            } else if (msgLower.includes('half') || msgLower.includes('moderate')) {
+                category = '<span class="badge bg-warning text-dark">Half Full</span>';
+            } else if (msgLower.includes('empty') || msgLower.includes('cleared')) {
+                category = '<span class="badge bg-success">Emptied</span>';
+            }
 
-                html += `<tr>
-                    <td><strong>${tableRowNum++}</strong></td>
-                    <td>${msg}</td>
-                    <td class="text-center">${category}</td>
-                </tr>`;
-            });
+            html += `<tr>
+                <td><strong>${tableRowNum++}</strong></td>
+                <td>${msg}</td>
+                <td class="text-center">${category}</td>
+            </tr>`;
         });
 
         html += `</tbody>
