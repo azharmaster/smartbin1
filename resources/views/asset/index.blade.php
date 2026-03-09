@@ -26,7 +26,7 @@
 
 <div class="card card-success card-outline">
    <div class="card-header d-flex align-items-center">
-    <h5 class="mb-0">Bins List</h5>
+    <p class="mb-0"><i class="fas fa-table"></i> Bins List</p>
 
     <div class="ms-auto">
     @if(auth()->user()->role == 1)
@@ -55,6 +55,8 @@
                         <th>Serial No </th>
                         <th>Location </th>
                         <th>Model </th>
+                        <th>Latitude </th>
+                        <th>Longitude </th>
                         <th>Picture</th>
                         <th>Option </th>
                     </tr>
@@ -68,6 +70,8 @@
                         <td>{{ $asset->serialNo }}</td>
                         <td>{{ $asset->location }}</td>
                         <td>{{ $asset->model }}</td>
+                        <td>{{ $asset->latitude ?? '—' }}</td>
+                        <td>{{ $asset->longitude ?? '—' }}</td>
                         <td class="text-center">
                             @if($asset->picture)
                                 <img src="{{ asset('uploads/asset/' . $asset->picture) }}"

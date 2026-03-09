@@ -97,7 +97,7 @@
 
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h5 class="mb-0">Sensor Data</h5>
+         <p class="mb-0"><i class="fas fa-table"></i> Sensors Data</p>
         <div class="ms-auto">
             {{-- keep empty for future button --}}
         </div>

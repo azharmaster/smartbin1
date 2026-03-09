@@ -29,7 +29,7 @@
     <div class="col-md-6">
         <div class="card card-success card-outline mb-4 flex-fill">
             <div class="card-header d-flex align-items-center">
-                <h5 class="mb-0">Holiday List</h5>
+                 <p class="mb-0"><i class="fas fa-table"></i> Holiday List</p>
                 <div class="ml-auto">
                     @if(auth()->user()->role == 1)
                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHolidayModal">
@@ -194,7 +194,7 @@
 <div class="col-md-6">
     <div class="card card-success card-outline mb-4 flex-fill">
         <div class="card-header d-flex align-items-center">
-            <h5 class="mb-0">Events List</h5>
+             <p class="mb-0"><i class="fas fa-table"></i> Events List</p>
             <div class="ms-auto">
             @if(auth()->user()->role == 1)
                 <!-- ✅ Bootstrap 4 syntax -->

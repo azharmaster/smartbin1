@@ -25,8 +25,15 @@
 
 
 <div class="card card-success card-outline">
-    <div class="card-header">
-        <h4 class="card-title">List Of Floor</h4>
+ 
+    <div class="card-header d-flex align-items-center">
+         <p class="mb-0"><i class="fas fa-table"></i> Floors List</p>
+
+        <div class="ms-auto">
+           @if(auth()->user()->role == 1)
+            <x-floor.form-floor />
+        @endif
+        </div>
     </div>
     <div class="card-body">
         @if ($errors->any())
@@ -36,12 +43,6 @@
             @endforeach
         </div>
         @endif
-
-        <div class="d-flex justify-content-end mb-2">
-        @if(auth()->user()->role == 1)
-            <x-floor.form-floor />
-        @endif
-        </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped datatable datatable-buttons">
               <thead>

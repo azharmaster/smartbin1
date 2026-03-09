@@ -25,7 +25,7 @@
 
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
-        <h5 class="mb-0">User List</h5>
+         <p class="mb-0"><i class="fas fa-table"></i> User List</p>
 
         <div class="ms-auto">
             @if(auth()->user()->role == 1)
