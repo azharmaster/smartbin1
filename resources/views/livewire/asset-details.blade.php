@@ -741,7 +741,8 @@ document.addEventListener('DOMContentLoaded', function () {
         borderColor: colors[index % colors.length],   // line color
         backgroundColor: colors[index % colors.length], // legend box color
         pointRadius: 4,
-        pointHoverRadius: 6
+        pointHoverRadius: 6,
+        timestamp: sensor.timestamps || []
     }));
 
 
@@ -757,6 +758,21 @@ document.addEventListener('DOMContentLoaded', function () {
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y;
+                            const timestamp = context.dataset.timestamp[context.dataIndex] || '';
+                            
+                            let labelText = label + ': ' + (value !== null ? value.toFixed(1) + '%' : 'N/A');
+                            if (timestamp) {
+                                labelText += ' at ' + timestamp;
+                            }
+                            return labelText;
+                        }
+                    }
+                },
                 zoom: {
                     zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
                     pan: { enabled: true, mode: 'x' }

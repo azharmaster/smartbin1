@@ -78,27 +78,58 @@ class AssetDetails extends Component
         $this->weeklySensorDatasets = [];
 
         foreach ($devices as $device) {
-
-            $data = DB::table('sensors')
-                ->selectRaw('
-                    DATE_FORMAT(
-                        FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(created_at) / 1800) * 1800),
-                        "%H:%i"
-                    ) as t,
-                    AVG(capacity) as avg_capacity
-                ')
+            // Get raw sensor data ordered by created_at
+            $sensors = DB::table('sensors')
+                ->select('capacity', 'created_at')
                 ->where('device_id', $device->id_device)
                 ->whereDate('created_at', Carbon::today())
                 ->whereTime('created_at', '>=', '07:00:00')
                 ->whereTime('created_at', '<=', '19:00:00')
-                ->groupBy('t')
-                ->pluck('avg_capacity', 't');
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-            $values = $slots->map(fn ($slot) => $data[$slot] ?? null);
+            // Group by 30-minute slots and keep track of timestamps
+            $slotData = [];
+            $slotTimestamps = [];
+            
+            foreach ($sensors as $sensor) {
+                $timeSlot = Carbon::parse($sensor->created_at)->setTimeFromTimeString(
+                    Carbon::parse($sensor->created_at)->format('H:i')
+                )->setTime(
+                    Carbon::parse($sensor->created_at)->hour,
+                    (int)(Carbon::parse($sensor->created_at)->minute / 30) * 30,
+                    0
+                )->format('H:i');
+                
+                if (!isset($slotData[$timeSlot])) {
+                    $slotData[$timeSlot] = [];
+                    $slotTimestamps[$timeSlot] = [];
+                }
+                $slotData[$timeSlot][] = $sensor->capacity;
+                $slotTimestamps[$timeSlot][] = Carbon::parse($sensor->created_at)->format('H:i:s');
+            }
+
+            // Build values and timestamps arrays
+            $values = [];
+            $timestamps = [];
+            
+            foreach ($slots as $slot) {
+                if (isset($slotData[$slot]) && !empty($slotData[$slot])) {
+                    // Calculate average manually
+                    $avg = array_sum($slotData[$slot]) / count($slotData[$slot]);
+                    $values[] = $avg;
+                    // Use the latest timestamp for each slot
+                    $timestamps[] = max($slotTimestamps[$slot]);
+                } else {
+                    $values[] = null;
+                    $timestamps[] = null;
+                }
+            }
 
             $this->weeklySensorDatasets[] = [
                 'label' => $device->device_name,
                 'data'  => $values,
+                'timestamps' => $timestamps,
             ];
         }
     }
