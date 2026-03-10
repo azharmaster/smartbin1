@@ -652,7 +652,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
         </div>
 
         </div>
-
+<br>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- ✅ REQUIRED: Chart.js -->
