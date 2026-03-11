@@ -674,18 +674,21 @@ private function getLastEmptiedTimes()
             $result[$assetId] = null;
         }
 
-        $wasFull = false;
+        $wasFullOrHalf = false;
+        $previousCapacity = null;
 
         foreach ($sensors as $sensor) {
             if (!is_numeric($sensor->capacity)) continue;
 
-            // Check if bin was full
-            if (!$wasFull && $sensor->capacity > $capacity->half_to) {
-                $wasFull = true;
+            $currentCapacity = $sensor->capacity;
+
+            // Check if bin was full or half (capacity > empty_to)
+            if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
+                $wasFullOrHalf = true;
             }
 
-            // Check if bin was emptied after being full
-            if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+            // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
+            if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
                 $emptiedTime = Carbon::parse($sensor->created_at);
 
                 // Keep the most recent emptied time
@@ -693,8 +696,10 @@ private function getLastEmptiedTimes()
                     $result[$assetId] = $emptiedTime;
                 }
 
-                $wasFull = false; // reset for next cycle
+                $wasFullOrHalf = false; // reset for next cycle
             }
+
+            $previousCapacity = $currentCapacity;
         }
     }
 
