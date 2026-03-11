@@ -39,6 +39,7 @@ class DashboardController extends Controller
                             ->get();
     $assetsWithDevices = Asset::with(['devices.sensors'])
         ->whereHas('devices')
+        ->where('is_active', 1)
         ->orderBy('asset_name')
         ->get();
 
@@ -100,7 +101,7 @@ class DashboardController extends Controller
         'latestComplaints' => $this->loadLatestComplaints(),
         'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
         'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
-        'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->orderBy('asset_name')->get(),
+        'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->where('is_active', 1)->orderBy('asset_name')->get(),
         'calendarCombined' => $this->getCalendarEvents(),
         'todayNotifications' => $this->getTodayNotifications(),
         'upcomingHolidaysAndEvents' => $upcomingHolidaysAndEvents,
