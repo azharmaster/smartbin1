@@ -165,7 +165,7 @@ class AdminMainDashboardController extends Controller
 
     /**
      * Get the last emptied time for each bin (asset).
-     * Tracks when any compartment in the bin went from full to empty.
+     * Tracks when any compartment in the bin went from full/half to empty/negative.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -190,18 +190,21 @@ class AdminMainDashboardController extends Controller
                 $result[$assetId] = null;
             }
 
-            $wasFull = false;
+            $wasFullOrHalf = false;
+            $previousCapacity = null;
 
             foreach ($sensors as $sensor) {
                 if (!is_numeric($sensor->capacity)) continue;
 
-                // Check if compartment was full
-                if (!$wasFull && $sensor->capacity > $capacity->half_to) {
-                    $wasFull = true;
+                $currentCapacity = $sensor->capacity;
+
+                // Check if compartment was full or half (capacity > empty_to)
+                if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
+                    $wasFullOrHalf = true;
                 }
 
-                // Check if compartment was emptied after being full
-                if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+                // Check if compartment was emptied (capacity goes negative or <= empty_to after being full/half)
+                if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
                     $emptiedTime = \Carbon\Carbon::parse($sensor->created_at);
 
                     // Keep the most recent emptied time for this bin
@@ -209,8 +212,10 @@ class AdminMainDashboardController extends Controller
                         $result[$assetId] = $emptiedTime;
                     }
 
-                    $wasFull = false; // reset for next cycle
+                    $wasFullOrHalf = false; // reset for next cycle
                 }
+
+                $previousCapacity = $currentCapacity;
             }
         }
 
@@ -219,7 +224,7 @@ class AdminMainDashboardController extends Controller
 
     /**
      * Get the last emptied time for each device (compartment).
-     * Tracks when each compartment went from full to empty.
+     * Tracks when each compartment went from full/half to empty/negative.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -244,18 +249,21 @@ class AdminMainDashboardController extends Controller
                 $result[$deviceId] = null;
             }
 
-            $wasFull = false;
+            $wasFullOrHalf = false;
+            $previousCapacity = null;
 
             foreach ($sensors as $sensor) {
                 if (!is_numeric($sensor->capacity)) continue;
 
-                // Check if compartment was full
-                if (!$wasFull && $sensor->capacity > $capacity->half_to) {
-                    $wasFull = true;
+                $currentCapacity = $sensor->capacity;
+
+                // Check if compartment was full or half (capacity > empty_to)
+                if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
+                    $wasFullOrHalf = true;
                 }
 
-                // Check if compartment was emptied after being full
-                if ($wasFull && $sensor->capacity <= $capacity->empty_to) {
+                // Check if compartment was emptied (capacity goes negative or <= empty_to after being full/half)
+                if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
                     $emptiedTime = \Carbon\Carbon::parse($sensor->created_at);
 
                     // Keep the most recent emptied time
@@ -263,8 +271,10 @@ class AdminMainDashboardController extends Controller
                         $result[$deviceId] = $emptiedTime;
                     }
 
-                    $wasFull = false; // reset for next cycle
+                    $wasFullOrHalf = false; // reset for next cycle
                 }
+
+                $previousCapacity = $currentCapacity;
             }
         }
 

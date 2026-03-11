@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SMARTBIN</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('uploads/images/logo.png') }}">
-    
+
     <!-- Google Font -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -51,136 +51,162 @@
     @livewireStyles
 
     @stack('styles')
-   <style>
-.dataTables_length label {
-    font-size: 0 !important;
+    <style>
+    .dataTables_length label {
+        font-size: 0 !important;
 
-    line-height: 0 !important;
-}
-
-
+        line-height: 0 !important;
+    }
 
 
 
 
-/* Top container: left = entries + buttons, right = search */
-.dataTables_wrapper .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-}
-
-/* Left block: entries + buttons */
-.dataTables_wrapper .top .left-block {
-    display: flex;
-    flex-direction: column; /* buttons below entries */
-}
-
-/* Show entries dropdown wider */
-.dataTables_length select {
-    width: 150px;
-    display: inline-block;
-    height: auto;          /* optional: lets it scale with font-size */
-    padding: 0.3rem 1.2rem; /* optional: more spacing inside */
-    font-size: 0.9rem;     /* optional: bigger font */
-}
-
-/* Buttons styling */
-.dt-buttons .btn-custom {
-   display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    height: 36px;
-    padding: 0 1rem;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-/* Icon default colors (only when NOT hovered) */
-.dt-buttons .btn-custom.copy i { color: #f39c12; }   /* orange */
-.dt-buttons .btn-custom.csv i { color: #3498db; }    /* blue */
-.dt-buttons .btn-custom.excel i { color: #27ae60; }  /* green */
-.dt-buttons .btn-custom.pdf i { color: #e74c3c; }    /* red */
-.dt-buttons .btn-custom.print i { color: #8e44ad; }  /* purple */
-.dt-buttons .btn-custom.filter i { color: #2c3e50; } /* dark accent */
-
-/* Hover: button background = icon color, icon + text white */
-.dt-buttons .btn-custom.copy:hover {
-    background-color: #f59e0b;
-    color: white;
-    border-color: #f59e0b;
-}
-
-.dt-buttons .btn-custom.csv:hover {
-    background-color: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
-}
-
-.dt-buttons .btn-custom.excel:hover {
-    background-color: #10b981;
-    color: white;
-    border-color: #10b981;
-}
-
-.dt-buttons .btn-custom.pdf:hover {
-    background-color: #ef4444;
-    color: white;
-    border-color: #ef4444;
-}
-
-.dt-buttons .btn-custom.print:hover {
-    background-color: #8b5cf6;
-    color: white;
-    border-color: #8b5cf6;
-}
-
-.dt-buttons .btn-custom.filter:hover {
-    background-color: #4b5563;
-    color: white;
-    border-color: #4b5563;
-}
-
-/* Force icon white on hover */
-.dt-buttons .btn-custom:hover i {
-    color: #ffffff;
-}
-
-/* Spacing between buttons */
-.dt-buttons .btn-custom + .btn-custom {
-    margin-left: 6px;
-}
-
-/* Right block: search bar */
-.dataTables_wrapper .right-block {
-    margin-top: 4px;
-}
-
-/* Optional: ensure search input width looks good */
-.dataTables_wrapper .dataTables_filter input {
-    width: 180px;
-    display: inline-block;
-}
-
-.modal {
-    z-index: 1050 !important;
-}
-
-.modal-backdrop {
-    z-index: 1040 !important;
-}
 
 
+    /* Top container: left = entries + buttons, right = search */
+    .dataTables_wrapper .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    /* Left block: entries + buttons */
+    .dataTables_wrapper .top .left-block {
+        display: flex;
+        flex-direction: column;
+        /* buttons below entries */
+    }
+
+    /* Show entries dropdown wider */
+    .dataTables_length select {
+        width: 150px;
+        display: inline-block;
+        height: auto;
+        /* optional: lets it scale with font-size */
+        padding: 0.3rem 1.2rem;
+        /* optional: more spacing inside */
+        font-size: 0.9rem;
+        /* optional: bigger font */
+    }
+
+    /* Buttons styling */
+    .dt-buttons .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        height: 36px;
+        padding: 0 1rem;
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    /* Icon default colors (only when NOT hovered) */
+    .dt-buttons .btn-custom.copy i {
+        color: #f39c12;
+    }
+
+    /* orange */
+    .dt-buttons .btn-custom.csv i {
+        color: #3498db;
+    }
+
+    /* blue */
+    .dt-buttons .btn-custom.excel i {
+        color: #27ae60;
+    }
+
+    /* green */
+    .dt-buttons .btn-custom.pdf i {
+        color: #e74c3c;
+    }
+
+    /* red */
+    .dt-buttons .btn-custom.print i {
+        color: #8e44ad;
+    }
+
+    /* purple */
+    .dt-buttons .btn-custom.filter i {
+        color: #2c3e50;
+    }
+
+    /* dark accent */
+
+    /* Hover: button background = icon color, icon + text white */
+    .dt-buttons .btn-custom.copy:hover {
+        background-color: #f59e0b;
+        color: white;
+        border-color: #f59e0b;
+    }
+
+    .dt-buttons .btn-custom.csv:hover {
+        background-color: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .dt-buttons .btn-custom.excel:hover {
+        background-color: #10b981;
+        color: white;
+        border-color: #10b981;
+    }
+
+    .dt-buttons .btn-custom.pdf:hover {
+        background-color: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+
+    .dt-buttons .btn-custom.print:hover {
+        background-color: #8b5cf6;
+        color: white;
+        border-color: #8b5cf6;
+    }
+
+    .dt-buttons .btn-custom.filter:hover {
+        background-color: #4b5563;
+        color: white;
+        border-color: #4b5563;
+    }
+
+    /* Force icon white on hover */
+    .dt-buttons .btn-custom:hover i {
+        color: #ffffff;
+    }
+
+    /* Spacing between buttons */
+    .dt-buttons .btn-custom+.btn-custom {
+        margin-left: 6px;
+    }
+
+    /* Right block: search bar */
+    .dataTables_wrapper .right-block {
+        margin-top: 4px;
+    }
+
+    /* Optional: ensure search input width looks good */
+    .dataTables_wrapper .dataTables_filter input {
+        width: 180px;
+        display: inline-block;
+    }
+
+    .modal {
+        z-index: 1050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
     </style>
 
 </head>
@@ -210,19 +236,16 @@
             </ul>
 
             @php
-                $photo = Auth::user()->profile_photo 
-                    ? asset('uploads/profile/' . Auth::user()->profile_photo)
-                    : 'https://via.placeholder.com/150';
+            $photo = Auth::user()->profile_photo
+            ? asset('uploads/profile/' . Auth::user()->profile_photo)
+            : 'https://via.placeholder.com/150';
             @endphp
 
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ $photo }}" 
-                            class="rounded-circle" 
-                            alt="Profile" 
-                            width="30" 
-                            height="30">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ $photo }}" class="rounded-circle" alt="Profile" width="30" height="30">
                         <span class="ms-2">{{ Auth::user()->name }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
@@ -232,11 +255,14 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="{{ route('profile.editPassword') }}">
+                            <a class="dropdown-item d-flex align-items-center"
+                                href="{{ route('profile.editPassword') }}">
                                 <i class="fas fa-key me-2"></i> Reset Password
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li>
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
@@ -257,29 +283,24 @@
         <div class="content-wrapper">
 
             <div class="content-header">
+                 @if(request()->routeIs('dashboard'))
+                 @else
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">@yield('content_title')</h1>
                         </div>
                         <div class="col-sm-6">
-    @if(request()->routeIs('dashboard'))
-        {{-- Dashboard: show only Live Dashboard button --}}
-        <div class="float-sm-right">
-            <a href="{{ route('admin.main.dashboard') }}" class="btn btn-success btn-sm">
-                <i class="fas fa-chart-line"></i> Live Dashboard
-            </a>
-        </div>
-    @else
-        {{-- Other pages: normal breadcrumb --}}
-        <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-            <li class="breadcrumb-item active">@yield('content_title')</li>
-        </ol>
-    @endif
-</div>
+
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+                                <li class="breadcrumb-item active">@yield('content_title')</li>
+                            </ol>
+
+                        </div>
                     </div>
                 </div>
+                @endif
             </div>
 
             <div class="content">
@@ -299,48 +320,47 @@
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <script>
-$(document).on('hide.bs.modal', '.modal', function () {
-    const $modal = $(this);
+    $(document).on('hide.bs.modal', '.modal', function() {
+        const $modal = $(this);
 
-    // Remove focus from any focused element inside modal
-    $modal.find(':focus').blur();
+        // Remove focus from any focused element inside modal
+        $modal.find(':focus').blur();
 
-    // Also blur document active element (mobile fix)
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-});
-</script>
+        // Also blur document active element (mobile fix)
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+    });
+    </script>
 
 
     <script>
-
-    document.addEventListener("DOMContentLoaded", function () {
-    // Remove AdminLTE's custom scrollbar
-    if ($('.sidebar').data('overlayScrollbars')) {
-        $('.sidebar').overlayScrollbars().destroy();
-    }
-});
-    document.addEventListener("DOMContentLoaded", function () {
-    // Destroy AdminLTE’s OverlayScrollbars so we can control scrolling
-    if ($('.sidebar').data('overlayScrollbars')) {
-        $('.sidebar').overlayScrollbars().destroy();
-    }
-
-    // Apply normal scrolling
-    $('.main-sidebar').css({
-        'position': 'fixed',
-        'height': '100vh',
-        'overflow': 'hidden'
+    document.addEventListener("DOMContentLoaded", function() {
+        // Remove AdminLTE's custom scrollbar
+        if ($('.sidebar').data('overlayScrollbars')) {
+            $('.sidebar').overlayScrollbars().destroy();
+        }
     });
+    document.addEventListener("DOMContentLoaded", function() {
+        // Destroy AdminLTE’s OverlayScrollbars so we can control scrolling
+        if ($('.sidebar').data('overlayScrollbars')) {
+            $('.sidebar').overlayScrollbars().destroy();
+        }
 
-    $('.sidebar').css({
-        'height': '100%',
-        'overflow-y': 'auto',
-        'overflow-x': 'hidden'
+        // Apply normal scrolling
+        $('.main-sidebar').css({
+            'position': 'fixed',
+            'height': '100vh',
+            'overflow': 'hidden'
+        });
+
+        $('.sidebar').css({
+            'height': '100%',
+            'overflow-y': 'auto',
+            'overflow-x': 'hidden'
+        });
     });
-});
-        /*$(function () {
+    /*$(function () {
             $("#table1").DataTable({
                 responsive: true,
                 lengthChange: false,
@@ -349,54 +369,72 @@ $(document).on('hide.bs.modal', '.modal', function () {
             }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
 */
 
-$(document).ready(function () { 
-    $('.datatable').each(function() { 
-    if (!$.fn.DataTable.isDataTable(this)) { 
-    const hasButtons = $(this).hasClass('datatable-buttons'); 
+    $(document).ready(function() {
+        $('.datatable').each(function() {
+            if (!$.fn.DataTable.isDataTable(this)) {
+                const hasButtons = $(this).hasClass('datatable-buttons');
 
-     $(this).DataTable({ 
-        responsive: true, 
-        autoWidth: false, 
-        lengthChange: true, 
-        dom: hasButtons ? '<"top"<"left-block"lB><"right-block"f>>rtip' : 'lfrtip', 
+                $(this).DataTable({
+                    responsive: true,
+                    autoWidth: false,
+                    lengthChange: true,
+                    dom: hasButtons ? '<"top"<"left-block"lB><"right-block"f>>rtip' : 'lfrtip',
 
-        buttons: hasButtons ? [ 
-            { extend: 'copyHtml5',
-         className: 'btn btn-custom copy',
-          text: '<i class="fas fa-copy"></i> Copy' },
-           { extend: 'csvHtml5', className: 'btn btn-custom csv', text: '<i class="fas fa-file-csv"></i> CSV' }, 
-           { extend: 'excelHtml5', className: 'btn btn-custom excel', text: '<i class="far fa-file-excel"></i> Excel' },
-            { extend: 'pdfHtml5', className: 'btn btn-custom pdf', text: '<i class="far fa-file-pdf"></i> PDF' },
-             { extend: 'print', className: 'btn btn-custom print', text: '<i class="fas fa-print"></i> Print' },
-            ] : [] 
-        }); 
-        if (hasButtons) { 
-            $(this).DataTable().buttons().container().appendTo($(this).closest('.left-block').find('.dt-buttons')); 
+                    buttons: hasButtons ? [{
+                            extend: 'copyHtml5',
+                            className: 'btn btn-custom copy',
+                            text: '<i class="fas fa-copy"></i> Copy'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn btn-custom csv',
+                            text: '<i class="fas fa-file-csv"></i> CSV'
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn btn-custom excel',
+                            text: '<i class="far fa-file-excel"></i> Excel'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn btn-custom pdf',
+                            text: '<i class="far fa-file-pdf"></i> PDF'
+                        },
+                        {
+                            extend: 'print',
+                            className: 'btn btn-custom print',
+                            text: '<i class="fas fa-print"></i> Print'
+                        },
+                    ] : []
+                });
+                if (hasButtons) {
+                    $(this).DataTable().buttons().container().appendTo($(this).closest('.left-block')
+                        .find('.dt-buttons'));
 
-            } 
-        } 
-    });
-
-            $('#table2').DataTable({
-                paging: true,
-                lengthChange: false,
-                searching: false,
-                ordering: true,
-                info: true,
-                autoWidth: true,
-                responsive: true,
-            });
+                }
+            }
         });
+
+        $('#table2').DataTable({
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            info: true,
+            autoWidth: true,
+            responsive: true,
+        });
+    });
     </script>
 
 
     <!-- LIVEWIRE SCRIPTS -->
     @livewireScripts
 
-     @stack('scripts')
+    @stack('scripts')
 
-     <script>
-    $(document).on('show.bs.modal', '.modal', function () {
+    <script>
+    $(document).on('show.bs.modal', '.modal', function() {
         $(this).appendTo('body');
     });
     </script>

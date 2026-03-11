@@ -133,7 +133,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                         continue;
                     }
 
-                    // EMPTY → FULL
+                    // EMPTY/HALF → FULL
                     if (
                         $prevCapacity <= $setting->half_to &&
                         $capacity >  $setting->half_to
@@ -148,10 +148,10 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                         $lastFullAt = $time;
                     }
 
-                    // FULL → EMPTY
+                    // FULL/HALF → EMPTY (including negative capacity)
                     if (
-                        $prevCapacity >  $setting->half_to &&
-                        $capacity <= $setting->empty_to
+                        $prevCapacity > $setting->empty_to &&
+                        ($capacity <= $setting->empty_to || $capacity < 0)
                     ) {
                         if ($lastFullAt) {
                             $clearDurations[] =
@@ -231,10 +231,10 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                         continue;
                     }
 
-                    // ✅ CLEANED EVENT: FULL → EMPTY
+                    // ✅ CLEANED EVENT: FULL/HALF → EMPTY (including negative capacity)
                     if (
-                        $prevCapacity >  $setting->half_to &&
-                        $capacity <= $setting->empty_to
+                        $prevCapacity > $setting->empty_to &&
+                        ($capacity <= $setting->empty_to || $capacity < 0)
                     ) {
                         $logs[] = (object) [
                             'asset_name'  => $asset->asset_name,
