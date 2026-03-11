@@ -16,228 +16,71 @@
 
 /* === STATUS CARD CONTAINER === */
 .status-card {
-    position: relative;
-    flex: 1 1 180px;
-    width: 19%;
-    height: 150px;
-
+    flex: 1 1 200px;
     background: #ffffff;
     color: #111;
-    border-radius: 14px;
-    overflow: hidden;
-
-    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
-    transition: background .25s ease, color .25s ease,
-                transform .2s ease, box-shadow .2s ease;
-
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
     margin-left: 10px;
 }
 
 .status-card:hover {
-    background: #9457b3; /* DARK GREEN */
+    background: #1f6423;
     color: #ffffff;
-
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
-}
-.status-card:hover::before {
-    opacity: 0;            /* disappear on hover */
-    transform: translateY(0); /* optional slight movement */
-    box-shadow: none;       /* remove glow if any */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .status-body {
-    padding: 18px 20px 42px;
-    height: 100%;
-    position: relative;
+    padding: 12px 16px;
 }
 
 .status-title {
-    font-size: 14px;
-    font-weight: 600;
-    opacity: 0.9;
-    color: #111;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline;
 }
 
 .status-content {
-    margin-top: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: inline;
+    margin-left: 8px;
 }
 
 .status-number {
-    font-size: 36px;
-    font-weight: 800;
+    font-size: 18px;
+    font-weight: 700;
     color: #111;
 }
 
-.status-icon {
-    position: absolute;
-    right: 14px;
-    top: 14px;
-    font-size: 48px;
-    opacity: 0.40;
-    color: #111;
+.status-card:hover .status-title {
+    color: rgba(255,255,255,0.85);
 }
 
-.status-card:hover .status-title,
-.status-card:hover .status-number,
-.status-card:hover .status-icon,
-.status-card:hover .status-footer,
-.status-card:hover .status-trend-footer,
-.status-card:hover .status-more {
+.status-card:hover .status-number {
     color: #ffffff;
 }
 
-/* ICON COLORS */
-.card-total:hover .status-icon {
-color: rgb(0, 209, 251);
-    transform: scale(1.2);      /* POP size */
-    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
-    transition:
-        color 0.25s ease,
-        transform 0.25s ease,
-        filter 0.25s ease;
-}
-.card-total .status-icon {
-    color: #1e88e5;
-}
-
-.card-full:hover .status-icon {
-    color: #ff0000; /* strong red */
-    transform: scale(1.2);      /* POP size */
-    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
-    transition:
-        color 0.25s ease,
-        transform 0.25s ease,
-        filter 0.25s ease;
- 
-}
-
-.card-full .status-icon {
-    color: #e23532; /* strong red */
-}
-
-.card-half:hover .status-icon {
-    color: #fb8c00;
-    transform: scale(1.2);      /* POP size */
-    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
-    transition:
-        color 0.25s ease,
-        transform 0.25s ease,
-        filter 0.25s ease;
- 
-}
-.status-icon.half {
-    background: linear-gradient(to top, #fc9c00 50%, #c26b00 50%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.card-half .status-icon {
-    color: #fb8c00;
-}
-
-.card-empty:hover .status-icon{
-    color: #2bff00; 
-    transform: scale(1.2);      /* POP size */
-    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
-    transition:
-        color 0.25s ease,
-        transform 0.25s ease,
-        filter 0.25s ease;
- 
-}
-
-.status-icon.empty {
-    color: #43a047;
-    background: linear-gradient(to top, #43a047 10%, #007506 10%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.card-empty .status-icon {
-    color: #43a047;
-}
-
-.card-undetected:hover .status-icon{
-color: rgb(255, 255, 255);
-    transform: scale(1.2);      /* POP size */
-    filter: drop-shadow(0 0 8px rgba(255, 235, 59, 0.7));
-    transition:
-        color 0.25s ease,
-        transform 0.25s ease,
-        filter 0.25s ease;
-}
-.card-undetected .status-icon {
-    color: #616161;
-}
-
-.status-trend {
-    font-size: 12px;
-    margin-top: 8px;
-    color: #000000ff;
-}
-
-.status-footer {
+/* Status cards floating inside map */
+.map-status-cards {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 8px 14px;
-    font-size: 12px;
-    font-weight: 600;
-
-    background: rgba(0,0,0,0.04);+
-    color: #111;
-
-    transition: background .25s ease, color .25s ease;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.status-card:hover .status-footer {
-    background: rgba(0,0,0,0.25);
+.map-status-cards .status-card {
+    flex: 1 1 auto;
+    min-width: 150px;
 }
-
-a.status-footer {
-    text-decoration: none;
-    color: inherit;
-}
-
-a.status-footer:hover {
-    text-decoration: none;
-}
-
-/* LEFT – trend */
-.status-trend-footer {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: #000000ff;
-}
-
-.status-trend-footer small {
-    color: rgba(255,255,255,0.8);
-    font-weight: 500;
-}
-
-/* RIGHT – more info */
-.status-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.9;
-    transition: opacity .2s ease;
-}
-
-.status-card:hover .status-more {
-    opacity: 1;
-}
-
 
 /* Container: tighter spacing */
 .full-devices-cards {
@@ -623,16 +466,27 @@ input:checked + .slider:before {
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Map controls styling */
+/* Map controls styling - floating inside map */
+.map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 4px;
+}
+
 .map-controls button {
-    margin-left: 4px;
-    border-radius: 8px;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: all 0.2s ease;
 }
 
 .map-controls button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
 
 /* Leaflet popup styling */
@@ -820,99 +674,6 @@ function trend($current, $previous) {
             ?
         </button>
 
-<div class="d-flex flex-wrap">
-  
-
-    <div class="status-card card-total">
-        <div class="status-body">
-            <div class="status-title">Total Bins Installed</div>
-            <div class="status-content">
-                <i class="fas fa-box status-icon"></i>
-                <span class="status-number">{{ $totalBinsInstalled }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="{{ url('/admin/assets') }}" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-
-    <div class="status-card card-half">
-        <div class="status-body">
-            <div class="status-title">Active Bins</div>
-            <div class="status-content">
-                <i class="fas fa-wifi status-icon"></i>
-                <span class="status-number">{{ $activeBins }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-
-    <div class="status-card card-full">
-        <div class="status-body">
-            <div class="status-title">Full Bins</div>
-            <div class="status-content">
-                <i class="fas fa-trash status-icon full"></i>
-                <span class="status-number">{{ $fullBins }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="{{ route('admin.main.dashboard') }}" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-      <div class="status-card card-undetected">
-        <div class="status-body">
-            <div class="status-title">Undetected (30min)</div>
-            <div class="status-content">
-                <i class="fas fa-minus-circle status-icon"></i>
-                <span class="status-number">{{ $undetectedDevices }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="#" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-
-    <div class="status-card card-empty">
-        <div class="status-body">
-            <div class="status-title">Collection Trip Today</div>
-            <div class="status-content">
-                <i class="fas fa-truck status-icon empty"></i>
-                <span class="status-number">{{ $collectionTripToday }}</span>
-            </div>
-        </div>
-        <div class="status-footer">
-            <a href="{{ route('notifications.index') }}" class="status-footer">
-                <span class="status-trend-footer"></span>
-                <span class="status-more">
-                    More info <i class="fas fa-arrow-circle-right"></i>
-                </span>
-            </a>
-        </div>
-    </div>
-</div>
-
 <div class="container-fluid mt-4">
 
     <!-- <div class="d-flex justify-content-end mb-3">
@@ -926,25 +687,56 @@ function trend($current, $previous) {
             <div class="card card-success map-card mb-4">
                 <!-- Header -->
                 <div class="card-header smartbin-gradient">
-                    <div class="row">
-                        <div class="col-6">
-<h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
-                        </div><div class="col-6">
- <div class="map-controls  float-right">
-                        <button id="zoomIn" class="btn btn-info btn-sm"><i class="fas fa-search-plus"></i></button>
-                        <button id="zoomOut" class="btn btn-danger btn-sm"><i class="fas fa-search-minus"></i></button>
-                        <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
-                    </div>
-                        </div>
-                    </div>
-                    
-                   
+                    <h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
                 </div>
 
                 <!-- Card Body -->
                 <div class="card-body map-card-body" style="height: 650px; position: relative;">
-                    <!-- Controls -->
-                    
+                    <!-- Map Controls - Floating -->
+                    <div class="map-controls">
+                        <button id="zoomIn" class="btn btn-info btn-sm"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoomOut" class="btn btn-danger btn-sm"><i class="fas fa-search-minus"></i></button>
+                        <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
+                    </div>
+
+                    <!-- Status Cards - Floating Bottom -->
+                    <div class="map-status-cards">
+                        <div class="status-card card-total">
+                            <div class="status-body">
+                                <div class="status-title">Total Bins Installed</div>
+                                <div class="status-content">
+                                    <span class="status-number">{{ $totalBinsInstalled }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card card-half">
+                            <div class="status-body">
+                                <div class="status-title">Active Bins</div>
+                                <div class="status-content">
+                                    <span class="status-number">{{ $activeBins }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card card-full">
+                            <div class="status-body">
+                                <div class="status-title">Full Bins</div>
+                                <div class="status-content">
+                                    <span class="status-number">{{ $fullBins }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card card-empty">
+                            <div class="status-body">
+                                <div class="status-title">Collection Trip Today</div>
+                                <div class="status-content">
+                                    <span class="status-number">{{ $collectionTripToday }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Leaflet Map -->
                     <div id="dashboardMap"></div>
@@ -1150,6 +942,38 @@ function trend($current, $previous) {
         @endforelse
     </div>
 </div>
+
+<div class="card mb-4 shadow-sm">
+                <div class="card-header smartbin-gradient border-0">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
+                    </h5>
+                </div>
+                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-semibold">
+                                <i class="fas fa-bell text-success"></i> Notification Status
+                            </h6>
+                            <small class="text-muted">
+                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
+                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
+                                </span>
+                            </small>
+                        </div>
+
+                        <!-- Toggle Switch -->
+                        <div>
+                            <label class="switch switch-lg">
+                                <input type="checkbox" id="whatsappNotificationSwitch"
+                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>
 
@@ -1321,37 +1145,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header smartbin-gradient border-0">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
-                    </h5>
-                </div>
-                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-semibold">
-                                <i class="fas fa-bell text-success"></i> Notification Status
-                            </h6>
-                            <small class="text-muted">
-                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
-                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
-                                </span>
-                            </small>
-                        </div>
-
-                        <!-- Toggle Switch -->
-                        <div>
-                            <label class="switch switch-lg">
-                                <input type="checkbox" id="whatsappNotificationSwitch"
-                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
-                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
 
 
