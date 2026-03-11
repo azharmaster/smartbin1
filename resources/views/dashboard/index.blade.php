@@ -82,6 +82,177 @@
     min-width: 150px;
 }
 
+/* Sensor List - Waste Type Cards */
+.sensor-list-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.sensor-list-header {
+    padding: 12px 16px;
+    border: none;
+}
+
+.sensor-list-header h6 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+.sensor-list-body {
+    padding: 16px;
+    background: #fafbfc;
+}
+
+.asset-item {
+    background: #f7fafc;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.asset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.asset-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+}
+
+.asset-location {
+    font-size: 10px;
+    color: #718096;
+    margin-top: 1px;
+}
+
+.asset-location i {
+    color: #e53e3e;
+}
+
+.btn-view-asset {
+    background: #48bb78;
+    border: none;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-view-asset:hover {
+    background: #38a169;
+    color: white;
+}
+
+.asset-footer {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.last-emptied {
+    font-size: 9px;
+    color: #718096;
+}
+
+.last-emptied i {
+    color: #4299e1;
+}
+
+.waste-types-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.waste-type-card {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.waste-type-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.waste-type-card.glass {
+    border-color: #90cdf4;
+    background: linear-gradient(135deg, #ebf8ff 0%, #ffffff 100%);
+}
+
+.waste-type-card.paper {
+    border-color: #f6e05e;
+    background: linear-gradient(135deg, #fffff0 0%, #ffffff 100%);
+}
+
+.waste-type-card.general {
+    border-color: #cbd5e0;
+    background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+}
+
+.waste-icon {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.waste-icon.glass {
+    color: #2b6cb0;
+}
+
+.waste-icon.paper {
+    color: #b7791f;
+}
+
+.waste-icon.general {
+    color: #4a5568;
+}
+
+.waste-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.waste-capacity {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.waste-capacity.full {
+    color: #e53e3e;
+}
+
+.waste-capacity.half {
+    color: #ed8936;
+}
+
+.waste-capacity.empty {
+    color: #48bb78;
+}
+
+.waste-capacity.undetected {
+    color: #a0aec0;
+}
+
 /* Container: tighter spacing */
 .full-devices-cards {
     display: flex;
@@ -840,140 +1011,119 @@ function trend($current, $previous) {
                 </div>
             </div>
         </div>--}}
-<div class="card mb-3" style="font-size: 1.0rem;">
-    <div class="card-header smartbin-gradient py-2">
-        <h6 class="mb-0 text-white">
-            <i class="fas fa-trash-alt me-1"></i> Sensor List
+<div class="sensor-list-card mb-3">
+    <div class="card-header smartbin-gradient sensor-list-header">
+        <h6 class="mb-0">
+            <i class="fas fa-trash-alt me-2"></i> Sensor List
         </h6>
     </div>
 
-    <div class="card-body p-2">
+    <div class="sensor-list-body">
         @forelse($assetsWithDevices as $asset)
-            <div class="border rounded p-2 mb-2">
+            <div class="asset-item">
 
                 <!-- ASSET HEADER -->
-                <div class="d-flex justify-content-between align-items-start mb-1">
-                    <div class="lh-sm">
-                        <div class="fw-semibold">
+                <div class="asset-header">
+                    <div>
+                        <div class="asset-name">
                             {{ $asset->name }} {{ $asset->asset_name }}
                         </div>
-
-                        <!-- LOCATION (ONCE PER ASSET) -->
-                        <div class="text-muted" style="font-size: 0.65rem;">
+                        <div class="asset-location">
                             <i class="fas fa-map-marker-alt me-1"></i>
-                            {{ $asset->location ?? 'Unknown location' }}
+                            {{ $asset->location ?? 'Unknown' }}
                         </div>
                     </div>
 
                     <a href="{{ route('master-data.assets.details', $asset->id) }}"
-                       class="btn btn-success btn-xs px-2 py-1"
-                       title="View Asset">
+                       class="btn btn-view-asset">
                         <i class="far fa-eye"></i>
                     </a>
                 </div>
 
-                <!-- DEVICES -->
-                <div class="d-flex flex-column gap-1 mt-1">
-                    @foreach($asset->devices as $device)
-                        @php
-                            $latest = $device->latestSensor;
-                            $level  = $latest?->capacity;
+                <!-- WASTE TYPE CARDS -->
+                @php
+                    // Group devices by waste type
+                    $wasteTypes = ['GLASS' => null, 'PAPER' => null, 'GENERAL' => null];
+                    $lastEmptied = $lastEmptiedTimes->get($asset->id);
+                    
+                    foreach($asset->devices as $device) {
+                        $latest = $device->latestSensor;
+                        $level = $latest?->capacity;
+                        $deviceNameUpper = strtoupper($device->device_name);
+                        
+                        foreach(array_keys($wasteTypes) as $type) {
+                            if (str_contains($deviceNameUpper, $type)) {
+                                $wasteTypes[$type] = [
+                                    'level' => $level,
+                                    'latest' => $latest,
+                                    'device' => $device
+                                ];
+                                break;
+                            }
+                        }
+                    }
+                @endphp
 
-                            $setting = $asset->capacitySetting;
-                            $emptyTo = $setting->empty_to ?? 39;
-                            $halfTo  = $setting->half_to ?? 79;
-
-                            $badge = match (true) {
-                                $level === null     => 'secondary',
-                                $level > $halfTo   => 'danger',
-                                $level > $emptyTo  => 'warning',
-                                default            => 'success',
-                            };
-
-                            $timestamp = $latest?->created_at
-                                ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m h:i')
-                                : '—';
-
-                            // Check if data is from today
-                            $isToday = $latest && $latest->created_at->isToday();
-                            $isActive = $latest !== null && $isToday;
-
-                            // Get last emptied time for this asset
-                            $lastEmptied = $lastEmptiedTimes->get($asset->id);
-                            $lastEmptiedDisplay = $lastEmptied
-                                ? $lastEmptied->diffForHumans()
-                                : 'Never';
-                        @endphp
-
-                        <div class="d-flex justify-content-between align-items-center" style="{{ !$isActive ? 'opacity: 0.5;' : '' }}">
-                            <span class="badge bg-{{ $badge }} px-2 py-1">
-                                {{ $device->device_name }}
-                                {{ $level !== null ? '· '.number_format($level, 0).'%' : '· Undetected' }}
-                            </span>
-
-                            <small class="text-muted" style="font-size: 0.65rem;">
-                                @if($latest && $latest->battery !== null)
-                                    <span class="{{ $latest->battery_percentage <= 10 ? 'text-danger fw-bold' : '' }}">
-                                        <i class="fas fa-battery-{{ $latest->battery_percentage >= 90 ? 'full' : ($latest->battery_percentage >= 50 ? 'three-quarters' : ($latest->battery_percentage >= 20 ? 'half' : ($latest->battery_percentage >= 10 ? 'quarter' : 'empty'))) }} me-1"></i>{{ $latest->battery_percentage }}%
-                                    </span>
-                                @endif
-                                {{ $timestamp }}
-                                @if(!$isActive && $timestamp !== '—')
-                                    <i class="fas fa-clock ms-1" title="Old data"></i>
-                                @endif
-                            </small>
-                        </div>
+                <div class="waste-types-row">
+                    @foreach($wasteTypes as $type => $data)
+                        @if($data !== null)
+                            @php
+                                $level = $data['level'];
+                                $latest = $data['latest'];
+                                
+                                if ($level === null) {
+                                    $status = 'undetected';
+                                    $displayValue = '—';
+                                } elseif ($level > ($asset->capacitySetting->half_to ?? 79)) {
+                                    $status = 'full';
+                                    $displayValue = number_format($level, 0) . '%';
+                                } elseif ($level > ($asset->capacitySetting->empty_to ?? 39)) {
+                                    $status = 'half';
+                                    $displayValue = number_format($level, 0) . '%';
+                                } else {
+                                    $status = 'empty';
+                                    $displayValue = number_format($level, 0) . '%';
+                                }
+                                
+                                $timestamp = $latest?->created_at
+                                    ? $latest->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m h:i')
+                                    : '—';
+                                
+                                $batteryLow = $latest && $latest->battery !== null && $latest->battery_percentage <= 20;
+                            @endphp
+                            <div class="waste-type-card {{ strtolower($type) }}">
+                                <div class="waste-icon {{ strtolower($type) }}">
+                                    @if($type === 'GLASS')
+                                        <i class="fas fa-wine-bottle"></i>
+                                    @elseif($type === 'PAPER')
+                                        <i class="fas fa-newspaper"></i>
+                                    @else
+                                        <i class="fas fa-trash-alt"></i>
+                                    @endif
+                                </div>
+                                <div class="waste-label">{{ $type }}</div>
+                                <div class="waste-capacity {{ $status }}">{{ $displayValue }}</div>
+                            </div>
+                        @endif
                     @endforeach
                 </div>
 
                 <!-- LAST EMPTIED -->
-                <div class="mt-2 pt-2 border-top">
-                    <small class="text-muted" style="font-size: 0.65rem;">
-                        <i class="fas fa-history"></i> Last emptied: 
-                        <span class="fw-medium">{{ $lastEmptiedTimes->get($asset->id) ? $lastEmptiedTimes->get($asset->id)->diffForHumans() : 'Never' }}</span>
-                    </small>
+                <div class="asset-footer">
+                    <span class="last-emptied">
+                        <i class="fas fa-history me-1"></i> Last emptied: {{ $lastEmptied ? $lastEmptied->diffForHumans() : 'Never' }}
+                    </span>
                 </div>
 
             </div>
         @empty
             <div class="text-muted text-center py-3">
+                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                 No assets found
             </div>
         @endforelse
     </div>
 </div>
-
-<div class="card mb-4 shadow-sm">
-                <div class="card-header smartbin-gradient border-0">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
-                    </h5>
-                </div>
-                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-semibold">
-                                <i class="fas fa-bell text-success"></i> Notification Status
-                            </h6>
-                            <small class="text-muted">
-                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
-                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
-                                </span>
-                            </small>
-                        </div>
-
-                        <!-- Toggle Switch -->
-                        <div>
-                            <label class="switch switch-lg">
-                                <input type="checkbox" id="whatsappNotificationSwitch"
-                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
-                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
     </div>
 </div>
 
@@ -1145,7 +1295,37 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-            
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header smartbin-gradient border-0">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
+                    </h5>
+                </div>
+                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-semibold">
+                                <i class="fas fa-bell text-success"></i> Notification Status
+                            </h6>
+                            <small class="text-muted">
+                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
+                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
+                                </span>
+                            </small>
+                        </div>
+
+                        <!-- Toggle Switch -->
+                        <div>
+                            <label class="switch switch-lg">
+                                <input type="checkbox" id="whatsappNotificationSwitch"
+                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
