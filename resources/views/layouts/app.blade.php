@@ -211,7 +211,7 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini text-sm @if(request()->routeIs('dashboard')) sidebar-collapse @endif">
+<body class="hold-transition sidebar-mini text-sm @if(request()->routeIs('dashboard')) sidebar-closed @endif">
     @include('sweetalert::alert')
 
     <div class="wrapper">
