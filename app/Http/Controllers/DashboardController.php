@@ -282,66 +282,61 @@ private function getBinStatistics(): array
 }
 
 /**
- * Count bins that went from full to empty today.
+ * Count bins that were emptied today (same logic as Last Emptied).
  *
  * @return int
  */
 private function getCollectionTripsToday(): int
 {
-    $startDate = Carbon::today()->startOfDay();
-    $endDate = Carbon::today()->endOfDay();
-
     $devices = Device::with([
+        'asset',
         'asset.capacitySetting',
-        'sensors' => function ($query) use ($startDate, $endDate) {
-            // Get all sensors from yesterday until end of today to capture full context
-            $query->whereBetween('created_at', [
-                    Carbon::yesterday()->startOfDay(),
-                    $endDate
-                ])
-                ->orderBy('created_at', 'asc');
-        }
+        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
     ])->whereHas('asset', fn($q) => $q->where('is_active', 1))
       ->where('is_active', 1)
       ->get();
 
     $collectionCount = 0;
+    $emptiedAssetIds = [];
 
     foreach ($devices as $device) {
         if (!$device->asset || !$device->asset->capacitySetting) {
             continue;
         }
 
-        $capacitySetting = $device->asset->capacitySetting;
-        $halfTo = $capacitySetting->half_to;
-        $emptyTo = $capacitySetting->empty_to;
+        $assetId = $device->asset->id;
+        $capacity = $device->asset->capacitySetting;
+        $sensors = $device->sensors;
 
-        $wasFull = false;
-        $becameFullToday = false;
+        $wasFullOrHalf = false;
+        $previousCapacity = null;
 
-        foreach ($device->sensors as $sensor) {
+        foreach ($sensors as $sensor) {
             if (!is_numeric($sensor->capacity)) {
                 continue;
             }
 
-            $sensorTime = Carbon::parse($sensor->created_at);
-            $isToday = $sensorTime->isToday();
+            $currentCapacity = $sensor->capacity;
 
-            // Bin became full (today or before)
-            if (!$wasFull && $sensor->capacity > $halfTo) {
-                $wasFull = true;
-                if ($isToday) {
-                    $becameFullToday = true;
+            // Check if bin was full or half (capacity > empty_to)
+            if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
+                $wasFullOrHalf = true;
+            }
+
+            // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
+            if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
+                $emptiedTime = Carbon::parse($sensor->created_at);
+
+                // Count if emptied today and not already counted for this asset
+                if ($emptiedTime->isToday() && !isset($emptiedAssetIds[$assetId])) {
+                    $collectionCount++;
+                    $emptiedAssetIds[$assetId] = true;
                 }
+
+                $wasFullOrHalf = false; // reset for next cycle
             }
 
-            // Bin emptied after being full - count as one collection trip
-            // Only count if it became full today OR was already full and emptied today
-            if ($wasFull && $sensor->capacity <= $emptyTo && $isToday) {
-                $collectionCount++;
-                $wasFull = false;
-                $becameFullToday = false;
-            }
+            $previousCapacity = $currentCapacity;
         }
     }
 

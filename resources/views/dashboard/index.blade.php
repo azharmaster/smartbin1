@@ -1124,6 +1124,37 @@ function trend($current, $previous) {
         @endforelse
     </div>
 </div>
+ <div class="card mb-4 shadow-sm">
+                <div class="card-header smartbin-gradient border-0">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
+                    </h5>
+                </div>
+                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-semibold">
+                                <i class="fas fa-bell text-success"></i> Notification Status
+                            </h6>
+                            <small class="text-muted">
+                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
+                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
+                                </span>
+                            </small>
+                        </div>
+
+                        <!-- Toggle Switch -->
+                        <div>
+                            <label class="switch switch-lg">
+                                <input type="checkbox" id="whatsappNotificationSwitch"
+                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>
 
@@ -1295,37 +1326,7 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header smartbin-gradient border-0">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
-                    </h5>
-                </div>
-                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-semibold">
-                                <i class="fas fa-bell text-success"></i> Notification Status
-                            </h6>
-                            <small class="text-muted">
-                                <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
-                                    {{ $whatsappNotificationActive ? '● Active' : '○ Inactive' }}
-                                </span>
-                            </small>
-                        </div>
-
-                        <!-- Toggle Switch -->
-                        <div>
-                            <label class="switch switch-lg">
-                                <input type="checkbox" id="whatsappNotificationSwitch"
-                                    {{ $whatsappNotificationActive ? 'checked' : '' }}
-                                    {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
+           
         </div>
 
 
