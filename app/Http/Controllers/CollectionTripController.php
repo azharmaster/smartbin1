@@ -47,7 +47,7 @@ class CollectionTripController extends Controller
     }
 
     /**
-     * Get collection trips between dates (same logic as Last Emptied), grouped by asset.
+     * Get collection trips between dates (same logic as Last Emptied), flattened by device.
      *
      * @param  string  $dateFrom
      * @param  string  $dateTo
@@ -64,30 +64,18 @@ class CollectionTripController extends Controller
           ->where('is_active', 1)
           ->get();
 
-        // Group by asset
-        $assetsTrips = [];
+        $collectionTrips = collect();
 
         foreach ($devices as $device) {
             if (!$device->asset || !$device->asset->capacitySetting) {
                 continue;
             }
 
-            $assetId = $device->asset->id;
             $capacity = $device->asset->capacitySetting;
             $sensors = $device->sensors;
 
-            if (!isset($assetsTrips[$assetId])) {
-                $assetsTrips[$assetId] = [
-                    'asset_id' => $assetId,
-                    'asset_name' => $device->asset->asset_name,
-                    'floor_name' => $device->asset->floor->floor_name ?? 'N/A',
-                    'emptied_times' => [],
-                ];
-            }
-
             $wasFullOrHalf = false;
             $previousCapacity = null;
-            $lastEmptiedTime = null;
 
             foreach ($sensors as $sensor) {
                 if (!is_numeric($sensor->capacity)) {
@@ -108,17 +96,17 @@ class CollectionTripController extends Controller
 
                     // Check if within date range
                     if ($emptiedTime->between(Carbon::parse($dateFrom)->startOfDay(), Carbon::parse($dateTo)->endOfDay())) {
-                        // Only add if this is a new emptying event (not duplicate)
-                        if (!$lastEmptiedTime || $emptiedTime < $lastEmptiedTime) {
-                            $assetsTrips[$assetId]['emptied_times'][] = [
-                                'emptied_at' => $emptiedTime,
-                                'emptied_date' => $emptiedTime->format('Y-m-d'),
-                                'emptied_time' => $emptiedTime->format('H:i'),
-                                'datetime_formatted' => $emptiedTime->format('d/m/Y H:i'),
-                                'diff_for_humans' => $emptiedTime->diffForHumans(),
-                            ];
-                            $lastEmptiedTime = $emptiedTime;
-                        }
+                        $collectionTrips->push([
+                            'asset_id' => $device->asset->id,
+                            'asset_name' => $device->asset->asset_name,
+                            'floor_name' => $device->asset->floor->floor_name ?? 'N/A',
+                            'device_name' => $device->device_name ?? 'N/A',
+                            'emptied_at' => $emptiedTime,
+                            'emptied_date' => $emptiedTime->format('Y-m-d'),
+                            'emptied_time' => $emptiedTime->format('H:i'),
+                            'datetime_formatted' => $emptiedTime->format('d/m/Y h:i A'),
+                            'diff_for_humans' => $emptiedTime->diffForHumans(),
+                        ]);
                     }
 
                     $wasFullOrHalf = false; // reset for next cycle
@@ -128,34 +116,8 @@ class CollectionTripController extends Controller
             }
         }
 
-        // Convert to collection and flatten for display
-        $collectionTrips = collect();
-
-        foreach ($assetsTrips as $assetId => $assetData) {
-            if (empty($assetData['emptied_times'])) {
-                continue;
-            }
-
-            // Sort emptied times descending
-            $emptiedTimes = collect($assetData['emptied_times'])->sortByDesc('emptied_at');
-
-            // Get the most recent emptied time for sorting
-            $mostRecentEmpty = $emptiedTimes->first()['emptied_at'];
-
-            $collectionTrips->push([
-                'asset_id' => $assetId,
-                'asset_name' => $assetData['asset_name'],
-                'floor_name' => $assetData['floor_name'],
-                'total_trips' => $emptiedTimes->count(),
-                'last_emptied_at' => $mostRecentEmpty,
-                'last_emptied_formatted' => $emptiedTimes->first()['datetime_formatted'],
-                'last_emptied_diff' => $emptiedTimes->first()['diff_for_humans'],
-                'emptied_times' => $emptiedTimes->values()->all(),
-            ]);
-        }
-
-        // Sort by last emptied time descending (most recent first)
-        return $collectionTrips->sortByDesc('last_emptied_at')->values();
+        // Sort by emptied time descending (most recent first)
+        return $collectionTrips->sortByDesc('emptied_at')->values();
     }
 
     /**

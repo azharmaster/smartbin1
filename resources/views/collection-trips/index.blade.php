@@ -237,10 +237,7 @@
                     <tr>
                         <th>No.</th>
                         <th>Asset Name</th>
-                        <th>Floor</th>
-                        <th>Device/Compartment</th>
-                        <th>Date Emptied</th>
-                        <th>Time Emptied</th>
+                        
                         <th>DateTime</th>
                         <th>Ago</th>
                     </tr>
@@ -250,12 +247,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td><strong>{{ $trip['asset_name'] }}</strong></td>
-                            <td>{{ $trip['floor_name'] }}</td>
-                            <td>{{ $trip['device_name'] }}</td>
-                            <td>
-                                <span class="badge-success">{{ $trip['emptied_date'] }}</span>
-                            </td>
-                            <td>{{ $trip['emptied_time'] }}</td>
+                           
                             <td>{{ $trip['datetime_formatted'] }}</td>
                             <td>{{ $trip['diff_for_humans'] }}</td>
                         </tr>
