@@ -36,6 +36,9 @@ class DashboardController extends Controller
     $floors = Floor::all();
     $assetsWithCoords = Asset::whereNotNull('x')
                             ->whereNotNull('y')
+                            ->with(['devices' => function($q) {
+                                $q->where('is_active', 1);
+                            }])
                             ->get();
     $assetsWithDevices = Asset::with(['devices.sensors'])
         ->whereHas('devices')
@@ -94,7 +97,7 @@ class DashboardController extends Controller
 
         'todos' => $this->loadTodosForUser(Auth::id()),
         'floors' => Floor::all(),
-        'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->get(),
+        'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->whereHas('devices')->where('is_active', 1)->get(),
         'devices' => $devices,
         'users' => User::all(),
         'assignedTasks' => $this->loadAssignedTasks(),
@@ -291,8 +294,12 @@ private function getCollectionTripsToday(): int
     $devices = Device::with([
         'asset.capacitySetting',
         'sensors' => function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate])
-                  ->orderBy('created_at', 'asc');
+            // Get all sensors from yesterday until end of today to capture full context
+            $query->whereBetween('created_at', [
+                    Carbon::yesterday()->startOfDay(),
+                    $endDate
+                ])
+                ->orderBy('created_at', 'asc');
         }
     ])->whereHas('asset', fn($q) => $q->where('is_active', 1))
       ->where('is_active', 1)
@@ -310,21 +317,30 @@ private function getCollectionTripsToday(): int
         $emptyTo = $capacitySetting->empty_to;
 
         $wasFull = false;
+        $becameFullToday = false;
 
         foreach ($device->sensors as $sensor) {
             if (!is_numeric($sensor->capacity)) {
                 continue;
             }
 
-            // Bin became full
+            $sensorTime = Carbon::parse($sensor->created_at);
+            $isToday = $sensorTime->isToday();
+
+            // Bin became full (today or before)
             if (!$wasFull && $sensor->capacity > $halfTo) {
                 $wasFull = true;
+                if ($isToday) {
+                    $becameFullToday = true;
+                }
             }
 
             // Bin emptied after being full - count as one collection trip
-            if ($wasFull && $sensor->capacity <= $emptyTo) {
+            // Only count if it became full today OR was already full and emptied today
+            if ($wasFull && $sensor->capacity <= $emptyTo && $isToday) {
                 $collectionCount++;
-                $wasFull = false; // Reset for next cycle
+                $wasFull = false;
+                $becameFullToday = false;
             }
         }
     }
