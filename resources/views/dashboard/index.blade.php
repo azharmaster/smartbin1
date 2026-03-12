@@ -85,7 +85,7 @@
 /* Sensor List - Waste Type Cards */
 .sensor-list-card {
     border: none;
-    border-radius: 12px;
+    border-radius: 5px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     background: #ffffff;
     overflow: hidden;
