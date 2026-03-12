@@ -857,9 +857,9 @@ function trend($current, $previous) {
         <div class="col-lg-9">
             <div class="card card-success map-card mb-4">
                 <!-- Header -->
-                <div class="card-header smartbin-gradient">
+                <!-- <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 text-white fs-6"><i class="fas fa-map-marked-alt"></i> Assets Map</h5>
-                </div>
+                </div> -->
 
                 <!-- Card Body -->
                 <div class="card-body map-card-body" style="height: 650px; position: relative;">
