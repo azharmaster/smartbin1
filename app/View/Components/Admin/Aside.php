@@ -33,6 +33,13 @@ class Aside extends Component
                 "route_name" => "summary",
                 "route_active" => "summary"
             ],
+            [
+                "label" => "Collection Trips",
+                "icon" => "fas fa-trash-alt",
+                "color" => "#1cc88a",
+                "route_name" => "collection-trips.index",
+                "route_active" => "collection-trips.*"
+            ],
 
             // WORKFORCEHUB
             [

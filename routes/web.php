@@ -33,6 +33,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CollectionTripController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -382,3 +383,9 @@ Route::post('/login', [LoginController::class, 'handleLogin'])
 
     Route::patch('/users/{id}/toggle-whatsapp', [UserController::class, 'toggleWhatsapp'])
     ->name('users.toggleWhatsapp');
+
+// Collection Trips
+Route::middleware('auth')->prefix('collection-trips')->as('collection-trips.')->controller(CollectionTripController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/export', 'export')->name('export');
+});
