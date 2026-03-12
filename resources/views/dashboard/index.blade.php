@@ -913,6 +913,66 @@ function trend($current, $previous) {
                     <div id="dashboardMap"></div>
                 </div>
             </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 text-white fs-6">
+                        <i class="fas fa-calendar-plus me-2"></i> Upcoming Holidays & Events
+                    </h5>
+                </div>
+                <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
+                    @if(isset($upcomingHolidaysAndEvents) && $upcomingHolidaysAndEvents->count() > 0)
+                        <div class="list-group list-group-flush">
+                            @foreach($upcomingHolidaysAndEvents as $item)
+                                @php
+                                    $startDate = Carbon\Carbon::parse($item['start_date']);
+                                    $endDate = $item['end_date'] ? Carbon\Carbon::parse($item['end_date']) : null;
+                                    $daysUntilStart = now()->diffInDays($startDate, false);
+                                    
+                                    if ($daysUntilStart == 0) {
+                                        $statusText = 'Today';
+                                        $badgeClass = 'bg-danger';
+                                    } elseif ($daysUntilStart == 1) {
+                                        $statusText = 'Tomorrow';
+                                        $badgeClass = 'bg-warning';
+                                    } else {
+                                        $statusText = 'In ' . ceil($daysUntilStart) . ' days';
+                                        $badgeClass = 'bg-info';
+                                    }
+                                @endphp
+                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <h6 class="mb-1 fw-semibold">
+                                            @if($item['type'] === 'holiday')
+                                                <i class="fas fa-umbrella-beach text-danger"></i> {{ $item['name'] }}
+                                            @else
+                                                <i class="fas fa-calendar-alt text-success"></i> {{ $item['name'] }}
+                                            @endif
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-day"></i> 
+                                            {{ $startDate->format('Y-m-d') }}
+                                            @if($endDate)
+                                                → {{ $endDate->format('Y-m-d') }}
+                                            @endif
+                                            @if($item['type'] === 'event' && isset($item['location']))
+                                                <br><i class="fas fa-map-marker-alt"></i> {{ $item['location'] }}
+                                            @endif
+                                        </small>
+                                    </div>
+                                    <span class="badge {{ $badgeClass }} rounded-pill">
+                                        {{ $statusText }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-muted text-center py-3">
+                            <i class="fas fa-check-circle fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0">No upcoming holidays or events in the next 7 days</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
         {{-- right column --}}
         <div class="col-lg-3">
@@ -1334,66 +1394,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="col-lg-4">
 
         <!-- Upcoming Holidays and Events -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-calendar-plus me-2"></i> Upcoming Holidays & Events
-                    </h5>
-                </div>
-                <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
-                    @if(isset($upcomingHolidaysAndEvents) && $upcomingHolidaysAndEvents->count() > 0)
-                        <div class="list-group list-group-flush">
-                            @foreach($upcomingHolidaysAndEvents as $item)
-                                @php
-                                    $startDate = Carbon\Carbon::parse($item['start_date']);
-                                    $endDate = $item['end_date'] ? Carbon\Carbon::parse($item['end_date']) : null;
-                                    $daysUntilStart = now()->diffInDays($startDate, false);
-                                    
-                                    if ($daysUntilStart == 0) {
-                                        $statusText = 'Today';
-                                        $badgeClass = 'bg-danger';
-                                    } elseif ($daysUntilStart == 1) {
-                                        $statusText = 'Tomorrow';
-                                        $badgeClass = 'bg-warning';
-                                    } else {
-                                        $statusText = 'In ' . ceil($daysUntilStart) . ' days';
-                                        $badgeClass = 'bg-info';
-                                    }
-                                @endphp
-                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <div>
-                                        <h6 class="mb-1 fw-semibold">
-                                            @if($item['type'] === 'holiday')
-                                                <i class="fas fa-umbrella-beach text-danger"></i> {{ $item['name'] }}
-                                            @else
-                                                <i class="fas fa-calendar-alt text-success"></i> {{ $item['name'] }}
-                                            @endif
-                                        </h6>
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar-day"></i> 
-                                            {{ $startDate->format('Y-m-d') }}
-                                            @if($endDate)
-                                                → {{ $endDate->format('Y-m-d') }}
-                                            @endif
-                                            @if($item['type'] === 'event' && isset($item['location']))
-                                                <br><i class="fas fa-map-marker-alt"></i> {{ $item['location'] }}
-                                            @endif
-                                        </small>
-                                    </div>
-                                    <span class="badge {{ $badgeClass }} rounded-pill">
-                                        {{ $statusText }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-muted text-center py-3">
-                            <i class="fas fa-check-circle fa-2x mb-2 opacity-50"></i>
-                            <p class="mb-0">No upcoming holidays or events in the next 7 days</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
+            
             <!-- Activity Calendar -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">

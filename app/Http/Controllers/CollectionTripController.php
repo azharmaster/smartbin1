@@ -147,27 +147,16 @@ class CollectionTripController extends Controller
         // Add BOM for UTF-8
         fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // Headers
+        // Headers - Asset Name and Date Time only
         fputcsv($file, [
-            'No.',
             'Asset Name',
-            'Floor',
-            'Device/Compartment',
-            'Date Emptied',
-            'Time Emptied',
             'Date Time'
         ]);
 
         // Data
-        $no = 1;
         foreach ($collectionTrips as $trip) {
             fputcsv($file, [
-                $no++,
                 $trip['asset_name'],
-                $trip['floor_name'],
-                $trip['device_name'],
-                $trip['emptied_date'],
-                $trip['emptied_time'],
                 $trip['datetime_formatted']
             ]);
         }

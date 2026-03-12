@@ -638,31 +638,324 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             padding: 16px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         ">
-            <h4 style="margin-bottom: 12px; font-size: 15px; font-weight: 600;">
-                Today's Capacity Levels (7AM - 7PM)
-            </h4>
-
-            <div style="position: relative; height: 320px;">
-                <canvas id="weeklyBinChart"></canvas>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <h4 style="margin: 0; font-size: 15px; font-weight: 600;">
+                        <i class="fas fa-chart-line"></i> Capacity Levels (24 Hours)
+                    </h4>
+                    <input type="date" 
+                           id="datePicker"
+                           value="{{ $selectedDate }}"
+                           max="{{ date('Y-m-d') }}"
+                           onchange="changeDate(this.value)"
+                           style="
+                               padding: 6px 12px;
+                               border: 1px solid #d1d5db;
+                               border-radius: 6px;
+                               font-size: 13px;
+                               color: #374151;
+                               background: #f9fafb;
+                               cursor: pointer;
+                           "
+                           title="Select date to view historical data">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="resetZoom()" style="
+                        padding: 6px 12px;
+                        background: #f3f4f6;
+                        border: 1px solid #d1d5db;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    ">
+                        <i class="fas fa-compress-arrows-alt"></i> Reset Zoom
+                    </button>
+                    <button onclick="toggleLiveUpdate()" id="liveUpdateBtn" style="
+                        padding: 6px 12px;
+                        background: #10b981;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    ">
+                        <i class="fas fa-circle" style="font-size: 8px;"></i> Live: ON
+                    </button>
+                </div>
             </div>
 
-            <p style="font-size: 12px; color: #777; margin-top: 6px;">
-                Scroll to zoom • Drag to pan • Double-click to reset
+            <div style="position: relative; height: 350px;">
+                <canvas id="weeklyBinChart" 
+                        data-chart-labels='@json($weeklyChartLabels)' 
+                        data-chart-datasets='@json($weeklySensorDatasets)'></canvas>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: #777;">
+                <div>
+                    <i class="fas fa-mouse-pointer"></i> Scroll untuk zoom • Drag untuk pan • Double-click untuk reset
+                </div>
+                <div id="lastUpdate" style="display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-clock"></i> <span>Updated: Just now</span>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: #999; margin-top: 8px; text-align: center;">
+                <i class="fas fa-info-circle"></i> Data shown in hourly intervals for the selected date
             </p>
         </div>
 
         </div>
 <br>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- ✅ REQUIRED: Chart.js -->
+<!-- Chart.js and zoom plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 
-<!-- zoom plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+<!-- Chart with Zoom -->
+<script>
+let weeklyChart = null;
+let liveUpdateEnabled = true;
 
+// Reset zoom function
+function resetZoom() {
+    if (weeklyChart) {
+        weeklyChart.resetZoom();
+    }
+}
 
-    {{-- Draggable markers JS --}}
+// Toggle live update
+function toggleLiveUpdate() {
+    liveUpdateEnabled = !liveUpdateEnabled;
+    const btn = document.getElementById('liveUpdateBtn');
+    if (liveUpdateEnabled) {
+        btn.style.background = '#10b981';
+        btn.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Live: ON';
+    } else {
+        btn.style.background = '#6b7280';
+        btn.innerHTML = '<i class="fas fa-pause"></i> Live: PAUSED';
+    }
+}
+
+// Update timestamp
+function updateLastUpdateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    if (lastUpdateEl) {
+        lastUpdateEl.innerHTML = '<i class="fas fa-clock"></i> <span>Updated: ' + timeStr + '</span>';
+    }
+}
+
+// Change date and redirect
+function changeDate(date) {
+    // Show loading state
+    const datePicker = document.getElementById('datePicker');
+    if (datePicker) {
+        datePicker.style.opacity = '0.5';
+        datePicker.style.cursor = 'wait';
+    }
+    
+    // Get current URL and add/replace date parameter
+    const url = new URL(window.location.href);
+    url.searchParams.set('date', date);
+    window.location.href = url.toString();
+}
+
+// Initialize chart function
+function initChart() {
+    const ctx = document.getElementById('weeklyBinChart');
+    if (!ctx) return null;
+
+    // Destroy existing chart if exists
+    if (weeklyChart) {
+        weeklyChart.destroy();
+    }
+
+    // Get data from data attributes (updated by Livewire)
+    const labels = JSON.parse(ctx.getAttribute('data-chart-labels') || '[]');
+    const sensorDatasets = JSON.parse(ctx.getAttribute('data-chart-datasets') || '[]');
+
+    const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e91e63'];
+
+    const datasets = sensorDatasets.map((sensor, index) => ({
+        label: sensor.label,
+        data: sensor.data,
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        borderColor: colors[index % colors.length],
+        backgroundColor: colors[index % colors.length] + '20',
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: colors[index % colors.length],
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        timestamp: sensor.timestamps || []
+    }));
+
+    weeklyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 500,
+                easing: 'easeOutQuart'
+            },
+            interaction: { 
+                mode: 'nearest', 
+                intersect: false,
+                axis: 'x'
+            },
+            plugins: {
+                legend: { 
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: { size: 12, weight: '600' }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    padding: 14,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    cornerRadius: 10,
+                    displayColors: true,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label || '';
+                        },
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y;
+                            const timestamp = context.dataset.timestamp?.[context.dataIndex] || '';
+                            
+                            let labelText = '  ' + label + ': ' + (value !== null ? value.toFixed(1) + '%' : 'N/A');
+                            if (timestamp) {
+                                labelText += ' • ' + timestamp;
+                            }
+                            return labelText;
+                        }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                        threshold: 5
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                            speed: 0.15
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'x',
+                        onZoomComplete: function({ chart }) {
+                            chart.draw();
+                        }
+                    },
+                    limits: {
+                        x: { min: 'original', max: 'original' },
+                        y: { min: 0, max: 100 }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100,
+                    title: { 
+                        display: true, 
+                        text: 'Capacity (%)',
+                        font: { size: 13, weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.06)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        },
+                        font: { size: 11 }
+                    }
+                },
+                x: {
+                    title: { 
+                        display: true, 
+                        text: 'Time (Hours)',
+                        font: { size: 13, weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.06)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxRotation: 0,
+                        minRotation: 0,
+                        font: { size: 10 },
+                        autoSkip: true,
+                        maxTicksLimit: 12
+                    }
+                }
+            }
+        }
+    });
+
+    // Double-click to reset zoom
+    ctx.canvas.addEventListener('dblclick', function() {
+        resetZoom();
+    });
+
+    return weeklyChart;
+}
+
+// Initialize chart on page load
+document.addEventListener('DOMContentLoaded', function () {
+    initChart();
+    
+    // Setup MutationObserver to detect data attribute changes (for future use)
+    const canvas = document.getElementById('weeklyBinChart');
+    if (canvas) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    (mutation.attributeName === 'data-chart-labels' || 
+                     mutation.attributeName === 'data-chart-datasets')) {
+                    setTimeout(() => initChart(), 50);
+                }
+            });
+        });
+        
+        observer.observe(canvas, { attributes: true });
+    }
+});
+
+// Listen for Livewire updates (refresh data)
+Livewire.on('refreshData', () => {
+    if (liveUpdateEnabled) {
+        updateLastUpdateTime();
+    }
+});
+</script>
+
+<!-- Draggable Marker -->
 <script>
 function draggableMarker(assetId, startX, startY) {
     return {
@@ -720,77 +1013,6 @@ function draggableMarker(assetId, startX, startY) {
         }
     }
 }
-</script>
-
-<!-- Chart -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('weeklyBinChart');
-    if (!ctx) return;
-
-    const sensorDatasets = @json($weeklySensorDatasets);
-
-    const colors = ['#8a8583', '#eed7a1', '#cd8b62', '#f59e0b'];
-
-    const datasets = sensorDatasets.map((sensor, index) => ({
-        label: sensor.label,
-        data: sensor.data,
-        borderWidth: 2,
-        tension: 0.35,
-        fill: false,
-        borderColor: colors[index % colors.length],   // line color
-        backgroundColor: colors[index % colors.length], // legend box color
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        timestamp: sensor.timestamps || []
-    }));
-
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: @json($weeklyChartLabels),
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { display: true },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.dataset.label || '';
-                            const value = context.parsed.y;
-                            const timestamp = context.dataset.timestamp[context.dataIndex] || '';
-                            
-                            let labelText = label + ': ' + (value !== null ? value.toFixed(1) + '%' : 'N/A');
-                            if (timestamp) {
-                                labelText += ' at ' + timestamp;
-                            }
-                            return labelText;
-                        }
-                    }
-                },
-                zoom: {
-                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
-                    pan: { enabled: true, mode: 'x' }
-                }
-            },
-            scales: {
-                y: {
-                    min: 0,
-                    max: 100,
-                    title: { display: true, text: 'Capacity (%)' }
-                },
-                x: {
-                    title: { display: true, text: 'Time' }
-                }
-            }
-        }
-    });
-});
 </script>
 
 <!--OPEN HELP MODAL -->

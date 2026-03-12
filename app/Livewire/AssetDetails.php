@@ -24,6 +24,9 @@ class AssetDetails extends Component
     public $weeklyChartMax = [];
     public $weeklySensorDatasets = [];
     public $deviceStatuses = [];
+    public $selectedDate;
+
+    protected $listeners = ['refreshData' => 'refreshData'];
 
     public function mount($asset)
     {
@@ -42,6 +45,9 @@ class AssetDetails extends Component
         $this->capacitySetting = CapacitySetting::first();
         $this->allAssets = Asset::all();
         $this->floors = Floor::orderBy('floor_name')->get();
+        
+        // Get date from query parameter or default to today
+        $this->selectedDate = request()->query('date', date('Y-m-d'));
 
         $this->deviceStatuses = [];
         foreach ($this->asset->devices as $device) {
@@ -53,71 +59,55 @@ class AssetDetails extends Component
     }
 
     /**
-     * 30-minute interval from 7AM – 7PM for today's sensor data
+     * 24-hour interval data for selected date
      */
     protected function prepareDailyChart()
     {
         $devices = $this->asset->devices;
+        $selectedDate = Carbon::parse($this->selectedDate);
 
-        $start = Carbon::today()->setTime(7, 0);
-        $end   = Carbon::today()->setTime(19, 0);
-
+        // Create 24-hour slots (hourly intervals)
         $slots = collect();
-        $cursor = $start->copy();
-
-        while ($cursor <= $end) {
-            $slots->push($cursor->format('H:i'));
-            $cursor->addMinutes(30);
+        for ($hour = 0; $hour < 24; $hour++) {
+            $slots->push(sprintf('%02d:00', $hour));
         }
 
-        $this->weeklyChartLabels = $slots->map(function ($time) {
-            $hour = Carbon::createFromFormat('H:i', $time);
-            return $hour->minute === 0 ? $hour->format('ga') : '';
-        })->values();
-
+        $this->weeklyChartLabels = $slots->values();
         $this->weeklySensorDatasets = [];
 
         foreach ($devices as $device) {
-            // Get raw sensor data ordered by created_at
+            // Get raw sensor data for the selected date
             $sensors = DB::table('sensors')
                 ->select('capacity', 'created_at')
                 ->where('device_id', $device->id_device)
-                ->whereDate('created_at', Carbon::today())
-                ->whereTime('created_at', '>=', '07:00:00')
-                ->whereTime('created_at', '<=', '19:00:00')
+                ->whereDate('created_at', $selectedDate)
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            // Group by 30-minute slots and keep track of timestamps
+            // Group by hourly slots
             $slotData = [];
             $slotTimestamps = [];
-            
+
             foreach ($sensors as $sensor) {
-                $timeSlot = Carbon::parse($sensor->created_at)->setTimeFromTimeString(
-                    Carbon::parse($sensor->created_at)->format('H:i')
-                )->setTime(
-                    Carbon::parse($sensor->created_at)->hour,
-                    (int)(Carbon::parse($sensor->created_at)->minute / 30) * 30,
-                    0
-                )->format('H:i');
+                $hour = Carbon::parse($sensor->created_at)->format('H:00');
                 
-                if (!isset($slotData[$timeSlot])) {
-                    $slotData[$timeSlot] = [];
-                    $slotTimestamps[$timeSlot] = [];
+                if (!isset($slotData[$hour])) {
+                    $slotData[$hour] = [];
+                    $slotTimestamps[$hour] = [];
                 }
-                $slotData[$timeSlot][] = $sensor->capacity;
-                $slotTimestamps[$timeSlot][] = Carbon::parse($sensor->created_at)->format('H:i:s');
+                $slotData[$hour][] = $sensor->capacity;
+                $slotTimestamps[$hour][] = Carbon::parse($sensor->created_at)->format('H:i:s');
             }
 
             // Build values and timestamps arrays
             $values = [];
             $timestamps = [];
-            
+
             foreach ($slots as $slot) {
                 if (isset($slotData[$slot]) && !empty($slotData[$slot])) {
-                    // Calculate average manually
+                    // Calculate average
                     $avg = array_sum($slotData[$slot]) / count($slotData[$slot]);
-                    $values[] = $avg;
+                    $values[] = round($avg, 1);
                     // Use the latest timestamp for each slot
                     $timestamps[] = max($slotTimestamps[$slot]);
                 } else {
