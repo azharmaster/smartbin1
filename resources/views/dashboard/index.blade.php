@@ -799,6 +799,34 @@ input:checked + .slider:before {
         height: 300px;
     }
 }
+
+.smartbin-gradient {
+    background: linear-gradient(270deg, #9457b3, #672d84, #9457b3);
+    background-size: 400% 400%;
+    animation: smartbinGradient 8s ease infinite;
+}
+
+/* Animation */
+@keyframes smartbinGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+@media (max-width: 576px) {
+    .card-body.d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -973,6 +1001,97 @@ function trend($current, $previous) {
                     @endif
                 </div>
             </div>
+
+            <div class="card mb-4">
+    <div class="card-header smartbin-gradient">
+        <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
+            <span>
+                <i class="fas fa-inbox"></i> Notification Sent
+                <span class="badge badge-info">{{ $todayNotifications->flatten()->count() }}</span>
+            </span>
+
+            <a href="{{ route('notifications.index') }}"
+            class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
+                <i class="fas fa-eye"></i>
+            </a>
+        </h5>
+    </div>
+
+    <div class="card-body p-3">
+        @if($todayNotifications->isNotEmpty())
+            @foreach($todayNotifications as $date => $logs)
+                <div class="mb-3">
+                    <!-- Date Header -->
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-calendar-day text-success"></i>
+                                @if(Carbon\Carbon::parse($date)->isToday())
+                                    Today
+                                @elseif(Carbon\Carbon::parse($date)->isYesterday())
+                                    Yesterday
+                                @else
+                                    {{ Carbon\Carbon::parse($date)->format('d M Y') }}
+                                @endif
+                            </h6>
+                        </div>
+                        <span class="badge bg-success">{{ $logs->count() }} notifications</span>
+                    </div>
+
+                    <!-- Notification Timeline for this date -->
+                    <div class="notification-timeline">
+                        @php
+                            // Get unique messages by message_preview for summary
+                            $uniqueLogs = $logs->unique('message_preview')->take(10);
+                            $totalCount = $logs->unique('message_preview')->count();
+                        @endphp
+
+                        @forelse($uniqueLogs as $log)
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+
+                                <div class="timeline-content">
+                                    <button
+                                        class="timeline-button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#notif{{ $log->id }}">
+
+                                        <i class="fas fa-history"></i>
+                                        {{ Carbon\Carbon::parse($log->sent_at)->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
+                                        <span class="text-muted small">({{ $logs->where('message_preview', $log->message_preview)->count() }}x)</span>
+                                    </button>
+
+                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
+                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-muted text-center py-3">
+                                No notifications for this date
+                            </div>
+                        @endforelse
+
+                        @if($totalCount > 10)
+                            <div class="text-center mt-2">
+                                <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-success">
+                                    View all {{ $totalCount }} notifications <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <hr class="my-3">
+            @endforeach
+        @else
+            <div class="text-muted text-center py-4">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                <p>No notifications sent today</p>
+            </div>
+        @endif
+    </div>
+</div>
         </div>
         {{-- right column --}}
         <div class="col-lg-3">
@@ -1215,188 +1334,8 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
-    </div>
-</div>
 
-{{-- JS: ACCORDION + FILTER --}}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    // Only one asset dropdown open
-    document.querySelectorAll('.asset-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function () {
-            const target = this.getAttribute('data-bs-target');
-
-            document.querySelectorAll('.asset-collapse').forEach(collapse => {
-                if ('#' + collapse.id !== target) {
-                    bootstrap.Collapse.getOrCreateInstance(collapse).hide();
-                }
-            });
-        });
-    });
-
-    // Filter devices
-    document.getElementById('deviceFilter').addEventListener('change', function () {
-        const filter = this.value;
-
-        document.querySelectorAll('.asset-card').forEach(asset => {
-            let visible = 0;
-
-            asset.querySelectorAll('.device-card').forEach(device => {
-                if (filter === 'critical' || device.dataset.status === filter) {
-                    device.closest('.device-link').style.display = 'block';
-                    visible++;
-                } else {
-                    device.closest('.device-link').style.display = 'none';
-                }
-            });
-
-            asset.style.display = visible > 0 ? 'block' : 'none';
-        });
-    });
-
-});
-</script>
-
-<!-- SmartBin Animated Gradient Style -->
-<style>
-.smartbin-gradient {
-    background: linear-gradient(270deg, #9457b3, #672d84, #9457b3);
-    background-size: 400% 400%;
-    animation: smartbinGradient 8s ease infinite;
-}
-
-/* Animation */
-@keyframes smartbinGradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-
-@media (max-width: 576px) {
-    .card-body.d-flex {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-}
-</style>
-
-
-    <!-- ROW 2: USERS + TODO -->
-    <div class="row">
-        <!-- LEFT COLUMN: MAP -->
-        <div class="col-lg-8">
-            <!-- NOTIFICATION LOGS-->
-<div class="card mb-4">
-    <div class="card-header smartbin-gradient">
-        <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
-            <span>
-                <i class="fas fa-inbox"></i> Notification Sent
-                <span class="badge badge-info">{{ $todayNotifications->flatten()->count() }}</span>
-            </span>
-
-            <a href="{{ route('notifications.index') }}"
-            class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
-                <i class="fas fa-eye"></i>
-            </a>
-        </h5>
-    </div>
-
-    <div class="card-body p-3">
-        @if($todayNotifications->isNotEmpty())
-            @foreach($todayNotifications as $date => $logs)
-                <div class="mb-3">
-                    <!-- Date Header -->
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0 fw-semibold">
-                                <i class="fas fa-calendar-day text-success"></i>
-                                @if(Carbon\Carbon::parse($date)->isToday())
-                                    Today
-                                @elseif(Carbon\Carbon::parse($date)->isYesterday())
-                                    Yesterday
-                                @else
-                                    {{ Carbon\Carbon::parse($date)->format('d M Y') }}
-                                @endif
-                            </h6>
-                        </div>
-                        <span class="badge bg-success">{{ $logs->count() }} notifications</span>
-                    </div>
-
-                    <!-- Notification Timeline for this date -->
-                    <div class="notification-timeline">
-                        @php
-                            // Get unique messages by message_preview for summary
-                            $uniqueLogs = $logs->unique('message_preview')->take(10);
-                            $totalCount = $logs->unique('message_preview')->count();
-                        @endphp
-
-                        @forelse($uniqueLogs as $log)
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
-
-                                <div class="timeline-content">
-                                    <button
-                                        class="timeline-button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#notif{{ $log->id }}">
-
-                                        <i class="fas fa-history"></i>
-                                        {{ Carbon\Carbon::parse($log->sent_at)->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
-                                        <span class="text-muted small">({{ $logs->where('message_preview', $log->message_preview)->count() }}x)</span>
-                                    </button>
-
-                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
-                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No notifications for this date
-                            </div>
-                        @endforelse
-
-                        @if($totalCount > 10)
-                            <div class="text-center mt-2">
-                                <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-success">
-                                    View all {{ $totalCount }} notifications <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <hr class="my-3">
-            @endforeach
-        @else
-            <div class="text-muted text-center py-4">
-                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
-                <p>No notifications sent today</p>
-            </div>
-        @endif
-    </div>
-</div>
-
-           
-        </div>
-
-
-       <!-- RIGHT COLUMN -->
-        <div class="col-lg-4">
-
-        <!-- Upcoming Holidays and Events -->
-            
-            <!-- Activity Calendar -->
-            <div class="card shadow-sm mb-4">
+             <div class="card shadow-sm mb-4">
                 <div class="card-header smartbin-gradient">
                     <h5 class="mb-0 fs-6">
                         <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
@@ -1446,8 +1385,55 @@ document.addEventListener('DOMContentLoaded', function () {
                 border-radius: 6px;
             }
             </style>
-        </div>
+            
     </div>
+</div>
+
+{{-- JS: ACCORDION + FILTER --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Only one asset dropdown open
+    document.querySelectorAll('.asset-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            const target = this.getAttribute('data-bs-target');
+
+            document.querySelectorAll('.asset-collapse').forEach(collapse => {
+                if ('#' + collapse.id !== target) {
+                    bootstrap.Collapse.getOrCreateInstance(collapse).hide();
+                }
+            });
+        });
+    });
+
+    // Filter devices
+    document.getElementById('deviceFilter').addEventListener('change', function () {
+        const filter = this.value;
+
+        document.querySelectorAll('.asset-card').forEach(asset => {
+            let visible = 0;
+
+            asset.querySelectorAll('.device-card').forEach(device => {
+                if (filter === 'critical' || device.dataset.status === filter) {
+                    device.closest('.device-link').style.display = 'block';
+                    visible++;
+                } else {
+                    device.closest('.device-link').style.display = 'none';
+                }
+            });
+
+            asset.style.display = visible > 0 ? 'block' : 'none';
+        });
+    });
+
+});
+</script>
+
+<!-- SmartBin Animated Gradient Style -->
+
+
+
+
 </div>
 
 
