@@ -24,6 +24,7 @@ use App\View\Components\Admin\Aside;
 use App\View\Components\Staff\StaffAside;
 use App\Http\Controllers\AdminMainDashboardController;
 use App\Http\Controllers\SummaryController;
+use App\Http\Controllers\CleaningHistoryController;
 use App\Http\Controllers\SupervisorMainDashboardController;
 use App\Http\Controllers\SupervisorDashboardController;
 use App\Http\Controllers\WhatsAppNotificationController;
@@ -196,6 +197,15 @@ Route::post('/complaints/{complaint}/assign', [ComplaintController::class, 'assi
     Route::post('/summary/send-email', [SummaryController::class, 'sendEmail'])
     ->name('summary.sendEmail')
     ->middleware('auth');
+
+    // Cleaning History
+    Route::get('/cleaning-history', [CleaningHistoryController::class, 'index'])
+    ->middleware('auth')
+    ->name('cleaning-history.index');
+    
+    Route::get('/cleaning-history/export', [CleaningHistoryController::class, 'exportCsv'])
+    ->middleware('auth')
+    ->name('cleaning-history.export');
 });
 
 // Staff dashboard routes

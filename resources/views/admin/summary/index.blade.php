@@ -263,7 +263,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-3">
+                                    <td colspan="2" class="text-center text-muted py-3">
                                         No cleaning records found for this period.
                                     </td>
                                 </tr>

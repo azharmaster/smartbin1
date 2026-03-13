@@ -248,7 +248,33 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             }
         }
 
-        return collect($logs)->sortByDesc('cleaned_at');
+        // Consolidate logs with same asset_name within 10 minutes (ignore device)
+        $logs = collect($logs)->sortBy('cleaned_at');
+        
+        $consolidated = [];
+        $lastLogTimeByAsset = []; // key: asset_name, value: Carbon time
+        
+        foreach ($logs as $log) {
+            $key = $log->asset_name;
+            
+            if (!isset($lastLogTimeByAsset[$key])) {
+                // First log for this asset - keep the earliest one
+                $consolidated[] = $log;
+                $lastLogTimeByAsset[$key] = $log->cleaned_at;
+            } else {
+                // Check if within 10 minutes of last kept log
+                $timeDiff = $lastLogTimeByAsset[$key]->diffInMinutes($log->cleaned_at);
+                
+                if ($timeDiff > 10) {
+                    // More than 10 minutes, add as new log
+                    $consolidated[] = $log;
+                    $lastLogTimeByAsset[$key] = $log->cleaned_at;
+                }
+                // Else: within 10 minutes, skip (consolidate with previous)
+            }
+        }
+
+        return collect($consolidated)->sortByDesc('cleaned_at');
     }
 
     public function getCleaningLogs(Carbon $baseDate, string $period)
