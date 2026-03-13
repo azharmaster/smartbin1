@@ -35,6 +35,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CollectionTripController;
+use App\Http\Controllers\KpiBinController;
+use App\Http\Controllers\KpiSensorController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -108,6 +110,22 @@ Route::middleware('auth')->group(function(){
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
         Route::delete('/{id}/destroy', 'destroy')->name('destroy');
+    });
+
+    // KPI Routes
+    Route::prefix('kpi')->as('kpi.')->group(function () {
+        // KPI BIN
+        Route::prefix('bin')->as('bin.')->controller(KpiBinController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/export', 'export')->name('export');
+        });
+
+        // KPI SENSOR
+        Route::prefix('sensor')->as('sensor.')->controller(KpiSensorController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/export', 'export')->name('export');
+            Route::get('/{deviceId}/details', 'details')->name('details');
+        });
     });
 
     // Floor Pictures

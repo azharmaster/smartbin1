@@ -99,6 +99,20 @@ class Aside extends Component
                         "color" => "#f6c23e",
                     ],
                     [
+                        "label" => "KPI BIN",
+                        "route_active" => "kpi.bin.*",
+                        "route_name" => "kpi.bin.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#e74a3b",
+                    ],
+                    [
+                        "label" => "KPI SENSOR",
+                        "route_active" => "kpi.sensor.*",
+                        "route_name" => "kpi.sensor.index",
+                        "icon" => "fas fa-circle",
+                        "color" => "#f6c23e",
+                    ],
+                    [
                         "label" => "Complaints",
                         "route_active" => "complaints.*",
                         "route_name" => "complaints.index",
