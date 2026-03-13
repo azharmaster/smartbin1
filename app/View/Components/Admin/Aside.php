@@ -36,6 +36,13 @@ class Aside extends Component
                 "route_active" => "summary"
             ],
             [
+                "label" => "Cleaning History",
+                "icon" => "fas fa-history",
+                "color" => "#1cc88a",
+                "route_name" => "cleaning-history.index",
+                "route_active" => "cleaning-history.*"
+            ],
+            [
                 "label" => "Collection Trips",
                 "icon" => "fas fa-trash-alt",
                 "color" => "#1cc88a",
