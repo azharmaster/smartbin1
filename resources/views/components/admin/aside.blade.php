@@ -1,17 +1,14 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <!-- <a href="" class="brand-link brand-app text-center">
-        <span class="brand-text">{{ env('APP_NAME') }}</span>
-    </a> -->
-    <a href="" class="brand-link brand-app text-center d-flex align-items-center justify-content-center">
+    <a href="" class="brand-link brand-app d-flex align-items-center justify-content-center">
         <img src="{{ asset('uploads/images/logo_white.png') }}"
-             alt="Logo" class="brand-logo-img" style="height:20px;">
+             alt="Logo" class="brand-logo-img" style="height:22px;">
         <img src="{{ asset('uploads/images/smartbin-tex.png') }}"
-             alt="Text" class="brand-text-img ms-2" style="height:20px;">
+             alt="Text" class="brand-text-img ms-2" style="height:22px;">
     </a>
 
     <!-- Sidebar -->
-    <nav class="mt-2 sidebar">
+    <nav class="mt-3 sidebar">
         <ul class="nav nav-pills nav-sidebar flex-column"
             role="menu"
             data-widget="treeview"
@@ -19,7 +16,7 @@
 
             @foreach ($routes as $route)
                 @php
-                    $iconColor = $route['color'] ?? '#6c757d';
+                    $iconColor = $route['color'] ?? '#a78bfa';
 
                     $isActive = false;
                     if (!empty($route['route_active'])) {
@@ -37,13 +34,13 @@
                 @endphp
 
                 @if(($route['type'] ?? null) === 'section')
-                    <li class="nav-header text-uppercase">{{ $route['label'] }}</li>
+                    <li class="nav-header">{{ $route['label'] }}</li>
 
                 @elseif(($route['type'] ?? null) === 'divider')
-                    <li class="nav-item"><hr class="my-2"></li>
+                    <li class="nav-item"><hr class="nav-divider"></li>
 
                 @elseif(!empty($route['is_logout']))
-                    <li class="nav-item mt-3">
+                    <li class="nav-item mt-2">
                         <form method="POST" action="{{ route('logout') }}" class="w-100">
                             @csrf
                             <a href="#"
@@ -71,75 +68,169 @@
 <!-- /.sidebar-menu -->
 
 <style>
-
 /* ===================================================== */
-/* ===== Brand Logo behavior =========================== */
+/* ===== Brand Logo ==================================== */
 /* ===================================================== */
 
-/* Default: show both */
-.brand-logo-img { display: inline-block; }
-.brand-text-img { display: inline-block; }
+.brand-link {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(0, 0, 0, 0.08);
+}
 
-/* Hide text when collapsed */
+.brand-logo-img,
+.brand-text-img {
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 body.sidebar-collapse .brand-text-img {
     display: none !important;
+    opacity: 0;
+    transform: translateX(-6px);
 }
 
-/* Center logo when collapsed */
 body.sidebar-collapse .brand-link {
     justify-content: center !important;
+    padding: 0.75rem 0.5rem !important;
 }
 
 /* ===================================================== */
-/* ===== Base Sidebar Styling ========================== */
+/* ===== Main Sidebar - Purple ========================= */
 /* ===================================================== */
 
 .main-sidebar {
-    background: linear-gradient(135deg, #672d84, #9457b3);
-
-    /* 🧈 BUTTER SMOOTH WIDTH TRANSITION */
-    transition: width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: linear-gradient(180deg, #672d84 0%, #5a2675 100%);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Links */
-.nav-sidebar .nav-link {
-    margin: 3px 8px;
-    padding: 7px 10px;
+/* ===================================================== */
+/* ===== Sidebar Navigation - text-sm ================== */
+/* ===================================================== */
 
-    /* Smooth padding animation */
-    transition: padding 0.25s ease, justify-content 0.25s ease;
+.nav-sidebar .nav-link {
+    margin: 2px 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+    font-weight: 400;
+    position: relative;
+}
+
+.nav-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(3px);
 }
 
 .nav-sidebar .nav-link p {
-    font-size: 0.90rem;
+    font-size: 0.813rem; /* text-sm */
     font-weight: 400;
+    color: rgba(255, 255, 255, 0.75);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-sidebar .nav-link:hover p {
+    color: #ffffff;
 }
 
 .nav-sidebar .nav-icon {
-    font-size: 0.85rem;
-    margin-right: 8px;
+    font-size: 0.875rem;
+    margin-right: 12px;
+    width: 18px;
+    text-align: center;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
 }
 
-/* Nav header */
+/* ===================================================== */
+/* ===== Section Headers =============================== */
+/* ===================================================== */
+
 .nav-header {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    padding: 8px 16px 4px;
-    margin-top: 6px;
-    color: rgba(255,255,255,0.6);
-}
-
-/* Brand text */
-.brand-app .brand-text {
-    font-size: 0.9rem;
+    font-size: 0.62rem;
     font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 10px 14px 6px;
+    margin-top: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    border-left: 2px solid rgba(167, 139, 250, 0.4);
+    margin-left: 8px;
 }
 
-/* Remove active highlight */
-.nav-sidebar .nav-link.active,
+/* ===================================================== */
+/* ===== Dividers ====================================== */
+/* ===================================================== */
+
+.nav-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 10px 12px;
+}
+
+/* ===================================================== */
+/* ===== Active State ================================== */
+/* ===================================================== */
+
+.nav-sidebar .nav-link.active {
+    background: rgba(167, 139, 250, 0.15) !important;
+}
+
 .nav-sidebar .nav-link.active p {
-    background: transparent !important;
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.nav-sidebar .nav-link.active .nav-icon {
+    color: #c4b5fd !important;
+}
+
+.nav-sidebar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 3px;
+    background: #a78bfa;
+    border-radius: 0 3px 3px 0;
+}
+
+/* ===================================================== */
+/* ===== Logout Link =================================== */
+/* ===================================================== */
+
+.logout-link {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 3px 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+.logout-link:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: translateX(3px);
+}
+
+.logout-link:hover p {
+    color: #fca5a5 !important;
+}
+
+.logout-link i {
+    color: rgba(248, 113, 113, 0.85);
+    transition: all 0.2s ease;
+}
+
+.logout-link:hover i {
+    color: #fca5a5 !important;
 }
 
 /* ===================================================== */
@@ -147,19 +238,21 @@ body.sidebar-collapse .brand-link {
 /* ===================================================== */
 
 body.sidebar-collapse .main-sidebar {
-    width: 4.6rem !important;
+    width: 4.8rem !important;
 }
 
 body.sidebar-collapse .nav-sidebar .nav-link p,
 body.sidebar-collapse .nav-header,
-body.sidebar-collapse .brand-text,
-body.sidebar-collapse .sidebar hr {
+body.sidebar-collapse .brand-text-img,
+body.sidebar-collapse .nav-divider {
     display: none !important;
+    opacity: 0;
 }
 
 body.sidebar-collapse .nav-sidebar .nav-link {
     justify-content: center;
     padding: 10px 0;
+    margin: 2px 6px;
 }
 
 body.sidebar-collapse .nav-sidebar .nav-icon {
@@ -167,50 +260,9 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
     font-size: 1rem;
 }
 
-/* ===================================================== */
-/* ===== Page Indicator ================================ */
-/* ===================================================== */
-
-.nav-sidebar .nav-link.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: #717b75;
-    border-radius: 0 4px 4px 0;
-    transition: background 0.3s ease, height 0.3s ease;
-}
-
-/* ===================================================== */
-/* ===== Logout Styling ================================ */
-/* ===================================================== */
-
-.logout-link {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-}
-
-.logout-link i { color: #ffffff; }
-
-.logout-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.logout-link,
-.logout-link:hover,
-.logout-link:focus,
-.logout-link:active {
-    color: #ffffff !important;
-    text-decoration: none;
-}
-
-.logout-link i,
-.logout-link:hover i {
-    color: #ffffff !important;
+body.sidebar-collapse .nav-header {
+    padding: 0;
+    margin: 0;
 }
 
 /* ===================================================== */
@@ -223,50 +275,32 @@ body.sidebar-collapse .nav-sidebar .nav-icon {
 }
 
 .main-sidebar .sidebar {
-    height: calc(100vh - 70px);
+    height: calc(100vh - 56px);
     overflow-y: auto;
     overflow-x: hidden;
     padding-bottom: 20px;
 }
 
-/* Nice scrollbar */
+/* Custom Scrollbar */
 .main-sidebar .sidebar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
-.main-sidebar .sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
-}
+
 .main-sidebar .sidebar::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* ===================================================== */
-/* 🔥 BUTTER TEXT FADE + SLIDE ANIMATION =============== */
-/* ===================================================== */
-
-.nav-sidebar .nav-link p,
-.nav-header,
-.brand-text-img {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+.main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
 }
 
-body.sidebar-collapse .nav-sidebar .nav-link p,
-body.sidebar-collapse .nav-header,
-body.sidebar-collapse .brand-text-img {
-    opacity: 0;
-    transform: translateX(-10px);
-}
-
-body:not(.sidebar-collapse) .nav-sidebar .nav-link p,
-body:not(.sidebar-collapse) .nav-header,
-body:not(.sidebar-collapse) .brand-text-img {
-    opacity: 1;
-    transform: translateX(0);
+.main-sidebar .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* ===================================================== */
-/* 🔥 Hover Auto Open ================================== */
+/* ===== Hover Auto Open =============================== */
 /* ===================================================== */
 
 body.sidebar-hover-open .main-sidebar {
@@ -277,55 +311,44 @@ body.sidebar-hover-open .nav-sidebar .nav-link p,
 body.sidebar-hover-open .nav-header,
 body.sidebar-hover-open .brand-text-img {
     display: inline-block !important;
+    opacity: 1;
+    transform: translateX(0);
 }
 
 body.sidebar-hover-open .nav-sidebar .nav-link {
     justify-content: flex-start;
-    padding: 7px 10px;
+    padding: 8px 12px;
+    margin: 2px 8px;
 }
 
 body.sidebar-hover-open .nav-sidebar .nav-icon {
-    margin-right: 8px;
+    margin-right: 12px;
 }
 
 </style>
 
 <script>
-
-/* ===================================================== */
-/* 🔥 Smooth Hover Auto Expand Logic =================== */
-/* ===================================================== */
-
 document.addEventListener("DOMContentLoaded", function () {
-
     const body = document.body;
     const sidebar = document.querySelector('.main-sidebar');
     let hoverTimeout;
 
-    /* When mouse enters sidebar */
     sidebar.addEventListener('mouseenter', function () {
-
         if (body.classList.contains('sidebar-collapse')) {
-
             clearTimeout(hoverTimeout);
-
             body.classList.remove('sidebar-collapse');
             body.classList.add('sidebar-hover-open');
         }
     });
 
-    /* When mouse leaves sidebar */
     sidebar.addEventListener('mouseleave', function () {
-
         if (body.classList.contains('sidebar-hover-open')) {
-
             hoverTimeout = setTimeout(() => {
                 body.classList.remove('sidebar-hover-open');
                 body.classList.add('sidebar-collapse');
-            }, 120); // Reduced delay = smoother close
+            }, 100);
         }
     });
-
 });
-
 </script>
+

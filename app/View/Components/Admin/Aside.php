@@ -14,7 +14,9 @@ class Aside extends Component
     {
         $this->routes = [
 
-            //DASHBOARD
+            // =========================================
+            // DASHBOARD
+            // =========================================
             [
                 "type" => "section",
                 "label" => "Dashboard"
@@ -41,64 +43,19 @@ class Aside extends Component
                 "route_active" => "collection-trips.*"
             ],
 
-            // WORKFORCEHUB
+            // =========================================
+            // ASSET MANAGEMENT
+            // =========================================
             [
                 "type" => "section",
-                "label" => "WorkForceHub"
+                "label" => "AssetHub"
             ],
             [
-                "label" => "Users",
-                "icon" => "fas fa-users",
-                "color" => "#36b9cc",
-                "route_name" => "users.index",
-                "route_active" => "users.*"
-            ],
-            [
-                "label" => "Holiday and Event",
-                "icon" => "fas fa-calendar-alt",
-                "color" => "#f6c23e",
-                "route_name" => "holidays.index",
-                "route_active" => "holidays.*"
-            ],
-            // [
-            //     "label" => "Event",
-            //     "icon" => "fas fa-calendar-alt",
-            //     "color" => "#4e73df",
-            //     "route_name" => "events.index",
-            //     "route_active" => "events.*"
-            // ],
-            
-            // SETTINGS
-            [
-                "type" => "section",
-                "label" => "Settings"
-            ],
-            [
-                "label" => "Notifications",
-                "icon" => "fas fa-bell",
-                "color" => "#f6c23e",
-                "route_name" => "whatsapp.index",
-                "route_active" => "whatsapp.*"
-            ],
-            [
-                "label" => "Set Capacity",
-                "icon" => "fas fa-sliders-h",
-                "color" => "#36b9cc",
-                "route_name" => "capacity.index",
-                "route_active" => "capacity.*"
-            ],
-
-            // ASSETHUB
-            [
-                "label" => "Floor",
+                "label" => "Floors",
                 "icon" => "fas fa-building",
                 "color" => "#3ef0f6",
                 "route_name" => "floors.index",
                 "route_active" => "floors.*"
-            ],
-            [
-                "type" => "section",
-                "label" => "AssetHub"
             ],
             [
                 "label" => "Assets",
@@ -121,8 +78,6 @@ class Aside extends Component
                 "route_name" => "sensors.index",
                 "route_active" => "sensors.*"
             ],
-
-            /* ✅ NEW: QR Scanner */
             [
                 "label" => "QR Scanner",
                 "icon" => "fas fa-qrcode",
@@ -131,7 +86,53 @@ class Aside extends Component
                 "route_active" => "qr.scanner"
             ],
 
+            // =========================================
+            // WORKFORCE MANAGEMENT
+            // =========================================
+            [
+                "type" => "section",
+                "label" => "Workforce"
+            ],
+            [
+                "label" => "Users",
+                "icon" => "fas fa-users",
+                "color" => "#36b9cc",
+                "route_name" => "users.index",
+                "route_active" => "users.*"
+            ],
+            [
+                "label" => "Holidays & Events",
+                "icon" => "fas fa-calendar-alt",
+                "color" => "#f6c23e",
+                "route_name" => "holidays.index",
+                "route_active" => "holidays.*"
+            ],
+
+            // =========================================
+            // SETTINGS
+            // =========================================
+            [
+                "type" => "section",
+                "label" => "Settings"
+            ],
+            [
+                "label" => "Capacity Settings",
+                "icon" => "fas fa-sliders-h",
+                "color" => "#36b9cc",
+                "route_name" => "capacity.index",
+                "route_active" => "capacity.*"
+            ],
+            [
+                "label" => "Notifications",
+                "icon" => "fas fa-bell",
+                "color" => "#f6c23e",
+                "route_name" => "whatsapp.index",
+                "route_active" => "whatsapp.*"
+            ],
+
+            // =========================================
             // LOGOUT
+            // =========================================
             [
                 "type" => "divider"
             ],
