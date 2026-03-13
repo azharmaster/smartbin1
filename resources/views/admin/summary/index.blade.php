@@ -252,7 +252,6 @@
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th>Asset</th>
-                                <th>Device / Compartment</th>
                                 <th>Cleaned At</th>
                             </tr>
                         </thead>
@@ -260,7 +259,6 @@
                             @forelse ($cleaningLogs as $log)
                                 <tr>
                                     <td>{{ $log->asset_name }}</td>
-                                    <td>{{ $log->device_name }}</td>
                                     <td>{{ $log->cleaned_at->format('d M Y, h:i A') }}</td>
                                 </tr>
                             @empty
