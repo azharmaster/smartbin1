@@ -71,7 +71,7 @@
                             @elseif($user->role == 4)
                                 <span class="badge bg-info">Supervisor</span>
                             @else
-                                <span class="badge bg-secondary">Client</span>
+                                <span class="badge bg-secondary">AdminTRX</span>
                             @endif    
                         </td>
 
