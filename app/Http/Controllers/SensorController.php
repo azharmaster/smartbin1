@@ -27,8 +27,18 @@ class SensorController extends Controller
             });
         }
 
+        // Apply asset filter if there is a query
+        if ($request->has('asset') && $request->asset != '') {
+            $query->whereHas('device.asset', function ($assetQuery) use ($request) {
+                $assetQuery->where('id', $request->asset);
+            });
+        }
+
         $perPage = $request->input('perPage', 10);
         $sensors = $query->paginate($perPage)->withQueryString();
+
+        // Get all assets for dropdown
+        $assets = Asset::orderBy('asset_name')->get();
 
         // ✅ UPDATED PART FOR CHART (JOIN DEVICE NAME + ASSET NAME)
         $latestPerDevice = Sensor::join('devices', 'sensors.device_id', '=', 'devices.id_device')
@@ -59,7 +69,7 @@ class SensorController extends Controller
                 // Add device_name and asset_name for chart labels
                 $item->device_name = $item->device_name ?? 'Unknown Device';
                 $item->asset_name = $item->asset_name ?? 'Unknown Bin';
-                
+
                 // Extract last 4 digits of device_id for chart label
                 $deviceId = (string)$item->device_id;
                 $item->device_id_short = strlen($deviceId) >= 4 ? substr($deviceId, -4) : $deviceId;
@@ -67,7 +77,7 @@ class SensorController extends Controller
                 return $item;
             });
 
-        return view('sensors.index', compact('sensors', 'latestPerDevice'));
+        return view('sensors.index', compact('sensors', 'latestPerDevice', 'assets'));
     }
 
     public function create()

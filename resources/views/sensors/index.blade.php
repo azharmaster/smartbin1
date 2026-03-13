@@ -35,6 +35,10 @@
         gap: 10px;
     }
 
+    .sensor-controls > div {
+        width: 100%;
+    }
+
     .sensor-controls form {
         width: 100%;
     }
@@ -119,14 +123,27 @@
         @endif
 
         <div class="d-flex justify-content-between align-items-center mb-3 sensor-controls">
-            <form method="GET" class="d-flex">
-                <input type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    class="form-control form-control-sm me-2"
-                    placeholder="Search Device ID...">
-                <button type="submit" class="btn btn-sm btn-success">Search</button>
-            </form>
+            <div class="d-flex flex-wrap gap-2">
+                <form method="GET" class="d-flex">
+                    <input type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        class="form-control form-control-sm me-2"
+                        placeholder="Search Device ID...">
+                    <button type="submit" class="btn btn-sm btn-success">Search</button>
+                </form>
+
+                <form method="GET" class="d-flex">
+                    <select name="asset" onchange="this.form.submit()" class="form-select form-select-sm w-auto">
+                        <option value="">All Assets</option>
+                        @foreach($assets as $asset)
+                            <option value="{{ $asset->id }}" {{ request('asset') == $asset->id ? 'selected' : '' }}>
+                                {{ $asset->asset_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
 
             <form method="GET" class="d-flex">
                 <label class="me-2">Rows per page:</label>
@@ -275,6 +292,7 @@
         <h6><i class="fas fa-search"></i> Searching & Pagination</h6>
         <ul>
             <li>Use the search box to filter by <strong>Device ID</strong>.</li>
+            <li>Use the <strong>Asset dropdown</strong> to filter by specific asset name.</li>
             <li>Select <strong>Rows per page</strong> to control pagination and how many records are displayed per page.</li>
         </ul>
 
