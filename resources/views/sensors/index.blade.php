@@ -123,30 +123,27 @@
         @endif
 
         <div class="d-flex justify-content-between align-items-center mb-3 sensor-controls">
-            <div class="d-flex flex-wrap gap-2">
-                <form method="GET" class="d-flex">
-                    <input type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        class="form-control form-control-sm me-2"
-                        placeholder="Search Device ID...">
-                    <button type="submit" class="btn btn-sm btn-success">Search</button>
-                </form>
+            <form method="GET" class="d-flex flex-wrap align-items-center gap-2">
+                <input type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    class="form-control form-control-sm"
+                    placeholder="Search Device ID...">
 
-                <form method="GET" class="d-flex">
-                    <select name="asset" onchange="this.form.submit()" class="form-select form-select-sm w-auto">
-                        <option value="">All Assets</option>
-                        @foreach($assets as $asset)
-                            <option value="{{ $asset->id }}" {{ request('asset') == $asset->id ? 'selected' : '' }}>
-                                {{ $asset->asset_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </form>
-            </div>
+                <select name="asset" class="form-select form-select-sm w-auto">
+                    <option value="">All Assets</option>
+                    @foreach($assets as $asset)
+                        <option value="{{ $asset->id }}" {{ request('asset') == $asset->id ? 'selected' : '' }}>
+                            {{ $asset->asset_name }}
+                        </option>
+                    @endforeach
+                </select>
 
-            <form method="GET" class="d-flex">
-                <label class="me-2">Rows per page:</label>
+                <button type="submit" class="btn btn-sm btn-success">Search</button>
+
+                <div class="vr mx-2"></div>
+
+                <label class="mb-0">Rows :</label>
                 <select name="perPage" onchange="this.form.submit()" class="form-select form-select-sm w-auto">
                     @foreach([10,25,50,100] as $n)
                         <option value="{{ $n }}" {{ request('perPage', 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
