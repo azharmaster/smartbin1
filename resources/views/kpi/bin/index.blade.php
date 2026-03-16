@@ -1,5 +1,5 @@
 @extends($layout)
-@section('content_title', 'KPI BIN')
+@section('content_title', 'KPI Bin')
 @section('content')
 
 <style>
