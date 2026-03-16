@@ -1,5 +1,5 @@
 @extends($layout)
-@section('content_title', 'KPI SENSOR')
+@section('content_title', 'KPI Sensor')
 @section('content')
 
 <style>

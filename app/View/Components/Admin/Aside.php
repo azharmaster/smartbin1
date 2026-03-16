@@ -86,14 +86,14 @@ class Aside extends Component
                 "route_active" => "sensors.*"
             ],
             [
-                "label" => "KPI BIN",
+                "label" => "KPI Bin",
                 "icon" => "fas fa-chart-bar",
                 "color" => "#e74a3b",
                 "route_name" => "kpi.bin.index",
                 "route_active" => "kpi.bin.*"
             ],
             [
-                "label" => "KPI SENSOR",
+                "label" => "KPI Sensor",
                 "icon" => "fas fa-signal",
                 "color" => "#f6c23e",
                 "route_name" => "kpi.sensor.index",
