@@ -59,24 +59,18 @@ class AssetDetails extends Component
     }
 
     /**
-     * 24-hour interval data for selected date
+     * Show all sensor data points ordered by created_at
      */
     protected function prepareDailyChart()
     {
         $devices = $this->asset->devices;
         $selectedDate = Carbon::parse($this->selectedDate);
 
-        // Create 24-hour slots (hourly intervals)
-        $slots = collect();
-        for ($hour = 0; $hour < 24; $hour++) {
-            $slots->push(sprintf('%02d:00', $hour));
-        }
-
-        $this->weeklyChartLabels = $slots->values();
+        $this->weeklyChartLabels = [];
         $this->weeklySensorDatasets = [];
 
         foreach ($devices as $device) {
-            // Get raw sensor data for the selected date
+            // Get raw sensor data for the selected date, ordered by created_at
             $sensors = DB::table('sensors')
                 ->select('capacity', 'created_at')
                 ->where('device_id', $device->id_device)
@@ -84,36 +78,20 @@ class AssetDetails extends Component
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            // Group by hourly slots
-            $slotData = [];
-            $slotTimestamps = [];
-
-            foreach ($sensors as $sensor) {
-                $hour = Carbon::parse($sensor->created_at)->format('H:00');
-                
-                if (!isset($slotData[$hour])) {
-                    $slotData[$hour] = [];
-                    $slotTimestamps[$hour] = [];
-                }
-                $slotData[$hour][] = $sensor->capacity;
-                $slotTimestamps[$hour][] = Carbon::parse($sensor->created_at)->format('H:i:s');
-            }
-
-            // Build values and timestamps arrays
+            // Build values and timestamps arrays directly from raw data
             $values = [];
+            $labels = [];
             $timestamps = [];
 
-            foreach ($slots as $slot) {
-                if (isset($slotData[$slot]) && !empty($slotData[$slot])) {
-                    // Calculate average
-                    $avg = array_sum($slotData[$slot]) / count($slotData[$slot]);
-                    $values[] = round($avg, 1);
-                    // Use the latest timestamp for each slot
-                    $timestamps[] = max($slotTimestamps[$slot]);
-                } else {
-                    $values[] = null;
-                    $timestamps[] = null;
-                }
+            foreach ($sensors as $sensor) {
+                $values[] = round($sensor->capacity, 1);
+                $labels[] = Carbon::parse($sensor->created_at)->format('H:i');
+                $timestamps[] = Carbon::parse($sensor->created_at)->format('H:i:s');
+            }
+
+            // Set labels only once (from first device)
+            if (empty($this->weeklyChartLabels)) {
+                $this->weeklyChartLabels = $labels;
             }
 
             $this->weeklySensorDatasets[] = [

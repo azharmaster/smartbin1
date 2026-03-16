@@ -641,9 +641,9 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <h4 style="margin: 0; font-size: 15px; font-weight: 600;">
-                        <i class="fas fa-chart-line"></i> Capacity Levels (24 Hours)
+                        <i class="fas fa-chart-line"></i> Capacity Levels (Real-Time Data)
                     </h4>
-                    <input type="date" 
+                    <input type="date"
                            id="datePicker"
                            value="{{ $selectedDate }}"
                            max="{{ date('Y-m-d') }}"
@@ -705,7 +705,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                 </div>
             </div>
             <p style="font-size: 11px; color: #999; margin-top: 8px; text-align: center;">
-                <i class="fas fa-info-circle"></i> Data shown in hourly intervals for the selected date
+                <i class="fas fa-info-circle"></i> Data shown in real-time order based on created_at for the selected date
             </p>
         </div>
 
@@ -787,6 +787,7 @@ function initChart() {
         data: sensor.data,
         borderWidth: 3,
         tension: 0.4,
+        spanGaps: true,
         fill: true,
         borderColor: colors[index % colors.length],
         backgroundColor: colors[index % colors.length] + '20',
@@ -897,9 +898,9 @@ function initChart() {
                     }
                 },
                 x: {
-                    title: { 
-                        display: true, 
-                        text: 'Time (Hours)',
+                    title: {
+                        display: true,
+                        text: 'Time',
                         font: { size: 13, weight: 'bold' }
                     },
                     grid: {
@@ -911,7 +912,7 @@ function initChart() {
                         minRotation: 0,
                         font: { size: 10 },
                         autoSkip: true,
-                        maxTicksLimit: 12
+                        maxTicksLimit: 24
                     }
                 }
             }
