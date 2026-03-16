@@ -15,71 +15,232 @@
 }
 
 /* === STATUS CARD CONTAINER === */
+.map-status-cards {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.map-status-cards .status-card {
+    flex: 1 1 auto;
+    min-width: 160px;
+    max-width: 220px;
+}
+
 .status-card {
-    flex: 1 1 200px;
-    background: #ffffff;
-    color: #111;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
-    margin-left: 10px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+}
+
+.status-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .status-card:hover {
-    background: #1f6423;
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    background: rgba(31, 100, 35, 0.98);
+}
+
+.status-card:hover::before {
+    opacity: 1;
+}
+
+.status-card.card-undetect:hover {
+    background: rgba(74, 85, 104, 0.95);
 }
 
 .status-body {
-    padding: 12px 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.status-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.status-card.card-total .status-icon-wrapper {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.status-card.card-half .status-icon-wrapper {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.status-card.card-full .status-icon-wrapper {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.status-card.card-empty .status-icon-wrapper {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.status-card.card-undetect .status-icon-wrapper {
+    background: rgba(107, 114, 128, 0.1);
+}
+
+.status-icon-wrapper i {
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.status-card.card-total .status-icon-wrapper i {
+    color: #3b82f6;
+}
+
+.status-card.card-half .status-icon-wrapper i {
+    color: #10b981;
+}
+
+.status-card.card-full .status-icon-wrapper i {
+    color: #ef4444;
+}
+
+.status-card.card-empty .status-icon-wrapper i {
+    color: #f59e0b;
+}
+
+.status-card.card-undetect .status-icon-wrapper i {
+    color: #6b7280;
+}
+
+.status-card:hover .status-icon-wrapper {
+    transform: scale(1.05);
+}
+
+.status-card:hover.card-total .status-icon-wrapper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.status-card:hover.card-half .status-icon-wrapper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.status-card:hover.card-full .status-icon-wrapper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.status-card:hover.card-empty .status-icon-wrapper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.status-card:hover.card-undetect .status-icon-wrapper {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.status-card:hover .status-icon-wrapper i {
+    color: #ffffff;
 }
 
 .status-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: #666;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline;
+    letter-spacing: 0.6px;
+    line-height: 1.5;
+    flex: 1;
 }
 
 .status-content {
-    display: inline;
-    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .status-number {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111;
+    font-size: 24px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .status-card:hover .status-title {
-    color: rgba(255,255,255,0.85);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .status-card:hover .status-number {
     color: #ffffff;
 }
 
-/* Status cards floating inside map */
-.map-status-cards {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 1000;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+/* Individual card accent colors */
+.status-card.card-total {
+    border-left: 4px solid #3b82f6;
 }
 
-.map-status-cards .status-card {
-    flex: 1 1 auto;
-    min-width: 150px;
+.status-card.card-half {
+    border-left: 4px solid #10b981;
+}
+
+.status-card.card-full {
+    border-left: 4px solid #ef4444;
+}
+
+.status-card.card-empty {
+    border-left: 4px solid #f59e0b;
+}
+
+.status-card.card-undetect {
+    border-left: 4px solid #6b7280;
+}
+
+.status-card.card-total .status-number {
+    color: #2563eb;
+}
+
+.status-card.card-half .status-number {
+    color: #059669;
+}
+
+.status-card.card-full .status-number {
+    color: #dc2626;
+}
+
+.status-card.card-empty .status-number {
+    color: #d97706;
+}
+
+.status-card.card-undetect .status-number {
+    color: #4b5563;
+}
+
+.status-card:hover.card-total .status-number,
+.status-card:hover.card-half .status-number,
+.status-card:hover.card-full .status-number,
+.status-card:hover.card-empty .status-number,
+.status-card:hover.card-undetect .status-number {
+    color: #ffffff;
 }
 
 /* Sensor List - Waste Type Cards */
@@ -339,6 +500,30 @@
     font-size: 0.9rem;
     font-weight: 700;
     box-shadow: 0 0 8px #4cd96381;
+}
+
+/* UNDETECT DEVICE CARD */
+.undetect-device-card {
+    background-color: #6e6e6eb8;
+    border: 2px solid #a0aec0;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(160, 174, 192, 0.45);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.undetect-device-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 14px rgba(160, 174, 192, 0.6);
+}
+
+/* UNDETECT STATUS */
+.undetect-status {
+    background-color: #a0aec0;
+    padding: 0.4em 0.9em;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 0 8px #a0aec090;
 }
 
 /* Title size */
@@ -902,6 +1087,9 @@ function trend($current, $previous) {
                     <div class="map-status-cards">
                         <div class="status-card card-total">
                             <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
                                 <div class="status-title">Total Bins Installed</div>
                                 <div class="status-content">
                                     <span class="status-number">{{ $totalBinsInstalled }}</span>
@@ -911,6 +1099,9 @@ function trend($current, $previous) {
 
                         <div class="status-card card-half">
                             <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
                                 <div class="status-title">Active Bins</div>
                                 <div class="status-content">
                                     <span class="status-number">{{ $activeBins }}</span>
@@ -920,6 +1111,9 @@ function trend($current, $previous) {
 
                         <div class="status-card card-full">
                             <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
                                 <div class="status-title">Full Bins</div>
                                 <div class="status-content">
                                     <span class="status-number">{{ $fullBins }}</span>
@@ -929,9 +1123,24 @@ function trend($current, $previous) {
 
                         <div class="status-card card-empty">
                             <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fas fa-recycle"></i>
+                                </div>
                                 <div class="status-title">Collection Trip Today</div>
                                 <div class="status-content">
                                     <span class="status-number">{{ $collectionTripToday }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card card-undetect">
+                            <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fas fa-wifi"></i>
+                                </div>
+                                <div class="status-title">Undetect Bins</div>
+                                <div class="status-content">
+                                    <span class="status-number">{{ $undetectBins }}</span>
                                 </div>
                             </div>
                         </div>

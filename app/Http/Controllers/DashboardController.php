@@ -273,11 +273,25 @@ private function getBinStatistics(): array
     // 4. Collection Trip Today - Count of bins that went from full to empty today
     $collectionTripToday = $this->getCollectionTripsToday();
 
+    // 5. Undetect Bins - Count of active devices with no sensor data today
+    $undetectBins = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->where('assets.is_active', 1)
+        ->where('devices.is_active', 1)
+        ->whereNotIn('devices.id_device', function ($query) {
+            $query->select('device_id')
+                ->from('sensors')
+                ->whereDate('created_at', today());
+        })
+        ->distinct('devices.id_device')
+        ->count('devices.id_device');
+
     return [
         'totalBinsInstalled' => $totalBinsInstalled,
         'activeBins' => $activeBins,
         'fullBins' => $fullBins,
         'collectionTripToday' => $collectionTripToday,
+        'undetectBins' => $undetectBins,
     ];
 }
 
