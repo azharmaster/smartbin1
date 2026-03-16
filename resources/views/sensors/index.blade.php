@@ -35,11 +35,8 @@
         gap: 10px;
     }
 
-    .sensor-controls > div {
-        width: 100%;
-    }
-
-    .sensor-controls form {
+    .sensor-controls form,
+    .sensor-controls .d-flex.gap-2 {
         width: 100%;
     }
 
@@ -123,33 +120,29 @@
         @endif
 
         <div class="d-flex justify-content-between align-items-center mb-3 sensor-controls">
-            <form method="GET" class="d-flex flex-wrap align-items-center gap-2">
+            <div class="d-flex gap-2">
                 <input type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    class="form-control form-control-sm"
-                    placeholder="Search Device ID...">
+                    id="searchInput"
+                    class="form-control form-control-sm me-2"
+                    placeholder="Search Device ID..."
+                    style="width: 250px;">
 
-                <select name="asset" class="form-select form-select-sm w-auto">
+                <select id="assetFilter" class="form-select form-select-sm w-auto">
                     <option value="">All Assets</option>
-                    @foreach($assets as $asset)
-                        <option value="{{ $asset->id }}" {{ request('asset') == $asset->id ? 'selected' : '' }}>
-                            {{ $asset->asset_name }}
-                        </option>
+                    @foreach($assets as $assetItem)
+                        <option value="{{ $assetItem->id }}">{{ $assetItem->asset_name }}</option>
                     @endforeach
                 </select>
+            </div>
 
-                <button type="submit" class="btn btn-sm btn-success">Search</button>
-
-                <div class="vr mx-2"></div>
-
-                <label class="mb-0">Rows :</label>
-                <select name="perPage" onchange="this.form.submit()" class="form-select form-select-sm w-auto">
+            <div class="d-flex align-items-center">
+                <label class="me-2 mb-0">Rows per page:</label>
+                <select id="perPageSelect" class="form-select form-select-sm w-auto">
                     @foreach([10,25,50,100] as $n)
-                        <option value="{{ $n }}" {{ request('perPage', 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                        <option value="{{ $n }}" {{ $n == 25 ? 'selected' : '' }}>{{ $n }}</option>
                     @endforeach
                 </select>
-            </form>
+            </div>
         </div>
 
         <div class="table-responsive shadow-sm rounded">
@@ -167,45 +160,17 @@
                         <th>Time</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($sensors as $index => $sensor)
-                    <tr class="text-center">
-                        <!-- Correct numbering across pages -->
-                        <td>{{ $sensors->firstItem() + $index }}</td>
-                        <td>
-                            {{ $sensor->device->asset->asset_name ?? 'Unknown Bin' }}
-                            <br>
-                            <small class="text-muted">{{ $sensor->device->device_name ?? 'Unknown Device' }}</small>
-                        </td>
-
-                        <td>{{ $sensor->device_id }}</td>
-                        <td>{{ $sensor->battery_percentage }}%</td>
-                        <td>{{ $sensor->capacity }}%</td>
-                        <td>{{ $sensor->rsrp }}</td>
-                        <td>{{ $sensor->nsr }}</td>
-                        <td>
-                            @if($sensor->network_strength === 'Strong')
-                                <span class="badge bg-success">{{ $sensor->network_strength }}</span>
-                            @elseif($sensor->network_strength === 'Normal')
-                                <span class="badge bg-info">{{ $sensor->network_strength }}</span>
-                            @elseif($sensor->network_strength === 'Week')
-                                <span class="badge bg-warning">{{ $sensor->network_strength }}</span>
-                            @elseif($sensor->network_strength === 'Very Week')
-                                <span class="badge bg-danger">{{ $sensor->network_strength }}</span>
-                            @else
-                                <span class="badge bg-secondary">{{ $sensor->network_strength }}</span>
-                            @endif
-                        </td>
-                        <td>{{ $sensor->created_at }}</td>
-                    </tr>
-                    @endforeach
+                <tbody id="sensorsTableBody">
+                    <!-- Data will be rendered by JavaScript -->
                 </tbody>
             </table>
         </div>
 
-    <div class="mt-3 d-flex justify-content-end">
-        {{ $sensors->links('pagination::bootstrap-5') }}
-    </div>
+        <div class="mt-3 d-flex justify-content-end">
+            <nav>
+                <ul class="pagination pagination-sm" id="pagination"></ul>
+            </nav>
+        </div>
 
     </div>
 </div>
@@ -289,7 +254,7 @@
         <h6><i class="fas fa-search"></i> Searching & Pagination</h6>
         <ul>
             <li>Use the search box to filter by <strong>Device ID</strong>.</li>
-            <li>Use the <strong>Asset dropdown</strong> to filter by specific asset name.</li>
+            <li>Use the <strong>Asset dropdown</strong> to filter sensors by asset name.</li>
             <li>Select <strong>Rows per page</strong> to control pagination and how many records are displayed per page.</li>
         </ul>
 
@@ -316,7 +281,166 @@ function openHelp() {
 }
 </script>
 
-
+<script>
+    // Get all sensors data from Blade
+    const allSensors = @json($allSensors);
+    
+    // State for filtering and pagination
+    let currentPage = 1;
+    let perPage = 25;
+    let filteredData = [...allSensors];
+    
+    // Format date helper
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('en-MY', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+    }
+    
+    // Get network strength badge
+    function getNetworkStrengthBadge(strength) {
+        const badges = {
+            'Strong': 'bg-success',
+            'Normal': 'bg-info',
+            'Week': 'bg-warning',
+            'Very Week': 'bg-danger'
+        };
+        const badgeClass = badges[strength] || 'bg-secondary';
+        return `<span class="badge ${badgeClass}">${strength}</span>`;
+    }
+    
+    // Filter data based on search and asset
+    function filterData() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const assetId = document.getElementById('assetFilter').value;
+        
+        filteredData = allSensors.filter(sensor => {
+            // Search filter (device_id)
+            const matchesSearch = searchTerm === '' || 
+                sensor.device_id.toLowerCase().includes(searchTerm);
+            
+            // Asset filter
+            const matchesAsset = assetId === '' || 
+                (sensor.device && sensor.device.asset && sensor.device.asset.id == assetId);
+            
+            return matchesSearch && matchesAsset;
+        });
+        
+        // Reset to page 1 when filters change
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+    }
+    
+    // Render table rows
+    function renderTable() {
+        const tbody = document.getElementById('sensorsTableBody');
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageData = filteredData.slice(start, end);
+        
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No data found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = pageData.map((sensor, index) => {
+            const assetName = sensor.device?.asset?.asset_name || 'Unknown Bin';
+            const deviceName = sensor.device?.device_name || 'Unknown Device';
+            const networkStrength = sensor.network_strength || 'Unknown';
+            const batteryPercentage = sensor.battery_percentage || 0;
+            
+            return `
+                <tr class="text-center">
+                    <td>${start + index + 1}</td>
+                    <td>
+                        ${assetName}
+                        <br>
+                        <small class="text-muted">${deviceName}</small>
+                    </td>
+                    <td>${sensor.device_id}</td>
+                    <td>${batteryPercentage}%</td>
+                    <td>${sensor.capacity}%</td>
+                    <td>${sensor.rsrp}</td>
+                    <td>${sensor.nsr}</td>
+                    <td>${getNetworkStrengthBadge(networkStrength)}</td>
+                    <td>${formatDate(sensor.created_at)}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Render pagination
+    function renderPagination() {
+        const pagination = document.getElementById('pagination');
+        const totalPages = Math.ceil(filteredData.length / perPage);
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        
+        // Previous button
+        html += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>
+            </li>
+        `;
+        
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                    </li>
+                `;
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+        
+        // Next button
+        html += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>
+            </li>
+        `;
+        
+        pagination.innerHTML = html;
+    }
+    
+    // Change page
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredData.length / perPage);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTable();
+        renderPagination();
+    }
+    
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', filterData);
+    document.getElementById('assetFilter').addEventListener('change', filterData);
+    document.getElementById('perPageSelect').addEventListener('change', function() {
+        perPage = parseInt(this.value);
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+    });
+    
+    // Initial render
+    renderTable();
+    renderPagination();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
