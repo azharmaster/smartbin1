@@ -55,8 +55,8 @@
 .status-card {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
@@ -69,15 +69,15 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .status-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     background: rgba(31, 100, 35, 0.98);
 }
 
@@ -90,20 +90,20 @@
 }
 
 .status-body {
-    padding: 16px 18px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
 }
 
 .status-icon-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
@@ -129,7 +129,7 @@
 }
 
 .status-icon-wrapper i {
-    font-size: 18px;
+    font-size: 14px;
     transition: all 0.3s ease;
 }
 
@@ -182,24 +182,24 @@
 }
 
 .status-title {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
     color: #6b7280;
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    line-height: 1.5;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
     flex: 1;
 }
 
 .status-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .status-number {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 800;
     color: #111827;
     line-height: 1;
@@ -216,23 +216,23 @@
 
 /* Individual card accent colors */
 .status-card.card-total {
-    border-left: 4px solid #3b82f6;
+    border-left: 3px solid #3b82f6;
 }
 
 .status-card.card-half {
-    border-left: 4px solid #10b981;
+    border-left: 3px solid #10b981;
 }
 
 .status-card.card-full {
-    border-left: 4px solid #ef4444;
+    border-left: 3px solid #ef4444;
 }
 
 .status-card.card-empty {
-    border-left: 4px solid #f59e0b;
+    border-left: 3px solid #f59e0b;
 }
 
 .status-card.card-undetect {
-    border-left: 4px solid #6b7280;
+    border-left: 3px solid #6b7280;
 }
 
 .status-card.card-total .status-number {
@@ -1532,17 +1532,12 @@ function trend($current, $previous) {
         @endforelse
     </div>
 </div>
- <div class="card mb-4 shadow-sm">
-                <div class="card-header smartbin-gradient border-0">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fab fa-whatsapp me-2"></i> WhatsApp Notification
-                    </h5>
-                </div>
-                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0 0 10px 10px;">
+<div class="card mb-4 shadow-sm">
+                <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1 fw-semibold">
-                                <i class="fas fa-bell text-success"></i> Notification Status
+                                <i class="fab fa-whatsapp text-success me-2"></i> WhatsApp Notification
                             </h6>
                             <small class="text-muted">
                                 <span id="whatsappStatusText" class="fw-bold {{ $whatsappNotificationActive ? 'text-success' : 'text-muted' }}">
