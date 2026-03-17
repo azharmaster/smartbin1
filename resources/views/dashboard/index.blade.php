@@ -1170,157 +1170,165 @@ function trend($current, $previous) {
                     <div id="dashboardMap"></div>
                 </div>
             </div>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 text-white fs-6">
-                        <i class="fas fa-calendar-plus me-2"></i> Upcoming Holidays & Events
-                    </h5>
-                </div>
-                <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
-                    @if(isset($upcomingHolidaysAndEvents) && $upcomingHolidaysAndEvents->count() > 0)
-                        <div class="list-group list-group-flush">
-                            @foreach($upcomingHolidaysAndEvents as $item)
-                                @php
-                                    $startDate = Carbon\Carbon::parse($item['start_date']);
-                                    $endDate = $item['end_date'] ? Carbon\Carbon::parse($item['end_date']) : null;
-                                    $daysUntilStart = now()->diffInDays($startDate, false);
-                                    
-                                    if ($daysUntilStart == 0) {
-                                        $statusText = 'Today';
-                                        $badgeClass = 'bg-danger';
-                                    } elseif ($daysUntilStart == 1) {
-                                        $statusText = 'Tomorrow';
-                                        $badgeClass = 'bg-warning';
-                                    } else {
-                                        $statusText = 'In ' . ceil($daysUntilStart) . ' days';
-                                        $badgeClass = 'bg-info';
-                                    }
-                                @endphp
-                                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <div>
-                                        <h6 class="mb-1 fw-semibold">
-                                            @if($item['type'] === 'holiday')
-                                                <i class="fas fa-umbrella-beach text-danger"></i> {{ $item['name'] }}
-                                            @else
-                                                <i class="fas fa-calendar-alt text-success"></i> {{ $item['name'] }}
-                                            @endif
-                                        </h6>
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar-day"></i> 
-                                            {{ $startDate->format('Y-m-d') }}
-                                            @if($endDate)
-                                                → {{ $endDate->format('Y-m-d') }}
-                                            @endif
-                                            @if($item['type'] === 'event' && isset($item['location']))
-                                                <br><i class="fas fa-map-marker-alt"></i> {{ $item['location'] }}
-                                            @endif
-                                        </small>
-                                    </div>
-                                    <span class="badge {{ $badgeClass }} rounded-pill">
-                                        {{ $statusText }}
-                                    </span>
+            <div class="row mb-4">
+                <!-- Upcoming Holidays & Events -->
+                <div class="col-lg-6 mb-3 mb-lg-0">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header smartbin-gradient">
+                            <h5 class="mb-0 text-white fs-6">
+                                <i class="fas fa-calendar-plus me-2"></i> Upcoming Holidays & Events
+                            </h5>
+                        </div>
+                        <div class="card-body" style="background-color: #f8f9fa; border-radius: 0 0 10px 10px;">
+                            @if(isset($upcomingHolidaysAndEvents) && $upcomingHolidaysAndEvents->count() > 0)
+                                <div class="list-group list-group-flush">
+                                    @foreach($upcomingHolidaysAndEvents as $item)
+                                        @php
+                                            $startDate = Carbon\Carbon::parse($item['start_date']);
+                                            $endDate = $item['end_date'] ? Carbon\Carbon::parse($item['end_date']) : null;
+                                            $daysUntilStart = now()->diffInDays($startDate, false);
+
+                                            if ($daysUntilStart == 0) {
+                                                $statusText = 'Today';
+                                                $badgeClass = 'bg-danger';
+                                            } elseif ($daysUntilStart == 1) {
+                                                $statusText = 'Tomorrow';
+                                                $badgeClass = 'bg-warning';
+                                            } else {
+                                                $statusText = 'In ' . ceil($daysUntilStart) . ' days';
+                                                $badgeClass = 'bg-info';
+                                            }
+                                        @endphp
+                                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <h6 class="mb-1 fw-semibold">
+                                                    @if($item['type'] === 'holiday')
+                                                        <i class="fas fa-umbrella-beach text-danger"></i> {{ $item['name'] }}
+                                                    @else
+                                                        <i class="fas fa-calendar-alt text-success"></i> {{ $item['name'] }}
+                                                    @endif
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar-day"></i>
+                                                    {{ $startDate->format('Y-m-d') }}
+                                                    @if($endDate)
+                                                        → {{ $endDate->format('Y-m-d') }}
+                                                    @endif
+                                                    @if($item['type'] === 'event' && isset($item['location']))
+                                                        <br><i class="fas fa-map-marker-alt"></i> {{ $item['location'] }}
+                                                    @endif
+                                                </small>
+                                            </div>
+                                            <span class="badge {{ $badgeClass }} rounded-pill">
+                                                {{ $statusText }}
+                                            </span>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                            @else
+                                <div class="text-muted text-center py-3">
+                                    <i class="fas fa-check-circle fa-2x mb-2 opacity-50"></i>
+                                    <p class="mb-0">No upcoming holidays or events in the next 7 days</p>
+                                </div>
+                            @endif
                         </div>
-                    @else
-                        <div class="text-muted text-center py-3">
-                            <i class="fas fa-check-circle fa-2x mb-2 opacity-50"></i>
-                            <p class="mb-0">No upcoming holidays or events in the next 7 days</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <div class="card mb-4">
-    <div class="card-header smartbin-gradient">
-        <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
-            <span>
-                <i class="fas fa-inbox"></i> Notification Sent
-                <span class="badge badge-info">{{ $todayNotifications->flatten()->count() }}</span>
-            </span>
-
-            <a href="{{ route('notifications.index') }}"
-            class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
-                <i class="fas fa-eye"></i>
-            </a>
-        </h5>
-    </div>
-
-    <div class="card-body p-3">
-        @if($todayNotifications->isNotEmpty())
-            @foreach($todayNotifications as $date => $logs)
-                <div class="mb-3">
-                    <!-- Date Header -->
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0 fw-semibold">
-                                <i class="fas fa-calendar-day text-success"></i>
-                                @if(Carbon\Carbon::parse($date)->isToday())
-                                    Today
-                                @elseif(Carbon\Carbon::parse($date)->isYesterday())
-                                    Yesterday
-                                @else
-                                    {{ Carbon\Carbon::parse($date)->format('d M Y') }}
-                                @endif
-                            </h6>
-                        </div>
-                        <span class="badge bg-success">{{ $logs->count() }} notifications</span>
                     </div>
+                </div>
 
-                    <!-- Notification Timeline for this date -->
-                    <div class="notification-timeline">
-                        @php
-                            // Get unique messages by message_preview for summary
-                            $uniqueLogs = $logs->unique('message_preview')->take(10);
-                            $totalCount = $logs->unique('message_preview')->count();
-                        @endphp
+                <!-- Notification Sent -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header smartbin-gradient">
+                            <h5 class="mb-0 text-white fs-6 d-flex align-items-center">
+                                <span>
+                                    <i class="fas fa-inbox"></i> Notification Sent
+                                    <span class="badge badge-info">{{ $todayNotifications->flatten()->count() }}</span>
+                                </span>
 
-                        @forelse($uniqueLogs as $log)
-                            <div class="timeline-item">
-                                <div class="timeline-dot"></div>
-
-                                <div class="timeline-content">
-                                    <button
-                                        class="timeline-button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#notif{{ $log->id }}">
-
-                                        <i class="fas fa-history"></i>
-                                        {{ Carbon\Carbon::parse($log->sent_at)->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
-                                        <span class="text-muted small">({{ $logs->where('message_preview', $log->message_preview)->count() }}x)</span>
-                                    </button>
-
-                                    <div id="notif{{ $log->id }}" class="collapse mt-2">
-                                        <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="text-muted text-center py-3">
-                                No notifications for this date
-                            </div>
-                        @endforelse
-
-                        @if($totalCount > 10)
-                            <div class="text-center mt-2">
-                                <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-success">
-                                    View all {{ $totalCount }} notifications <i class="fas fa-arrow-right"></i>
+                                <a href="{{ route('notifications.index') }}"
+                                class="ms-auto btn btn-sm btn-light d-flex align-items-center gap-1">
+                                    <i class="fas fa-eye"></i>
                                 </a>
-                            </div>
-                        @endif
+                            </h5>
+                        </div>
+
+                        <div class="card-body p-3" style="max-height: 400px; overflow-y: auto;">
+                            @if($todayNotifications->isNotEmpty())
+                                @foreach($todayNotifications as $date => $logs)
+                                    <div class="mb-3">
+                                        <!-- Date Header -->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 fw-semibold">
+                                                    <i class="fas fa-calendar-day text-success"></i>
+                                                    @if(Carbon\Carbon::parse($date)->isToday())
+                                                        Today
+                                                    @elseif(Carbon\Carbon::parse($date)->isYesterday())
+                                                        Yesterday
+                                                    @else
+                                                        {{ Carbon\Carbon::parse($date)->format('d M Y') }}
+                                                    @endif
+                                                </h6>
+                                            </div>
+                                            <span class="badge bg-success">{{ $logs->count() }} notifications</span>
+                                        </div>
+
+                                        <!-- Notification Timeline for this date -->
+                                        <div class="notification-timeline">
+                                            @php
+                                                // Get unique messages by message_preview for summary
+                                                $uniqueLogs = $logs->unique('message_preview')->take(10);
+                                                $totalCount = $logs->unique('message_preview')->count();
+                                            @endphp
+
+                                            @forelse($uniqueLogs as $log)
+                                                <div class="timeline-item">
+                                                    <div class="timeline-dot"></div>
+
+                                                    <div class="timeline-content">
+                                                        <button
+                                                            class="timeline-button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#notif{{ $log->id }}">
+
+                                                            <i class="fas fa-history"></i>
+                                                            {{ Carbon\Carbon::parse($log->sent_at)->timezone('Asia/Kuala_Lumpur')->format('H:i:s') }}
+                                                            <span class="text-muted small">({{ $logs->where('message_preview', $log->message_preview)->count() }}x)</span>
+                                                        </button>
+
+                                                        <div id="notif{{ $log->id }}" class="collapse mt-2">
+                                                            <pre class="mb-0 text-sm">{{ $log->message_preview }}</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div class="text-muted text-center py-3">
+                                                    No notifications for this date
+                                                </div>
+                                            @endforelse
+
+                                            @if($totalCount > 10)
+                                                <div class="text-center mt-2">
+                                                    <a href="{{ route('notifications.index') }}" class="btn btn-sm btn-outline-success">
+                                                        View all {{ $totalCount }} notifications <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-3">
+                                @endforeach
+                            @else
+                                <div class="text-muted text-center py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                                    <p>No notifications sent today</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-
-                <hr class="my-3">
-            @endforeach
-        @else
-            <div class="text-muted text-center py-4">
-                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
-                <p>No notifications sent today</p>
             </div>
-        @endif
-    </div>
-</div>
         </div>
         {{-- right column --}}
         <div class="col-lg-3">
