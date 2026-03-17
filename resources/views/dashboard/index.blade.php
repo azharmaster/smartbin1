@@ -17,61 +17,45 @@
 /* === STATUS CARD CONTAINER === */
 .map-status-cards {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
     z-index: 1000;
     display: flex;
-    gap: 6px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 6px 4px;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Hide scrollbar for cleaner look */
-.map-status-cards::-webkit-scrollbar {
-    height: 4px;
-}
-
-.map-status-cards::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-}
-
-.map-status-cards::-webkit-scrollbar-thumb {
-    background: rgba(31, 100, 35, 0.6);
-    border-radius: 2px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .map-status-cards .status-card {
-    flex: 0 0 auto;
-    width: 140px;
-    min-width: 140px;
+    flex: 1 1 auto;
+    min-width: 160px;
+    max-width: 220px;
 }
 
-/* Mobile responsive - horizontal scroll */
-@media (max-width: 768px) {
+/* Mobile view - horizontal scroll */
+@media (max-width: 576px) {
     .map-status-cards {
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
-        max-width: none;
-        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 5px;
+        flex-wrap: nowrap;
     }
-    
+
     .map-status-cards .status-card {
         flex: 0 0 auto;
-        width: 130px;
-        min-width: 130px;
+        min-width: 160px;
+    }
+
+    .map-status-cards::-webkit-scrollbar {
+        display: none;
     }
 }
 
 .status-card {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -106,20 +90,20 @@
 }
 
 .status-body {
-    padding: 8px 10px;
+    padding: 16px 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 12px;
 }
 
 .status-icon-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
@@ -145,7 +129,7 @@
 }
 
 .status-icon-wrapper i {
-    font-size: 14px;
+    font-size: 18px;
     transition: all 0.3s ease;
 }
 
@@ -198,24 +182,24 @@
 }
 
 .status-title {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
     color: #6b7280;
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    line-height: 1.4;
+    letter-spacing: 0.6px;
+    line-height: 1.5;
     flex: 1;
 }
 
 .status-content {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .status-number {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 800;
     color: #111827;
     line-height: 1;
