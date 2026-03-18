@@ -679,52 +679,63 @@ private function calculateSmartBinClearTimes()
  */
 private function getLastEmptiedTimes()
 {
+    // result[$assetId] = earliest clear timestamp among all compartments for latest clear event
     $result = [];
 
-    $devices = Device::with([
-        'asset',
-        'asset.capacitySetting',
-        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
-    ])->get();
+    $assets = Asset::with([
+        'capacitySetting',
+        'devices' => fn($q) => $q->where('is_active', 1),
+        'devices.sensors' => fn($q) => $q->orderBy('created_at', 'desc'),
+    ])->where('is_active', 1)->get();
 
-    foreach ($devices as $device) {
-        if (!$device->asset || !$device->asset->capacitySetting) continue;
+    foreach ($assets as $asset) {
+        if (!$asset->capacitySetting) continue;
 
-        $assetId = $device->asset->id;
-        $capacity = $device->asset->capacitySetting;
-        $sensors = $device->sensors;
+        $assetId = $asset->id;
 
-        // Initialize if not set
-        if (!isset($result[$assetId])) {
-            $result[$assetId] = null;
-        }
+        // For each compartment, find the most recent clear event timestamp
+        // A clear event = capacity drops to 0% from a previous reading of >10%
+        $compartmentClearTimes = [];
 
-        $wasFullOrHalf = false;
-        $previousCapacity = null;
+        foreach ($asset->devices as $device) {
+            $sensors = $device->sensors;
+            $previousCapacity = null;
 
-        foreach ($sensors as $sensor) {
-            if (!is_numeric($sensor->capacity)) continue;
+            foreach ($sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) continue;
 
-            $currentCapacity = $sensor->capacity;
+                $currentCapacity = (float) $sensor->capacity;
 
-            // Check if bin was full or half (capacity > empty_to)
-            if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
-                $wasFullOrHalf = true;
-            }
+                // Clear Bin Logic: 0% reading after previous was >10%
+                if (
+                    $previousCapacity !== null &&
+                    $previousCapacity > 10 &&
+                    $currentCapacity <= 0
+                ) {
+                    $emptiedTime = Carbon::parse($sensor->created_at);
 
-            // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
-            if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
-                $emptiedTime = Carbon::parse($sensor->created_at);
+                    // Keep only the most recent clear event per compartment
+                    if (
+                        !isset($compartmentClearTimes[$device->id]) ||
+                        $emptiedTime > $compartmentClearTimes[$device->id]
+                    ) {
+                        $compartmentClearTimes[$device->id] = $emptiedTime;
+                    }
 
-                // Keep the most recent emptied time
-                if (!$result[$assetId] || $emptiedTime > $result[$assetId]) {
-                    $result[$assetId] = $emptiedTime;
+                    // Stop at most recent clear event for this compartment
+                    break;
                 }
 
-                $wasFullOrHalf = false; // reset for next cycle
+                $previousCapacity = $currentCapacity;
             }
+        }
 
-            $previousCapacity = $currentCapacity;
+        // Last Emptied = timestamp of the FIRST compartment that was cleared
+        // (earliest timestamp among all compartments' latest clear events)
+        if (!empty($compartmentClearTimes)) {
+            $result[$assetId] = collect($compartmentClearTimes)->min();
+        } else {
+            $result[$assetId] = null;
         }
     }
 

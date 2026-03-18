@@ -47,7 +47,12 @@ class CollectionTripController extends Controller
     }
 
     /**
-     * Get collection trips between dates (same logic as Last Emptied), flattened by device.
+     * Get collection trips between dates.
+     *
+     * Clear Bin Logic:
+     * - A compartment (device) is considered cleared when its capacity reads 0%
+     *   AND the previous reading was > 10%.
+     * - Each qualifying event is recorded as one collection trip entry.
      *
      * @param  string  $dateFrom
      * @param  string  $dateTo
@@ -55,64 +60,63 @@ class CollectionTripController extends Controller
      */
     private function getCollectionTrips($dateFrom, $dateTo)
     {
-        $devices = Device::with([
-            'asset',
-            'asset.capacitySetting',
-            'asset.floor',
-            'sensors' => fn($q) => $q->orderBy('created_at', 'desc')
-        ])->whereHas('asset', fn($q) => $q->where('is_active', 1))
-          ->where('is_active', 1)
-          ->get();
+        $assets = Asset::with([
+            'floor',
+            'capacitySetting',
+            'devices' => fn($q) => $q->where('is_active', 1),
+            'devices.sensors' => fn($q) => $q->orderBy('created_at', 'desc'),
+        ])->where('is_active', 1)->get();
 
         $collectionTrips = collect();
 
-        foreach ($devices as $device) {
-            if (!$device->asset || !$device->asset->capacitySetting) {
+        $rangeStart = Carbon::parse($dateFrom)->startOfDay();
+        $rangeEnd   = Carbon::parse($dateTo)->endOfDay();
+
+        foreach ($assets as $asset) {
+            if (!$asset->capacitySetting) {
                 continue;
             }
 
-            $capacity = $device->asset->capacitySetting;
-            $sensors = $device->sensors;
+            // Process each compartment (device) independently
+            foreach ($asset->devices as $device) {
+                $sensors = $device->sensors;
+                $previousCapacity = null;
 
-            $wasFullOrHalf = false;
-            $previousCapacity = null;
-
-            foreach ($sensors as $sensor) {
-                if (!is_numeric($sensor->capacity)) {
-                    continue;
-                }
-
-                $currentCapacity = $sensor->capacity;
-                $sensorTime = Carbon::parse($sensor->created_at);
-
-                // Check if bin was full or half (capacity > empty_to)
-                if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
-                    $wasFullOrHalf = true;
-                }
-
-                // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
-                if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
-                    $emptiedTime = Carbon::parse($sensor->created_at);
-
-                    // Check if within date range
-                    if ($emptiedTime->between(Carbon::parse($dateFrom)->startOfDay(), Carbon::parse($dateTo)->endOfDay())) {
-                        $collectionTrips->push([
-                            'asset_id' => $device->asset->id,
-                            'asset_name' => $device->asset->asset_name,
-                            'floor_name' => $device->asset->floor->floor_name ?? 'N/A',
-                            'device_name' => $device->device_name ?? 'N/A',
-                            'emptied_at' => $emptiedTime,
-                            'emptied_date' => $emptiedTime->format('Y-m-d'),
-                            'emptied_time' => $emptiedTime->format('H:i'),
-                            'datetime_formatted' => $emptiedTime->format('d/m/Y h:i A'),
-                            'diff_for_humans' => $emptiedTime->diffForHumans(),
-                        ]);
+                foreach ($sensors as $sensor) {
+                    if (!is_numeric($sensor->capacity)) {
+                        continue;
                     }
 
-                    $wasFullOrHalf = false; // reset for next cycle
-                }
+                    $currentCapacity = (float) $sensor->capacity;
 
-                $previousCapacity = $currentCapacity;
+                    // NEW Clear Bin Logic:
+                    // Compartment is cleared when current reading = 0%
+                    // AND previous reading was > 10%
+                    if (
+                        $previousCapacity !== null &&
+                        $previousCapacity > 10 &&
+                        $currentCapacity <= 0
+                    ) {
+                        $emptiedTime = Carbon::parse($sensor->created_at);
+
+                        // Only record if within the selected date range
+                        if ($emptiedTime->between($rangeStart, $rangeEnd)) {
+                            $collectionTrips->push([
+                                'asset_id'           => $asset->id,
+                                'asset_name'         => $asset->asset_name,
+                                'floor_name'         => $asset->floor->floor_name ?? 'N/A',
+                                'device_name'        => $device->device_name ?? 'N/A',
+                                'emptied_at'         => $emptiedTime,
+                                'emptied_date'       => $emptiedTime->format('Y-m-d'),
+                                'emptied_time'       => $emptiedTime->format('H:i'),
+                                'datetime_formatted' => $emptiedTime->format('d/m/Y h:i A'),
+                                'diff_for_humans'    => $emptiedTime->diffForHumans(),
+                            ]);
+                        }
+                    }
+
+                    $previousCapacity = $currentCapacity;
+                }
             }
         }
 
