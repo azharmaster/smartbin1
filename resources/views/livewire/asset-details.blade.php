@@ -693,7 +693,8 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             <div style="position: relative; height: 350px;">
                 <canvas id="weeklyBinChart" 
                         data-chart-labels='@json($weeklyChartLabels)' 
-                        data-chart-datasets='@json($weeklySensorDatasets)'></canvas>
+                        data-chart-datasets='@json($weeklySensorDatasets)'
+                        data-selected-date='{{ $selectedDate }}'></canvas>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: #777;">
@@ -710,10 +711,100 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
         </div>
 
         </div>
-<br>
+
+        <!-- Collection Trip History Table -->
+        <div style="margin-top: 20px; background: #ffffff; border-radius: 14px; padding: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.08);">
+
+            {{-- Header --}}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h4 style="margin: 0; font-size: 15px; font-weight: 600;">
+                    <i class="fas fa-history"></i> Collection Trip History
+                </h4>
+                <span id="historyDateLabel" style="font-size: 13px; color: #6b7280; font-weight: 500;"></span>
+            </div>
+            <input type="hidden" id="historyFrom">
+            <input type="hidden" id="historyTo">
+
+            @if(count($clearBinHistory) > 0)
+            <div style="overflow-x: auto;">
+                <table id="historyTable" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #374151;">No.</th>
+                            <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #374151;">Date</th>
+                            <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #374151;">Time</th>
+                            <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #374151;">Compartment</th>
+                            <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: #374151;">Ago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        @foreach($clearBinHistory as $i => $event)
+                        <tr class="history-row"
+                            data-date="{{ \Carbon\Carbon::createFromFormat('d/m/Y', $event['date'])->format('Y-m-d') }}"
+                            style="border-bottom: 1px solid #f3f4f6; {{ $i % 2 === 0 ? 'background: #fff;' : 'background: #f9fafb;' }}">
+                            <td style="padding: 10px 14px; color: #6b7280;" class="row-num">{{ $i + 1 }}</td>
+                            <td style="padding: 10px 14px; font-weight: 500;">{{ $event['date'] }}</td>
+                            <td style="padding: 10px 14px;">
+                                <span style="background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                    🗑️ {{ $event['time'] }}
+                                </span>
+                            </td>
+                            <td style="padding: 10px 14px; color: #374151;">{{ $event['compartment'] }}</td>
+                            <td style="padding: 10px 14px; color: #9ca3af; font-size: 12px;">{{ $event['ago'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div id="historyEmpty" style="display:none; text-align: center; padding: 20px; color: #9ca3af; font-size: 13px;">
+                    No results for selected date range.
+                </div>
+            </div>
+            @else
+            <div style="text-align: center; padding: 30px; color: #9ca3af;">
+                <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 8px;"></i>
+                <p style="margin: 0;">No collection trip events recorded yet.</p>
+            </div>
+            @endif
+        </div>
+
+        <script>
+        function filterHistory() {
+            const from = document.getElementById('historyFrom').value;
+            const to   = document.getElementById('historyTo').value;
+            const rows = document.querySelectorAll('.history-row');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const date = row.getAttribute('data-date');
+                const show = (!from || date >= from) && (!to || date <= to);
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            // Renumber visible rows
+            let num = 1;
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    row.querySelector('.row-num').textContent = num++;
+                }
+            });
+
+            const emptyMsg = document.getElementById('historyEmpty');
+            if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+
+            // Update label
+            const label = document.getElementById('historyDateLabel');
+            if (label && from) {
+                const d = new Date(from);
+                label.textContent = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+        }
+        </script>
+
 
 <!-- Chart.js and zoom plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 
 <!-- Chart with Zoom -->
@@ -779,16 +870,65 @@ function initChart() {
     // Get data from data attributes (updated by Livewire)
     const labels = JSON.parse(ctx.getAttribute('data-chart-labels') || '[]');
     const sensorDatasets = JSON.parse(ctx.getAttribute('data-chart-datasets') || '[]');
+    const fullEvents = @json($chartFullEvents);
 
     const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#f39c12', '#1abc9c', '#e91e63'];
 
+    // Extra legend items
+    const extraDatasets = [];
+    if (fullEvents.length > 0) {
+        extraDatasets.push({
+            label: '⚠️ Bin Full',
+            data: [],
+            borderColor: '#e74c3c',
+            backgroundColor: '#e74c3c',
+            pointStyle: 'triangle',
+            pointRadius: 6,
+            borderWidth: 2,
+            showLine: false,
+            spanGaps: false,
+        });
+    }
+
+    const selectedDate = ctx.getAttribute('data-selected-date') || new Date().toISOString().split('T')[0];
+    const clearEvents = @json($chartClearEvents);
+    const totalClearToday = clearEvents.length;
+
+    // Calculate end time
+    const today = new Date().toISOString().split('T')[0];
+    let chartEndTime;
+
+    if (selectedDate === today) {
+        // Today — end ikut last data point + round up 30 minit
+        let lastX = selectedDate + 'T00:00:00';
+        sensorDatasets.forEach(sensor => {
+            if (sensor.data && sensor.data.length > 0) {
+                const lastPoint = sensor.data[sensor.data.length - 1];
+                if (lastPoint && lastPoint.x > lastX) lastX = lastPoint.x;
+            }
+        });
+        const endD = new Date(lastX);
+        const mins = endD.getMinutes();
+        if (mins === 0) {
+            // already on :00, keep as is
+        } else if (mins <= 30) {
+            endD.setMinutes(30, 0, 0);
+        } else {
+            endD.setHours(endD.getHours() + 1, 0, 0, 0);
+        }
+        chartEndTime = selectedDate + 'T' + endD.toTimeString().slice(0, 8);
+    } else {
+        // Hari lain — full day 23:30
+        chartEndTime = selectedDate + 'T23:59:59';
+    }
+
     const datasets = sensorDatasets.map((sensor, index) => ({
         label: sensor.label,
-        data: sensor.data,
+        data: sensor.data.map(point => ({ x: point.x, y: point.y, timestamp: point.timestamp })),
         borderWidth: 3,
         tension: 0.4,
         spanGaps: true,
-        fill: true,
+        fill: false,
         borderColor: colors[index % colors.length],
         backgroundColor: colors[index % colors.length] + '20',
         pointRadius: 4,
@@ -796,14 +936,35 @@ function initChart() {
         pointBackgroundColor: colors[index % colors.length],
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
-        timestamp: sensor.timestamps || []
     }));
+
+    // Add vertical line datasets for clear events
+    clearEvents.forEach((event, i) => {
+        datasets.push({
+            label: i === 0 ? '🗑️ Collection' : '_nolegend_' + i,
+            data: [
+                { x: event.datetime, y: 0 },
+                { x: event.datetime, y: 100 },
+            ],
+            borderColor: '#065f46',
+            borderWidth: 2,
+            borderDash: [6, 3],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            fill: false,
+            spanGaps: false,
+            tension: 0,
+            showLine: true,
+            clearEvent: true,
+            clearTime: event.time,
+            clearCount: event.count,
+        });
+    });
 
     weeklyChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
-            datasets: datasets
+            datasets: [...datasets, ...extraDatasets]
         },
         options: {
             responsive: true,
@@ -824,7 +985,10 @@ function initChart() {
                     labels: {
                         usePointStyle: true,
                         padding: 15,
-                        font: { size: 12, weight: '600' }
+                        font: { size: 12, weight: '600' },
+                        filter: function(item) {
+                            return !item.text.startsWith('_nolegend_');
+                        }
                     }
                 },
                 tooltip: {
@@ -837,18 +1001,37 @@ function initChart() {
                     displayColors: true,
                     callbacks: {
                         title: function(context) {
-                            return context[0].label || '';
+                            const d = new Date(context[0].parsed.x);
+                            return d.toTimeString().slice(0, 8);
                         },
                         label: function(context) {
-                            const label = context.dataset.label || '';
+                            const ds = context.dataset;
                             const value = context.parsed.y;
-                            const timestamp = context.dataset.timestamp?.[context.dataIndex] || '';
-                            
-                            let labelText = '  ' + label + ': ' + (value !== null ? value.toFixed(1) + '%' : 'N/A');
-                            if (timestamp) {
-                                labelText += ' • ' + timestamp;
+
+                            // Clear event vertical line
+                            if (ds.clearEvent) {
+                                if (context.dataIndex === 0) {
+                                    return [
+                                        '  🗑️ Collection',
+                                        '  Time: ' + ds.clearTime,
+                                        '  Collection Trip Today: ' + ds.clearCount,
+                                    ];
+                                }
+                                return null;
                             }
-                            return labelText;
+
+                            // Skip nolegend datasets
+                            if ((ds.label || '').startsWith('_nolegend_')) return null;
+
+                            const label = ds.label || '';
+                            const point = ds.data[context.dataIndex];
+                            const ts = point?.timestamp || '';
+                            let text = '  ' + label + ': ' + (value !== null ? value.toFixed(1) + '%' : 'N/A');
+                            if (ts && !ts.includes('prev day')) text += ' (' + ts + ')';
+                            return text;
+                        },
+                        filter: function(item) {
+                            return item.formattedValue !== null;
                         }
                     }
                 },
@@ -872,10 +1055,14 @@ function initChart() {
                         }
                     },
                     limits: {
-                        x: { min: 'original', max: 'original' },
+                        x: { 
+                            min: new Date(selectedDate + 'T00:00:00').getTime(),
+                            max: new Date(chartEndTime).getTime()
+                        },
                         y: { min: 0, max: 100 }
                     }
-                }
+                },
+
             },
             scales: {
                 y: {
@@ -898,6 +1085,17 @@ function initChart() {
                     }
                 },
                 x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        stepSize: 30,
+                        displayFormats: {
+                            minute: 'HH:mm'
+                        },
+                        tooltipFormat: 'HH:mm:ss'
+                    },
+                    min: selectedDate + 'T00:00:00',
+                    max: chartEndTime,
                     title: {
                         display: true,
                         text: 'Time',
@@ -911,8 +1109,17 @@ function initChart() {
                         maxRotation: 0,
                         minRotation: 0,
                         font: { size: 10 },
-                        autoSkip: true,
-                        maxTicksLimit: 24
+                        autoSkip: false,
+                        source: 'auto',
+                        callback: function(value) {
+                            const d = new Date(value);
+                            const mins = d.getMinutes();
+                            // Only show ticks at :00 and :30
+                            if (mins === 0 || mins === 30) {
+                                return d.toTimeString().slice(0, 5);
+                            }
+                            return null;
+                        }
                     }
                 }
             }
@@ -930,6 +1137,16 @@ function initChart() {
 // Initialize chart on page load
 document.addEventListener('DOMContentLoaded', function () {
     initChart();
+
+    // Sync history table filter with selected date from chart date picker
+    const selectedDateVal = document.getElementById('weeklyBinChart')?.getAttribute('data-selected-date');
+    if (selectedDateVal) {
+        const fromEl = document.getElementById('historyFrom');
+        const toEl   = document.getElementById('historyTo');
+        if (fromEl && !fromEl.value) fromEl.value = selectedDateVal;
+        if (toEl && !toEl.value) toEl.value = selectedDateVal;
+        filterHistory();
+    }
     
     // Setup MutationObserver to detect data attribute changes (for future use)
     const canvas = document.getElementById('weeklyBinChart');

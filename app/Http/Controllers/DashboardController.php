@@ -681,51 +681,67 @@ private function getLastEmptiedTimes()
 {
     $result = [];
 
-    $devices = Device::with([
-        'asset',
-        'asset.capacitySetting',
-        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
-    ])->get();
+    $assets = Asset::with([
+        'capacitySetting',
+        'devices' => fn($q) => $q->where('is_active', 1),
+        'devices.sensors' => fn($q) => $q->orderBy('created_at', 'asc'),
+    ])->where('is_active', 1)->get();
 
-    foreach ($devices as $device) {
-        if (!$device->asset || !$device->asset->capacitySetting) continue;
+    foreach ($assets as $asset) {
+        if (!$asset->capacitySetting) continue;
 
-        $assetId = $device->asset->id;
-        $capacity = $device->asset->capacitySetting;
-        $sensors = $device->sensors;
+        $assetId = $asset->id;
 
-        // Initialize if not set
-        if (!isset($result[$assetId])) {
-            $result[$assetId] = null;
+        // Gabungkan semua sensor readings dari semua compartments, sort by time ASC
+        $allSensorReadings = collect();
+        foreach ($asset->devices as $device) {
+            foreach ($device->sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) continue;
+                $allSensorReadings->push([
+                    'device_id'  => $device->id,
+                    'capacity'   => (float) $sensor->capacity,
+                    'created_at' => Carbon::parse($sensor->created_at),
+                ]);
+            }
         }
 
-        $wasFullOrHalf = false;
-        $previousCapacity = null;
+        $allSensorReadings = $allSensorReadings->sortBy('created_at')->values();
 
-        foreach ($sensors as $sensor) {
-            if (!is_numeric($sensor->capacity)) continue;
+        $previousCapacities = [];
+        $binCleared         = false;
+        $triggeredDeviceId  = null;
+        $lastClearTime      = null;
 
-            $currentCapacity = $sensor->capacity;
+        foreach ($allSensorReadings as $reading) {
+            $deviceId    = $reading['device_id'];
+            $currentCap  = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
 
-            // Check if bin was full or half (capacity > empty_to)
-            if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
-                $wasFullOrHalf = true;
-            }
-
-            // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
-            if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
-                $emptiedTime = Carbon::parse($sensor->created_at);
-
-                // Keep the most recent emptied time
-                if (!$result[$assetId] || $emptiedTime > $result[$assetId]) {
-                    $result[$assetId] = $emptiedTime;
+            if (!$binCleared) {
+                // Check ada compartment yang hit 0% dari >10%
+                if (
+                    $previousCap !== null &&
+                    $previousCap > 10 &&
+                    $currentCap <= 0
+                ) {
+                    $binCleared        = true;
+                    $triggeredDeviceId = $deviceId;
+                    $lastClearTime     = $readingTime;
                 }
-
-                $wasFullOrHalf = false; // reset for next cycle
+            } else {
+                // Tunggu triggered compartment naik balik >10% untuk reset
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared        = false;
+                    $triggeredDeviceId = null;
+                }
             }
 
-            $previousCapacity = $currentCapacity;
+            $previousCapacities[$deviceId] = $currentCap;
         }
+
+        // Last Emptied = timestamp clear event paling recent
+        $result[$assetId] = $lastClearTime;
     }
 
     return collect($result);
