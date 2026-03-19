@@ -679,13 +679,12 @@ private function calculateSmartBinClearTimes()
  */
 private function getLastEmptiedTimes()
 {
-    // result[$assetId] = earliest clear timestamp among all compartments for latest clear event
     $result = [];
 
     $assets = Asset::with([
         'capacitySetting',
         'devices' => fn($q) => $q->where('is_active', 1),
-        'devices.sensors' => fn($q) => $q->orderBy('created_at', 'desc'),
+        'devices.sensors' => fn($q) => $q->orderBy('created_at', 'asc'),
     ])->where('is_active', 1)->get();
 
     foreach ($assets as $asset) {
@@ -693,50 +692,56 @@ private function getLastEmptiedTimes()
 
         $assetId = $asset->id;
 
-        // For each compartment, find the most recent clear event timestamp
-        // A clear event = capacity drops to 0% from a previous reading of >10%
-        $compartmentClearTimes = [];
-
+        // Gabungkan semua sensor readings dari semua compartments, sort by time ASC
+        $allSensorReadings = collect();
         foreach ($asset->devices as $device) {
-            $sensors = $device->sensors;
-            $previousCapacity = null;
-
-            foreach ($sensors as $sensor) {
+            foreach ($device->sensors as $sensor) {
                 if (!is_numeric($sensor->capacity)) continue;
-
-                $currentCapacity = (float) $sensor->capacity;
-
-                // Clear Bin Logic: 0% reading after previous was >10%
-                if (
-                    $previousCapacity !== null &&
-                    $previousCapacity > 10 &&
-                    $currentCapacity <= 0
-                ) {
-                    $emptiedTime = Carbon::parse($sensor->created_at);
-
-                    // Keep only the most recent clear event per compartment
-                    if (
-                        !isset($compartmentClearTimes[$device->id]) ||
-                        $emptiedTime > $compartmentClearTimes[$device->id]
-                    ) {
-                        $compartmentClearTimes[$device->id] = $emptiedTime;
-                    }
-
-                    // Stop at most recent clear event for this compartment
-                    break;
-                }
-
-                $previousCapacity = $currentCapacity;
+                $allSensorReadings->push([
+                    'device_id'  => $device->id,
+                    'capacity'   => (float) $sensor->capacity,
+                    'created_at' => Carbon::parse($sensor->created_at),
+                ]);
             }
         }
 
-        // Last Emptied = timestamp of the FIRST compartment that was cleared
-        // (earliest timestamp among all compartments' latest clear events)
-        if (!empty($compartmentClearTimes)) {
-            $result[$assetId] = collect($compartmentClearTimes)->min();
-        } else {
-            $result[$assetId] = null;
+        $allSensorReadings = $allSensorReadings->sortBy('created_at')->values();
+
+        $previousCapacities = [];
+        $binCleared         = false;
+        $triggeredDeviceId  = null;
+        $lastClearTime      = null;
+
+        foreach ($allSensorReadings as $reading) {
+            $deviceId    = $reading['device_id'];
+            $currentCap  = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
+
+            if (!$binCleared) {
+                // Check ada compartment yang hit 0% dari >10%
+                if (
+                    $previousCap !== null &&
+                    $previousCap > 10 &&
+                    $currentCap <= 0
+                ) {
+                    $binCleared        = true;
+                    $triggeredDeviceId = $deviceId;
+                    $lastClearTime     = $readingTime;
+                }
+            } else {
+                // Tunggu triggered compartment naik balik >10% untuk reset
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared        = false;
+                    $triggeredDeviceId = null;
+                }
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
         }
+
+        // Last Emptied = timestamp clear event paling recent
+        $result[$assetId] = $lastClearTime;
     }
 
     return collect($result);

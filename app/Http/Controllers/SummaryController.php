@@ -79,13 +79,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             'devices' => function ($q) {
                 $q->orderBy('id_device');
             }
-        ])->get();
-
-        $sensorData = DB::table('sensors')
-            ->whereBetween('time', [$start, $end])
-            ->orderBy('time')
-            ->get()
-            ->groupBy('device_id');
+        ])->where('is_active', 1)->get();
 
         $results = [];
 
@@ -103,72 +97,86 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                 continue;
             }
 
-            $timesFull = 0;
-            $fillDurations = [];
-            $clearDurations = [];
-
+            // Gabungkan semua sensor readings dari semua devices, sort by time ASC
+            $allReadings = collect();
             foreach ($asset->devices as $device) {
+                $sensors = DB::table('sensors')
+                    ->select('capacity', 'created_at')
+                    ->where('device_id', $device->id_device)
+                    ->orderBy('created_at', 'asc')
+                    ->get();
 
-                $deviceSensors = $sensorData->get($device->id_device, collect());
+                foreach ($sensors as $s) {
+                    if (!is_numeric($s->capacity)) continue;
+                    $allReadings->push([
+                        'device_id'  => $device->id,
+                        'capacity'   => (float) $s->capacity,
+                        'created_at' => Carbon::parse($s->created_at),
+                    ]);
+                }
+            }
+            $allReadings = $allReadings->sortBy('created_at')->values();
 
-                $prevCapacity = null;
-                $lastFullAt = null;
-                $lastEmptyAt = null;
+            $previousCapacities = [];
+            $binCleared         = false;
+            $triggeredDeviceId  = null;
 
-                foreach ($deviceSensors as $sensor) {
+            $timesFull      = 0;
+            $fillDurations  = [];
+            $clearDurations = [];
+            $lastClearAt    = null;
+            $lastFullAt     = null;
 
-                    if (!is_numeric($sensor->capacity)) continue;
+            // Track full per asset (any device goes full)
+            $assetWasFull = false;
 
-                    $capacity = (float) $sensor->capacity;
-                    $time = Carbon::parse($sensor->time);
+            foreach ($allReadings as $reading) {
+                $deviceId    = $reading['device_id'];
+                $currentCap  = $reading['capacity'];
+                $previousCap = $previousCapacities[$deviceId] ?? null;
+                $readingTime = $reading['created_at'];
 
-                    if ($prevCapacity === null) {
-                        $prevCapacity = $capacity;
-
-                        if ($capacity <= $setting->empty_to) {
-                            $lastEmptyAt = $time;
-                        } elseif ($capacity > $setting->half_to) {
-                            $lastFullAt = $time;
-                        }
-                        continue;
-                    }
-
-                    // EMPTY/HALF → FULL
-                    if (
-                        $prevCapacity <= $setting->half_to &&
-                        $capacity >  $setting->half_to
-                    ) {
+                // Full detection (per asset) — any device crosses half_to
+                if ($previousCap !== null && $previousCap <= $setting->half_to && $currentCap > $setting->half_to) {
+                    if (!$assetWasFull) {
+                        $assetWasFull = true;
                         $timesFull++;
+                        $lastFullAt = $readingTime;
 
-                        if ($lastEmptyAt) {
-                            $fillDurations[] =
-                                $lastEmptyAt->diffInMinutes($time) / 60;
+                        // Fill time = from last clear to now full
+                        if ($lastClearAt) {
+                            $fillDurations[] = $lastClearAt->diffInMinutes($readingTime) / 60;
                         }
-
-                        $lastFullAt = $time;
                     }
-
-                    // FULL/HALF → EMPTY (including negative capacity)
-                    if (
-                        $prevCapacity > $setting->empty_to &&
-                        ($capacity <= $setting->empty_to || $capacity < 0)
-                    ) {
-                        if ($lastFullAt) {
-                            $clearDurations[] =
-                                $lastFullAt->diffInMinutes($time) / 60;
-                        }
-
-                        $lastEmptyAt = $time;
-                    }
-
-                    $prevCapacity = $capacity;
                 }
 
-                // Still full at period end
-                if ($lastFullAt && $lastFullAt < $end) {
-                    $clearDurations[] =
-                        $lastFullAt->diffInMinutes($end) / 60;
+                // Clear Bin detection (per asset, new logic)
+                if (!$binCleared) {
+                    if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                        $binCleared        = true;
+                        $triggeredDeviceId = $deviceId;
+                        $assetWasFull      = false; // reset full flag after clear
+
+                        // Only count clear time if within period
+                        if ($readingTime->between($start, $end)) {
+                            $lastClearAt = $readingTime;
+
+                            // Clear time = from last full to now cleared
+                            if ($lastFullAt) {
+                                $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
+                                $lastFullAt = null;
+                            }
+                        }
+                    }
+                } else {
+                    // Tunggu triggered compartment naik balik >10%
+                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                        $binCleared        = false;
+                        $triggeredDeviceId = null;
+                    }
                 }
+
+                $previousCapacities[$deviceId] = $currentCap;
             }
 
             $results[] = (object) [
@@ -197,84 +205,74 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 
         $assets = Asset::with([
             'capacitySetting',
-            'devices'
-        ])->get();
-
-        $sensorData = DB::table('sensors')
-            ->whereBetween('created_at', [$start, $end])
-            ->orderBy('created_at')
-            ->get()
-            ->groupBy('device_id');
+            'devices',
+        ])->where('is_active', 1)->get();
 
         $logs = [];
 
         foreach ($assets as $asset) {
+            if (!$asset->capacitySetting) continue;
 
-            $setting = $asset->capacitySetting;
-            if (!$setting) continue;
-
+            // Gabungkan semua sensor readings dari semua devices, sort by time ASC
+            $allReadings = collect();
             foreach ($asset->devices as $device) {
+                $sensors = DB::table('sensors')
+                    ->select('capacity', 'created_at')
+                    ->where('device_id', $device->id_device)
+                    ->orderBy('created_at', 'asc')
+                    ->get();
 
-                $deviceSensors = $sensorData->get($device->id_device, collect());
-
-                $prevCapacity = null;
-
-                foreach ($deviceSensors as $sensor) {
-
-                    if (!is_numeric($sensor->capacity)) continue;
-
-                    $capacity = (float) $sensor->capacity;
-                    $time     = Carbon::parse($sensor->created_at);
-
-                    if ($prevCapacity === null) {
-                        $prevCapacity = $capacity;
-                        continue;
-                    }
-
-                    // ✅ CLEANED EVENT: FULL/HALF → EMPTY (including negative capacity)
-                    if (
-                        $prevCapacity > $setting->empty_to &&
-                        ($capacity <= $setting->empty_to || $capacity < 0)
-                    ) {
-                        $logs[] = (object) [
-                            'asset_name'  => $asset->asset_name,
-                            'device_name' => $device->device_name ?? $device->id_device,
-                            'cleaned_at'  => $time,
-                        ];
-                    }
-
-                    $prevCapacity = $capacity;
+                foreach ($sensors as $s) {
+                    if (!is_numeric($s->capacity)) continue;
+                    $allReadings->push([
+                        'device_id'   => $device->id,
+                        'device_name' => $device->device_name ?? $device->id_device,
+                        'capacity'    => (float) $s->capacity,
+                        'created_at'  => Carbon::parse($s->created_at),
+                    ]);
                 }
+            }
+
+            $allReadings = $allReadings->sortBy('created_at')->values();
+
+            $previousCapacities = [];
+            $binCleared         = false;
+            $triggeredDeviceId  = null;
+
+            foreach ($allReadings as $reading) {
+                $deviceId    = $reading['device_id'];
+                $currentCap  = $reading['capacity'];
+                $previousCap = $previousCapacities[$deviceId] ?? null;
+                $readingTime = $reading['created_at'];
+
+                if (!$binCleared) {
+                    // Clear Bin Logic: 0% selepas >10%
+                    if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                        $binCleared        = true;
+                        $triggeredDeviceId = $deviceId;
+
+                        // Only log if within date range
+                        if ($readingTime->between($start, $end)) {
+                            $logs[] = (object) [
+                                'asset_name'  => $asset->asset_name,
+                                'device_name' => $reading['device_name'],
+                                'cleaned_at'  => $readingTime,
+                            ];
+                        }
+                    }
+                } else {
+                    // Tunggu triggered compartment naik balik >10%
+                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                        $binCleared        = false;
+                        $triggeredDeviceId = null;
+                    }
+                }
+
+                $previousCapacities[$deviceId] = $currentCap;
             }
         }
 
-        // Consolidate logs with same asset_name within 10 minutes (ignore device)
-        $logs = collect($logs)->sortBy('cleaned_at');
-        
-        $consolidated = [];
-        $lastLogTimeByAsset = []; // key: asset_name, value: Carbon time
-        
-        foreach ($logs as $log) {
-            $key = $log->asset_name;
-            
-            if (!isset($lastLogTimeByAsset[$key])) {
-                // First log for this asset - keep the earliest one
-                $consolidated[] = $log;
-                $lastLogTimeByAsset[$key] = $log->cleaned_at;
-            } else {
-                // Check if within 10 minutes of last kept log
-                $timeDiff = $lastLogTimeByAsset[$key]->diffInMinutes($log->cleaned_at);
-                
-                if ($timeDiff > 10) {
-                    // More than 10 minutes, add as new log
-                    $consolidated[] = $log;
-                    $lastLogTimeByAsset[$key] = $log->cleaned_at;
-                }
-                // Else: within 10 minutes, skip (consolidate with previous)
-            }
-        }
-
-        return collect($consolidated)->sortByDesc('cleaned_at');
+        return collect($logs)->sortByDesc('cleaned_at');
     }
 
     public function getCleaningLogs(Carbon $baseDate, string $period)

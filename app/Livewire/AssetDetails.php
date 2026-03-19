@@ -25,6 +25,9 @@ class AssetDetails extends Component
     public $weeklySensorDatasets = [];
     public $deviceStatuses = [];
     public $selectedDate;
+    public $clearBinHistory = [];
+    public $chartClearEvents = [];
+    public $chartFullEvents = [];
 
     protected $listeners = ['refreshData' => 'refreshData'];
 
@@ -56,21 +59,115 @@ class AssetDetails extends Component
 
         $this->prepareCompartments();
         $this->prepareDailyChart();
+        $this->prepareClearBinHistory();
     }
 
     /**
      * Show all sensor data points ordered by created_at
+     * Also detects Clear Bin & Full events for chart markers
+     * Prepends last reading from previous day to connect line from 00:00
      */
     protected function prepareDailyChart()
     {
         $devices = $this->asset->devices;
         $selectedDate = Carbon::parse($this->selectedDate);
+        $prevDate = $selectedDate->copy()->subDay();
+        $capacitySetting = $this->asset->capacitySetting;
 
         $this->weeklyChartLabels = [];
         $this->weeklySensorDatasets = [];
+        $this->chartClearEvents = [];
+        $this->chartFullEvents = [];
 
+        // --- Collect ALL sensor readings across all devices for clear/full detection ---
+        $allReadings = collect();
         foreach ($devices as $device) {
-            // Get raw sensor data for the selected date, ordered by created_at
+            $allSensors = DB::table('sensors')
+                ->select('capacity', 'created_at')
+                ->where('device_id', $device->id_device)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            foreach ($allSensors as $s) {
+                $allReadings->push([
+                    'device_id'   => $device->id,
+                    'device_name' => $device->device_name,
+                    'capacity'    => (float) $s->capacity,
+                    'created_at'  => Carbon::parse($s->created_at)->timezone(config('app.timezone')),
+                ]);
+            }
+        }
+        $allReadings = $allReadings->sortBy('created_at')->values();
+
+        // --- Detect Clear Bin & Full events ---
+        $previousCapacities = [];
+        $binCleared         = false;
+        $triggeredDeviceId  = null;
+        $clearEventCount    = 0;
+
+        $currentDay = null;
+
+        foreach ($allReadings as $reading) {
+            $deviceId    = $reading['device_id'];
+            $currentCap  = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
+            $readingDay  = $readingTime->format('Y-m-d');
+            $isSelectedDate = $readingDay === $this->selectedDate;
+
+            // Reset state when day changes
+            if ($currentDay !== null && $currentDay !== $readingDay) {
+                $binCleared        = false;
+                $triggeredDeviceId = null;
+                $previousCapacities = [];
+                if ($readingDay === $this->selectedDate) {
+                    $clearEventCount = 0;
+                }
+            }
+            $currentDay = $readingDay;
+
+            // Clear Bin detection
+            if (!$binCleared) {
+                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    $binCleared = true;
+                    $triggeredDeviceId = $deviceId;
+                    if ($isSelectedDate) {
+                        $clearEventCount++;
+                        $this->chartClearEvents[] = [
+                            'time'  => $readingTime->format('H:i'),
+                            'count' => $clearEventCount,
+                            'datetime' => $this->selectedDate . 'T' . $readingTime->format('H:i:s'),
+                        ];
+                    }
+                }
+            } else {
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                }
+            }
+
+            // Full Bin detection
+            if ($capacitySetting && $isSelectedDate) {
+                if ($previousCap !== null && $previousCap <= $capacitySetting->half_to && $currentCap > $capacitySetting->half_to) {
+                    $this->chartFullEvents[] = $readingTime->format('H:i');
+                }
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
+        }
+
+        // --- Build per-device datasets for selected date ---
+        foreach ($devices as $device) {
+            // Get last reading from previous day to connect line from 00:00
+            $prevReading = DB::table('sensors')
+                ->select('capacity', 'created_at')
+                ->where('device_id', $device->id_device)
+                ->whereDate('created_at', $prevDate)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            // Get all readings for selected date
             $sensors = DB::table('sensors')
                 ->select('capacity', 'created_at')
                 ->where('device_id', $device->id_device)
@@ -78,26 +175,42 @@ class AssetDetails extends Component
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            // Build values and timestamps arrays directly from raw data
-            $values = [];
-            $labels = [];
-            $timestamps = [];
+            $data = [];
 
-            foreach ($sensors as $sensor) {
-                $values[] = round($sensor->capacity, 1);
-                $labels[] = Carbon::parse($sensor->created_at)->format('H:i');
-                $timestamps[] = Carbon::parse($sensor->created_at)->format('H:i:s');
+            // Prepend previous day last reading at 00:00:00 of selected date
+            if ($prevReading) {
+                $data[] = [
+                    'x'         => $this->selectedDate . 'T00:00:00',
+                    'y'         => round((float) $prevReading->capacity, 1),
+                    'timestamp' => '00:00:00 (prev day)',
+                ];
             }
 
-            // Set labels only once (from first device)
-            if (empty($this->weeklyChartLabels)) {
-                $this->weeklyChartLabels = $labels;
+            foreach ($sensors as $sensor) {
+                $t = Carbon::parse($sensor->created_at);
+                $data[] = [
+                    'x'         => $this->selectedDate . 'T' . $t->format('H:i:s'),
+                    'y'         => round((float) $sensor->capacity, 1),
+                    'timestamp' => $t->format('H:i:s'),
+                ];
+            }
+
+            // Calculate end time — round up last data point to nearest 30 min
+            $lastTime = null;
+            if ($sensors->isNotEmpty()) {
+                $lastSensor = Carbon::parse($sensors->last()->created_at);
+                $minutes = $lastSensor->minute;
+                $roundedMinutes = $minutes < 30 ? 30 : 60;
+                $lastTime = $lastSensor->copy()->setMinute($roundedMinutes)->setSecond(0);
+                if ($roundedMinutes === 60) {
+                    $lastTime->addHour()->setMinute(0);
+                }
             }
 
             $this->weeklySensorDatasets[] = [
-                'label' => $device->device_name,
-                'data'  => $values,
-                'timestamps' => $timestamps,
+                'label'    => $device->device_name,
+                'data'     => $data,
+                'end_time' => $lastTime ? $this->selectedDate . 'T' . $lastTime->format('H:i:s') : null,
             ];
         }
     }
@@ -251,6 +364,70 @@ class AssetDetails extends Component
             'compartments' => $this->compartments,
             'assets' => $this->allAssets,
         ]);
+    }
+
+    /**
+     * Prepare cleared bin history for this asset (all time)
+     */
+    protected function prepareClearBinHistory()
+    {
+        $this->clearBinHistory = [];
+        $devices = $this->asset->devices;
+
+        $allReadings = collect();
+        foreach ($devices as $device) {
+            $sensors = DB::table('sensors')
+                ->select('capacity', 'created_at')
+                ->where('device_id', $device->id_device)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            foreach ($sensors as $s) {
+                $allReadings->push([
+                    'device_id'   => $device->id,
+                    'device_name' => $device->device_name ?? 'N/A',
+                    'capacity'    => (float) $s->capacity,
+                    'created_at'  => Carbon::parse($s->created_at)->timezone(config('app.timezone')),
+                ]);
+            }
+        }
+        $allReadings = $allReadings->sortBy('created_at')->values();
+
+        $previousCapacities = [];
+        $binCleared         = false;
+        $triggeredDeviceId  = null;
+
+        foreach ($allReadings as $reading) {
+            $deviceId    = $reading['device_id'];
+            $currentCap  = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
+
+            if (!$binCleared) {
+                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    $binCleared        = true;
+                    $triggeredDeviceId = $deviceId;
+
+                    $this->clearBinHistory[] = [
+                        'datetime'     => $readingTime->format('d/m/Y h:i A'),
+                        'date'         => $readingTime->format('d/m/Y'),
+                        'time'         => $readingTime->format('h:i A'),
+                        'compartment'  => $reading['device_name'],
+                        'ago'          => $readingTime->diffForHumans(),
+                    ];
+                }
+            } else {
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared        = false;
+                    $triggeredDeviceId = null;
+                }
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
+        }
+
+        // Most recent first
+        $this->clearBinHistory = array_reverse($this->clearBinHistory);
     }
 
     private function getLastFullAndClear(Device $device, float $full_threshold, float $empty_threshold): array

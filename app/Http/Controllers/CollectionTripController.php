@@ -49,10 +49,11 @@ class CollectionTripController extends Controller
     /**
      * Get collection trips between dates.
      *
-     * Clear Bin Logic:
-     * - A compartment (device) is considered cleared when its capacity reads 0%
-     *   AND the previous reading was > 10%.
-     * - Each qualifying event is recorded as one collection trip entry.
+     * Clear Bin Logic (per asset/bin):
+     * 1. Mana-mana compartment hit 0% dari sebelumnya >10% → 1 Collection Trip, binCleared = true
+     * 2. Semua compartment lain dalam bin yang sama — skip
+     * 3. Reset (binCleared = false) hanya bila compartment yang triggered naik balik >10%
+     * 4. Barulah boleh detect collection trip baru
      *
      * @param  string  $dateFrom
      * @param  string  $dateTo
@@ -64,7 +65,7 @@ class CollectionTripController extends Controller
             'floor',
             'capacitySetting',
             'devices' => fn($q) => $q->where('is_active', 1),
-            'devices.sensors' => fn($q) => $q->orderBy('created_at', 'desc'),
+            'devices.sensors' => fn($q) => $q->orderBy('created_at', 'asc'),
         ])->where('is_active', 1)->get();
 
         $collectionTrips = collect();
@@ -77,46 +78,72 @@ class CollectionTripController extends Controller
                 continue;
             }
 
-            // Process each compartment (device) independently
+            // Gabungkan semua sensor readings dari semua compartments, sort by time ASC
+            $allSensorReadings = collect();
             foreach ($asset->devices as $device) {
-                $sensors = $device->sensors;
-                $previousCapacity = null;
+                foreach ($device->sensors as $sensor) {
+                    if (!is_numeric($sensor->capacity)) continue;
+                    $allSensorReadings->push([
+                        'device_id'   => $device->id,
+                        'device_name' => $device->device_name ?? 'N/A',
+                        'capacity'    => (float) $sensor->capacity,
+                        'created_at'  => Carbon::parse($sensor->created_at),
+                    ]);
+                }
+            }
 
-                foreach ($sensors as $sensor) {
-                    if (!is_numeric($sensor->capacity)) {
-                        continue;
-                    }
+            // Sort semua readings ikut masa ASC
+            $allSensorReadings = $allSensorReadings->sortBy('created_at')->values();
 
-                    $currentCapacity = (float) $sensor->capacity;
+            // Track previous capacity per device
+            $previousCapacities = []; // [device_id => capacity]
 
-                    // NEW Clear Bin Logic:
-                    // Compartment is cleared when current reading = 0%
-                    // AND previous reading was > 10%
+            // Track bin state
+            $binCleared        = false;
+            $triggeredDeviceId = null; // compartment yang triggered clear event
+
+            foreach ($allSensorReadings as $reading) {
+                $deviceId    = $reading['device_id'];
+                $currentCap  = $reading['capacity'];
+                $previousCap = $previousCapacities[$deviceId] ?? null;
+                $readingTime = $reading['created_at'];
+
+                if (!$binCleared) {
+                    // Bin belum clear — check ada compartment yang hit 0% dari >10%
                     if (
-                        $previousCapacity !== null &&
-                        $previousCapacity > 10 &&
-                        $currentCapacity <= 0
+                        $previousCap !== null &&
+                        $previousCap > 10 &&
+                        $currentCap <= 0
                     ) {
-                        $emptiedTime = Carbon::parse($sensor->created_at);
+                        // Clear event detected!
+                        $binCleared        = true;
+                        $triggeredDeviceId = $deviceId;
 
-                        // Only record if within the selected date range
-                        if ($emptiedTime->between($rangeStart, $rangeEnd)) {
+                        if ($readingTime->between($rangeStart, $rangeEnd)) {
                             $collectionTrips->push([
                                 'asset_id'           => $asset->id,
                                 'asset_name'         => $asset->asset_name,
                                 'floor_name'         => $asset->floor->floor_name ?? 'N/A',
-                                'device_name'        => $device->device_name ?? 'N/A',
-                                'emptied_at'         => $emptiedTime,
-                                'emptied_date'       => $emptiedTime->format('Y-m-d'),
-                                'emptied_time'       => $emptiedTime->format('H:i'),
-                                'datetime_formatted' => $emptiedTime->format('d/m/Y h:i A'),
-                                'diff_for_humans'    => $emptiedTime->diffForHumans(),
+                                'device_name'        => $reading['device_name'],
+                                'emptied_at'         => $readingTime,
+                                'emptied_date'       => $readingTime->format('Y-m-d'),
+                                'emptied_time'       => $readingTime->format('H:i'),
+                                'datetime_formatted' => $readingTime->format('d/m/Y h:i A'),
+                                'diff_for_humans'    => $readingTime->diffForHumans(),
                             ]);
                         }
                     }
-
-                    $previousCapacity = $currentCapacity;
+                } else {
+                    // Bin dah clear — tunggu triggered compartment naik balik >10%
+                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                        // Triggered compartment dah naik balik — reset!
+                        $binCleared        = false;
+                        $triggeredDeviceId = null;
+                    }
+                    // Compartment lain — skip, just update previous capacity
                 }
+
+                $previousCapacities[$deviceId] = $currentCap;
             }
         }
 
