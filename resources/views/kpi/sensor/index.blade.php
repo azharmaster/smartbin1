@@ -132,7 +132,11 @@
 <div class="card card-success card-outline">
     <div class="card-header d-flex align-items-center">
         <p class="mb-0"><i class="fas fa-signal"></i> Sensor Performance Metrics</p>
-        <div class="ms-auto">
+       
+        <div class=" ms-auto">
+             <a href="{{ route('sensors.index') }}" class="btn btn-sm btn-success">
+                <i class="fas fa-database"></i> Sensor Data
+            </a>
             <a href="{{ route('kpi.sensor.export', ['period' => $period]) }}" class="btn btn-sm btn-success">
                 <i class="fas fa-download"></i> Export CSV
             </a>
