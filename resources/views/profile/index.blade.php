@@ -11,7 +11,7 @@
 @php
     $photo = Auth::user()->profile_photo 
         ? asset('uploads/profile/' . Auth::user()->profile_photo)
-        : 'https://via.placeholder.com/150';
+        : asset('uploads/images/logo.png');
 
     $roles = [
         1 => ['Admin', 'bg-primary'],
