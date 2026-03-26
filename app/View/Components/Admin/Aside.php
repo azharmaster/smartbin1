@@ -79,12 +79,12 @@ class Aside extends Component
             //     "route_active" => "devices.*"
             // ],
             // [
-                "label" => "Sensors",
-                "icon" => "fas fa-broadcast-tower",
-                "color" => "#6fff00",
-                "route_name" => "sensors.index",
-                "route_active" => "sensors.*"
-            ],
+            //     "label" => "Sensors",
+            //     "icon" => "fas fa-broadcast-tower",
+            //     "color" => "#6fff00",
+            //     "route_name" => "sensors.index",
+            //     "route_active" => "sensors.*"
+            // ],
             // [
             //     "label" => "KPI Bin",
             //     "icon" => "fas fa-chart-bar",
