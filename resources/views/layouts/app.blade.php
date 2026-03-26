@@ -370,6 +370,19 @@
 */
 
     $(document).ready(function() {
+        const exportWithoutOptionColumn = {
+            columns: function(index, data, node) {
+                const table = node.closest('table');
+                const headerCell = table?.querySelectorAll('thead th')[index];
+
+                if (!headerCell) {
+                    return true;
+                }
+
+                return headerCell.textContent.trim().toLowerCase() !== 'option';
+            }
+        };
+
         $('.datatable').each(function() {
             if (!$.fn.DataTable.isDataTable(this)) {
                 const hasButtons = $(this).hasClass('datatable-buttons');
@@ -380,30 +393,18 @@
                     lengthChange: true,
                     dom: hasButtons ? '<"top"<"left-block"lB><"right-block"f>>rtip' : 'lfrtip',
 
-                    buttons: hasButtons ? [{
-                            extend: 'copyHtml5',
-                            className: 'btn btn-custom copy',
-                            text: '<i class="fas fa-copy"></i> Copy'
-                        },
-                        {
-                            extend: 'csvHtml5',
-                            className: 'btn btn-custom csv',
-                            text: '<i class="fas fa-file-csv"></i> CSV'
-                        },
-                        {
-                            extend: 'excelHtml5',
-                            className: 'btn btn-custom excel',
-                            text: '<i class="far fa-file-excel"></i> Excel'
-                        },
+                    buttons: hasButtons ? [
                         {
                             extend: 'pdfHtml5',
                             className: 'btn btn-custom pdf',
-                            text: '<i class="far fa-file-pdf"></i> PDF'
+                            text: '<i class="far fa-file-pdf"></i> PDF',
+                            exportOptions: exportWithoutOptionColumn
                         },
                         {
                             extend: 'print',
                             className: 'btn btn-custom print',
-                            text: '<i class="fas fa-print"></i> Print'
+                            text: '<i class="fas fa-print"></i> Print',
+                            exportOptions: exportWithoutOptionColumn
                         },
                     ] : []
                 });

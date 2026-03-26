@@ -187,11 +187,37 @@
         });
 
         $(function () {
+            const exportWithoutOptionColumn = {
+                columns: function(index, data, node) {
+                    const table = node.closest('table');
+                    const headerCell = table?.querySelectorAll('thead th')[index];
+
+                    if (!headerCell) {
+                        return true;
+                    }
+
+                    return headerCell.textContent.trim().toLowerCase() !== 'option';
+                }
+            };
+
             $("#table1").DataTable({
                 responsive: true,
                 lengthChange: false,
                 autoWidth: true,
-                buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+                buttons: [
+                    "copy",
+                    "csv",
+                    "excel",
+                    {
+                        extend: "pdf",
+                        exportOptions: exportWithoutOptionColumn
+                    },
+                    {
+                        extend: "print",
+                        exportOptions: exportWithoutOptionColumn
+                    },
+                    "colvis"
+                ]
             }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
 
             $('#table2').DataTable({

@@ -10,7 +10,7 @@ use Illuminate\Testing\Fluent\Concerns\Has;
 class UserController extends Controller
 {
     public function index(){
-        $users = User::all();
+        $users = User::whereIn('role', [1, 4])->get();
         confirmDelete('Delete','Are you sure you want to delete this data?');
 
         return view('user.index', compact('users'));
@@ -18,10 +18,17 @@ class UserController extends Controller
 
     public function store(Request $request){
         $id = $request->input('id');
+        $existingUser = $id ? User::find($id) : null;
+        $restrictedRoles = [1, 4];
+        $roleRule = $existingUser && !in_array((int) $existingUser->role, $restrictedRoles, true)
+            ? 'required|integer'
+            : 'required|integer|in:1,4';
+
         $request->validate([
             'name' => 'required|unique:users,name,'.$id,
             'email' => 'required|email|max:255|unique:users,email,'.$id,
             'phone' => 'nullable|string|max:20', // Added phone validation
+            'role' => $roleRule,
         ],[
             'name.required' => 'Nama kategori harus diisi',
             'name.unique' => 'Nama kategori sudah ada',
@@ -29,10 +36,16 @@ class UserController extends Controller
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.max' => 'Email tidak boleh lebih dari 255 karakter',
-            'email.unique' => 'Email sudah terdaftar'
+            'email.unique' => 'Email sudah terdaftar',
+            'role.required' => 'Role wajib dipilih',
+            'role.in' => 'Role hanya boleh Admin atau Supervisor',
         ]);
 
         $data = $request->all();
+
+        if ($existingUser && !in_array((int) $existingUser->role, $restrictedRoles, true)) {
+            $data['role'] = $existingUser->role;
+        }
 
         if(!$id){
             $data['password'] = Hash::make('12345678');
@@ -59,6 +72,10 @@ class UserController extends Controller
         // Optional: security check
         if (auth()->user()->role != 1) {
             abort(403);
+        }
+
+        if (!in_array($user->role, [1, 4], true)) {
+            abort(404);
         }
 
         return view('user.details', compact('user'));

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\SummaryReportMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use QuickChart\Quickchart;
+use Throwable;
 
 class SummaryController extends Controller
 {
@@ -621,13 +622,22 @@ public function sendEmail(Request $request)
         'summaryMetrics'     => $summaryMetrics,
     ])->setPaper('a4', 'portrait');
 
-    Mail::to($user->email)->send(
+    try {
+        Mail::to($user->email)->send(
             new SummaryReportMail([
-        'reportTitle' => $reportTitle
-        ], $pdf->output())
+                'reportTitle' => $reportTitle
+            ], $pdf->output())
         );
 
-    return back()->with('success', 'Summary report sent to your email!');
+        toast()->success('Summary report sent successfully to ' . $user->email);
+
+        return back()->with('success', 'Summary report sent successfully to ' . $user->email);
+    } catch (Throwable $e) {
+        report($e);
+        toast()->error('Failed to send summary report. Please try again.');
+
+        return back()->with('error', 'Failed to send summary report. Please try again.');
+    }
 }
 
 }

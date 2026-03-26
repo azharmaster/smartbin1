@@ -57,13 +57,13 @@ class Aside extends Component
                 "type" => "section",
                 "label" => "AssetHub"
             ],
-            [
-                "label" => "Floors",
-                "icon" => "fas fa-building",
-                "color" => "#3ef0f6",
-                "route_name" => "floors.index",
-                "route_active" => "floors.*"
-            ],
+            // [
+            //     "label" => "Floors",
+            //     "icon" => "fas fa-building",
+            //     "color" => "#3ef0f6",
+            //     "route_name" => "floors.index",
+            //     "route_active" => "floors.*"
+            // ],
             [
                 "label" => "Assets",
                 "icon" => "fas fa-database",
@@ -71,41 +71,41 @@ class Aside extends Component
                 "route_name" => "master-data.assets.index",
                 "route_active" => "master-data.assets.*"
             ],
-            [
-                "label" => "Devices",
-                "icon" => "fas fa-microchip",
-                "color" => "#1cc88a",
-                "route_name" => "devices.index",
-                "route_active" => "devices.*"
-            ],
-            [
-                "label" => "Sensors",
-                "icon" => "fas fa-broadcast-tower",
-                "color" => "#6fff00",
-                "route_name" => "sensors.index",
-                "route_active" => "sensors.*"
-            ],
-            [
-                "label" => "KPI Bin",
-                "icon" => "fas fa-chart-bar",
-                "color" => "#e74a3b",
-                "route_name" => "kpi.bin.index",
-                "route_active" => "kpi.bin.*"
-            ],
-            [
-                "label" => "KPI Sensor",
-                "icon" => "fas fa-signal",
-                "color" => "#f6c23e",
-                "route_name" => "kpi.sensor.index",
-                "route_active" => "kpi.sensor.*"
-            ],
-            [
-                "label" => "QR Scanner",
-                "icon" => "fas fa-qrcode",
-                "color" => "#f59e0b",
-                "route_name" => "qr.scanner",
-                "route_active" => "qr.scanner"
-            ],
+            // [
+            //     "label" => "Devices",
+            //     "icon" => "fas fa-microchip",
+            //     "color" => "#1cc88a",
+            //     "route_name" => "devices.index",
+            //     "route_active" => "devices.*"
+            // ],
+            // [
+            //     "label" => "Sensors",
+            //     "icon" => "fas fa-broadcast-tower",
+            //     "color" => "#6fff00",
+            //     "route_name" => "sensors.index",
+            //     "route_active" => "sensors.*"
+            // ],
+            // [
+            //     "label" => "KPI Bin",
+            //     "icon" => "fas fa-chart-bar",
+            //     "color" => "#e74a3b",
+            //     "route_name" => "kpi.bin.index",
+            //     "route_active" => "kpi.bin.*"
+            // ],
+            // [
+            //     "label" => "KPI Sensor",
+            //     "icon" => "fas fa-signal",
+            //     "color" => "#f6c23e",
+            //     "route_name" => "kpi.sensor.index",
+            //     "route_active" => "kpi.sensor.*"
+            // ],
+            // [
+            //     "label" => "QR Scanner",
+            //     "icon" => "fas fa-qrcode",
+            //     "color" => "#f59e0b",
+            //     "route_name" => "qr.scanner",
+            //     "route_active" => "qr.scanner"
+            // ],
 
             // =========================================
             // WORKFORCE MANAGEMENT
