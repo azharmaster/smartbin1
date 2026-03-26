@@ -238,7 +238,7 @@
             @php
             $photo = Auth::user()->profile_photo
             ? asset('uploads/profile/' . Auth::user()->profile_photo)
-            : 'https://via.placeholder.com/150';
+            : asset('uploads/images/logo.png');
             @endphp
 
             <ul class="navbar-nav ms-auto">
