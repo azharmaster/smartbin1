@@ -79,12 +79,12 @@ class Aside extends Component
             //     "route_active" => "devices.*"
             // ],
             // [
-            //     "label" => "Sensors",
-            //     "icon" => "fas fa-broadcast-tower",
-            //     "color" => "#6fff00",
-            //     "route_name" => "sensors.index",
-            //     "route_active" => "sensors.*"
-            // ],
+                "label" => "Sensors",
+                "icon" => "fas fa-broadcast-tower",
+                "color" => "#6fff00",
+                "route_name" => "sensors.index",
+                "route_active" => "sensors.*"
+            ],
             // [
             //     "label" => "KPI Bin",
             //     "icon" => "fas fa-chart-bar",
@@ -92,13 +92,13 @@ class Aside extends Component
             //     "route_name" => "kpi.bin.index",
             //     "route_active" => "kpi.bin.*"
             // ],
-            // [
-            //     "label" => "KPI Sensor",
-            //     "icon" => "fas fa-signal",
-            //     "color" => "#f6c23e",
-            //     "route_name" => "kpi.sensor.index",
-            //     "route_active" => "kpi.sensor.*"
-            // ],
+            [
+                "label" => "Signal",
+                "icon" => "fas fa-signal",
+                "color" => "#f6c23e",
+                "route_name" => "kpi.sensor.index",
+                "route_active" => "kpi.sensor.*"
+            ],
             // [
             //     "label" => "QR Scanner",
             //     "icon" => "fas fa-qrcode",
