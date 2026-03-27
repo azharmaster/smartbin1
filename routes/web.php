@@ -364,6 +364,7 @@ Route::post('/users', [UserController::class, 'store'])->name('users.store');
 // Holidays Routes
 // Holidays routes
 Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
+Route::get('/holidays/bin-summary', [HolidayController::class, 'binSummary'])->name('holidays.binSummary');
 Route::get('/holidays/create', [HolidayController::class, 'create'])->name('holidays.create');
 Route::post('/holidays', [HolidayController::class, 'store'])->name('holidays.store'); // Add holiday
 Route::get('/holidays/{holiday}/edit', [HolidayController::class, 'edit'])->name('holidays.edit');

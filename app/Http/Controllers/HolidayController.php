@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Holiday;
 use App\Models\Event;
+use App\Http\Controllers\SummaryController;
+use Carbon\Carbon;
 
 class HolidayController extends Controller
 {
@@ -92,5 +94,34 @@ class HolidayController extends Controller
         $holiday->save();
 
         return redirect()->back()->with('success', 'Holiday notification status updated!');
+    }
+
+    public function binSummary(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'] ?? $validated['start_date'])->endOfDay();
+
+        $summaryController = app(SummaryController::class);
+        $summary = $summaryController->getSummaryForRange($startDate, $endDate);
+
+        return response()->json([
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'summary_metrics' => $summary->summary_metrics,
+            'bin_analytics' => $summary->bin_analytics,
+            'cleaning_logs' => $summary->cleaning_logs->map(function ($log) {
+                return [
+                    'asset_name' => $log->asset_name,
+                    'device_name' => $log->device_name,
+                    'cleaned_at' => Carbon::parse($log->cleaned_at)->format('d M Y, h:i A'),
+                ];
+            })->values(),
+            'top_bins' => $summary->top_bins->values(),
+        ]);
     }
 }

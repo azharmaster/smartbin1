@@ -361,6 +361,236 @@ public function computeSummaryMetrics(Carbon $baseDate, string $period)
     return $this->_computeSummaryMetrics($baseDate, $period);
 }
 
+public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
+{
+    $assets = Asset::with([
+        'capacitySetting',
+        'devices' => function ($q) {
+            $q->orderBy('id_device');
+        }
+    ])->where('is_active', 1)->get();
+
+    $results = [];
+
+    foreach ($assets as $asset) {
+        $setting = $asset->capacitySetting;
+
+        if (!$setting) {
+            $results[] = (object) [
+                'asset_name'     => $asset->asset_name,
+                'times_full'     => 0,
+                'avg_fill_time'  => 0,
+                'avg_clear_time' => 0,
+            ];
+            continue;
+        }
+
+        $allReadings = collect();
+        foreach ($asset->devices as $device) {
+            $sensors = DB::table('sensors')
+                ->select('capacity', 'created_at')
+                ->where('device_id', $device->id_device)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            foreach ($sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) {
+                    continue;
+                }
+
+                $allReadings->push([
+                    'device_id'  => $device->id,
+                    'capacity'   => (float) $sensor->capacity,
+                    'created_at' => Carbon::parse($sensor->created_at),
+                ]);
+            }
+        }
+
+        $allReadings = $allReadings->sortBy('created_at')->values();
+
+        $previousCapacities = [];
+        $binCleared = false;
+        $triggeredDeviceId = null;
+
+        $timesFull = 0;
+        $fillDurations = [];
+        $clearDurations = [];
+        $lastClearAt = null;
+        $lastFullAt = null;
+        $assetWasFull = false;
+
+        foreach ($allReadings as $reading) {
+            $deviceId = $reading['device_id'];
+            $currentCap = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
+
+            if (
+                $previousCap !== null &&
+                $previousCap <= $setting->half_to &&
+                $currentCap > $setting->half_to
+            ) {
+                if (!$assetWasFull) {
+                    $assetWasFull = true;
+
+                    if ($readingTime->between($startDate, $endDate)) {
+                        $timesFull++;
+                        $lastFullAt = $readingTime;
+
+                        if ($lastClearAt) {
+                            $fillDurations[] = $lastClearAt->diffInMinutes($readingTime) / 60;
+                        }
+                    }
+                }
+            }
+
+            if (!$binCleared) {
+                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    $binCleared = true;
+                    $triggeredDeviceId = $deviceId;
+                    $assetWasFull = false;
+
+                    if ($readingTime->between($startDate, $endDate)) {
+                        $lastClearAt = $readingTime;
+
+                        if ($lastFullAt) {
+                            $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
+                            $lastFullAt = null;
+                        }
+                    }
+                }
+            } else {
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                }
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
+        }
+
+        $results[] = (object) [
+            'asset_name'     => $asset->asset_name,
+            'times_full'     => $timesFull,
+            'avg_fill_time'  => count($fillDurations) ? round(array_sum($fillDurations) / count($fillDurations), 2) : 0,
+            'avg_clear_time' => count($clearDurations) ? round(array_sum($clearDurations) / count($clearDurations), 2) : 0,
+        ];
+    }
+
+    return collect($results);
+}
+
+public function getCleaningLogsForRange(Carbon $startDate, Carbon $endDate)
+{
+    $assets = Asset::with([
+        'capacitySetting',
+        'devices',
+    ])->where('is_active', 1)->get();
+
+    $logs = [];
+
+    foreach ($assets as $asset) {
+        if (!$asset->capacitySetting) {
+            continue;
+        }
+
+        $allReadings = collect();
+        foreach ($asset->devices as $device) {
+            $sensors = DB::table('sensors')
+                ->select('capacity', 'created_at')
+                ->where('device_id', $device->id_device)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            foreach ($sensors as $sensor) {
+                if (!is_numeric($sensor->capacity)) {
+                    continue;
+                }
+
+                $allReadings->push([
+                    'device_id'   => $device->id,
+                    'device_name' => $device->device_name ?? $device->id_device,
+                    'capacity'    => (float) $sensor->capacity,
+                    'created_at'  => Carbon::parse($sensor->created_at),
+                ]);
+            }
+        }
+
+        $allReadings = $allReadings->sortBy('created_at')->values();
+
+        $previousCapacities = [];
+        $binCleared = false;
+        $triggeredDeviceId = null;
+
+        foreach ($allReadings as $reading) {
+            $deviceId = $reading['device_id'];
+            $currentCap = $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = $reading['created_at'];
+
+            if (!$binCleared) {
+                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    $binCleared = true;
+                    $triggeredDeviceId = $deviceId;
+
+                    if ($readingTime->between($startDate, $endDate)) {
+                        $logs[] = (object) [
+                            'asset_name'  => $asset->asset_name,
+                            'device_name' => $reading['device_name'],
+                            'cleaned_at'  => $readingTime,
+                        ];
+                    }
+                }
+            } else {
+                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                }
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
+        }
+    }
+
+    return collect($logs)->sortByDesc('cleaned_at')->values();
+}
+
+public function getSummaryForRange(Carbon $startDate, Carbon $endDate): object
+{
+    $binAnalytics = $this->computeBinAnalyticsForRange($startDate, $endDate);
+    $cleaningLogs = $this->getCleaningLogsForRange($startDate, $endDate);
+
+    $fillTimes = $binAnalytics->filter(fn($item) => $item->avg_fill_time > 0);
+    $clearTimes = $binAnalytics->filter(fn($item) => $item->avg_clear_time > 0);
+    $topBins = $binAnalytics
+        ->filter(fn($item) => $item->times_full > 0)
+        ->sortByDesc('times_full')
+        ->take(5)
+        ->values();
+
+    $activeBins = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->join('sensors', 'sensors.device_id', '=', 'devices.id_device')
+        ->where('assets.is_active', 1)
+        ->where('devices.is_active', 1)
+        ->whereBetween('sensors.created_at', [$startDate, $endDate])
+        ->distinct('assets.id')
+        ->count('assets.id');
+
+    return (object) [
+        'summary_metrics' => (object) [
+            'total_full_events' => $binAnalytics->sum('times_full'),
+            'avg_fill_time' => $fillTimes->count() > 0 ? round($fillTimes->avg('avg_fill_time'), 2) : 0,
+            'avg_clear_time' => $clearTimes->count() > 0 ? round($clearTimes->avg('avg_clear_time'), 2) : 0,
+            'total_cleaning' => $cleaningLogs->count(),
+            'total_active_bins' => $activeBins,
+        ],
+        'bin_analytics' => $binAnalytics->values(),
+        'cleaning_logs' => $cleaningLogs,
+        'top_bins' => $topBins,
+    ];
+}
+
 private function _computeMonthInsights(Carbon $baseDate, string $period)
 {
     $binAnalytics = $this->_computeBinAnalyticsPerAsset($baseDate, $period);

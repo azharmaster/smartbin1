@@ -76,6 +76,21 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-1">
+                                            <button
+                                                type="button"
+                                                class="btn btn-info btn-sm summary-trigger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#itemSummaryModal"
+                                                data-type="Holiday"
+                                                data-name="{{ $holiday->name }}"
+                                                data-start-date="{{ optional($holiday->start_date)->format('Y-m-d') }}"
+                                                data-end-date="{{ optional($holiday->end_date)->format('Y-m-d') }}"
+                                                data-status="{{ $holiday->is_active ? 'Active' : 'Inactive' }}"
+                                                data-summary="{{ $holiday->end_date ? 'Holiday berlangsung dari ' . $holiday->start_date->format('Y-m-d') . ' hingga ' . $holiday->end_date->format('Y-m-d') . '.' : 'Holiday berlangsung pada ' . $holiday->start_date->format('Y-m-d') . '.' }}"
+                                                title="View Summary"
+                                            >
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                             @if(auth()->user()->role == 1)
                                             <!-- Edit Button triggers modal -->
                                             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#editHolidayModal{{ $holiday->id }}">
@@ -237,6 +252,23 @@
                             <td>{{ $event->end_date ? \Carbon\Carbon::parse($event->end_date)->format('Y-m-d') : '-' }}</td>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <button
+                                        type="button"
+                                        class="btn btn-info btn-sm summary-trigger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#itemSummaryModal"
+                                        data-type="Event"
+                                        data-name="{{ $event->event_name }}"
+                                        data-start-date="{{ optional($event->start_date)->format('Y-m-d') }}"
+                                        data-end-date="{{ optional($event->end_date)->format('Y-m-d') }}"
+                                        data-status="{{ $event->is_active ? 'Active' : 'Inactive' }}"
+                                        data-location="{{ $event->location }}"
+                                        data-pic-phone="{{ $event->pic_phone }}"
+                                        data-summary="{{ $event->end_date ? 'Event berlangsung dari ' . $event->start_date->format('Y-m-d') . ' hingga ' . $event->end_date->format('Y-m-d') . ' di ' . $event->location . '.' : 'Event berlangsung pada ' . $event->start_date->format('Y-m-d') . ' di ' . $event->location . '.' }}"
+                                        title="View Summary"
+                                    >
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                     <!-- EDIT -->
                                     @if(auth()->user()->role == 1)
                                     <!-- ✅ Bootstrap 4 syntax -->
@@ -287,6 +319,142 @@
             @include('events.create')
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="itemSummaryModal" tabindex="-1" aria-labelledby="itemSummaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="itemSummaryModalLabel">Holiday / Event Summary</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="mb-2"><strong>Type:</strong> <span id="summaryType">-</span></div>
+                <div class="mb-2"><strong>Name:</strong> <span id="summaryName">-</span></div>
+                <div class="mb-2"><strong>Start Date:</strong> <span id="summaryStartDate">-</span></div>
+                <div class="mb-2"><strong>End Date:</strong> <span id="summaryEndDate">-</span></div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-2 summary-location-row d-none"><strong>Location:</strong> <span id="summaryLocation">-</span></div>
+                <div class="mb-2 summary-pic-row d-none"><strong>PIC Phone:</strong> <span id="summaryPicPhone">-</span></div>
+                <div class="mb-2"><strong>Status:</strong> <span id="summaryStatus">-</span></div>
+                <div class="mb-2"><strong>Summary:</strong> <span id="summaryText" class="text-muted">-</span></div>
+            </div>
+        </div>
+
+        <div id="summaryLoading" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 text-muted">Loading bin summary...</div>
+        </div>
+
+        <div id="summaryError" class="alert alert-danger d-none mb-3"></div>
+
+        <div id="summaryContent" class="d-none">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body py-3">
+                            <div class="small text-muted">Number of Times Each Bin Became Full</div>
+                            <div class="h4 mb-0" id="metricTotalFullEvents">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body py-3">
+                            <div class="small text-muted">Average Time for Bin to Become Full (Hours)</div>
+                            <div class="h4 mb-0" id="metricAvgFillTime">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body py-3">
+                            <div class="small text-muted">Average Bin Clear Time (Hours)</div>
+                            <div class="h4 mb-0" id="metricAvgClearTime">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body py-3">
+                            <div class="small text-muted">Cleaning History / Active Bins</div>
+                            <div class="h4 mb-0"><span id="metricTotalCleaning">0</span> / <span id="metricActiveBins">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">Top Bins During This Period</div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Bin</th>
+                                            <th>Times Full</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topBinsTableBody">
+                                        <tr><td colspan="2" class="text-center text-muted">No data</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header">Cleaning History</div>
+                        <div class="card-body p-0" style="max-height: 260px; overflow-y: auto;">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Bin</th>
+                                            <th>Device</th>
+                                            <th>Cleaned At</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cleaningHistoryTableBody">
+                                        <tr><td colspan="3" class="text-center text-muted">No data</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">Bin Analytics</div>
+                <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Bin</th>
+                                    <th>Times Full</th>
+                                    <th>Avg Fill Time (Hours)</th>
+                                    <th>Avg Clear Time (Hours)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="binAnalyticsTableBody">
+                                <tr><td colspan="4" class="text-center text-muted">No data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Holidays & Events Help Modal -->
@@ -370,6 +538,94 @@ $(document).ready(function () {
             destroy: true
         }).buttons().container().appendTo('#eventsTable_wrapper .col-md-6:eq(0)');
     }
+
+    function renderRows(items, emptyColspan, renderer, targetSelector) {
+        if (!items || items.length === 0) {
+            $(targetSelector).html(`<tr><td colspan="${emptyColspan}" class="text-center text-muted">No data found for this period.</td></tr>`);
+            return;
+        }
+
+        $(targetSelector).html(items.map(renderer).join(''));
+    }
+
+    $(document).on('click', '.summary-trigger', function () {
+        const button = $(this);
+        const type = button.data('type') || '-';
+        const isEvent = type === 'Event';
+        const startDate = button.data('start-date') || '-';
+        const endDate = button.data('end-date') || startDate;
+
+        $('#summaryType').text(type);
+        $('#summaryName').text(button.data('name') || '-');
+        $('#summaryStartDate').text(startDate);
+        $('#summaryEndDate').text(endDate);
+        $('#summaryLocation').text(button.data('location') || '-');
+        $('#summaryPicPhone').text(button.data('pic-phone') || '-');
+        $('#summaryStatus').text(button.data('status') || '-');
+        $('#summaryText').text(button.data('summary') || '-');
+
+        $('.summary-location-row').toggleClass('d-none', !isEvent);
+        $('.summary-pic-row').toggleClass('d-none', !isEvent);
+
+        $('#summaryError').addClass('d-none').text('');
+        $('#summaryContent').addClass('d-none');
+        $('#summaryLoading').removeClass('d-none');
+
+        $.ajax({
+            url: '{{ route('holidays.binSummary') }}',
+            method: 'GET',
+            data: {
+                start_date: startDate,
+                end_date: endDate
+            },
+            success: function (response) {
+                $('#metricTotalFullEvents').text(response.summary_metrics.total_full_events ?? 0);
+                $('#metricAvgFillTime').text(response.summary_metrics.avg_fill_time ?? 0);
+                $('#metricAvgClearTime').text(response.summary_metrics.avg_clear_time ?? 0);
+                $('#metricTotalCleaning').text(response.summary_metrics.total_cleaning ?? 0);
+                $('#metricActiveBins').text(response.summary_metrics.total_active_bins ?? 0);
+
+                renderRows(
+                    response.top_bins,
+                    2,
+                    function (item) {
+                        return `<tr><td>${item.asset_name}</td><td>${item.times_full}</td></tr>`;
+                    },
+                    '#topBinsTableBody'
+                );
+
+                renderRows(
+                    response.cleaning_logs,
+                    3,
+                    function (item) {
+                        return `<tr><td>${item.asset_name}</td><td>${item.device_name}</td><td>${item.cleaned_at}</td></tr>`;
+                    },
+                    '#cleaningHistoryTableBody'
+                );
+
+                renderRows(
+                    response.bin_analytics,
+                    4,
+                    function (item) {
+                        return `<tr>
+                            <td>${item.asset_name}</td>
+                            <td>${item.times_full}</td>
+                            <td>${item.avg_fill_time}</td>
+                            <td>${item.avg_clear_time}</td>
+                        </tr>`;
+                    },
+                    '#binAnalyticsTableBody'
+                );
+
+                $('#summaryLoading').addClass('d-none');
+                $('#summaryContent').removeClass('d-none');
+            },
+            error: function () {
+                $('#summaryLoading').addClass('d-none');
+                $('#summaryError').removeClass('d-none').text('Failed to load bin summary for the selected holiday/event period.');
+            }
+        });
+    });
 });
 </script>
 @endpush
