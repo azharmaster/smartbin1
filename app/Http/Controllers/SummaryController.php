@@ -17,21 +17,24 @@ class SummaryController extends Controller
 {
 private function _getCapacityStats(Carbon $baseDate, string $period): object
 {
+    [$start, $end] = $this->resolveDateRange($baseDate, $period);
+    
     $assets = Asset::with([
         'capacitySetting',
-        'devices.latestSensor' // ❗ NO whereBetween here
-    ])->get();
+        'devices' => fn($q) => $q->where('is_active', 1),
+        'devices.sensors' => fn($q) => $q->whereBetween('created_at', [$start, $end])
+            ->orderBy('created_at', 'desc')
+            ->limit(1),
+    ])->where('is_active', 1)->get();
 
     $empty = $half = $full = 0;
 
     foreach ($assets as $asset) {
-
         $setting = $asset->capacitySetting;
         if (!$setting) continue;
 
         foreach ($asset->devices as $device) {
-
-            $sensor = $device->latestSensor;
+            $sensor = $device->sensors->first();
             if (!$sensor || !is_numeric($sensor->capacity)) continue;
 
             if ($sensor->capacity <= $setting->empty_to) {
@@ -343,7 +346,7 @@ private function _computeSummaryMetrics(Carbon $baseDate, string $period)
         ->join('sensors', 'sensors.device_id', '=', 'devices.id_device')
         ->where('assets.is_active', 1)
         ->where('devices.is_active', 1)
-        ->whereBetween('sensors.time', [$start, $end])
+        ->whereBetween('sensors.created_at', [$start, $end])
         ->distinct('assets.id')
         ->count('assets.id');
 
