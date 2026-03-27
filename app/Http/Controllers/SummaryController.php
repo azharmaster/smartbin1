@@ -336,11 +336,13 @@ private function _computeSummaryMetrics(Carbon $baseDate, string $period)
     // Total cleaning events
     $totalCleaning = $cleaningLogs->count();
 
-    // Total active bins (bins with at least one sensor reading in the period)
+    // Total active bins (is_active = 1, with at least one sensor reading in the period)
     [$start, $end] = $this->resolveDateRange($baseDate, $period);
     $activeBins = DB::table('devices')
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
         ->join('sensors', 'sensors.device_id', '=', 'devices.id_device')
+        ->where('assets.is_active', 1)
+        ->where('devices.is_active', 1)
         ->whereBetween('sensors.time', [$start, $end])
         ->distinct('assets.id')
         ->count('assets.id');

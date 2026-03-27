@@ -122,7 +122,10 @@
     <div class="row g-4 mb-4 no-print">
         {{-- Total Full Events --}}
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card shadow-sm border-0 h-100 metric-card"
+                 data-metric-key="total_full_events"
+                 data-metric-value="{{ number_format($summaryMetrics->total_full_events) }}"
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -139,7 +142,10 @@
 
         {{-- Average Fill Time --}}
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card shadow-sm border-0 h-100 metric-card"
+                 data-metric-key="avg_fill_time"
+                 data-metric-value="{{ $summaryMetrics->avg_fill_time }} hrs"
+                 style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -156,7 +162,10 @@
 
         {{-- Average Clear Time --}}
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+            <div class="card shadow-sm border-0 h-100 metric-card"
+                 data-metric-key="avg_clear_time"
+                 data-metric-value="{{ $summaryMetrics->avg_clear_time }} hrs"
+                 style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -173,7 +182,10 @@
 
         {{-- Total Cleaning This Month --}}
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card shadow-sm border-0 h-100 metric-card"
+                 data-metric-key="total_cleaning"
+                 data-metric-value="{{ number_format($summaryMetrics->total_cleaning) }}"
+                 style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -190,7 +202,10 @@
 
         {{-- Total Active Bins --}}
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="card shadow-sm border-0 h-100 metric-card"
+                 data-metric-key="total_active_bins"
+                 data-metric-value="{{ number_format($summaryMetrics->total_active_bins) }}"
+                 style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -322,7 +337,7 @@
 
                 @if($asset->picture)
                     <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
-                         class="img-fluid rounded asset-img"
+                         class="img-fluid rounded "
                          onclick="window.open(this.src, '_blank')">
                 @else
                     <div class="text-muted py-5">
@@ -344,6 +359,82 @@
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     const labels = @json($binAnalytics->pluck('asset_name'));
+    const periodLabel = @json(ucfirst($period));
+
+    const metricMeta = {
+        total_full_events: {
+            title: 'Total Full Events',
+            description: `Jumlah keseluruhan kejadian tong mencapai status penuh dalam tempoh ${periodLabel}. Nilai tinggi biasanya menunjukkan kawasan bertrafik tinggi atau kadar pengumpulan sisa yang cepat.`,
+            formula: 'Kiraan semua event sensor yang bertukar ke status penuh.'
+        },
+        avg_fill_time: {
+            title: 'Average Fill Time',
+            description: `Purata masa diambil untuk tong berubah daripada kosong/normal ke penuh dalam tempoh ${periodLabel}. Lagi rendah nilai, lagi cepat tong penuh.`,
+            formula: 'Jumlah masa isi penuh semua tong / bilangan kitaran penuh.'
+        },
+        avg_clear_time: {
+            title: 'Average Clear Time',
+            description: `Purata masa respons pembersihan selepas tong dikesan penuh untuk tempoh ${periodLabel}. Nilai tinggi menandakan tindak balas pembersihan lebih lambat.`,
+            formula: 'Jumlah masa dari status penuh hingga log pembersihan / bilangan kejadian.'
+        },
+        total_cleaning: {
+            title: 'Total Cleaning',
+            description: `Jumlah aktiviti pembersihan yang direkodkan dalam tempoh ${periodLabel}. Metrik ini menunjukkan kekerapan operasi pembersihan.`,
+            formula: 'Kiraan semua rekod log pembersihan untuk tempoh dipilih.'
+        },
+        total_active_bins: {
+            title: 'Total Active Bins',
+            description: `Jumlah tong aktif yang mempunyai data sensor dalam tempoh ${periodLabel}.`,
+            formula: 'Kiraan tong unik yang menghantar bacaan/aktiviti dalam tempoh dipilih.'
+        }
+    };
+
+    const metricDetailModalEl = document.getElementById('metricDetailModal');
+    if (metricDetailModalEl && window.bootstrap) {
+        const metricDetailModal = new bootstrap.Modal(metricDetailModalEl);
+        const metricTitleEl = document.getElementById('metricDetailTitle');
+        const metricValueEl = document.getElementById('metricDetailValue');
+        const metricDescriptionEl = document.getElementById('metricDetailDescription');
+        const metricFormulaEl = document.getElementById('metricDetailFormula');
+        const metricCloseBtnEl = document.getElementById('metricDetailCloseBtn');
+
+        if (metricCloseBtnEl) {
+            metricCloseBtnEl.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                metricDetailModal.hide();
+            });
+        }
+
+        document.querySelectorAll('.metric-card').forEach((card) => {
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', 'Open metric details');
+
+            const openMetricDetail = () => {
+                if (metricDetailModalEl.classList.contains('show')) return;
+
+                const metricKey = card.dataset.metricKey;
+                const metricValue = card.dataset.metricValue || '-';
+                const meta = metricMeta[metricKey];
+                if (!meta) return;
+
+                metricTitleEl.textContent = meta.title;
+                metricValueEl.textContent = metricValue;
+                metricDescriptionEl.textContent = meta.description;
+                metricFormulaEl.textContent = meta.formula;
+                metricDetailModal.show();
+            };
+
+            card.addEventListener('click', openMetricDetail);
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openMetricDetail();
+                }
+            });
+        });
+    }
 
     // Register datalabels plugin globally
     Chart.register(ChartDataLabels);
@@ -528,6 +619,16 @@ function printDashboard() {
     transform: translateY(-4px);
     transition: 0.3s;
 }
+.metric-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.metric-card:hover,
+.metric-card:focus {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2) !important;
+    outline: none;
+}
 .asset-img {
     height: 150px;
     object-fit: cover;
@@ -689,6 +790,25 @@ function printDashboard() {
 
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- Metric Details Modal -->
+<div class="modal fade no-print" id="metricDetailModal" tabindex="-1" aria-labelledby="metricDetailTitle" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="metricDetailTitle">Metric Details</h5>
+        <button type="button" class="btn-close" id="metricDetailCloseBtn" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2 text-muted">Current Value</p>
+        <h4 class="fw-bold mb-3" id="metricDetailValue">-</h4>
+        <p class="mb-2" id="metricDetailDescription"></p>
+        <hr>
+        <p class="mb-0"><strong>Calculation Reference:</strong> <span id="metricDetailFormula"></span></p>
+      </div>
     </div>
   </div>
 </div>
