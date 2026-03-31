@@ -15,7 +15,8 @@ $logFile = __DIR__ . '/cron.log';
 $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
 
 // WAHA configuration
-$apiUrl = "https://beta-waha.txfdw3.easypanel.host";  // WAHA server URL
+$apiUrl = "https://waha.pakarai.dpdns.org";  // WAHA server URL
+//$apiUrl = "https://mpeg-yoga-bite-elected.trycloudflare.com";  // WAHA server URL
 $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
@@ -167,8 +168,9 @@ file_put_contents($logFile, date('Y-m-d H:i')." | Full bins: ".count($fullBins).
 ---------------------------- */
 $supervisors = $db->query("
     SELECT DISTINCT phone
-    FROM users
-    WHERE id=6
+        FROM users
+        WHERE  phone IS NOT NULL
+          AND whatsapp_notify=1
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 if (empty($supervisors)) {
@@ -181,7 +183,7 @@ if (empty($supervisors)) {
 ---------------------------- */
 if ($canSend) {
     $tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
-
+//$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
     // --------- FULL BINS NOTIFICATION ---------
     if (count($fullBins) > 0) {
         $sendBins = [];
@@ -225,7 +227,7 @@ if ($canSend) {
                 $assetList .= $asset['location'] . "\n\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
                 $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
-                $assetList .= "\n───────────\n\n";
+                $assetList .= "\n\n";
             }
 
             $msg = $assetList;
@@ -303,7 +305,7 @@ if ($canSend) {
                 $assetList .= "Location: *" . $asset['location'] . "*\n";
                 $assetList .= "" . $asset['asset_name'] . "\n\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
-                $assetList .= "\n───────────\n\n";
+                $assetList .= "\n\n";
             }
 
             $msg =$assetList;
