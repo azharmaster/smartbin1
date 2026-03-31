@@ -227,7 +227,7 @@ if ($canSend) {
                 $assetList .= $asset['location'] . "\n\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
                 $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
-                $assetList .= "\n\n";
+                $assetList .= "\n";
             }
 
             $msg = $assetList;
@@ -305,7 +305,7 @@ if ($canSend) {
                 $assetList .= "Location: *" . $asset['location'] . "*\n";
                 $assetList .= "" . $asset['asset_name'] . "\n\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
-                $assetList .= "\n\n";
+                $assetList .= "\n";
             }
 
             $msg =$assetList;
