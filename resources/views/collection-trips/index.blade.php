@@ -204,6 +204,9 @@
                 </a>
             </div>
         </form>
+        <div style="margin-top: 12px; font-size: 13px; color: #666;">
+            Collection trip hanya dikira dalam waktu operasi <strong>7:00 AM hingga 7:00 PM</strong>.
+        </div>
     </div>
 
     <!-- Statistics Cards -->

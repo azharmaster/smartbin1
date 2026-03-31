@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class CollectionTripController extends Controller
 {
+    private const COLLECTION_START_HOUR = 7;
+    private const COLLECTION_END_HOUR = 19;
+
     /**
      * Display collection trips with date filter.
      *
@@ -113,7 +116,8 @@ class CollectionTripController extends Controller
                     if (
                         $previousCap !== null &&
                         $previousCap > 10 &&
-                        $currentCap <= 0
+                        $currentCap <= 0 &&
+                        $this->isWithinCollectionWindow($readingTime)
                     ) {
                         // Clear event detected!
                         $binCleared        = true;
@@ -149,6 +153,15 @@ class CollectionTripController extends Controller
 
         // Sort by emptied time descending (most recent first)
         return $collectionTrips->sortByDesc('emptied_at')->values();
+    }
+
+    private function isWithinCollectionWindow(Carbon $timestamp): bool
+    {
+        $minutes = ($timestamp->hour * 60) + $timestamp->minute;
+        $startMinutes = self::COLLECTION_START_HOUR * 60;
+        $endMinutes = self::COLLECTION_END_HOUR * 60;
+
+        return $minutes >= $startMinutes && $minutes <= $endMinutes;
     }
 
     /**

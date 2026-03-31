@@ -207,6 +207,18 @@
     .modal-backdrop {
         z-index: 1040 !important;
     }
+
+    .dashboard-zoom-wrapper {
+        zoom: 0.8;
+    }
+
+    @supports not (zoom: 1) {
+        .dashboard-zoom-wrapper {
+            transform: scale(0.8);
+            transform-origin: top left;
+            width: 125%;
+        }
+    }
     </style>
 
 </head>
@@ -304,7 +316,7 @@
             </div>
 
             <div class="content">
-                <div class="container-fluid">
+                <div class="container-fluid @if(request()->routeIs('dashboard')) dashboard-zoom-wrapper @endif">
                     @yield('content')
                 </div>
             </div>

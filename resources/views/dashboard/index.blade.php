@@ -1540,7 +1540,23 @@ function trend($current, $previous) {
         @endforelse
     </div>
 </div>
-<div class="card mb-4 shadow-sm">
+
+
+             <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 fs-6">
+                        <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-calendar-alt me-2"></i> Calendar
+                        </a>
+                    </h5>
+                </div>
+
+                <div class="card-body p-2">
+                    <div id="holidaycalendar"></div>
+                </div>
+            </div>
+
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -1566,22 +1582,6 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
-
-             <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 fs-6">
-                        <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-calendar-alt me-2"></i> Calendar
-                        </a>
-                    </h5>
-                </div>
-
-                <div class="card-body p-2">
-                    <div id="holidaycalendar"></div>
-                </div>
-            </div>
-
-            
 
             <style>
             /* Remove underline / hover highlight on day numbers */
@@ -2158,7 +2158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const isMobile = window.innerWidth < 768;
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: isMobile ? 'dayGridWeek' : 'dayGridMonth',
+        initialView: 'dayGridWeek',
         height: 'auto',
         contentHeight: 'auto',
 
