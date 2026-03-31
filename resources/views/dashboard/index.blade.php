@@ -1774,6 +1774,10 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const map = L.map('dashboardMap').setView([3.1427, 101.7176], 17.5);
+    const autoPopupMarkers = [];
+    const autoPopupDelay = 4000;
+    let autoPopupIndex = 0;
+    let autoPopupTimer = null;
 
     // Add OpenStreetMap tiles with modern CartoDB Voyager
        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1856,7 +1860,7 @@ document.addEventListener('DOMContentLoaded', function() {
         @endphp
 
         @if($asset->latitude && $asset->longitude)
-            L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
+            const marker{{ $asset->id }} = L.marker([{{ $asset->latitude }}, {{ $asset->longitude }}], {
                 icon: createCustomMarker('{{ $color }}', '{{ $asset->asset_name ?? 'Asset' }}', {{ $totalDevices }})
             }).addTo(map).bindPopup(`
                 <div class="popup-header">
@@ -1916,9 +1920,52 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
-            `);
+            `, {
+                autoClose: true,
+                closeOnClick: false,
+                closeButton: false
+            });
+
+            autoPopupMarkers.push(marker{{ $asset->id }});
         @endif
     @endforeach
+
+    function openAutoPopup(index) {
+        if (!autoPopupMarkers.length) return;
+
+        const marker = autoPopupMarkers[index];
+        if (!marker) return;
+
+        map.closePopup();
+        map.flyTo(marker.getLatLng(), map.getZoom(), {
+            animate: true,
+            duration: 0.8
+        });
+        marker.openPopup();
+    }
+
+    function queueNextPopup() {
+        clearTimeout(autoPopupTimer);
+        autoPopupTimer = setTimeout(() => {
+            autoPopupIndex = (autoPopupIndex + 1) % autoPopupMarkers.length;
+            openAutoPopup(autoPopupIndex);
+            queueNextPopup();
+        }, autoPopupDelay);
+    }
+
+    function startAutoPopupRotation() {
+        if (!autoPopupMarkers.length) return;
+
+        openAutoPopup(autoPopupIndex);
+
+        if (autoPopupMarkers.length > 1) {
+            queueNextPopup();
+        }
+    }
+
+    map.whenReady(() => {
+        setTimeout(startAutoPopupRotation, 800);
+    });
 });
 </script>
 
