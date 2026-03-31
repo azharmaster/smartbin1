@@ -7,15 +7,6 @@ use Carbon\Carbon;
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
-function isWithinCollectionWindow(Carbon $timestamp): bool
-{
-    $minutes = ($timestamp->hour * 60) + $timestamp->minute;
-    $startMinutes = 7 * 60;
-    $endMinutes = 19 * 60;
-
-    return $minutes >= $startMinutes && $minutes <= $endMinutes;
-}
-
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -123,10 +114,6 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $currentSensor = $sensors[0];
     $prevSensor = isset($sensors[1]) ? $sensors[1] : null;
 
-    if (!is_numeric($currentSensor['capacity'])) {
-        continue;
-    }
-
     // Get capacity settings for this asset
     $capStmt = $db->prepare("
         SELECT empty_to, half_to
@@ -142,11 +129,8 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $cap = ['empty_to' => 10, 'half_to' => 80];
     }
 
-    $currentCapacity = (float) $currentSensor['capacity'];
-    $prevCapacity = ($prevSensor && is_numeric($prevSensor['capacity']))
-        ? (float) $prevSensor['capacity']
-        : null;
-    $readingTime = Carbon::parse($currentSensor['created_at'], 'Asia/Kuala_Lumpur');
+    $currentCapacity = (int) $currentSensor['capacity'];
+    $prevCapacity = $prevSensor ? (int) $prevSensor['capacity'] : null;
 
     $device['capacity'] = $currentCapacity;
     $device['reading_time'] = $currentSensor['created_at'];
@@ -163,15 +147,10 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $emptyBins[] = $device;
     }
 
-    // EMPTIED / COLLECTION condition:
-    // match asset details page logic -> previous reading > 10, current reading <= 0,
-    // and event happens during collection window.
-    if (
-        $prevCapacity !== null &&
-        $prevCapacity > 10 &&
-        $currentCapacity <= 0 &&
-        isWithinCollectionWindow($readingTime)
-    ) {
+    // EMPTIED condition: capacity dropped from >half_to to <=empty_to (e.g., was >80%, now <=10%)
+    if ($prevCapacity !== null && 
+        $prevCapacity > $cap['half_to'] && 
+        $currentCapacity <= $cap['empty_to']) {
         $device['emptied_time'] = $currentSensor['created_at'];
         $device['prev_capacity'] = $prevCapacity;
         $emptiedBins[] = $device;
