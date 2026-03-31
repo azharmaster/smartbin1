@@ -895,10 +895,11 @@ function initChart() {
     const totalClearToday = clearEvents.length;
 
     // Calculate end time
+    const chartStartTime = selectedDate + 'T08:00:00';
     const today = new Date().toISOString().split('T')[0];
-    let chartEndTime;
+    let chartEndTime = selectedDate + 'T18:00:00';
 
-    if (selectedDate === today) {
+    if (false && selectedDate === today) {
         // Today — end ikut last data point + round up 30 minit
         let lastX = selectedDate + 'T00:00:00';
         sensorDatasets.forEach(sensor => {
@@ -919,7 +920,7 @@ function initChart() {
         chartEndTime = selectedDate + 'T' + endD.toTimeString().slice(0, 8);
     } else {
         // Hari lain — full day 23:30
-        chartEndTime = selectedDate + 'T23:59:59';
+        chartEndTime = selectedDate + 'T18:00:00';
     }
 
     const datasets = sensorDatasets.map((sensor, index) => ({
@@ -1056,7 +1057,7 @@ function initChart() {
                     },
                     limits: {
                         x: { 
-                            min: new Date(selectedDate + 'T00:00:00').getTime(),
+                            min: new Date(chartStartTime).getTime(),
                             max: new Date(chartEndTime).getTime()
                         },
                         y: { min: 0, max: 100 }
@@ -1094,7 +1095,7 @@ function initChart() {
                         },
                         tooltipFormat: 'HH:mm:ss'
                     },
-                    min: selectedDate + 'T00:00:00',
+                    min: chartStartTime,
                     max: chartEndTime,
                     title: {
                         display: true,
@@ -1361,4 +1362,3 @@ function openHelp() {
 @endforeach
 
 </div> {{-- Single Livewire root wrapper end --}}
-

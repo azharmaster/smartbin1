@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class AssetDetails extends Component
 {
+    private const COLLECTION_START_HOUR = 8;
+    private const COLLECTION_END_HOUR = 18;
+
     public $asset;
     public $floors;
     public $allAssets;
@@ -72,6 +75,8 @@ class AssetDetails extends Component
         $devices = $this->asset->devices;
         $selectedDate = Carbon::parse($this->selectedDate);
         $prevDate = $selectedDate->copy()->subDay();
+        $windowStart = $this->collectionWindowStart($selectedDate);
+        $windowEnd = $this->collectionWindowEnd($selectedDate);
         $capacitySetting = $this->asset->capacitySetting;
 
         $this->weeklyChartLabels = [];
@@ -126,12 +131,14 @@ class AssetDetails extends Component
             }
             $currentDay = $readingDay;
 
+            $withinCollectionWindow = $this->isWithinCollectionWindow($readingTime);
+
             // Clear Bin detection
             if (!$binCleared) {
                 if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
-                    if ($isSelectedDate) {
+                    if ($isSelectedDate && $withinCollectionWindow) {
                         $clearEventCount++;
                         $this->chartClearEvents[] = [
                             'time'  => $readingTime->format('H:i'),
@@ -176,41 +183,68 @@ class AssetDetails extends Component
                 ->get();
 
             $data = [];
+            $windowSensors = collect();
+            $bridgeReading = null;
 
-            // Prepend previous day last reading at 00:00:00 of selected date
-            if ($prevReading) {
+            foreach ($sensors as $sensor) {
+                $t = Carbon::parse($sensor->created_at)->timezone(config('app.timezone'));
+
+                if ($t->lessThanOrEqualTo($windowStart)) {
+                    $bridgeReading = $sensor;
+                }
+
+                if ($t->betweenIncluded($windowStart, $windowEnd)) {
+                    $windowSensors->push([
+                        'record' => $sensor,
+                        'time' => $t,
+                    ]);
+                }
+            }
+
+            if ($bridgeReading) {
                 $data[] = [
-                    'x'         => $this->selectedDate . 'T00:00:00',
+                    'x'         => $windowStart->format('Y-m-d\TH:i:s'),
+                    'y'         => round((float) $bridgeReading->capacity, 1),
+                    'timestamp' => $windowStart->format('H:i:s') . ' (window start)',
+                ];
+            } elseif ($prevReading) {
+                $data[] = [
+                    'x'         => $windowStart->format('Y-m-d\TH:i:s'),
                     'y'         => round((float) $prevReading->capacity, 1),
-                    'timestamp' => '00:00:00 (prev day)',
+                    'timestamp' => $windowStart->format('H:i:s') . ' (prev day)',
                 ];
             }
 
-            foreach ($sensors as $sensor) {
-                $t = Carbon::parse($sensor->created_at);
+            foreach ($windowSensors as $sensorData) {
+                $sensor = $sensorData['record'];
+                $t = $sensorData['time'];
                 $data[] = [
-                    'x'         => $this->selectedDate . 'T' . $t->format('H:i:s'),
+                    'x'         => $t->format('Y-m-d\TH:i:s'),
                     'y'         => round((float) $sensor->capacity, 1),
                     'timestamp' => $t->format('H:i:s'),
                 ];
             }
 
             // Calculate end time — round up last data point to nearest 30 min
-            $lastTime = null;
-            if ($sensors->isNotEmpty()) {
-                $lastSensor = Carbon::parse($sensors->last()->created_at);
+            $lastTime = $windowEnd->copy();
+            if ($windowSensors->isNotEmpty()) {
+                $lastSensor = $windowSensors->last()['time']->copy();
                 $minutes = $lastSensor->minute;
-                $roundedMinutes = $minutes < 30 ? 30 : 60;
-                $lastTime = $lastSensor->copy()->setMinute($roundedMinutes)->setSecond(0);
+                $roundedMinutes = $minutes === 0 ? 0 : ($minutes <= 30 ? 30 : 60);
                 if ($roundedMinutes === 60) {
-                    $lastTime->addHour()->setMinute(0);
+                    $lastTime = $lastSensor->addHour()->setMinute(0)->setSecond(0);
+                } else {
+                    $lastTime = $lastSensor->setMinute($roundedMinutes)->setSecond(0);
+                }
+                if ($lastTime->greaterThan($windowEnd)) {
+                    $lastTime = $windowEnd->copy();
                 }
             }
 
             $this->weeklySensorDatasets[] = [
                 'label'    => $device->device_name,
                 'data'     => $data,
-                'end_time' => $lastTime ? $this->selectedDate . 'T' . $lastTime->format('H:i:s') : null,
+                'end_time' => $lastTime ? $lastTime->format('Y-m-d\TH:i:s') : null,
             ];
         }
     }
@@ -404,7 +438,7 @@ class AssetDetails extends Component
             $readingTime = $reading['created_at'];
 
             if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0 && $this->isWithinCollectionWindow($readingTime)) {
                     $binCleared        = true;
                     $triggeredDeviceId = $deviceId;
 
@@ -430,6 +464,29 @@ class AssetDetails extends Component
         $this->clearBinHistory = array_reverse($this->clearBinHistory);
     }
 
+    private function isWithinCollectionWindow(Carbon $timestamp): bool
+    {
+        $minutes = ($timestamp->hour * 60) + $timestamp->minute;
+        $startMinutes = self::COLLECTION_START_HOUR * 60;
+        $endMinutes = self::COLLECTION_END_HOUR * 60;
+
+        return $minutes >= $startMinutes && $minutes <= $endMinutes;
+    }
+
+    private function collectionWindowStart(Carbon $date): Carbon
+    {
+        return $date->copy()
+            ->timezone(config('app.timezone'))
+            ->setTime(self::COLLECTION_START_HOUR, 0, 0);
+    }
+
+    private function collectionWindowEnd(Carbon $date): Carbon
+    {
+        return $date->copy()
+            ->timezone(config('app.timezone'))
+            ->setTime(self::COLLECTION_END_HOUR, 0, 0);
+    }
+
     private function getLastFullAndClear(Device $device, float $full_threshold, float $empty_threshold): array
     {
         $sensors = $device->sensors()
@@ -450,7 +507,7 @@ class AssetDetails extends Component
             }
 
             // Track last clear independently (latest clear reading)
-            if ($isClear) {
+            if ($isClear && $this->isWithinCollectionWindow(Carbon::parse($sensor->created_at)->timezone(config('app.timezone')))) {
                 $lastClear = $sensor->created_at;
             }
         }
