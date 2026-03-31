@@ -8,6 +8,7 @@ use App\Models\CapacitySetting;
 use App\Models\Floor;
 use App\Models\Device;
 use App\Models\Sensor;
+use App\Services\CollectionTripService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -31,8 +32,14 @@ class AssetDetails extends Component
     public $clearBinHistory = [];
     public $chartClearEvents = [];
     public $chartFullEvents = [];
+    protected CollectionTripService $collectionTripService;
 
     protected $listeners = ['refreshData' => 'refreshData'];
+
+    public function boot(CollectionTripService $collectionTripService)
+    {
+        $this->collectionTripService = $collectionTripService;
+    }
 
     public function mount($asset)
     {
@@ -405,63 +412,17 @@ class AssetDetails extends Component
      */
     protected function prepareClearBinHistory()
     {
-        $this->clearBinHistory = [];
-        $devices = $this->asset->devices;
-
-        $allReadings = collect();
-        foreach ($devices as $device) {
-            $sensors = DB::table('sensors')
-                ->select('capacity', 'created_at')
-                ->where('device_id', $device->id_device)
-                ->orderBy('created_at', 'asc')
-                ->get();
-
-            foreach ($sensors as $s) {
-                $allReadings->push([
-                    'device_id'   => $device->id,
-                    'device_name' => $device->device_name ?? 'N/A',
-                    'capacity'    => (float) $s->capacity,
-                    'created_at'  => Carbon::parse($s->created_at)->timezone(config('app.timezone')),
-                ]);
-            }
-        }
-        $allReadings = $allReadings->sortBy('created_at')->values();
-
-        $previousCapacities = [];
-        $binCleared         = false;
-        $triggeredDeviceId  = null;
-
-        foreach ($allReadings as $reading) {
-            $deviceId    = $reading['device_id'];
-            $currentCap  = $reading['capacity'];
-            $previousCap = $previousCapacities[$deviceId] ?? null;
-            $readingTime = $reading['created_at'];
-
-            if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0 && $this->isWithinCollectionWindow($readingTime)) {
-                    $binCleared        = true;
-                    $triggeredDeviceId = $deviceId;
-
-                    $this->clearBinHistory[] = [
-                        'datetime'     => $readingTime->format('d/m/Y h:i A'),
-                        'date'         => $readingTime->format('d/m/Y'),
-                        'time'         => $readingTime->format('h:i A'),
-                        'compartment'  => $reading['device_name'],
-                        'ago'          => $readingTime->diffForHumans(),
-                    ];
-                }
-            } else {
-                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                    $binCleared        = false;
-                    $triggeredDeviceId = null;
-                }
-            }
-
-            $previousCapacities[$deviceId] = $currentCap;
-        }
-
-        // Most recent first
-        $this->clearBinHistory = array_reverse($this->clearBinHistory);
+        $this->clearBinHistory = $this->collectionTripService
+            ->getTripsForAsset($this->asset)
+            ->map(fn ($trip) => [
+                'datetime' => $trip['datetime_formatted'],
+                'date' => $trip['emptied_at']->format('d/m/Y'),
+                'time' => $trip['emptied_at']->format('h:i A'),
+                'compartment' => $trip['device_name'],
+                'ago' => $trip['diff_for_humans'],
+            ])
+            ->values()
+            ->all();
     }
 
     private function isWithinCollectionWindow(Carbon $timestamp): bool

@@ -174,6 +174,18 @@
     <div class="filter-card">
         <form method="GET" action="{{ route('collection-trips.index') }}" class="filter-form">
             <div class="form-group">
+                <label for="asset_id">Asset:</label>
+                <select id="asset_id" name="asset_id" class="form-control">
+                    <option value="">All Assets</option>
+                    @foreach($assets as $asset)
+                        <option value="{{ $asset->id }}" {{ (string) $assetId === (string) $asset->id ? 'selected' : '' }}>
+                            {{ $asset->asset_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="date_from">Date From:</label>
                 <input type="date" id="date_from" name="date_from" class="form-control" 
                        value="{{ $dateFrom }}" max="{{ date('Y-m-d') }}">
@@ -192,7 +204,7 @@
             </div>
             
             <div class="form-group">
-                <a href="{{ route('collection-trips.export', ['date_from' => $dateFrom, 'date_to' => $dateTo]) }}" 
+                <a href="{{ route('collection-trips.export', ['date_from' => $dateFrom, 'date_to' => $dateTo, 'asset_id' => $assetId]) }}" 
                    class="btn btn-success">
                     <i class="fas fa-download"></i> Export CSV
                 </a>
@@ -219,6 +231,10 @@
             <div class="stat-number">{{ \Carbon\Carbon::parse($dateFrom)->diffInDays(\Carbon\Carbon::parse($dateTo)) + 1 }}</div>
             <div class="stat-label">Days in Range</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $uniqueBins }}</div>
+            <div class="stat-label">Assets with Trips</div>
+        </div>
     </div>
 
     <!-- Table -->
@@ -236,7 +252,7 @@
                     <tr>
                         <th>No.</th>
                         <th>Asset Name</th>
-                        
+                        <th>Compartment</th>
                         <th>DateTime</th>
                         <th>Ago</th>
                     </tr>
@@ -245,8 +261,12 @@
                     @forelse($collectionTrips as $index => $trip)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td><strong>{{ $trip['asset_name'] }}</strong></td>
-                           
+                            <td>
+                                <a href="{{ route('master-data.assets.details', $trip['asset_id']) }}">
+                                    <strong>{{ $trip['asset_name'] }}</strong>
+                                </a>
+                            </td>
+                            <td>{{ $trip['device_name'] }}</td>
                             <td>{{ $trip['datetime_formatted'] }}</td>
                             <td>{{ $trip['diff_for_humans'] }}</td>
                         </tr>
