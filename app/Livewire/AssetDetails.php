@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class AssetDetails extends Component
 {
-    private const COLLECTION_START_HOUR = 8;
-    private const COLLECTION_END_HOUR = 18;
+    private const COLLECTION_START_HOUR = 7;
+    private const COLLECTION_END_HOUR = 19;
 
     public $asset;
     public $floors;

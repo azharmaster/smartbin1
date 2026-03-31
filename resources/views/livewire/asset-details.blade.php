@@ -895,9 +895,9 @@ function initChart() {
     const totalClearToday = clearEvents.length;
 
     // Calculate end time
-    const chartStartTime = selectedDate + 'T08:00:00';
+    const chartStartTime = selectedDate + 'T07:00:00';
     const today = new Date().toISOString().split('T')[0];
-    let chartEndTime = selectedDate + 'T18:00:00';
+    let chartEndTime = selectedDate + 'T19:00:00';
 
     if (false && selectedDate === today) {
         // Today — end ikut last data point + round up 30 minit
@@ -920,7 +920,7 @@ function initChart() {
         chartEndTime = selectedDate + 'T' + endD.toTimeString().slice(0, 8);
     } else {
         // Hari lain — full day 23:30
-        chartEndTime = selectedDate + 'T18:00:00';
+        chartEndTime = selectedDate + 'T19:00:00';
     }
 
     const datasets = sensorDatasets.map((sensor, index) => ({
