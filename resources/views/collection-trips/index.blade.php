@@ -231,10 +231,6 @@
             <div class="stat-number">{{ \Carbon\Carbon::parse($dateFrom)->diffInDays(\Carbon\Carbon::parse($dateTo)) + 1 }}</div>
             <div class="stat-label">Days in Range</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ $uniqueBins }}</div>
-            <div class="stat-label">Assets with Trips</div>
-        </div>
     </div>
 
     <!-- Table -->
