@@ -3,9 +3,9 @@
 return [
     'db' => [
         'host' => 'localhost',
-        'name' => 'smartbin1',
-        'user' => 'root',
-        'pass' => '',
+        'name' => 'u311595433_smartbin1',
+        'user' => 'u311595433_smartbin1',
+        'pass' => '3b3^Msah:=$R',
         'charset' => 'utf8mb4',
     ],
 
