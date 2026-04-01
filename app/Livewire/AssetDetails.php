@@ -142,7 +142,7 @@ class AssetDetails extends Component
 
             // Clear Bin detection
             if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
                     if ($isSelectedDate && $withinCollectionWindow) {
@@ -446,6 +446,11 @@ class AssetDetails extends Component
         return $date->copy()
             ->timezone(config('app.timezone'))
             ->setTime(self::COLLECTION_END_HOUR, 0, 0);
+    }
+
+    private function isCollectionCapacity(float $capacity): bool
+    {
+        return $capacity <= 0.0 || abs($capacity) < 0.00001;
     }
 
     private function getLastFullAndClear(Device $device, float $full_threshold, float $empty_threshold): array

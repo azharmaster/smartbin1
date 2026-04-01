@@ -72,24 +72,33 @@ class CollectionTripService
             $previousCapacities = [];
             $binCleared = false;
             $triggeredDeviceId = null;
+            $currentDay = null;
 
             foreach ($allReadings as $reading) {
                 $deviceId = $reading['device_id'];
                 $currentCap = $reading['capacity'];
                 $previousCap = $previousCapacities[$deviceId] ?? null;
                 $readingTime = $reading['created_at'];
+                $readingDay = $readingTime->format('Y-m-d');
+
+                if ($currentDay !== null && $currentDay !== $readingDay) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                    $previousCapacities = [];
+                }
+                $currentDay = $readingDay;
 
                 if (!$binCleared) {
                     if (
                         $previousCap !== null &&
                         $previousCap > 10 &&
-                        $currentCap <= 0 &&
-                        $this->isWithinCollectionWindow($readingTime)
+                        $this->isCollectionCapacity($currentCap)
                     ) {
                         $binCleared = true;
                         $triggeredDeviceId = $deviceId;
 
                         if (
+                            $this->isWithinCollectionWindow($readingTime) &&
                             ($rangeStart === null || $readingTime->greaterThanOrEqualTo($rangeStart)) &&
                             ($rangeEnd === null || $readingTime->lessThanOrEqualTo($rangeEnd))
                         ) {
@@ -125,5 +134,10 @@ class CollectionTripService
         $endMinutes = self::COLLECTION_END_HOUR * 60;
 
         return $minutes >= $startMinutes && $minutes <= $endMinutes;
+    }
+
+    private function isCollectionCapacity(float $capacity): bool
+    {
+        return $capacity <= 0.0 || abs($capacity) < 0.00001;
     }
 }
