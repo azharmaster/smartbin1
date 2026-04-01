@@ -16,6 +16,11 @@ function isWithinCollectionWindow(Carbon $timestamp): bool
     return $minutes >= $startMinutes && $minutes <= $endMinutes;
 }
 
+function isCollectionCapacity(float $capacity): bool
+{
+    return $capacity <= 0.0 || abs($capacity) < 0.00001;
+}
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -147,6 +152,9 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         ? (float) $prevSensor['capacity']
         : null;
     $readingTime = Carbon::parse($currentSensor['created_at'], 'Asia/Kuala_Lumpur');
+    $prevReadingTime = $prevSensor
+        ? Carbon::parse($prevSensor['created_at'], 'Asia/Kuala_Lumpur')
+        : null;
 
     $device['capacity'] = $currentCapacity;
     $device['reading_time'] = $currentSensor['created_at'];
@@ -164,12 +172,16 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
     // EMPTIED / COLLECTION condition:
-    // match asset details page logic -> previous reading > 10, current reading <= 0,
-    // and event happens during collection window.
+    // Match asset details graph logic for notification use:
+    // previous reading > 10, current reading is a collection value (including 0),
+    // current reading happens during collection window,
+    // and both readings are on the same day to avoid cross-day false positives.
     if (
         $prevCapacity !== null &&
         $prevCapacity > 10 &&
-        $currentCapacity <= 0 &&
+        isCollectionCapacity($currentCapacity) &&
+        $prevReadingTime !== null &&
+        $prevReadingTime->format('Y-m-d') === $readingTime->format('Y-m-d') &&
         isWithinCollectionWindow($readingTime)
     ) {
         $device['emptied_time'] = $currentSensor['created_at'];
@@ -287,17 +299,23 @@ if ($canSend) {
     if (count($emptiedBins) > 0) {
         $sendBins = [];
         foreach ($emptiedBins as $device) {
+            $eventKey = sprintf(
+                'whatsapp_emptied:%s:%s',
+                $device['id_device'],
+                Carbon::parse($device['emptied_time'], 'Asia/Kuala_Lumpur')->format('Y-m-d H:i:s')
+            );
+
             $lastLogStmt = $db->prepare("
-                SELECT sent_at
+                SELECT id
                 FROM notification_logs
-                WHERE device_id = ? AND channel = 'whatsapp_emptied'
-                ORDER BY sent_at DESC
+                WHERE device_id = ? AND channel = 'whatsapp_emptied' AND message_preview = ?
                 LIMIT 1
             ");
-            $lastLogStmt->execute([$device['id_device']]);
-            $lastSent = $lastLogStmt->fetchColumn();
+            $lastLogStmt->execute([$device['id_device'], $eventKey]);
+            $alreadySent = $lastLogStmt->fetchColumn();
 
-            if (!$lastSent || $lastSent <= $tenMinAgo) {
+            if (!$alreadySent) {
+                $device['event_key'] = $eventKey;
                 $sendBins[] = $device;
             }
         }
@@ -353,7 +371,7 @@ if ($canSend) {
                     VALUES (?, 'whatsapp_emptied', ?, ?, '$timedate')
                 ");
                 foreach ($sendBins as $device) {
-                    $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
+                    $logStmt->execute([$device['id_device'], $device['event_key'], $msg]);
                 }
             } catch (Exception $e) {
                 file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);

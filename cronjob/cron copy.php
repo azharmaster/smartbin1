@@ -7,6 +7,15 @@ use Carbon\Carbon;
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
+function isWithinCollectionWindow(Carbon $timestamp): bool
+{
+    $minutes = ($timestamp->hour * 60) + $timestamp->minute;
+    $startMinutes = 7 * 60;
+    $endMinutes = 19 * 60;
+
+    return $minutes >= $startMinutes && $minutes <= $endMinutes;
+}
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -21,7 +30,7 @@ $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
 $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
-$logFile = __DIR__.'/cron.log';
+$logFile = __DIR__ . '/cron.log';
 
 /* -------------------------
    1️⃣ Check Notification Toggle
@@ -114,6 +123,10 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $currentSensor = $sensors[0];
     $prevSensor = isset($sensors[1]) ? $sensors[1] : null;
 
+    if (!is_numeric($currentSensor['capacity'])) {
+        continue;
+    }
+
     // Get capacity settings for this asset
     $capStmt = $db->prepare("
         SELECT empty_to, half_to
@@ -129,8 +142,11 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $cap = ['empty_to' => 10, 'half_to' => 80];
     }
 
-    $currentCapacity = (int) $currentSensor['capacity'];
-    $prevCapacity = $prevSensor ? (int) $prevSensor['capacity'] : null;
+    $currentCapacity = (float) $currentSensor['capacity'];
+    $prevCapacity = ($prevSensor && is_numeric($prevSensor['capacity']))
+        ? (float) $prevSensor['capacity']
+        : null;
+    $readingTime = Carbon::parse($currentSensor['created_at'], 'Asia/Kuala_Lumpur');
 
     $device['capacity'] = $currentCapacity;
     $device['reading_time'] = $currentSensor['created_at'];
@@ -147,10 +163,15 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $emptyBins[] = $device;
     }
 
-    // EMPTIED condition: capacity dropped from >half_to to <=empty_to (e.g., was >80%, now <=10%)
-    if ($prevCapacity !== null && 
-        $prevCapacity > $cap['half_to'] && 
-        $currentCapacity <= $cap['empty_to']) {
+    // EMPTIED / COLLECTION condition:
+    // match asset details page logic -> previous reading > 10, current reading <= 0,
+    // and event happens during collection window.
+    if (
+        $prevCapacity !== null &&
+        $prevCapacity > 10 &&
+        $currentCapacity <= 0 &&
+        isWithinCollectionWindow($readingTime)
+    ) {
         $device['emptied_time'] = $currentSensor['created_at'];
         $device['prev_capacity'] = $prevCapacity;
         $emptiedBins[] = $device;
@@ -160,8 +181,8 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
 /* -------------------------
    Debug Logging
 ---------------------------- */
-file_put_contents($logFile, date('Y-m-d H:i')." | canSend: ".($canSend ? 'YES':'NO')." | Reasons: ".implode(', ',$reason)."\n", FILE_APPEND);
-file_put_contents($logFile, date('Y-m-d H:i')." | Full bins: ".count($fullBins)." | Emptied bins: ".count($emptiedBins)." | Empty bins: ".count($emptyBins)."\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | canSend: " . ($canSend ? 'YES' : 'NO') . " | Reasons: " . implode(', ', $reason) . "\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Full bins: " . count($fullBins) . " | Emptied bins: " . count($emptiedBins) . " | Empty bins: " . count($emptyBins) . "\n", FILE_APPEND);
 
 /* -------------------------
    5️⃣ Get Supervisors
@@ -174,7 +195,7 @@ $supervisors = $db->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 if (empty($supervisors)) {
-    file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor contacts found\n", FILE_APPEND);
+    file_put_contents($logFile, date('Y-m-d H:i') . " | No supervisor contacts found\n", FILE_APPEND);
     $canSend = false;
 }
 
@@ -183,7 +204,7 @@ if (empty($supervisors)) {
 ---------------------------- */
 if ($canSend) {
     $tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
-//$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
+    //$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
     // --------- FULL BINS NOTIFICATION ---------
     if (count($fullBins) > 0) {
         $sendBins = [];
@@ -235,13 +256,13 @@ if ($canSend) {
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -257,7 +278,7 @@ if ($canSend) {
                     $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -308,18 +329,18 @@ if ($canSend) {
                 $assetList .= "\n";
             }
 
-            $msg =$assetList;
+            $msg = $assetList;
             //$msg = "*TRX BIN - BIN CLEARED*\n\n" . $assetList;
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -335,7 +356,7 @@ if ($canSend) {
                     $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -345,4 +366,4 @@ if ($canSend) {
     // if (count($emptyBins) > 0) { ... }
 }
 
-file_put_contents($logFile, date('Y-m-d H:i')." | Cron executed\n\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Cron executed\n\n", FILE_APPEND);
