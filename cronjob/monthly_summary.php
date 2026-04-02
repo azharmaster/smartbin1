@@ -63,7 +63,7 @@ function sendEmailSMTP($to, $subject, $body, $logFile) {
 }
 
 // WAHA configuration
-$apiUrl = "https://beta-waha.txfdw3.easypanel.host";  // WAHA server URL
+$apiUrl = "https://waha.pakarai.dpdns.org";  // WAHA server URL
 $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
