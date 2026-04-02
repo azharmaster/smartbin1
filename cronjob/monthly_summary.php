@@ -273,23 +273,8 @@ WHERE id=6
 
             // -------------------------
             // Log to DB (one row per device)
-            // -------------------------
-            try {
-                $timedate=date('Y-m-d H:i:s');
-                $logStmt = $db->prepare("
-                    INSERT INTO notification_logs (device_id, channel, message_preview, message_full, sent_at)
-                    VALUES (?, 'whatsapp+email', ?, ?, '$timedate')
-                ");
-                foreach ($sendBins as $device) {
-                    $logStmt->execute([
-                        $device['id_device'],
-                        substr($assetList,0,300),
-                        $msg
-                    ]);
-                }
-            } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
-            }
+            // ------------------------
+           
         } else {
             file_put_contents($logFile, date('Y-m-d H:i')." | No bins eligible for notification (throttle 10min)\n", FILE_APPEND);
         }
