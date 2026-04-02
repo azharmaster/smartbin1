@@ -52,5 +52,24 @@
     @endforeach
 </table>
 
+<h4>Collection Trip</h4>
+
+<table>
+    <tr>
+        <th>Asset</th>
+        <th>Collected At</th>
+    </tr>
+    @forelse($cleaningLogs as $log)
+        <tr>
+            <td>{{ $log->asset_name }}</td>
+            <td>{{ $log->cleaned_at->format('d M Y, h:i A') }}</td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="2">No collection trip records found for this period.</td>
+        </tr>
+    @endforelse
+</table>
+
 </body>
 </html>
