@@ -641,7 +641,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <h4 style="margin: 0; font-size: 15px; font-weight: 600;">
-                        <i class="fas fa-chart-line"></i> Capacity Levels (Real-Time Data)
+                        <i class="fas fa-chart-line"></i> Capacity Levels (24-Hour Data)
                     </h4>
                     <input type="date"
                            id="datePicker"
@@ -706,7 +706,7 @@ RESPONSIVE: STACK FOR TABLETS & MOBILE
                 </div>
             </div>
             <p style="font-size: 11px; color: #999; margin-top: 8px; text-align: center;">
-                <i class="fas fa-info-circle"></i> Data shown in real-time order based on created_at for the selected date
+                <i class="fas fa-info-circle"></i> Data shown for the full 24 hours of the selected date based on created_at
             </p>
         </div>
 
@@ -868,7 +868,6 @@ function initChart() {
     }
 
     // Get data from data attributes (updated by Livewire)
-    const labels = JSON.parse(ctx.getAttribute('data-chart-labels') || '[]');
     const sensorDatasets = JSON.parse(ctx.getAttribute('data-chart-datasets') || '[]');
     const fullEvents = @json($chartFullEvents);
 
@@ -894,34 +893,8 @@ function initChart() {
     const clearEvents = @json($chartClearEvents);
     const totalClearToday = clearEvents.length;
 
-    // Calculate end time
-    const chartStartTime = selectedDate + 'T07:00:00';
-    const today = new Date().toISOString().split('T')[0];
-    let chartEndTime = selectedDate + 'T19:00:00';
-
-    if (false && selectedDate === today) {
-        // Today — end ikut last data point + round up 30 minit
-        let lastX = selectedDate + 'T00:00:00';
-        sensorDatasets.forEach(sensor => {
-            if (sensor.data && sensor.data.length > 0) {
-                const lastPoint = sensor.data[sensor.data.length - 1];
-                if (lastPoint && lastPoint.x > lastX) lastX = lastPoint.x;
-            }
-        });
-        const endD = new Date(lastX);
-        const mins = endD.getMinutes();
-        if (mins === 0) {
-            // already on :00, keep as is
-        } else if (mins <= 30) {
-            endD.setMinutes(30, 0, 0);
-        } else {
-            endD.setHours(endD.getHours() + 1, 0, 0, 0);
-        }
-        chartEndTime = selectedDate + 'T' + endD.toTimeString().slice(0, 8);
-    } else {
-        // Hari lain — full day 23:30
-        chartEndTime = selectedDate + 'T19:00:00';
-    }
+    const chartStartTime = selectedDate + 'T00:00:00';
+    const chartEndTime = selectedDate + 'T23:59:59';
 
     const datasets = sensorDatasets.map((sensor, index) => ({
         label: sensor.label,
@@ -1088,10 +1061,9 @@ function initChart() {
                 x: {
                     type: 'time',
                     time: {
-                        unit: 'minute',
-                        stepSize: 30,
+                        unit: 'hour',
                         displayFormats: {
-                            minute: 'HH:mm'
+                            hour: 'HH:mm'
                         },
                         tooltipFormat: 'HH:mm:ss'
                     },
@@ -1110,13 +1082,12 @@ function initChart() {
                         maxRotation: 0,
                         minRotation: 0,
                         font: { size: 10 },
-                        autoSkip: false,
+                        autoSkip: true,
+                        maxTicksLimit: 13,
                         source: 'auto',
                         callback: function(value) {
                             const d = new Date(value);
-                            const mins = d.getMinutes();
-                            // Only show ticks at :00 and :30
-                            if (mins === 0 || mins === 30) {
+                            if (d.getMinutes() === 0) {
                                 return d.toTimeString().slice(0, 5);
                             }
                             return null;
@@ -1362,3 +1333,4 @@ function openHelp() {
 @endforeach
 
 </div> {{-- Single Livewire root wrapper end --}}
+

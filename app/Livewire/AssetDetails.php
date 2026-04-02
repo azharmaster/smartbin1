@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class AssetDetails extends Component
 {
-    private const COLLECTION_START_HOUR = 7;
-    private const COLLECTION_END_HOUR = 19;
-
     public $asset;
     public $floors;
     public $allAssets;
@@ -427,25 +424,24 @@ class AssetDetails extends Component
 
     private function isWithinCollectionWindow(Carbon $timestamp): bool
     {
-        $minutes = ($timestamp->hour * 60) + $timestamp->minute;
-        $startMinutes = self::COLLECTION_START_HOUR * 60;
-        $endMinutes = self::COLLECTION_END_HOUR * 60;
+        $start = $timestamp->copy()->timezone(config('app.timezone'))->startOfDay();
+        $end = $timestamp->copy()->timezone(config('app.timezone'))->endOfDay();
 
-        return $minutes >= $startMinutes && $minutes <= $endMinutes;
+        return $timestamp->copy()->timezone(config('app.timezone'))->betweenIncluded($start, $end);
     }
 
     private function collectionWindowStart(Carbon $date): Carbon
     {
         return $date->copy()
             ->timezone(config('app.timezone'))
-            ->setTime(self::COLLECTION_START_HOUR, 0, 0);
+            ->startOfDay();
     }
 
     private function collectionWindowEnd(Carbon $date): Carbon
     {
         return $date->copy()
             ->timezone(config('app.timezone'))
-            ->setTime(self::COLLECTION_END_HOUR, 0, 0);
+            ->endOfDay();
     }
 
     private function isCollectionCapacity(float $capacity): bool
