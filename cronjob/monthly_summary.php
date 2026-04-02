@@ -125,7 +125,6 @@ if (is_file($stateFile)) {
 $admins = DB::table('users')
     ->select('name', 'email')
     ->where('id', 6)
-    ->where('role', 1)
     ->whereNotNull('email')
     ->where('email', '!=', '')
     ->orderBy('email')
