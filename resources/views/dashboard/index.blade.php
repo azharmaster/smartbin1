@@ -1164,6 +1164,23 @@ function trend($current, $previous) {
                                 </div>
                             </div>
                         </div>
+
+                        <div class="status-card card-empty">
+                            <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="status-title">WhatsApp Notification</div>
+                                <div class="status-content">
+                                    <label class="switch switch-lg mb-0">
+                                        <input type="checkbox" id="whatsappNotificationSwitch"
+                                            {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                            {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Leaflet Map -->
@@ -1556,6 +1573,7 @@ function trend($current, $previous) {
                 </div>
             </div>
 
+            @if(false)
             <div class="card mb-4 shadow-sm">
                 <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
                     <div class="d-flex justify-content-between align-items-center">
@@ -1582,6 +1600,7 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
+            @endif
 
             <style>
             /* Remove underline / hover highlight on day numbers */
@@ -2368,14 +2387,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const whatsappStatusText = document.getElementById('whatsappStatusText');
 
     // Auto-save when toggle changes
-    whatsappSwitch.addEventListener('change', function() {
+    if (whatsappSwitch) whatsappSwitch.addEventListener('change', function() {
         const isActive = whatsappSwitch.checked;
         
         // Update status text immediately
-        if (isActive) {
+        if (whatsappStatusText && isActive) {
             whatsappStatusText.textContent = '● Active';
             whatsappStatusText.className = 'fw-bold text-success';
-        } else {
+        } else if (whatsappStatusText) {
             whatsappStatusText.textContent = '○ Inactive';
             whatsappStatusText.className = 'fw-bold text-muted';
         }
@@ -2408,10 +2427,10 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 // Revert if failed
                 whatsappSwitch.checked = !isActive;
-                if (whatsappSwitch.checked) {
+                if (whatsappStatusText && whatsappSwitch.checked) {
                     whatsappStatusText.textContent = '● Active';
                     whatsappStatusText.className = 'fw-bold text-success';
-                } else {
+                } else if (whatsappStatusText) {
                     whatsappStatusText.textContent = '○ Inactive';
                     whatsappStatusText.className = 'fw-bold text-muted';
                 }
@@ -2430,10 +2449,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error(err);
             // Revert if failed
             whatsappSwitch.checked = !isActive;
-            if (whatsappSwitch.checked) {
+            if (whatsappStatusText && whatsappSwitch.checked) {
                 whatsappStatusText.textContent = '● Active';
                 whatsappStatusText.className = 'fw-bold text-success';
-            } else {
+            } else if (whatsappStatusText) {
                 whatsappStatusText.textContent = '○ Inactive';
                 whatsappStatusText.className = 'fw-bold text-muted';
             }
