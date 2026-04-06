@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class AssetDetails extends Component
 {
+    private const COLLECTION_START_HOUR = 7;
+    private const COLLECTION_END_HOUR = 19;
+
     public $asset;
     public $floors;
     public $allAssets;
@@ -79,8 +82,8 @@ class AssetDetails extends Component
         $devices = $this->asset->devices;
         $selectedDate = Carbon::parse($this->selectedDate);
         $prevDate = $selectedDate->copy()->subDay();
-        $windowStart = $this->collectionWindowStart($selectedDate);
-        $windowEnd = $this->collectionWindowEnd($selectedDate);
+        $chartStart = $selectedDate->copy()->timezone(config('app.timezone'))->startOfDay();
+        $chartEnd = $selectedDate->copy()->timezone(config('app.timezone'))->endOfDay();
         $capacitySetting = $this->asset->capacitySetting;
 
         $this->weeklyChartLabels = [];
@@ -187,18 +190,18 @@ class AssetDetails extends Component
                 ->get();
 
             $data = [];
-            $windowSensors = collect();
+            $daySensors = collect();
             $bridgeReading = null;
 
             foreach ($sensors as $sensor) {
                 $t = Carbon::parse($sensor->created_at)->timezone(config('app.timezone'));
 
-                if ($t->lessThanOrEqualTo($windowStart)) {
+                if ($t->lessThanOrEqualTo($chartStart)) {
                     $bridgeReading = $sensor;
                 }
 
-                if ($t->betweenIncluded($windowStart, $windowEnd)) {
-                    $windowSensors->push([
+                if ($t->betweenIncluded($chartStart, $chartEnd)) {
+                    $daySensors->push([
                         'record' => $sensor,
                         'time' => $t,
                     ]);
@@ -207,19 +210,19 @@ class AssetDetails extends Component
 
             if ($bridgeReading) {
                 $data[] = [
-                    'x'         => $windowStart->format('Y-m-d\TH:i:s'),
+                    'x'         => $chartStart->format('Y-m-d\TH:i:s'),
                     'y'         => round((float) $bridgeReading->capacity, 1),
-                    'timestamp' => $windowStart->format('H:i:s') . ' (window start)',
+                    'timestamp' => $chartStart->format('H:i:s') . ' (day start)',
                 ];
             } elseif ($prevReading) {
                 $data[] = [
-                    'x'         => $windowStart->format('Y-m-d\TH:i:s'),
+                    'x'         => $chartStart->format('Y-m-d\TH:i:s'),
                     'y'         => round((float) $prevReading->capacity, 1),
-                    'timestamp' => $windowStart->format('H:i:s') . ' (prev day)',
+                    'timestamp' => $chartStart->format('H:i:s') . ' (prev day)',
                 ];
             }
 
-            foreach ($windowSensors as $sensorData) {
+            foreach ($daySensors as $sensorData) {
                 $sensor = $sensorData['record'];
                 $t = $sensorData['time'];
                 $data[] = [
@@ -230,9 +233,9 @@ class AssetDetails extends Component
             }
 
             // Calculate end time — round up last data point to nearest 30 min
-            $lastTime = $windowEnd->copy();
-            if ($windowSensors->isNotEmpty()) {
-                $lastSensor = $windowSensors->last()['time']->copy();
+            $lastTime = $chartEnd->copy();
+            if ($daySensors->isNotEmpty()) {
+                $lastSensor = $daySensors->last()['time']->copy();
                 $minutes = $lastSensor->minute;
                 $roundedMinutes = $minutes === 0 ? 0 : ($minutes <= 30 ? 30 : 60);
                 if ($roundedMinutes === 60) {
@@ -240,8 +243,8 @@ class AssetDetails extends Component
                 } else {
                     $lastTime = $lastSensor->setMinute($roundedMinutes)->setSecond(0);
                 }
-                if ($lastTime->greaterThan($windowEnd)) {
-                    $lastTime = $windowEnd->copy();
+                if ($lastTime->greaterThan($chartEnd)) {
+                    $lastTime = $chartEnd->copy();
                 }
             }
 
@@ -424,8 +427,10 @@ class AssetDetails extends Component
 
     private function isWithinCollectionWindow(Carbon $timestamp): bool
     {
-        $start = $timestamp->copy()->timezone(config('app.timezone'))->startOfDay();
-        $end = $timestamp->copy()->timezone(config('app.timezone'))->endOfDay();
+        $start = $timestamp->copy()->timezone(config('app.timezone'))
+            ->setTime(self::COLLECTION_START_HOUR, 0, 0);
+        $end = $timestamp->copy()->timezone(config('app.timezone'))
+            ->setTime(self::COLLECTION_END_HOUR, 0, 0);
 
         return $timestamp->copy()->timezone(config('app.timezone'))->betweenIncluded($start, $end);
     }
@@ -434,14 +439,14 @@ class AssetDetails extends Component
     {
         return $date->copy()
             ->timezone(config('app.timezone'))
-            ->startOfDay();
+            ->setTime(self::COLLECTION_START_HOUR, 0, 0);
     }
 
     private function collectionWindowEnd(Carbon $date): Carbon
     {
         return $date->copy()
             ->timezone(config('app.timezone'))
-            ->endOfDay();
+            ->setTime(self::COLLECTION_END_HOUR, 0, 0);
     }
 
     private function isCollectionCapacity(float $capacity): bool
