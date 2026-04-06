@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Supervisor | SMARTBIN</title>
+    @include('partials.pwa-head')
     
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -237,6 +238,7 @@
 
     <!-- LIVEWIRE SCRIPTS -->
     @livewireScripts
+    @include('partials.pwa-scripts')
 
 </body>
 </html>

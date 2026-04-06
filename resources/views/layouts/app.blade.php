@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SMARTBIN</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('uploads/images/logo.png') }}">
+    @include('partials.pwa-head')
 
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -443,6 +444,7 @@
 
     <!-- LIVEWIRE SCRIPTS -->
     @livewireScripts
+    @include('partials.pwa-scripts')
 
     @stack('scripts')
 

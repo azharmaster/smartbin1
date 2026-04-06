@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SMARTBIN - Staff</title>
+    @include('partials.pwa-head')
 
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -173,6 +174,8 @@
             });
         });
     </script>
+
+    @include('partials.pwa-scripts')
 
 </body>
 

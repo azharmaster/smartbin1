@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SMARTIN - Guest</title>
+    @include('partials.pwa-head')
 
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -84,6 +85,7 @@
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.html5.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
     <script src="{{ asset('adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
+    @include('partials.pwa-scripts')
 
     <!-- INSERTED DATATABLES SCRIPT -->
 
