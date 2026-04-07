@@ -23,17 +23,13 @@ function isCollectionCapacity(float $capacity): bool
 
 function isDailyReportTime(Carbon $timestamp): bool
 {
-    return $timestamp->format('H:i') === '15:20';
+    return $timestamp->format('H:i') === '19:00';
 }
 
 function formatAssetLabel(array $asset): string
 {
     $assetName = trim((string) ($asset['asset_name'] ?? ''));
     $location = trim((string) ($asset['location'] ?? ''));
-
-    if ($assetName !== '' && $location !== '' && strcasecmp($assetName, $location) !== 0) {
-        return $assetName . ' - ' . $location;
-    }
 
     return $assetName !== '' ? $assetName : $location;
 }
