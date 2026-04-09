@@ -19,9 +19,9 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ], [
-            'email.required' => 'Email wajib diisi',
-            'email.email' => 'Email tidak valid',
-            'password.required' => 'Password wajib diisi',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Email is invalid.',
+            'password.required' => 'Password is required.',
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -35,7 +35,7 @@ class LoginController extends Controller
                 $request->session()->regenerateToken();
 
                 return back()->withErrors([
-                    'email' => 'Akun supervisor tidak diizinkan login.',
+                    'email' => 'Supervisor accounts are not allowed to log in.',
                 ])->onlyInput('email');
             }
 
