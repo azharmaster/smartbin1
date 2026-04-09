@@ -46,12 +46,11 @@ class SendMonthlySummaryEmail extends Command
             ' – ' . $end->format('d M Y') . ')';
 
         // Limit monthly summary delivery to the configured test recipient.
-        $users = User::where('id', 6)
-            ->whereNotNull('email')
+        $users = User::whereNotNull('email')
             ->get();
 
         if ($users->count() === 0) {
-            $this->warn('User id=6 with email was not found. Skipping email sending.');
+            $this->warn('No users with email addresses found. Skipping email sending.');
             return;
         }
 
