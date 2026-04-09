@@ -8,50 +8,52 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function index()
-    {
+    public function index(){
         return view('auth.login');
-    }
-
-    public function handleLogin(Request $request)
-    {
+    } 
+    
+    public function handleLogin(Request $request){
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
-        ], [
+            'password' => 'required'
+        ],[
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Email tidak valid',
             'password.required' => 'Password wajib diisi',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if(Auth::attempt($credentials)){ 
+
             $request->session()->regenerate();
 
             $user = Auth::user();
 
-            if ((int) $user->role === 4) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-
-                return back()->withErrors([
-                    'email' => 'Akun supervisor tidak diizinkan login.',
-                ])->onlyInput('email');
-            }
-
+            // ✅ UPDATE LAST ACTIVE IMMEDIATELY AFTER LOGIN
             $user->update([
-                'last_active' => now(),
+                'last_active' => now()
             ]);
 
-            if ((int) $user->role === 1) {
+            // Role 1 = Admin → redirect to admin main menu
+            if ($user->role == 1) {
                 return redirect()->route('dashboard');
             }
 
-            if ((int) $user->role === 3) {
+            // Role 2 = Staff → redirect to staff main menu
+            // if ($user->role == 2) {
+            //     return redirect()->route('staff.dashboard');
+            // }
+
+            // // Role 3 = Client → redirect to guest dashboard
+            if ($user->role == 3) {
                 return redirect()->route('dashboard');
             }
 
-            return redirect()->route('login');
+            // if ($user->role == 4) {
+            //     return redirect()->route('supervisor.dashboard');
+            // }
+
+            // fallback if role undefined
+            return redirect('auth.login');
         }
 
         return back()->withErrors([
@@ -62,10 +64,10 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
+        
         return redirect('/')->with('status', 'You have been logged out successfully.');
     }
 
