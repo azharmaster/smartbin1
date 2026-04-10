@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'SMARTBIN TRX SYSTEM')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('uploads/images/logo.png') }}">
+    @include('partials.pwa-head')
 
     <!-- Google Font -->
     <link rel="stylesheet"
@@ -35,6 +36,7 @@
 
     <!-- AdminLTE App -->
     <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
+    @include('partials.pwa-scripts')
 
     @stack('scripts')
 

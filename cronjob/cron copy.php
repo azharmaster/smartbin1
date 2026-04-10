@@ -16,117 +16,6 @@ function isWithinCollectionWindow(Carbon $timestamp): bool
     return $minutes >= $startMinutes && $minutes <= $endMinutes;
 }
 
-function isCollectionCapacity(float $capacity): bool
-{
-    return $capacity <= 0.0 || abs($capacity) < 0.00001;
-}
-
-function isDailyReportTime(Carbon $timestamp): bool
-{
-    return $timestamp->format('H:i') === '13:00';
-}
-
-function formatAssetLabel(array $asset): string
-{
-    $assetName = trim((string) ($asset['asset_name'] ?? ''));
-    $location = trim((string) ($asset['location'] ?? ''));
-
-    return $assetName !== '' ? $assetName : $location;
-}
-
-function getDailyCollectionReport(PDO $db, Carbon $date): array
-{
-    $dayStart = $date->copy()->startOfDay();
-    $dayEnd = $date->copy()->endOfDay();
-
-    $assetStmt = $db->query("
-        SELECT a.id, a.asset_name, a.location
-        FROM assets a
-        WHERE a.is_active = 1
-        ORDER BY a.asset_name ASC, a.location ASC
-    ");
-
-    $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
-    $reportRows = [];
-    $totalCollections = 0;
-
-    $sensorStmt = $db->prepare("
-        SELECT d.id_device, s.capacity, s.created_at
-        FROM devices d
-        JOIN sensors s ON s.device_id = d.id_device
-        WHERE d.asset_id = ?
-          AND d.is_active = 1
-          AND s.created_at BETWEEN ? AND ?
-        ORDER BY d.id_device ASC, s.created_at ASC
-    ");
-
-    foreach ($assets as $asset) {
-        $sensorStmt->execute([
-            $asset['id'],
-            $dayStart->format('Y-m-d H:i:s'),
-            $dayEnd->format('Y-m-d H:i:s'),
-        ]);
-
-        $readings = $sensorStmt->fetchAll(PDO::FETCH_ASSOC);
-        $previousCapacities = [];
-        $collectionCount = 0;
-
-        foreach ($readings as $reading) {
-            if (!is_numeric($reading['capacity'])) {
-                continue;
-            }
-
-            $deviceId = (string) $reading['id_device'];
-            $currentCapacity = (float) $reading['capacity'];
-            $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
-            $previousCapacity = $previousCapacities[$deviceId] ?? null;
-
-            if (
-                $previousCapacity !== null &&
-                $previousCapacity > 10 &&
-                isCollectionCapacity($currentCapacity) &&
-                isWithinCollectionWindow($readingTime)
-            ) {
-                $collectionCount++;
-            }
-
-            $previousCapacities[$deviceId] = $currentCapacity;
-        }
-
-        $reportRows[] = [
-            'label' => formatAssetLabel($asset),
-            'total' => $collectionCount,
-        ];
-        $totalCollections += $collectionCount;
-    }
-
-    return [
-        'rows' => $reportRows,
-        'total' => $totalCollections,
-    ];
-}
-
-function buildDailyReportMessage(array $report, Carbon $now): string
-{
-    $lines = [];
-    $lines[] = 'Smart Bin Report (' . $now->format('j/n/Y') . ')';
-    $lines[] = '';
-    $lines[] = 'Operations ran smoothly with all bins emptied as scheduled.';
-    $lines[] = '';
-    $lines[] = 'Collection details:';
-
-    foreach ($report['rows'] as $row) {
-        $lines[] = '• ' . $row['label'] . ' | ' . $row['total'];
-    }
-
-    $lines[] = '';
-    $lines[] = 'Total collection: ' . $report['total'];
-    $lines[] = '';
-    $lines[] = 'Overall status: Good and consistent.';
-
-    return implode("\n", $lines);
-}
-
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -141,7 +30,7 @@ $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
 $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
-$logFile = __DIR__.'/cron.log';
+$logFile = __DIR__ . '/cron.log';
 
 /* -------------------------
    1️⃣ Check Notification Toggle
@@ -258,9 +147,6 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         ? (float) $prevSensor['capacity']
         : null;
     $readingTime = Carbon::parse($currentSensor['created_at'], 'Asia/Kuala_Lumpur');
-    $prevReadingTime = $prevSensor
-        ? Carbon::parse($prevSensor['created_at'], 'Asia/Kuala_Lumpur')
-        : null;
 
     $device['capacity'] = $currentCapacity;
     $device['reading_time'] = $currentSensor['created_at'];
@@ -278,16 +164,12 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
     // EMPTIED / COLLECTION condition:
-    // Match asset details graph logic for notification use:
-    // previous reading > 10, current reading is a collection value (including 0),
-    // current reading happens during collection window,
-    // and both readings are on the same day to avoid cross-day false positives.
+    // match asset details page logic -> previous reading > 10, current reading <= 0,
+    // and event happens during collection window.
     if (
         $prevCapacity !== null &&
         $prevCapacity > 10 &&
-        isCollectionCapacity($currentCapacity) &&
-        $prevReadingTime !== null &&
-        $prevReadingTime->format('Y-m-d') === $readingTime->format('Y-m-d') &&
+        $currentCapacity <= 0 &&
         isWithinCollectionWindow($readingTime)
     ) {
         $device['emptied_time'] = $currentSensor['created_at'];
@@ -299,8 +181,8 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
 /* -------------------------
    Debug Logging
 ---------------------------- */
-file_put_contents($logFile, date('Y-m-d H:i')." | canSend: ".($canSend ? 'YES':'NO')." | Reasons: ".implode(', ',$reason)."\n", FILE_APPEND);
-file_put_contents($logFile, date('Y-m-d H:i')." | Full bins: ".count($fullBins)." | Emptied bins: ".count($emptiedBins)." | Empty bins: ".count($emptyBins)."\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | canSend: " . ($canSend ? 'YES' : 'NO') . " | Reasons: " . implode(', ', $reason) . "\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Full bins: " . count($fullBins) . " | Emptied bins: " . count($emptiedBins) . " | Empty bins: " . count($emptyBins) . "\n", FILE_APPEND);
 
 /* -------------------------
    5️⃣ Get Supervisors
@@ -313,7 +195,7 @@ $supervisors = $db->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 if (empty($supervisors)) {
-    file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor contacts found\n", FILE_APPEND);
+    file_put_contents($logFile, date('Y-m-d H:i') . " | No supervisor contacts found\n", FILE_APPEND);
     $canSend = false;
 }
 
@@ -322,7 +204,7 @@ if (empty($supervisors)) {
 ---------------------------- */
 if ($canSend) {
     $tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
-//$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
+    //$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
     // --------- FULL BINS NOTIFICATION ---------
     if (count($fullBins) > 0) {
         $sendBins = [];
@@ -374,13 +256,13 @@ if ($canSend) {
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -396,7 +278,7 @@ if ($canSend) {
                     $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -405,23 +287,17 @@ if ($canSend) {
     if (count($emptiedBins) > 0) {
         $sendBins = [];
         foreach ($emptiedBins as $device) {
-            $eventKey = sprintf(
-                'whatsapp_emptied:%s:%s',
-                $device['id_device'],
-                Carbon::parse($device['emptied_time'], 'Asia/Kuala_Lumpur')->format('Y-m-d H:i:s')
-            );
-
             $lastLogStmt = $db->prepare("
-                SELECT id
+                SELECT sent_at
                 FROM notification_logs
-                WHERE device_id = ? AND channel = 'whatsapp_emptied' AND message_preview = ?
+                WHERE device_id = ? AND channel = 'whatsapp_emptied'
+                ORDER BY sent_at DESC
                 LIMIT 1
             ");
-            $lastLogStmt->execute([$device['id_device'], $eventKey]);
-            $alreadySent = $lastLogStmt->fetchColumn();
+            $lastLogStmt->execute([$device['id_device']]);
+            $lastSent = $lastLogStmt->fetchColumn();
 
-            if (!$alreadySent) {
-                $device['event_key'] = $eventKey;
+            if (!$lastSent || $lastSent <= $tenMinAgo) {
                 $sendBins[] = $device;
             }
         }
@@ -453,18 +329,18 @@ if ($canSend) {
                 $assetList .= "\n";
             }
 
-            $msg =$assetList;
+            $msg = $assetList;
             //$msg = "*TRX BIN - BIN CLEARED*\n\n" . $assetList;
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -477,10 +353,10 @@ if ($canSend) {
                     VALUES (?, 'whatsapp_emptied', ?, ?, '$timedate')
                 ");
                 foreach ($sendBins as $device) {
-                    $logStmt->execute([$device['id_device'], $device['event_key'], $msg]);
+                    $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -488,51 +364,6 @@ if ($canSend) {
     // --------- EMPTY BINS NOTIFICATION ---------
     // DISABLED: Jangan hantar notifikasi untuk TONG SAMPAH KOSONG
     // if (count($emptyBins) > 0) { ... }
-
-    // --------- DAILY 3:40 PM SUMMARY REPORT ---------
-    if (isDailyReportTime($now)) {
-        $reportDateKey = $now->format('Y-m-d');
-        $alreadySentStmt = $db->prepare("
-            SELECT id
-            FROM notification_logs
-            WHERE channel = 'whatsapp_daily_report_7pm'
-              AND message_preview = ?
-            LIMIT 1
-        ");
-        $alreadySentStmt->execute([$reportDateKey]);
-        $alreadySent = $alreadySentStmt->fetchColumn();
-
-        if (!$alreadySent) {
-            $report = getDailyCollectionReport($db, $now);
-            $msg = buildDailyReportMessage($report, $now);
-
-            foreach ($supervisors as $sup) {
-                if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
-                    try {
-                        $result = $whatsapp->sendTextMessage($formatted, $msg);
-                        $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
-                    } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
-                    }
-                }
-            }
-
-            try {
-                $timedate = date('Y-m-d H:i:s');
-                $logStmt = $db->prepare("
-                    INSERT INTO notification_logs (channel, message_preview, message_full, sent_at)
-                    VALUES ('whatsapp_daily_report_7pm', ?, ?, '$timedate')
-                ");
-                $logStmt->execute([$reportDateKey, $msg]);
-            } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
-            }
-        } else {
-            file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT skipped, already sent for {$reportDateKey}\n", FILE_APPEND);
-        }
-    }
 }
 
-file_put_contents($logFile, date('Y-m-d H:i')." | Cron executed\n\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Cron executed\n\n", FILE_APPEND);

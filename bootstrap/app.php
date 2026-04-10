@@ -18,7 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return null;
+            }
+
+            if (method_exists($e, 'getStatusCode')) {
+                return redirect()
+                    ->route('login')
+                    ->with('error', 'Terjadi kesalahan. Silakan login kembali.');
+            }
+
+            return null;
+        });
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('smartbin:simulate')

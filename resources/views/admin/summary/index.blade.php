@@ -180,7 +180,7 @@
             </div>
         </div>
 
-        {{-- Total Cleaning This Month --}}
+        {{-- Total Collection Trips --}}
         <div class="col-md-2-4">
             <div class="card shadow-sm border-0 h-100 metric-card"
                  data-metric-key="total_cleaning"
@@ -189,7 +189,7 @@
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-white-50 mb-2">Total Cleaning</h6>
+                            <h6 class="text-white-50 mb-2">Total Collection Trips</h6>
                             <h2 class="mb-0 fw-bold">{{ number_format($summaryMetrics->total_cleaning) }}</h2>
                         </div>
                         <div class="text-white-50">
@@ -266,12 +266,12 @@
             </div>
         </div>
 
-        {{-- Cleaning History --}}
+        {{-- Collection Trip --}}
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-history me-2"></i>
-                    Cleaning History
+                    Collection Trip
                 </div>
 
                 {{-- Scrollable content --}}
@@ -280,7 +280,7 @@
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th>Asset</th>
-                                <th>Cleaned At</th>
+                                <th>Collected At</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -292,7 +292,7 @@
                             @empty
                                 <tr>
                                     <td colspan="2" class="text-center text-muted py-3">
-                                        No cleaning records found for this period.
+                                        No collection trip records found for this period.
                                     </td>
                                 </tr>
                             @endforelse
@@ -364,28 +364,28 @@ window.addEventListener('DOMContentLoaded', () => {
     const metricMeta = {
         total_full_events: {
             title: 'Total Full Events',
-            description: `Jumlah keseluruhan kejadian tong mencapai status penuh dalam tempoh ${periodLabel}. Nilai tinggi biasanya menunjukkan kawasan bertrafik tinggi atau kadar pengumpulan sisa yang cepat.`,
-            formula: 'Kiraan semua event sensor yang bertukar ke status penuh.'
+            description: `The total number of times bins reached full status during the selected ${periodLabel} period. Higher values usually indicate high-traffic areas or faster waste accumulation.`,
+            formula: 'Count of all sensor events where a bin transitions into full status.'
         },
         avg_fill_time: {
             title: 'Average Fill Time',
-            description: `Purata masa diambil untuk tong berubah daripada kosong/normal ke penuh dalam tempoh ${periodLabel}. Lagi rendah nilai, lagi cepat tong penuh.`,
-            formula: 'Jumlah masa isi penuh semua tong / bilangan kitaran penuh.'
+            description: `The average time it takes for a bin to move from empty or normal status to full during the selected ${periodLabel} period. Lower values mean bins fill up faster.`,
+            formula: 'Total fill time across all bins divided by the number of full cycles.'
         },
         avg_clear_time: {
             title: 'Average Clear Time',
-            description: `Purata masa respons pembersihan selepas tong dikesan penuh untuk tempoh ${periodLabel}. Nilai tinggi menandakan tindak balas pembersihan lebih lambat.`,
-            formula: 'Jumlah masa dari status penuh hingga log pembersihan / bilangan kejadian.'
+            description: `The average response time to clear a bin after it becomes full during the selected ${periodLabel} period. Higher values indicate slower collection response.`,
+            formula: 'Total time from full status to collection event divided by the number of events.'
         },
         total_cleaning: {
-            title: 'Total Cleaning',
-            description: `Jumlah aktiviti pembersihan yang direkodkan dalam tempoh ${periodLabel}. Metrik ini menunjukkan kekerapan operasi pembersihan.`,
-            formula: 'Kiraan semua rekod log pembersihan untuk tempoh dipilih.'
+            title: 'Total Collection Trips',
+            description: `The total number of collection trip events recorded during the selected ${periodLabel} period. This reflects how often bins were emptied during collection hours.`,
+            formula: 'Count of all collection trip events within the selected period.'
         },
         total_active_bins: {
             title: 'Total Active Bins',
-            description: `Jumlah tong aktif yang mempunyai data sensor dalam tempoh ${periodLabel}.`,
-            formula: 'Kiraan tong unik yang menghantar bacaan/aktiviti dalam tempoh dipilih.'
+            description: `The total number of active bins with sensor data during the selected ${periodLabel} period.`,
+            formula: 'Count of unique bins that sent readings or activity during the selected period.'
         }
     };
 
@@ -700,7 +700,7 @@ function printDashboard() {
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Summary Report – User Guide</h5>
+        <h5 class="modal-title">Summary Report - User Guide</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
@@ -709,7 +709,7 @@ function printDashboard() {
         <h6><i class="fas fa-info-circle"></i> Purpose</h6>
         <p>
           This page provides an analytical summary of bin performance based on
-          sensor data and cleaning records. Reports can be viewed by
+          sensor data and collection trip records. Reports can be viewed by
           <strong>Today, Weekly, or Monthly</strong> period.
         </p>
 
@@ -717,9 +717,9 @@ function printDashboard() {
 
         <h6><i class="fas fa-calendar-alt"></i> Selecting Report Period</h6>
         <ul>
-          <li><strong>Today</strong> – Shows data for the current day only.</li>
-          <li><strong>Weekly</strong> – Select a specific week to analyze performance.</li>
-          <li><strong>Monthly</strong> – Select a specific month for overall trend analysis.</li>
+          <li><strong>Today</strong> - Shows data for the current day only.</li>
+          <li><strong>Weekly</strong> - Select a specific week to analyze performance.</li>
+          <li><strong>Monthly</strong> - Select a specific month for overall trend analysis.</li>
           <li>The report updates automatically when you change the period.</li>
         </ul>
 
@@ -746,11 +746,11 @@ function printDashboard() {
 
         <hr>
 
-        <h6><i class="fas fa-history"></i> Cleaning History Table</h6>
+        <h6><i class="fas fa-history"></i> Collection Trip Table</h6>
         <ul>
-          <li>Displays all cleaning records within the selected period.</li>
-          <li>Shows asset name, device/compartment, and cleaning timestamp.</li>
-          <li>If no records appear, it means no cleaning activity was logged during that period.</li>
+          <li>Displays all collection trip records within the selected period.</li>
+          <li>Shows asset name and collection timestamp.</li>
+          <li>If no records appear, it means no collection trip activity was detected during that period.</li>
         </ul>
 
         <hr>
@@ -774,8 +774,8 @@ function printDashboard() {
 
         <h6><i class="fas fa-print"></i> Print & Email Report</h6>
         <ul>
-          <li><strong>Print</strong> – Generates a printer-friendly version of the report.</li>
-          <li><strong>Send Report</strong> – Sends the report summary via email to the currently logged-in user’s registered email address.</li>
+          <li><strong>Print</strong> - Generates a printer-friendly version of the report.</li>
+          <li><strong>Send Report</strong> - Sends the report summary via email to the currently logged-in user's registered email address.</li>
           <li>Charts are automatically converted into images when printing.</li>
         </ul>
 
@@ -814,3 +814,4 @@ function printDashboard() {
 </div>
 
 @endsection
+

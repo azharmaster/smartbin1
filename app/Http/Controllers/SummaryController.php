@@ -124,6 +124,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $previousCapacities = [];
             $binCleared         = false;
             $triggeredDeviceId  = null;
+            $currentDay         = null;
 
             $timesFull      = 0;
             $fillDurations  = [];
@@ -139,6 +140,14 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                 $currentCap  = $reading['capacity'];
                 $previousCap = $previousCapacities[$deviceId] ?? null;
                 $readingTime = $reading['created_at'];
+                $readingDay  = $readingTime->format('Y-m-d');
+
+                if ($currentDay !== null && $currentDay !== $readingDay) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                    $previousCapacities = [];
+                }
+                $currentDay = $readingDay;
 
                 // Full detection (per asset) — any device crosses half_to
                 if ($previousCap !== null && $previousCap <= $setting->half_to && $currentCap > $setting->half_to) {
@@ -156,13 +165,13 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 
                 // Clear Bin detection (per asset, new logic)
                 if (!$binCleared) {
-                    if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
                         $binCleared        = true;
                         $triggeredDeviceId = $deviceId;
                         $assetWasFull      = false; // reset full flag after clear
 
                         // Only count clear time if within period
-                        if ($readingTime->between($start, $end)) {
+                        if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
                             $lastClearAt = $readingTime;
 
                             // Clear time = from last full to now cleared
@@ -242,21 +251,30 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $previousCapacities = [];
             $binCleared         = false;
             $triggeredDeviceId  = null;
+            $currentDay         = null;
 
             foreach ($allReadings as $reading) {
                 $deviceId    = $reading['device_id'];
                 $currentCap  = $reading['capacity'];
                 $previousCap = $previousCapacities[$deviceId] ?? null;
                 $readingTime = $reading['created_at'];
+                $readingDay  = $readingTime->format('Y-m-d');
+
+                if ($currentDay !== null && $currentDay !== $readingDay) {
+                    $binCleared = false;
+                    $triggeredDeviceId = null;
+                    $previousCapacities = [];
+                }
+                $currentDay = $readingDay;
 
                 if (!$binCleared) {
                     // Clear Bin Logic: 0% selepas >10%
-                    if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                    if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
                         $binCleared        = true;
                         $triggeredDeviceId = $deviceId;
 
                         // Only log if within date range
-                        if ($readingTime->between($start, $end)) {
+                        if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
                             $logs[] = (object) [
                                 'asset_name'  => $asset->asset_name,
                                 'device_name' => $reading['device_name'],
@@ -414,6 +432,7 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
         $previousCapacities = [];
         $binCleared = false;
         $triggeredDeviceId = null;
+        $currentDay = null;
 
         $timesFull = 0;
         $fillDurations = [];
@@ -427,6 +446,14 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
             $currentCap = $reading['capacity'];
             $previousCap = $previousCapacities[$deviceId] ?? null;
             $readingTime = $reading['created_at'];
+            $readingDay = $readingTime->format('Y-m-d');
+
+            if ($currentDay !== null && $currentDay !== $readingDay) {
+                $binCleared = false;
+                $triggeredDeviceId = null;
+                $previousCapacities = [];
+            }
+            $currentDay = $readingDay;
 
             if (
                 $previousCap !== null &&
@@ -448,12 +475,12 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
             }
 
             if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
                     $assetWasFull = false;
 
-                    if ($readingTime->between($startDate, $endDate)) {
+                    if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
                         $lastClearAt = $readingTime;
 
                         if ($lastFullAt) {
@@ -524,19 +551,28 @@ public function getCleaningLogsForRange(Carbon $startDate, Carbon $endDate)
         $previousCapacities = [];
         $binCleared = false;
         $triggeredDeviceId = null;
+        $currentDay = null;
 
         foreach ($allReadings as $reading) {
             $deviceId = $reading['device_id'];
             $currentCap = $reading['capacity'];
             $previousCap = $previousCapacities[$deviceId] ?? null;
             $readingTime = $reading['created_at'];
+            $readingDay = $readingTime->format('Y-m-d');
+
+            if ($currentDay !== null && $currentDay !== $readingDay) {
+                $binCleared = false;
+                $triggeredDeviceId = null;
+                $previousCapacities = [];
+            }
+            $currentDay = $readingDay;
 
             if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $currentCap <= 0) {
+                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
 
-                    if ($readingTime->between($startDate, $endDate)) {
+                    if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
                         $logs[] = (object) [
                             'asset_name'  => $asset->asset_name,
                             'device_name' => $reading['device_name'],
@@ -873,6 +909,18 @@ public function sendEmail(Request $request)
 
         return back()->with('error', 'Failed to send summary report. Please try again.');
     }
+}
+
+private function isWithinCollectionWindow(Carbon $timestamp): bool
+{
+    $minutes = ($timestamp->hour * 60) + $timestamp->minute;
+
+    return $minutes >= 420 && $minutes <= 1140;
+}
+
+private function isCollectionCapacity(float $capacity): bool
+{
+    return $capacity <= 0.0 || abs($capacity) < 0.00001;
 }
 
 }

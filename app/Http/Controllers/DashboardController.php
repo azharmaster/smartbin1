@@ -711,23 +711,34 @@ private function getLastEmptiedTimes()
         $binCleared         = false;
         $triggeredDeviceId  = null;
         $lastClearTime      = null;
+        $currentDay         = null;
 
         foreach ($allSensorReadings as $reading) {
             $deviceId    = $reading['device_id'];
             $currentCap  = $reading['capacity'];
             $previousCap = $previousCapacities[$deviceId] ?? null;
             $readingTime = $reading['created_at'];
+            $readingDay  = $readingTime->format('Y-m-d');
+
+            if ($currentDay !== null && $currentDay !== $readingDay) {
+                $binCleared        = false;
+                $triggeredDeviceId = null;
+                $previousCapacities = [];
+            }
+            $currentDay = $readingDay;
 
             if (!$binCleared) {
                 // Check ada compartment yang hit 0% dari >10%
                 if (
                     $previousCap !== null &&
                     $previousCap > 10 &&
-                    $currentCap <= 0
+                    $this->isCollectionCapacity($currentCap)
                 ) {
                     $binCleared        = true;
                     $triggeredDeviceId = $deviceId;
-                    $lastClearTime     = $readingTime;
+                    if ($this->isWithinCollectionWindow($readingTime)) {
+                        $lastClearTime = $readingTime;
+                    }
                 }
             } else {
                 // Tunggu triggered compartment naik balik >10% untuk reset
@@ -745,6 +756,18 @@ private function getLastEmptiedTimes()
     }
 
     return collect($result);
+}
+
+private function isWithinCollectionWindow(Carbon $timestamp): bool
+{
+    $minutes = ($timestamp->hour * 60) + $timestamp->minute;
+
+    return $minutes >= 420 && $minutes <= 1140;
+}
+
+private function isCollectionCapacity(float $capacity): bool
+{
+    return $capacity <= 0.0 || abs($capacity) < 0.00001;
 }
 
 /**

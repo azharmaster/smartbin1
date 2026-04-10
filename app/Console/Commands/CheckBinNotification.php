@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Asset;
 use App\Models\User;
 
-class CheckBinStatus extends Command
+class CheckBinNotification extends Command
 {
     protected $signature = 'bin:check-status';
 

@@ -1164,6 +1164,23 @@ function trend($current, $previous) {
                                 </div>
                             </div>
                         </div>
+
+                        <div class="status-card card-empty">
+                            <div class="status-body">
+                                <div class="status-icon-wrapper">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="status-title">WhatsApp Notification</div>
+                                <div class="status-content">
+                                    <label class="switch switch-lg mb-0">
+                                        <input type="checkbox" id="whatsappNotificationSwitch"
+                                            {{ $whatsappNotificationActive ? 'checked' : '' }}
+                                            {{ !$isAdmin ? 'disabled title=No authorization' : '' }}>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Leaflet Map -->
@@ -1540,7 +1557,24 @@ function trend($current, $previous) {
         @endforelse
     </div>
 </div>
-<div class="card mb-4 shadow-sm">
+
+
+             <div class="card shadow-sm mb-4">
+                <div class="card-header smartbin-gradient">
+                    <h5 class="mb-0 fs-6">
+                        <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
+                            <i class="fas fa-calendar-alt me-2"></i> Calendar
+                        </a>
+                    </h5>
+                </div>
+
+                <div class="card-body p-2">
+                    <div id="holidaycalendar"></div>
+                </div>
+            </div>
+
+            @if(false)
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px;">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -1566,22 +1600,7 @@ function trend($current, $previous) {
                     </div>
                 </div>
             </div>
-
-             <div class="card shadow-sm mb-4">
-                <div class="card-header smartbin-gradient">
-                    <h5 class="mb-0 fs-6">
-                        <a href="{{ route('holidays.index') }}" class="text-white text-decoration-none">
-                            <i class="fas fa-calendar-alt me-2"></i> Calendar
-                        </a>
-                    </h5>
-                </div>
-
-                <div class="card-body p-2">
-                    <div id="holidaycalendar"></div>
-                </div>
-            </div>
-
-            
+            @endif
 
             <style>
             /* Remove underline / hover highlight on day numbers */
@@ -2158,7 +2177,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const isMobile = window.innerWidth < 768;
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: isMobile ? 'dayGridWeek' : 'dayGridMonth',
+        initialView: 'dayGridWeek',
         height: 'auto',
         contentHeight: 'auto',
 
@@ -2368,14 +2387,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const whatsappStatusText = document.getElementById('whatsappStatusText');
 
     // Auto-save when toggle changes
-    whatsappSwitch.addEventListener('change', function() {
+    if (whatsappSwitch) whatsappSwitch.addEventListener('change', function() {
         const isActive = whatsappSwitch.checked;
         
         // Update status text immediately
-        if (isActive) {
+        if (whatsappStatusText && isActive) {
             whatsappStatusText.textContent = '● Active';
             whatsappStatusText.className = 'fw-bold text-success';
-        } else {
+        } else if (whatsappStatusText) {
             whatsappStatusText.textContent = '○ Inactive';
             whatsappStatusText.className = 'fw-bold text-muted';
         }
@@ -2408,10 +2427,10 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 // Revert if failed
                 whatsappSwitch.checked = !isActive;
-                if (whatsappSwitch.checked) {
+                if (whatsappStatusText && whatsappSwitch.checked) {
                     whatsappStatusText.textContent = '● Active';
                     whatsappStatusText.className = 'fw-bold text-success';
-                } else {
+                } else if (whatsappStatusText) {
                     whatsappStatusText.textContent = '○ Inactive';
                     whatsappStatusText.className = 'fw-bold text-muted';
                 }
@@ -2430,10 +2449,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error(err);
             // Revert if failed
             whatsappSwitch.checked = !isActive;
-            if (whatsappSwitch.checked) {
+            if (whatsappStatusText && whatsappSwitch.checked) {
                 whatsappStatusText.textContent = '● Active';
                 whatsappStatusText.className = 'fw-bold text-success';
-            } else {
+            } else if (whatsappStatusText) {
                 whatsappStatusText.textContent = '○ Inactive';
                 whatsappStatusText.className = 'fw-bold text-muted';
             }
