@@ -242,10 +242,12 @@
 
                         <img src="{{ asset('uploads/images/maxis1.png') }}" 
                             alt="Maxis 1" 
+                            class="img-fluid"
                             style="height:45px;">
 
                         <img src="{{ asset('uploads/images/maxis2.png') }}" 
                             alt="Maxis 2" 
+                            class="img-fluid"
                             style="height:75px; margin-left:-5px;">
 
                     </a>
