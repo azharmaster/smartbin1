@@ -216,23 +216,27 @@
 
     <div class="wrapper">
 
-        <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav ms-0 ps-0">
                 <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <a class="nav-link ps-3 pe-2" data-widget="pushmenu" href="#" role="button">
                         <i class="fas fa-bars"></i>
                     </a>
                 </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/dashboard" class="nav-link d-flex align-items-center">
-                        <!-- Logo Image -->
-                        <img src="{{ asset('uploads/images/logo.png') }}" alt="Logo" class="me-2" style="height:30px;">
-                        <!-- Link Text -->
-                        SMARTBIN
+
+                <li class="nav-item d-none d-sm-inline-block ms-0">
+                    <a href="/dashboard" class="nav-link d-flex align-items-center ps-0">
+
+                        <img src="{{ asset('uploads/images/maxis1.png') }}" 
+                            alt="Maxis 1" 
+                            style="height:45px;">
+
+                        <img src="{{ asset('uploads/images/maxis2.png') }}" 
+                            alt="Maxis 2" 
+                            style="height:75px; margin-left:-5px;">
+
                     </a>
                 </li>
-
             </ul>
 
             @php
