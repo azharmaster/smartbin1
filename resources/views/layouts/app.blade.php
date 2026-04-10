@@ -239,12 +239,6 @@
 
                 <li class="nav-item d-none d-sm-inline-block ms-0">
                     <a href="/dashboard" class="nav-link d-flex align-items-center ps-0">
-
-                        <img src="{{ asset('uploads/images/maxis1.png') }}" 
-                            alt="Maxis 1" 
-                            class="img-fluid"
-                            style="height:45px;">
-
                         <img src="{{ asset('uploads/images/maxis2.png') }}" 
                             alt="Maxis 2" 
                             class="img-fluid"
