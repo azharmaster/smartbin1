@@ -238,7 +238,7 @@
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block ms-0">
-                    <a href="/dashboard" class="nav-link d-flex align-items-center ps-0">
+                    <a href="https://www.business.maxis.com.my/en/SME/" target="_blank" class="nav-link d-flex align-items-center ps-0">
                         <img src="{{ asset('uploads/images/maxis22.png') }}" 
                             alt="Maxis 2" 
                             class="img-fluid"
