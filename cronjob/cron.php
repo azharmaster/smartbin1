@@ -23,7 +23,7 @@ function isCollectionCapacity(float $capacity): bool
 
 function isDailyReportTime(Carbon $timestamp): bool
 {
-    return $timestamp->format('H:i') === '13:00';
+    return $timestamp->format('H:i') === '18:58';
 }
 
 function formatAssetLabel(array $asset): string
