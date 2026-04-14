@@ -238,7 +238,9 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 
     private function getAssets()
     {
-        return Asset::with('floor')->get();
+        return Asset::with('floor')
+            ->where('is_active', 1)
+            ->get();
     }
 
     public function getAssetsPublic()
