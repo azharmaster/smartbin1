@@ -376,7 +376,7 @@ window.addEventListener('DOMContentLoaded', () => {
         avg_clear_time: {
             title: 'Average Clear Time',
             description: `The average response time to clear a bin after it becomes full during the selected ${periodLabel} period. Higher values indicate slower collection response.`,
-            formula: 'Total time from full status to collection event divided by the number of events.'
+            formula: 'Avg Clear Time = Sum of (Collection Trip Time - Last Full Time) for each valid trip / Total valid clear events.'
         },
         total_cleaning: {
             title: 'Total Collection Trips',
