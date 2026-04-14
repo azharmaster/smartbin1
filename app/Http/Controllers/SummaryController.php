@@ -12,9 +12,14 @@ use App\Mail\SummaryReportMail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use QuickChart\Quickchart;
 use Throwable;
+use App\Services\CollectionTripService;
 
 class SummaryController extends Controller
 {
+    public function __construct(private CollectionTripService $collectionTripService)
+    {
+    }
+
 private function _getCapacityStats(Carbon $baseDate, string $period): object
 {
     [$start, $end] = $this->resolveDateRange($baseDate, $period);
@@ -215,91 +220,20 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
     private function _getCleaningLogs(Carbon $baseDate, string $period)
     {
         [$start, $end] = $this->resolveDateRange($baseDate, $period);
-
-        $assets = Asset::with([
-            'capacitySetting',
-            'devices',
-        ])->where('is_active', 1)->get();
-
-        $logs = [];
-
-        foreach ($assets as $asset) {
-            if (!$asset->capacitySetting) continue;
-
-            // Gabungkan semua sensor readings dari semua devices, sort by time ASC
-            $allReadings = collect();
-            foreach ($asset->devices as $device) {
-                $sensors = DB::table('sensors')
-                    ->select('capacity', 'created_at')
-                    ->where('device_id', $device->id_device)
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-
-                foreach ($sensors as $s) {
-                    if (!is_numeric($s->capacity)) continue;
-                    $allReadings->push([
-                        'device_id'   => $device->id,
-                        'device_name' => $device->device_name ?? $device->id_device,
-                        'capacity'    => (float) $s->capacity,
-                        'created_at'  => Carbon::parse($s->created_at),
-                    ]);
-                }
-            }
-
-            $allReadings = $allReadings->sortBy('created_at')->values();
-
-            $previousCapacities = [];
-            $binCleared         = false;
-            $triggeredDeviceId  = null;
-            $currentDay         = null;
-
-            foreach ($allReadings as $reading) {
-                $deviceId    = $reading['device_id'];
-                $currentCap  = $reading['capacity'];
-                $previousCap = $previousCapacities[$deviceId] ?? null;
-                $readingTime = $reading['created_at'];
-                $readingDay  = $readingTime->format('Y-m-d');
-
-                if ($currentDay !== null && $currentDay !== $readingDay) {
-                    $binCleared = false;
-                    $triggeredDeviceId = null;
-                    $previousCapacities = [];
-                }
-                $currentDay = $readingDay;
-
-                if (!$binCleared) {
-                    // Clear Bin Logic: 0% selepas >10%
-                    if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
-                        $binCleared        = true;
-                        $triggeredDeviceId = $deviceId;
-
-                        // Only log if within date range
-                        if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
-                            $logs[] = (object) [
-                                'asset_name'  => $asset->asset_name,
-                                'device_name' => $reading['device_name'],
-                                'cleaned_at'  => $readingTime,
-                            ];
-                        }
-                    }
-                } else {
-                    // Tunggu triggered compartment naik balik >10%
-                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                        $binCleared        = false;
-                        $triggeredDeviceId = null;
-                    }
-                }
-
-                $previousCapacities[$deviceId] = $currentCap;
-            }
-        }
-
-        return collect($logs)->sortByDesc('cleaned_at');
+        return $this->getCleaningLogsForRange($start, $end);
     }
 
     public function getCleaningLogs(Carbon $baseDate, string $period)
     {
         return $this->_getCleaningLogs($baseDate, $period);
+    }
+
+    private function getCollectionTripsForRange(Carbon $startDate, Carbon $endDate)
+    {
+        return $this->collectionTripService
+            ->getTrips($startDate->toDateString(), $endDate->toDateString())
+            ->filter(fn ($trip) => $trip['emptied_at']->betweenIncluded($startDate, $endDate))
+            ->values();
     }
 
     private function getAssets()
@@ -512,86 +446,13 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
 
 public function getCleaningLogsForRange(Carbon $startDate, Carbon $endDate)
 {
-    $assets = Asset::with([
-        'capacitySetting',
-        'devices',
-    ])->where('is_active', 1)->get();
-
-    $logs = [];
-
-    foreach ($assets as $asset) {
-        if (!$asset->capacitySetting) {
-            continue;
-        }
-
-        $allReadings = collect();
-        foreach ($asset->devices as $device) {
-            $sensors = DB::table('sensors')
-                ->select('capacity', 'created_at')
-                ->where('device_id', $device->id_device)
-                ->orderBy('created_at', 'asc')
-                ->get();
-
-            foreach ($sensors as $sensor) {
-                if (!is_numeric($sensor->capacity)) {
-                    continue;
-                }
-
-                $allReadings->push([
-                    'device_id'   => $device->id,
-                    'device_name' => $device->device_name ?? $device->id_device,
-                    'capacity'    => (float) $sensor->capacity,
-                    'created_at'  => Carbon::parse($sensor->created_at),
-                ]);
-            }
-        }
-
-        $allReadings = $allReadings->sortBy('created_at')->values();
-
-        $previousCapacities = [];
-        $binCleared = false;
-        $triggeredDeviceId = null;
-        $currentDay = null;
-
-        foreach ($allReadings as $reading) {
-            $deviceId = $reading['device_id'];
-            $currentCap = $reading['capacity'];
-            $previousCap = $previousCapacities[$deviceId] ?? null;
-            $readingTime = $reading['created_at'];
-            $readingDay = $readingTime->format('Y-m-d');
-
-            if ($currentDay !== null && $currentDay !== $readingDay) {
-                $binCleared = false;
-                $triggeredDeviceId = null;
-                $previousCapacities = [];
-            }
-            $currentDay = $readingDay;
-
-            if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
-                    $binCleared = true;
-                    $triggeredDeviceId = $deviceId;
-
-                    if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
-                        $logs[] = (object) [
-                            'asset_name'  => $asset->asset_name,
-                            'device_name' => $reading['device_name'],
-                            'cleaned_at'  => $readingTime,
-                        ];
-                    }
-                }
-            } else {
-                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                    $binCleared = false;
-                    $triggeredDeviceId = null;
-                }
-            }
-
-            $previousCapacities[$deviceId] = $currentCap;
-        }
-    }
-
-    return collect($logs)->sortByDesc('cleaned_at')->values();
+    return $this->getCollectionTripsForRange($startDate, $endDate)
+        ->map(fn ($trip) => (object) [
+            'asset_name' => $trip['asset_name'],
+            'device_name' => $trip['device_name'],
+            'cleaned_at' => $trip['emptied_at'],
+        ])
+        ->values();
 }
 
 public function getSummaryForRange(Carbon $startDate, Carbon $endDate): object
@@ -698,6 +559,102 @@ private function _computeMonthInsights(Carbon $baseDate, string $period)
     return $insights;
 }
 
+private function buildMetricModalData($binAnalytics, $cleaningLogs, Carbon $startDate, Carbon $endDate): array
+{
+    $fullRows = $binAnalytics
+        ->filter(fn ($item) => $item->times_full > 0)
+        ->sortByDesc('times_full')
+        ->map(fn ($item) => [
+            'asset' => $item->asset_name,
+            'total_full_events' => $item->times_full,
+        ])
+        ->values()
+        ->all();
+
+    $fillRows = $binAnalytics
+        ->filter(fn ($item) => $item->avg_fill_time > 0)
+        ->sortByDesc('avg_fill_time')
+        ->map(fn ($item) => [
+            'asset' => $item->asset_name,
+            'avg_fill_time_hours' => number_format($item->avg_fill_time, 2),
+        ])
+        ->values()
+        ->all();
+
+    $clearRows = $binAnalytics
+        ->filter(fn ($item) => $item->avg_clear_time > 0)
+        ->sortByDesc('avg_clear_time')
+        ->map(fn ($item) => [
+            'asset' => $item->asset_name,
+            'avg_clear_time_hours' => number_format($item->avg_clear_time, 2),
+        ])
+        ->values()
+        ->all();
+
+    $collectionRows = $cleaningLogs
+        ->map(fn ($log) => [
+            'asset' => $log->asset_name,
+            'collected_at' => $log->cleaned_at->format('d M Y, h:i A'),
+        ])
+        ->values()
+        ->all();
+
+    $activeBinRows = DB::table('devices')
+        ->join('assets', 'devices.asset_id', '=', 'assets.id')
+        ->join('sensors', 'sensors.device_id', '=', 'devices.id_device')
+        ->leftJoin('floor', 'assets.floor_id', '=', 'floor.id')
+        ->where('assets.is_active', 1)
+        ->where('devices.is_active', 1)
+        ->whereBetween('sensors.created_at', [$startDate, $endDate])
+        ->select(
+            'assets.asset_name',
+            'assets.location',
+            'floor.floor_name',
+            DB::raw('COUNT(DISTINCT devices.id_device) as active_devices'),
+            DB::raw('COUNT(sensors.id) as total_readings')
+        )
+        ->groupBy('assets.id', 'assets.asset_name', 'assets.location', 'floor.floor_name')
+        ->orderBy('assets.asset_name')
+        ->get()
+        ->map(fn ($row) => [
+            'asset' => $row->asset_name,
+            'location' => $row->location,
+            'floor' => $row->floor_name ?? 'N/A',
+            'active_devices' => (int) $row->active_devices,
+            'sensor_readings' => (int) $row->total_readings,
+        ])
+        ->values()
+        ->all();
+
+    return [
+        'total_full_events' => [
+            'columns' => ['Asset', 'Total Full Events'],
+            'rows' => $fullRows,
+            'empty' => 'No full events found for this period.',
+        ],
+        'avg_fill_time' => [
+            'columns' => ['Asset', 'Avg Fill Time (Hours)'],
+            'rows' => $fillRows,
+            'empty' => 'No fill time records found for this period.',
+        ],
+        'avg_clear_time' => [
+            'columns' => ['Asset', 'Avg Clear Time (Hours)'],
+            'rows' => $clearRows,
+            'empty' => 'No clear time records found for this period.',
+        ],
+        'total_cleaning' => [
+            'columns' => ['Asset', 'Collected At'],
+            'rows' => $collectionRows,
+            'empty' => 'No collection trip records found for this period.',
+        ],
+        'total_active_bins' => [
+            'columns' => ['Asset', 'Location', 'Floor', 'Active Devices', 'Sensor Readings'],
+            'rows' => $activeBinRows,
+            'empty' => 'No active bin records found for this period.',
+        ],
+    ];
+}
+
 public function computeMonthInsights(Carbon $baseDate, string $period)
 {
     return $this->_computeMonthInsights($baseDate, $period);
@@ -735,6 +692,8 @@ public function index(Request $request)
     $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
     $summaryMetrics = $this->computeSummaryMetrics($baseDate, $period);
     $monthInsights  = $this->computeMonthInsights($baseDate, $period);
+    [$startDate, $endDate] = $this->resolveDateRange($baseDate, $period);
+    $metricModalData = $this->buildMetricModalData($binAnalytics, $cleaningLogs, $startDate, $endDate);
 
     return view('admin.summary.index', compact(
         'monthInput',
@@ -745,7 +704,8 @@ public function index(Request $request)
         'assets',
         'cleaningLogs',
         'summaryMetrics',
-        'monthInsights'
+        'monthInsights',
+        'metricModalData'
     ));
 }
 

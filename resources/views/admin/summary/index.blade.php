@@ -360,6 +360,7 @@
 window.addEventListener('DOMContentLoaded', () => {
     const labels = @json($binAnalytics->pluck('asset_name'));
     const periodLabel = @json(ucfirst($period));
+    const metricTableData = @json($metricModalData);
 
     const metricMeta = {
         total_full_events: {
@@ -396,6 +397,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const metricValueEl = document.getElementById('metricDetailValue');
         const metricDescriptionEl = document.getElementById('metricDetailDescription');
         const metricFormulaEl = document.getElementById('metricDetailFormula');
+        const metricTableHeadEl = document.getElementById('metricDetailTableHead');
+        const metricTableBodyEl = document.getElementById('metricDetailTableBody');
+        const metricTableEmptyEl = document.getElementById('metricDetailTableEmpty');
         const metricCloseBtnEl = document.getElementById('metricDetailCloseBtn');
 
         if (metricCloseBtnEl) {
@@ -417,12 +421,46 @@ window.addEventListener('DOMContentLoaded', () => {
                 const metricKey = card.dataset.metricKey;
                 const metricValue = card.dataset.metricValue || '-';
                 const meta = metricMeta[metricKey];
+                const tableData = metricTableData[metricKey];
                 if (!meta) return;
 
                 metricTitleEl.textContent = meta.title;
                 metricValueEl.textContent = metricValue;
                 metricDescriptionEl.textContent = meta.description;
                 metricFormulaEl.textContent = meta.formula;
+
+                if (metricTableHeadEl && metricTableBodyEl && metricTableEmptyEl) {
+                    metricTableHeadEl.innerHTML = '';
+                    metricTableBodyEl.innerHTML = '';
+
+                    if (tableData?.columns?.length) {
+                        const headerRow = document.createElement('tr');
+                        tableData.columns.forEach((column) => {
+                            const th = document.createElement('th');
+                            th.textContent = column;
+                            headerRow.appendChild(th);
+                        });
+                        metricTableHeadEl.appendChild(headerRow);
+                    }
+
+                    if (tableData?.rows?.length) {
+                        metricTableEmptyEl.classList.add('d-none');
+
+                        tableData.rows.forEach((row) => {
+                            const tr = document.createElement('tr');
+                            Object.values(row).forEach((value) => {
+                                const td = document.createElement('td');
+                                td.textContent = value ?? '-';
+                                tr.appendChild(td);
+                            });
+                            metricTableBodyEl.appendChild(tr);
+                        });
+                    } else {
+                        metricTableEmptyEl.textContent = tableData?.empty || 'No records found for this period.';
+                        metricTableEmptyEl.classList.remove('d-none');
+                    }
+                }
+
                 metricDetailModal.show();
             };
 
@@ -796,7 +834,7 @@ function printDashboard() {
 
 <!-- Metric Details Modal -->
 <div class="modal fade no-print" id="metricDetailModal" tabindex="-1" aria-labelledby="metricDetailTitle" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="metricDetailTitle">Metric Details</h5>
@@ -807,11 +845,17 @@ function printDashboard() {
         <h4 class="fw-bold mb-3" id="metricDetailValue">-</h4>
         <p class="mb-2" id="metricDetailDescription"></p>
         <hr>
-        <p class="mb-0"><strong>Calculation Reference:</strong> <span id="metricDetailFormula"></span></p>
+        <p class="mb-3"><strong>Calculation Reference:</strong> <span id="metricDetailFormula"></span></p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle mb-0">
+                <thead class="table-light" id="metricDetailTableHead"></thead>
+                <tbody id="metricDetailTableBody"></tbody>
+            </table>
+        </div>
+        <p class="text-muted text-center py-4 mb-0 d-none" id="metricDetailTableEmpty">No records found for this period.</p>
       </div>
     </div>
   </div>
 </div>
 
 @endsection
-
