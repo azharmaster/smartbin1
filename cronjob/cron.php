@@ -106,6 +106,91 @@ function getDailyCollectionReport(PDO $db, Carbon $date): array
     ];
 }
 
+function getDailyCollectionTripsForNotification(PDO $db, Carbon $date): array
+{
+    $dayStart = $date->copy()->startOfDay();
+    $dayEnd = $date->copy()->endOfDay();
+
+    $assetStmt = $db->query("
+        SELECT a.id, a.asset_name, a.location
+        FROM assets a
+        WHERE a.is_active = 1
+        ORDER BY a.asset_name ASC, a.location ASC
+    ");
+
+    $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
+    $tripRows = [];
+
+    $sensorStmt = $db->prepare("
+        SELECT d.id_device, d.device_name, s.capacity, s.created_at
+        FROM devices d
+        JOIN sensors s ON s.device_id = d.id_device
+        WHERE d.asset_id = ?
+          AND d.is_active = 1
+          AND s.created_at BETWEEN ? AND ?
+        ORDER BY s.created_at ASC, d.id_device ASC
+    ");
+
+    foreach ($assets as $asset) {
+        $sensorStmt->execute([
+            $asset['id'],
+            $dayStart->format('Y-m-d H:i:s'),
+            $dayEnd->format('Y-m-d H:i:s'),
+        ]);
+
+        $readings = $sensorStmt->fetchAll(PDO::FETCH_ASSOC);
+        $previousCapacities = [];
+        $binCleared = false;
+        $triggeredDeviceId = null;
+
+        foreach ($readings as $reading) {
+            if (!is_numeric($reading['capacity'])) {
+                continue;
+            }
+
+            $deviceId = (string) $reading['id_device'];
+            $currentCap = (float) $reading['capacity'];
+            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
+
+            if (!$binCleared) {
+                if (
+                    $previousCap !== null &&
+                    $previousCap > 10 &&
+                    isCollectionCapacity($currentCap)
+                ) {
+                    $binCleared = true;
+                    $triggeredDeviceId = $deviceId;
+
+                    if (isWithinCollectionWindow($readingTime)) {
+                        $tripRows[] = [
+                            'asset_id' => $asset['id'],
+                            'asset_name' => $asset['asset_name'],
+                            'location' => $asset['location'],
+                            'id_device' => $reading['id_device'],
+                            'device_name' => $reading['device_name'] ?? 'N/A',
+                            'capacity' => $currentCap,
+                            'prev_capacity' => $previousCap,
+                            'emptied_time' => $reading['created_at'],
+                        ];
+                    }
+                }
+            } elseif ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                $binCleared = false;
+                $triggeredDeviceId = null;
+            }
+
+            $previousCapacities[$deviceId] = $currentCap;
+        }
+    }
+
+    usort($tripRows, function ($a, $b) {
+        return strcmp($b['emptied_time'], $a['emptied_time']);
+    });
+
+    return $tripRows;
+}
+
 function buildDailyReportMessage(array $report, Carbon $now): string
 {
     $lines = [];
@@ -277,24 +362,9 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $emptyBins[] = $device;
     }
 
-    // EMPTIED / COLLECTION condition:
-    // Match asset details graph logic for notification use:
-    // previous reading > 10, current reading is a collection value (including 0),
-    // current reading happens during collection window,
-    // and both readings are on the same day to avoid cross-day false positives.
-    if (
-        $prevCapacity !== null &&
-        $prevCapacity > 10 &&
-        isCollectionCapacity($currentCapacity) &&
-        $prevReadingTime !== null &&
-        $prevReadingTime->format('Y-m-d') === $readingTime->format('Y-m-d') &&
-        isWithinCollectionWindow($readingTime)
-    ) {
-        $device['emptied_time'] = $currentSensor['created_at'];
-        $device['prev_capacity'] = $prevCapacity;
-        $emptiedBins[] = $device;
-    }
 }
+
+$emptiedBins = getDailyCollectionTripsForNotification($db, $now);
 
 /* -------------------------
    Debug Logging
@@ -427,23 +497,9 @@ if ($canSend) {
         }
 
         if (count($sendBins) > 0) {
-            $groupedAssets = [];
-            foreach ($sendBins as $device) {
-                $assetId = $device['asset_id'];
-                if (!isset($groupedAssets[$assetId])) {
-                    $groupedAssets[$assetId] = [
-                        'asset_name' => $device['asset_name'],
-                        'location'   => $device['location'],
-                        'prev_capacity' => $device['prev_capacity'],
-                        'capacity'   => $device['capacity'],
-                        'emptied_time'  => $device['emptied_time']
-                    ];
-                }
-            }
-
             $assetList = '';
-            foreach ($groupedAssets as $asset) {
-                $ts = Carbon::parse($asset['emptied_time']);
+            foreach ($sendBins as $asset) {
+                $ts = Carbon::parse($asset['emptied_time'], 'Asia/Kuala_Lumpur');
                 $assetList .= "*TRX BIN - BIN CLEARED*\n\n";
                 $assetList .= "Date: " . $ts->format('d F Y') . "\n";
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
