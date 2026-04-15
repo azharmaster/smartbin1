@@ -399,20 +399,10 @@ window.addEventListener('DOMContentLoaded', () => {
             description: `The average time it takes for a bin to move from empty or normal status to full during the selected ${periodLabel} period. Lower values mean bins fill up faster.`,
             formula: 'Total fill time across all bins divided by the number of full cycles.'
         },
-        times_empty: {
-            title: 'Number of Times Each Bin Became Empty',
-            description: `The total number of times bins were detected as empty during the selected ${periodLabel} period.`,
-            formula: 'Count of all valid empty events where the bin drops to 0%.'
-        },
         avg_clear_time: {
             title: 'Average Clear Time',
             description: `The average response time to clear a bin after it becomes full during the selected ${periodLabel} period. Higher values indicate slower collection response.`,
             formula: 'Avg Clear Time = Sum of (Collection Trip Time - Last Full Time) for each valid trip / Total valid clear events.'
-        },
-        avg_empty_time: {
-            title: 'Average Time for Bin to Become Empty',
-            description: `The average duration from full status until a bin is recorded as empty during the selected ${periodLabel} period.`,
-            formula: 'Avg Empty Time = Sum of (Empty Time - Last Full Time) for each valid empty event / Total valid empty events.'
         },
         total_cleaning: {
             title: 'Total Collection Trips',
@@ -446,117 +436,75 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const openMetricDetail = (metricKey, metricValue = '-', focusAsset = null) => {
-            if (metricDetailModalEl.classList.contains('show')) return;
-
-            const meta = metricMeta[metricKey];
-            const tableData = metricTableData[metricKey];
-            if (!meta) return;
-
-            metricTitleEl.textContent = meta.title;
-            metricValueEl.textContent = metricValue;
-            metricDescriptionEl.textContent = meta.description;
-            metricFormulaEl.textContent = meta.formula;
-
-            if (metricTableHeadEl && metricTableBodyEl && metricTableEmptyEl) {
-                metricTableHeadEl.innerHTML = '';
-                metricTableBodyEl.innerHTML = '';
-
-                if (tableData?.columns?.length) {
-                    const headerRow = document.createElement('tr');
-                    tableData.columns.forEach((column) => {
-                        const th = document.createElement('th');
-                        th.textContent = column;
-                        headerRow.appendChild(th);
-                    });
-                    metricTableHeadEl.appendChild(headerRow);
-                }
-
-                const rows = focusAsset
-                    ? (tableData?.rows || []).filter((row) => Object.values(row)[0] === focusAsset)
-                    : (tableData?.rows || []);
-
-                if (rows.length) {
-                    metricTableEmptyEl.classList.add('d-none');
-
-                    rows.forEach((row) => {
-                        const tr = document.createElement('tr');
-                        Object.values(row).forEach((value) => {
-                            const td = document.createElement('td');
-                            td.textContent = value ?? '-';
-                            tr.appendChild(td);
-                        });
-                        metricTableBodyEl.appendChild(tr);
-                    });
-                } else {
-                    metricTableEmptyEl.textContent = focusAsset
-                        ? `No records found for ${focusAsset} in this period.`
-                        : (tableData?.empty || 'No records found for this period.');
-                    metricTableEmptyEl.classList.remove('d-none');
-                }
-            }
-
-            metricDetailModal.show();
-        };
-
         document.querySelectorAll('.metric-card').forEach((card) => {
             card.setAttribute('role', 'button');
             card.setAttribute('tabindex', '0');
             card.setAttribute('aria-label', 'Open metric details');
 
-            const openCardMetricDetail = () => {
+            const openMetricDetail = () => {
+                if (metricDetailModalEl.classList.contains('show')) return;
+
                 const metricKey = card.dataset.metricKey;
                 const metricValue = card.dataset.metricValue || '-';
-                openMetricDetail(metricKey, metricValue);
+                const meta = metricMeta[metricKey];
+                const tableData = metricTableData[metricKey];
+                if (!meta) return;
+
+                metricTitleEl.textContent = meta.title;
+                metricValueEl.textContent = metricValue;
+                metricDescriptionEl.textContent = meta.description;
+                metricFormulaEl.textContent = meta.formula;
+
+                if (metricTableHeadEl && metricTableBodyEl && metricTableEmptyEl) {
+                    metricTableHeadEl.innerHTML = '';
+                    metricTableBodyEl.innerHTML = '';
+
+                    if (tableData?.columns?.length) {
+                        const headerRow = document.createElement('tr');
+                        tableData.columns.forEach((column) => {
+                            const th = document.createElement('th');
+                            th.textContent = column;
+                            headerRow.appendChild(th);
+                        });
+                        metricTableHeadEl.appendChild(headerRow);
+                    }
+
+                    if (tableData?.rows?.length) {
+                        metricTableEmptyEl.classList.add('d-none');
+
+                        tableData.rows.forEach((row) => {
+                            const tr = document.createElement('tr');
+                            Object.values(row).forEach((value) => {
+                                const td = document.createElement('td');
+                                td.textContent = value ?? '-';
+                                tr.appendChild(td);
+                            });
+                            metricTableBodyEl.appendChild(tr);
+                        });
+                    } else {
+                        metricTableEmptyEl.textContent = tableData?.empty || 'No records found for this period.';
+                        metricTableEmptyEl.classList.remove('d-none');
+                    }
+                }
+
+                metricDetailModal.show();
             };
 
-            card.addEventListener('click', openCardMetricDetail);
+            card.addEventListener('click', openMetricDetail);
             card.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    openCardMetricDetail();
+                    openMetricDetail();
                 }
             });
         });
-
-        const attachChartModal = (chart, metricKey, formatValue) => {
-            const canvas = chart.canvas;
-            canvas.style.cursor = 'pointer';
-            canvas.setAttribute('role', 'button');
-            canvas.setAttribute('tabindex', '0');
-            canvas.setAttribute('aria-label', `Open ${metricMeta[metricKey]?.title || 'metric'} details`);
-
-            const openFromEvent = (event) => {
-                const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
-
-                if (points.length) {
-                    const point = points[0];
-                    const value = chart.data.datasets[point.datasetIndex].data[point.index];
-                    const label = chart.data.labels[point.index];
-                    openMetricDetail(metricKey, formatValue(value), label);
-                    return;
-                }
-
-                openMetricDetail(metricKey, 'All Records');
-            };
-
-            canvas.addEventListener('click', openFromEvent);
-            canvas.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openMetricDetail(metricKey, 'All Records');
-                }
-            });
-        };
-
-        window.attachChartModal = attachChartModal;
     }
 
     // Register datalabels plugin globally
     Chart.register(ChartDataLabels);
 
     /* Times Full */
-    const timesFullChart = new Chart(document.getElementById('timesFullChart'), {
+    new Chart(document.getElementById('timesFullChart'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -588,10 +536,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    window.attachChartModal?.(timesFullChart, 'total_full_events', (value) => `${Math.round(value ?? 0)}`);
 
     /* Avg Fill Time */
-    const avgFillChart = new Chart(document.getElementById('avgFillChart'), {
+    new Chart(document.getElementById('avgFillChart'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -625,10 +572,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    window.attachChartModal?.(avgFillChart, 'avg_fill_time', (value) => `${Number(value ?? 0).toFixed(2)} hrs`);
 
     /* Avg Clear Time */
-    const avgClearChart = new Chart(document.getElementById('avgClearChart'), {
+    new Chart(document.getElementById('avgClearChart'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -662,10 +608,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    window.attachChartModal?.(avgClearChart, 'avg_clear_time', (value) => `${Number(value ?? 0).toFixed(2)} hrs`);
 
     /* Times Empty */
-    const timesEmptyChart = new Chart(document.getElementById('timesEmptyChart'), {
+    new Chart(document.getElementById('timesEmptyChart'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -697,10 +642,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    window.attachChartModal?.(timesEmptyChart, 'times_empty', (value) => `${Math.round(value ?? 0)}`);
 
     /* Avg Empty Time */
-    const avgEmptyChart = new Chart(document.getElementById('avgEmptyChart'), {
+    new Chart(document.getElementById('avgEmptyChart'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -734,7 +678,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    window.attachChartModal?.(avgEmptyChart, 'avg_empty_time', (value) => `${Number(value ?? 0).toFixed(2)} hrs`);
 });
 </script>
 <script>
