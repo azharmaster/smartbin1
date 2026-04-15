@@ -43,70 +43,157 @@
         </div>
         @endif
 
-        <div class="d-flex justify-content-end mb-2">
-        </div>
-        <div class="table-responsive">
-             <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name </th>
-                        <th>Floor </th>
-                        <th>Serial No </th>
-                        <th>Location </th>
-                        <th>Model </th>
-                        <th>Latitude </th>
-                        <th>Longitude </th>
-                        <th>Picture</th>
-                        <th>Option </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($assets as $index => $asset)
-                    <tr>
-                        <td>{{  $index + 1  }}</td>
-                        <td>{{ $asset->asset_name }}</td>
-                        <td>{{ $asset->floor->floor_name ?? '—' }}</td>
-                        <td>{{ $asset->serialNo }}</td>
-                        <td>{{ $asset->location }}</td>
-                        <td>{{ $asset->model }}</td>
-                        <td>{{ $asset->latitude ?? '—' }}</td>
-                        <td>{{ $asset->longitude ?? '—' }}</td>
-                        <td class="text-center">
-                            @if($asset->picture)
-                                <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
-                                    alt="Asset Image"
-                                    class="img-thumbnail"
-                                    style="width: 60px; height: 60px; object-fit: cover;">
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                         <td>
-                            <div class="d-flex align-items-center justify-content-center">
-                                @if(auth()->user()->role == 1)
-                                <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
-                                <i class="fas fa-trash-alt text-white"></i>
-                                @endif
-                            </a>&nbsp;
+        <ul class="nav nav-tabs mb-3" id="assetStatusTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="active-assets-tab" data-toggle="tab" href="#active-assets" role="tab" aria-controls="active-assets" aria-selected="true">
+                    Active <span class="badge badge-success ml-1">{{ $activeAssets->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="inactive-assets-tab" data-toggle="tab" href="#inactive-assets" role="tab" aria-controls="inactive-assets" aria-selected="false">
+                    Inactive <span class="badge badge-secondary ml-1">{{ $inactiveAssets->count() }}</span>
+                </a>
+            </li>
+        </ul>
 
-                            <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
-                                <i class="far fa-eye"></i>
-                            </a>&nbsp;
+        <div class="tab-content" id="assetStatusTabsContent">
+            <div class="tab-pane fade show active" id="active-assets" role="tabpanel" aria-labelledby="active-assets-tab">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name </th>
+                                <th>Floor </th>
+                                <th>Serial No </th>
+                                <th>Location </th>
+                                <th>Model </th>
+                                <th>Status </th>
+                                <th>Latitude </th>
+                                <th>Longitude </th>
+                                <th>Picture</th>
+                                <th>Option </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($activeAssets as $index => $asset)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $asset->asset_name }}</td>
+                                <td>{{ $asset->floor->floor_name ?? '—' }}</td>
+                                <td>{{ $asset->serialNo }}</td>
+                                <td>{{ $asset->location }}</td>
+                                <td>{{ $asset->model }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-success">Active</span>
+                                </td>
+                                <td>{{ $asset->latitude ?? '—' }}</td>
+                                <td>{{ $asset->longitude ?? '—' }}</td>
+                                <td class="text-center">
+                                    @if($asset->picture)
+                                        <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
+                                            alt="Asset Image"
+                                            class="img-thumbnail"
+                                            style="width: 60px; height: 60px; object-fit: cover;">
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        @if(auth()->user()->role == 1)
+                                        <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt text-white"></i>
+                                        </a>&nbsp;
+                                        @endif
 
-                            <!-- QR Code Button -->
-                            <button type="button"
-                                    class="btn btn-primary btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#qrModal{{ $asset->id }}">
-                                <i class="fas fa-qrcode"></i>
-                            </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                        <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
+                                            <i class="far fa-eye"></i>
+                                        </a>&nbsp;
+
+                                        <button type="button"
+                                                class="btn btn-primary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#qrModal{{ $asset->id }}">
+                                            <i class="fas fa-qrcode"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="inactive-assets" role="tabpanel" aria-labelledby="inactive-assets-tab">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable dtr-inline datatable-buttons datatable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name </th>
+                                <th>Floor </th>
+                                <th>Serial No </th>
+                                <th>Location </th>
+                                <th>Model </th>
+                                <th>Status </th>
+                                <th>Latitude </th>
+                                <th>Longitude </th>
+                                <th>Picture</th>
+                                <th>Option </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($inactiveAssets as $index => $asset)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $asset->asset_name }}</td>
+                                <td>{{ $asset->floor->floor_name ?? '—' }}</td>
+                                <td>{{ $asset->serialNo }}</td>
+                                <td>{{ $asset->location }}</td>
+                                <td>{{ $asset->model }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">Inactive</span>
+                                </td>
+                                <td>{{ $asset->latitude ?? '—' }}</td>
+                                <td>{{ $asset->longitude ?? '—' }}</td>
+                                <td class="text-center">
+                                    @if($asset->picture)
+                                        <img src="{{ asset('uploads/asset/' . $asset->picture) }}"
+                                            alt="Asset Image"
+                                            class="img-thumbnail"
+                                            style="width: 60px; height: 60px; object-fit: cover;">
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        @if(auth()->user()->role == 1)
+                                        <a href="{{ route('master-data.assets.destroy', $asset->id) }}" data-confirm-delete="true" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt text-white"></i>
+                                        </a>&nbsp;
+                                        @endif
+
+                                        <a href="{{ route('master-data.assets.details', $asset->id) }}" class="btn btn-info btn-sm">
+                                            <i class="far fa-eye"></i>
+                                        </a>&nbsp;
+
+                                        <button type="button"
+                                                class="btn btn-primary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#qrModal{{ $asset->id }}">
+                                            <i class="fas fa-qrcode"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -117,7 +204,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">QR Code – {{ $asset->asset_name }}</h5>
+                <h5 class="modal-title">QR Code - {{ $asset->asset_name }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
@@ -180,7 +267,7 @@ function downloadQR(containerId, fileName) {
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Asset Management – User Guide</h5>
+        <h5 class="modal-title">Asset Management - User Guide</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
@@ -196,12 +283,12 @@ function downloadQR(containerId, fileName) {
 
         <h6><i class="fas fa-list"></i> Bins List Table</h6>
         <ul>
-          <li><strong>Name</strong> – The registered name of the bin/asset.</li>
-          <li><strong>Floor</strong> – The assigned floor location.</li>
-          <li><strong>Serial No</strong> – Unique serial number of the device.</li>
-          <li><strong>Location</strong> – Physical placement details.</li>
-          <li><strong>Model</strong> – Bin/device model type.</li>
-          <li><strong>Picture</strong> – Thumbnail image of the asset (if uploaded).</li>
+          <li><strong>Name</strong> - The registered name of the bin/asset.</li>
+          <li><strong>Floor</strong> - The assigned floor location.</li>
+          <li><strong>Serial No</strong> - Unique serial number of the device.</li>
+          <li><strong>Location</strong> - Physical placement details.</li>
+          <li><strong>Model</strong> - Bin/device model type.</li>
+          <li><strong>Picture</strong> - Thumbnail image of the asset (if uploaded).</li>
         </ul>
 
         <hr>
@@ -209,16 +296,16 @@ function downloadQR(containerId, fileName) {
         <h6><i class="fas fa-cogs"></i> Available Actions</h6>
         <ul>
           <li>
-            <strong>Add Asset (Admin Only)</strong> – Use the <strong>Add</strong> button at the top-right to register a new bin.
+            <strong>Add Asset (Admin Only)</strong> - Use the <strong>Add</strong> button at the top-right to register a new bin.
           </li>
           <li>
-            <strong>View Details</strong> – Click the <i class="far fa-eye"></i> button to see full asset information.
+            <strong>View Details</strong> - Click the <i class="far fa-eye"></i> button to see full asset information.
           </li>
           <li>
-            <strong>Delete Asset (Admin Only)</strong> – Click the <i class="fas fa-trash-alt"></i> button to remove an asset from the system.
+            <strong>Delete Asset (Admin Only)</strong> - Click the <i class="fas fa-trash-alt"></i> button to remove an asset from the system.
           </li>
           <li>
-            <strong>Generate QR Code</strong> – Click the <i class="fas fa-qrcode"></i> button to open the QR code modal.
+            <strong>Generate QR Code</strong> - Click the <i class="fas fa-qrcode"></i> button to open the QR code modal.
           </li>
         </ul>
 
@@ -227,7 +314,7 @@ function downloadQR(containerId, fileName) {
         <h6><i class="fas fa-qrcode"></i> QR Code Function</h6>
         <ul>
           <li>Each asset has a unique QR code.</li>
-          <li>Scanning the QR code will open the asset’s detail page.</li>
+          <li>Scanning the QR code will open the asset's detail page.</li>
           <li>You can download the QR code as a PNG image using the <strong>Download QR</strong> button.</li>
           <li>QR codes can be printed and attached to the physical bin for quick access.</li>
         </ul>

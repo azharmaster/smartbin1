@@ -10,12 +10,14 @@ class AssetController extends Controller
 {
     public function index()
     {
-        $assets = Asset::all();
+        $assets = Asset::with('floor')->orderBy('asset_name')->get();
+        $activeAssets = $assets->where('is_active', true)->values();
+        $inactiveAssets = $assets->where('is_active', false)->values();
         $floors = Floor::orderBy('floor_name')->get();
 
         confirmDelete('Delete', 'Are you sure you want to delete?');
 
-        return view('asset.index', compact('assets', 'floors'));
+        return view('asset.index', compact('assets', 'activeAssets', 'inactiveAssets', 'floors'));
     }
 
     public function store(Request $request)
@@ -30,6 +32,7 @@ class AssetController extends Controller
             'model'       => 'required',
             'latitude'    => 'nullable|numeric',
             'longitude'   => 'nullable|numeric',
+            'is_active'   => 'nullable|boolean',
             'picture'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'asset_name.required' => 'Please fill this form',
@@ -70,8 +73,11 @@ class AssetController extends Controller
                 'serialNo'    => $request->serialNo,
                 'location'    => $request->location,
                 'model'       => $request->model,
-                'latitude'    => $request->latitude, 
+                'latitude'    => $request->latitude,
                 'longitude'   => $request->longitude,
+                'is_active'   => $request->filled('is_active')
+                    ? (int) $request->boolean('is_active')
+                    : 1,
                 'picture'     => $imagePath,
             ]
         );

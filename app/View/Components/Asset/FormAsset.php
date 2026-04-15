@@ -12,10 +12,12 @@ class FormAsset extends Component
     /**
      * Create a new component instance.
      */
-    public $id, $asset_name, $floor_id, $serialNo, $location, $model, $latitude, $longitude;
+    public $id, $asset_name, $floor_id, $serialNo, $location, $model, $latitude, $longitude, $is_active;
 
     public function __construct($id = null)
     {
+        $this->is_active = 1;
+
         if($id) {
             $assets = Asset::find($id);
             $this->id = $assets->id;
@@ -24,9 +26,9 @@ class FormAsset extends Component
             $this->serialNo = $assets->serialNo;
             $this->location = $assets->location;
             $this->model = $assets->model;
-            $this->latitude = $assets->latitude; 
-            $this->longitude = $assets->longitude;  
-            
+            $this->latitude = $assets->latitude;
+            $this->longitude = $assets->longitude;
+            $this->is_active = (int) $assets->is_active;
         }
     }
 
