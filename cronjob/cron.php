@@ -435,7 +435,7 @@ if ($canSend) {
                 $assetList .= $asset['location'] . "\n\n";
                 $assetList .= "Location: *" . $asset['asset_name'] . "*\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
-                $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
+                // $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
                 $assetList .= "\n";
             }
 
@@ -505,7 +505,7 @@ if ($canSend) {
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
                 $assetList .= "" . $asset['asset_name'] . "\n\n";
                 $assetList .= "Location: *" . $asset['location'] . "*\n";
-                $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
+                // $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
                 $assetList .= "\n";
             }
 
