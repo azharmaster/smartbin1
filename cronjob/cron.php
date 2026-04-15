@@ -432,8 +432,8 @@ if ($canSend) {
                 $assetList .= "*TRX BIN - IMMEDIATE CLEARANCE REQUIRED*\n\n";
                 $assetList .= "Date: " . $ts->format('d F Y') . "\n";
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
-                $assetList .= "Location: *" . $asset['asset_name'] . "*\n";
                 $assetList .= $asset['location'] . "\n\n";
+                $assetList .= "Location: *" . $asset['asset_name'] . "*\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
                 $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
                 $assetList .= "\n";
@@ -503,8 +503,8 @@ if ($canSend) {
                 $assetList .= "*TRX BIN - BIN CLEARED*\n\n";
                 $assetList .= "Date: " . $ts->format('d F Y') . "\n";
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
-                $assetList .= "Location: *" . $asset['location'] . "*\n";
                 $assetList .= "" . $asset['asset_name'] . "\n\n";
+                $assetList .= "Location: *" . $asset['location'] . "*\n";
                 $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
                 $assetList .= "\n";
             }
