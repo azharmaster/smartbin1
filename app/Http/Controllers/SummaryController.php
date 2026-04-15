@@ -24,7 +24,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 {
     [$start, $end] = $this->resolveDateRange($baseDate, $period);
     
-    $assets = Asset::with([
+        $assets = Asset::with([
         'capacitySetting',
         'devices' => fn($q) => $q->where('is_active', 1),
         'devices.sensors' => fn($q) => $q->whereBetween('created_at', [$start, $end])
@@ -42,12 +42,12 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $sensor = $device->sensors->first();
             if (!$sensor || !is_numeric($sensor->capacity)) continue;
 
-            if ($sensor->capacity <= $setting->empty_to) {
+            if ($this->isEmptyCapacity((float) $sensor->capacity)) {
                 $empty++;
-            } elseif ($sensor->capacity <= $setting->half_to) {
-                $half++;
-            } else {
+            } elseif ($this->isFullCapacity((float) $sensor->capacity)) {
                 $full++;
+            } else {
+                $half++;
             }
         }
     }
@@ -157,8 +157,12 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                 }
                 $currentDay = $readingDay;
 
-                // Full detection (per asset) — any device crosses half_to
-                if ($previousCap !== null && $previousCap <= $setting->half_to && $currentCap > $setting->half_to) {
+                // Full detection (per asset): transition from 0-79 to 80+
+                if (
+                    $previousCap !== null &&
+                    !$this->isFullCapacity($previousCap) &&
+                    $this->isFullCapacity($currentCap)
+                ) {
                     if (!$assetWasFull) {
                         $assetWasFull = true;
                         $timesFull++;
@@ -173,7 +177,11 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 
                 // Clear Bin detection (per asset, new logic)
                 if (!$binCleared) {
-                    if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
+                    if (
+                        $previousCap !== null &&
+                        !$this->isEmptyCapacity($previousCap) &&
+                        $this->isCollectionCapacity($currentCap)
+                    ) {
                         $binCleared        = true;
                         $triggeredDeviceId = $deviceId;
                         $assetWasFull      = false; // reset full flag after clear
@@ -192,7 +200,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                     }
                 } else {
                     // Tunggu triggered compartment naik balik >10%
-                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                    if ($deviceId === $triggeredDeviceId && !$this->isEmptyCapacity($currentCap)) {
                         $binCleared        = false;
                         $triggeredDeviceId = null;
                     }
@@ -338,7 +346,7 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
     $results = [];
 
     foreach ($assets as $asset) {
-        $setting = $asset->capacitySetting;
+            $setting = $asset->capacitySetting;
 
         if (!$setting) {
             $results[] = (object) [
@@ -404,8 +412,8 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
 
             if (
                 $previousCap !== null &&
-                $previousCap <= $setting->half_to &&
-                $currentCap > $setting->half_to
+                !$this->isFullCapacity($previousCap) &&
+                $this->isFullCapacity($currentCap)
             ) {
                 if (!$assetWasFull) {
                     $assetWasFull = true;
@@ -422,7 +430,11 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
             }
 
             if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
+                if (
+                    $previousCap !== null &&
+                    !$this->isEmptyCapacity($previousCap) &&
+                    $this->isCollectionCapacity($currentCap)
+                ) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
                     $assetWasFull = false;
@@ -438,7 +450,7 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
                     }
                 }
             } else {
-                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+                if ($deviceId === $triggeredDeviceId && !$this->isEmptyCapacity($currentCap)) {
                     $binCleared = false;
                     $triggeredDeviceId = null;
                 }
@@ -597,12 +609,32 @@ private function buildMetricModalData($binAnalytics, $cleaningLogs, Carbon $star
         ->values()
         ->all();
 
+    $emptyRows = $binAnalytics
+        ->filter(fn ($item) => $item->times_empty > 0)
+        ->sortByDesc('times_empty')
+        ->map(fn ($item) => [
+            'asset' => $item->asset_name,
+            'total_empty_events' => $item->times_empty,
+        ])
+        ->values()
+        ->all();
+
     $clearRows = $binAnalytics
         ->filter(fn ($item) => $item->avg_clear_time > 0)
         ->sortByDesc('avg_clear_time')
         ->map(fn ($item) => [
             'asset' => $item->asset_name,
             'avg_clear_time_hours' => number_format($item->avg_clear_time, 2),
+        ])
+        ->values()
+        ->all();
+
+    $avgEmptyRows = $binAnalytics
+        ->filter(fn ($item) => $item->avg_empty_time > 0)
+        ->sortByDesc('avg_empty_time')
+        ->map(fn ($item) => [
+            'asset' => $item->asset_name,
+            'avg_empty_time_hours' => number_format($item->avg_empty_time, 2),
         ])
         ->values()
         ->all();
@@ -653,10 +685,20 @@ private function buildMetricModalData($binAnalytics, $cleaningLogs, Carbon $star
             'rows' => $fillRows,
             'empty' => 'No fill time records found for this period.',
         ],
+        'times_empty' => [
+            'columns' => ['Asset', 'Total Empty Events'],
+            'rows' => $emptyRows,
+            'empty' => 'No empty events found for this period.',
+        ],
         'avg_clear_time' => [
             'columns' => ['Asset', 'Avg Clear Time (Hours)'],
             'rows' => $clearRows,
             'empty' => 'No clear time records found for this period.',
+        ],
+        'avg_empty_time' => [
+            'columns' => ['Asset', 'Avg Empty Time (Hours)'],
+            'rows' => $avgEmptyRows,
+            'empty' => 'No empty time records found for this period.',
         ],
         'total_cleaning' => [
             'columns' => ['Asset', 'Collected At'],
@@ -896,7 +938,17 @@ private function isWithinCollectionWindow(Carbon $timestamp): bool
 
 private function isCollectionCapacity(float $capacity): bool
 {
+    return $this->isEmptyCapacity($capacity);
+}
+
+private function isEmptyCapacity(float $capacity): bool
+{
     return $capacity <= 0.0 || abs($capacity) < 0.00001;
+}
+
+private function isFullCapacity(float $capacity): bool
+{
+    return $capacity >= 80.0;
 }
 
 }
