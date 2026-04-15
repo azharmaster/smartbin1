@@ -2,6 +2,51 @@
 @section('content_title', 'Asset Management')
 @section('content')
 
+<style>
+    .asset-status-switcher {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px;
+        border-radius: 16px;
+        background: #f3f7f5;
+        border: 1px solid #dbe7e0;
+    }
+
+    .asset-status-switcher .status-button {
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 700;
+        color: #51606c;
+        background: transparent;
+        transition: all .2s ease;
+        box-shadow: none;
+    }
+
+    .asset-status-switcher .status-button .badge {
+        margin-left: 8px;
+        border-radius: 999px;
+        padding: 5px 9px;
+    }
+
+    .asset-status-switcher .status-button.active {
+        color: #fff;
+        background: linear-gradient(135deg, #17966a 0%, #127d59 100%);
+        box-shadow: 0 10px 20px rgba(18, 125, 89, 0.22);
+    }
+
+    .asset-status-switcher .status-button.active .badge {
+        background: rgba(255, 255, 255, 0.18) !important;
+        color: #fff !important;
+    }
+
+    .asset-status-switcher .status-button:not(.active):hover {
+        background: #e8f0eb;
+        color: #22313f;
+    }
+</style>
+
 <!-- Floating Help Button -->
 <button type="button" data-bs-toggle="modal" data-bs-target="#holidaysHelpModal" style="
         position: fixed;
@@ -43,18 +88,16 @@
         </div>
         @endif
 
-        <ul class="nav nav-tabs mb-3" id="assetStatusTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="active-assets-tab" data-toggle="tab" href="#active-assets" role="tab" aria-controls="active-assets" aria-selected="true">
-                    Active <span class="badge badge-success ml-1">{{ $activeAssets->count() }}</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="inactive-assets-tab" data-toggle="tab" href="#inactive-assets" role="tab" aria-controls="inactive-assets" aria-selected="false">
-                    Inactive <span class="badge badge-secondary ml-1">{{ $inactiveAssets->count() }}</span>
-                </a>
-            </li>
-        </ul>
+        <div class="asset-status-switcher mb-3" id="assetStatusTabs" role="tablist">
+            <a class="status-button active" id="active-assets-tab" data-toggle="tab" href="#active-assets" role="tab" aria-controls="active-assets" aria-selected="true">
+                Active
+                <span class="badge badge-success">{{ $activeAssets->count() }}</span>
+            </a>
+            <a class="status-button" id="inactive-assets-tab" data-toggle="tab" href="#inactive-assets" role="tab" aria-controls="inactive-assets" aria-selected="false">
+                Inactive
+                <span class="badge badge-secondary">{{ $inactiveAssets->count() }}</span>
+            </a>
+        </div>
 
         <div class="tab-content" id="assetStatusTabsContent">
             <div class="tab-pane fade show active" id="active-assets" role="tabpanel" aria-labelledby="active-assets-tab">
@@ -259,6 +302,15 @@ function downloadQR(containerId, fileName) {
 
     img.src = url;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const statusButtons = document.querySelectorAll('.asset-status-switcher .status-button');
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+        statusButtons.forEach((button) => button.classList.remove('active'));
+        event.target.classList.add('active');
+    });
+});
 </script>
 
 <!-- Asset Management Help Modal -->
