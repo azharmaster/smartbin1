@@ -133,6 +133,13 @@
                         <option value="{{ $assetItem->id }}">{{ $assetItem->asset_name }}</option>
                     @endforeach
                 </select>
+
+                <select id="capacityFilter" class="form-select form-select-sm w-auto">
+                    <option value="">All Capacity</option>
+                    <option value="empty">Empty (0%)</option>
+                    <option value="half-full">Half-Full (1-79%)</option>
+                    <option value="full">Full (80-100%)</option>
+                </select>
             </div>
 
             <div class="d-flex align-items-center">
@@ -255,6 +262,7 @@
         <ul>
             <li>Use the search box to filter by <strong>Device ID</strong>.</li>
             <li>Use the <strong>Asset dropdown</strong> to filter sensors by asset name.</li>
+            <li>Use the <strong>Capacity dropdown</strong> to filter <strong>Empty (0%)</strong>, <strong>Half-Full (1-79%)</strong>, or <strong>Full (80-100%)</strong>.</li>
             <li>Select <strong>Rows per page</strong> to control pagination and how many records are displayed per page.</li>
         </ul>
 
@@ -319,8 +327,11 @@ function openHelp() {
     function filterData() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         const assetId = document.getElementById('assetFilter').value;
+        const capacityFilter = document.getElementById('capacityFilter').value;
         
         filteredData = allSensors.filter(sensor => {
+            const capacity = Number(sensor.capacity);
+
             // Search filter (device_id)
             const matchesSearch = searchTerm === '' || 
                 sensor.device_id.toLowerCase().includes(searchTerm);
@@ -328,8 +339,15 @@ function openHelp() {
             // Asset filter
             const matchesAsset = assetId === '' || 
                 (sensor.device && sensor.device.asset && sensor.device.asset.id == assetId);
+
+            // Capacity filter
+            const matchesCapacity =
+                capacityFilter === '' ||
+                (capacityFilter === 'empty' && capacity === 0) ||
+                (capacityFilter === 'half-full' && capacity >= 1 && capacity <= 79) ||
+                (capacityFilter === 'full' && capacity >= 80 && capacity <= 100);
             
-            return matchesSearch && matchesAsset;
+            return matchesSearch && matchesAsset && matchesCapacity;
         });
         
         // Reset to page 1 when filters change
@@ -430,6 +448,7 @@ function openHelp() {
     // Event listeners
     document.getElementById('searchInput').addEventListener('input', filterData);
     document.getElementById('assetFilter').addEventListener('change', filterData);
+    document.getElementById('capacityFilter').addEventListener('change', filterData);
     document.getElementById('perPageSelect').addEventListener('change', function() {
         perPage = parseInt(this.value);
         currentPage = 1;

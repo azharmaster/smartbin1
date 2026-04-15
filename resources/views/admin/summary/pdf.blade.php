@@ -54,15 +54,19 @@
     <tr>
         <th>Asset</th>
         <th>Times Full</th>
+        <th>Times Empty</th>
         <th>Avg Fill Time (hrs)</th>
         <th>Avg Clear Time (hrs)</th>
+        <th>Avg Empty Time (hrs)</th>
     </tr>
     @foreach($binAnalytics as $row)
         <tr>
             <td>{{ $row->asset_name }}</td>
             <td>{{ $row->times_full }}</td>
+            <td>{{ $row->times_empty }}</td>
             <td>{{ $row->avg_fill_time }}</td>
             <td>{{ $row->avg_clear_time }}</td>
+            <td>{{ $row->avg_empty_time }}</td>
         </tr>
     @endforeach
 </table>

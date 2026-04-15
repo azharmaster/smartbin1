@@ -100,8 +100,10 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                 $results[] = (object) [
                     'asset_name'     => $asset->asset_name,
                     'times_full'     => 0,
+                    'times_empty'    => 0,
                     'avg_fill_time'  => 0,
                     'avg_clear_time' => 0,
+                    'avg_empty_time' => 0,
                 ];
                 continue;
             }
@@ -132,6 +134,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $currentDay         = null;
 
             $timesFull      = 0;
+            $timesEmpty     = 0;
             $fillDurations  = [];
             $clearDurations = [];
             $lastClearAt    = null;
@@ -177,6 +180,7 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
 
                         // Only count clear time if within period
                         if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
+                            $timesEmpty++;
                             $lastClearAt = $readingTime;
 
                             // Clear time = from last full to now cleared
@@ -200,10 +204,14 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $results[] = (object) [
                 'asset_name'     => $asset->asset_name,
                 'times_full'     => $timesFull,
+                'times_empty'    => $timesEmpty,
                 'avg_fill_time'  => count($fillDurations)
                     ? round(array_sum($fillDurations) / count($fillDurations), 2)
                     : 0,
                 'avg_clear_time' => count($clearDurations)
+                    ? round(array_sum($clearDurations) / count($clearDurations), 2)
+                    : 0,
+                'avg_empty_time' => count($clearDurations)
                     ? round(array_sum($clearDurations) / count($clearDurations), 2)
                     : 0,
             ];
@@ -336,8 +344,10 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
             $results[] = (object) [
                 'asset_name'     => $asset->asset_name,
                 'times_full'     => 0,
+                'times_empty'    => 0,
                 'avg_fill_time'  => 0,
                 'avg_clear_time' => 0,
+                'avg_empty_time' => 0,
             ];
             continue;
         }
@@ -371,6 +381,7 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
         $currentDay = null;
 
         $timesFull = 0;
+        $timesEmpty = 0;
         $fillDurations = [];
         $clearDurations = [];
         $lastClearAt = null;
@@ -417,6 +428,7 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
                     $assetWasFull = false;
 
                     if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
+                        $timesEmpty++;
                         $lastClearAt = $readingTime;
 
                         if ($lastFullAt) {
@@ -438,8 +450,10 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
         $results[] = (object) [
             'asset_name'     => $asset->asset_name,
             'times_full'     => $timesFull,
+            'times_empty'    => $timesEmpty,
             'avg_fill_time'  => count($fillDurations) ? round(array_sum($fillDurations) / count($fillDurations), 2) : 0,
             'avg_clear_time' => count($clearDurations) ? round(array_sum($clearDurations) / count($clearDurations), 2) : 0,
+            'avg_empty_time' => count($clearDurations) ? round(array_sum($clearDurations) / count($clearDurations), 2) : 0,
         ];
     }
 
