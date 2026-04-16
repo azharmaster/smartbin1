@@ -204,6 +204,12 @@
             </div>
             
             <div class="form-group">
+                <a href="{{ route('collection-trips.summary', ['asset_id' => $assetId]) }}" class="btn btn-primary">
+                    <i class="fas fa-chart-bar"></i> Summary View
+                </a>
+            </div>
+
+            <div class="form-group">
                 <a href="{{ route('collection-trips.export', ['date_from' => $dateFrom, 'date_to' => $dateTo, 'asset_id' => $assetId]) }}" 
                    class="btn btn-success">
                     <i class="fas fa-download"></i> Export CSV

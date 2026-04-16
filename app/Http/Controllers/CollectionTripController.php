@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Services\CollectionTripService;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 
 class CollectionTripController extends Controller
@@ -40,6 +41,93 @@ class CollectionTripController extends Controller
             'assets',
             'assetId'
         ));
+    }
+
+    public function summary(Request $request)
+    {
+        $period = $request->input('period', 'monthly');
+        $assetId = $request->integer('asset_id') ?: null;
+
+        [$rangeStart, $rangeEnd, $inputs] = $this->resolveSummaryRange($request, $period);
+
+        $collectionTrips = $this->collectionTripService->getTrips(
+            $rangeStart->toDateString(),
+            $rangeEnd->toDateString(),
+            $assetId
+        );
+
+        $bucketFormat = $period === 'daily' ? 'Y-m-d H:00' : 'Y-m-d';
+        $bucketLabels = [];
+        $bucketKeys = [];
+
+        if ($period === 'daily') {
+            foreach (range(0, 23) as $hour) {
+                $bucketTime = $rangeStart->copy()->startOfDay()->addHours($hour);
+                $bucketKeys[] = $bucketTime->format($bucketFormat);
+                $bucketLabels[] = $bucketTime->format('H:i');
+            }
+        } else {
+            foreach (CarbonPeriod::create($rangeStart->copy()->startOfDay(), '1 day', $rangeEnd->copy()->startOfDay()) as $date) {
+                $bucketKeys[] = $date->format($bucketFormat);
+                $bucketLabels[] = $period === 'weekly'
+                    ? $date->format('D')
+                    : $date->format('d M');
+            }
+        }
+
+        $tripsByBucket = $collectionTrips
+            ->groupBy(fn ($trip) => $trip['emptied_at']->format($bucketFormat))
+            ->map(fn ($trips) => $trips->count());
+
+        $chartData = collect($bucketKeys)
+            ->map(fn ($bucketKey) => (int) ($tripsByBucket[$bucketKey] ?? 0))
+            ->values();
+
+        $mostUsedBins = $collectionTrips
+            ->groupBy('asset_name')
+            ->map->count()
+            ->sortDesc()
+            ->take(8);
+
+        $peakIndex = $chartData->search($chartData->max());
+        $peakLabel = $chartData->max() > 0 && $peakIndex !== false
+            ? $bucketLabels[$peakIndex]
+            : 'N/A';
+
+        $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
+        $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
+        $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
+        $insights = $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData);
+
+        return view('collection-trips.summaryCollectionTrip', [
+            'period' => $period,
+            'assetId' => $assetId,
+            'assets' => $assets,
+            'collectionTrips' => $collectionTrips,
+            'chartLabels' => $bucketLabels,
+            'chartData' => $chartData,
+            'totalTrips' => $collectionTrips->count(),
+            'activeBins' => $collectionTrips->unique('asset_id')->count(),
+            'averageTripsMetric' => $this->resolveAverageTripsMetric($collectionTrips->count(), $rangeStart, $rangeEnd),
+            'peakLabel' => $peakLabel,
+            'mostUsedBin' => $mostUsedBins->isNotEmpty()
+                ? $mostUsedBins->keys()->first() . ' (' . $mostUsedBins->first() . ' trips)'
+                : 'N/A',
+            'mostUsedBinLabels' => $mostUsedBins->keys()->values()->all(),
+            'mostUsedBinData' => $mostUsedBins->values()->all(),
+            'rangeLabel' => $this->formatRangeLabel($period, $rangeStart, $rangeEnd),
+            'dateInput' => $inputs['date'],
+            'weekInput' => $inputs['week'],
+            'monthInput' => $inputs['month'],
+            'insights' => $insights,
+            'fastestClearLabels' => $binKpis['fastest_clear_labels'],
+            'fastestClearData' => $binKpis['fastest_clear_data'],
+            'fullOver80Labels' => $binKpis['full_over_80_labels'],
+            'fullOver80Data' => $binKpis['full_over_80_data'],
+            'fastestClearBin' => $binKpis['fastest_clear_bin'],
+            'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
+            'systemKpis' => $systemKpis,
+        ]);
     }
 
     /**
@@ -79,5 +167,357 @@ class CollectionTripController extends Controller
         fclose($file);
 
         return response()->download($filepath)->deleteFileAfterSend(true);
+    }
+
+    private function resolveSummaryRange(Request $request, string $period): array
+    {
+        if ($period === 'daily') {
+            $dateInput = $request->input('date', Carbon::now()->toDateString());
+            $start = Carbon::parse($dateInput)->startOfDay();
+
+            return [
+                $start,
+                $start->copy()->endOfDay(),
+                [
+                    'date' => $start->toDateString(),
+                    'week' => $start->format('Y-\WW'),
+                    'month' => $start->format('Y-m'),
+                ],
+            ];
+        }
+
+        if ($period === 'weekly') {
+            $weekInput = $request->input('week', Carbon::now()->format('Y-\WW'));
+            [$year, $weekNumber] = explode('-W', $weekInput);
+            $start = Carbon::now()->setISODate((int) $year, (int) $weekNumber)->startOfWeek();
+
+            return [
+                $start,
+                $start->copy()->endOfWeek(),
+                [
+                    'date' => $start->toDateString(),
+                    'week' => $start->format('Y-\WW'),
+                    'month' => $start->format('Y-m'),
+                ],
+            ];
+        }
+
+        $monthInput = $request->input('month', Carbon::now()->format('Y-m'));
+        $start = Carbon::parse($monthInput . '-01')->startOfMonth();
+
+        return [
+            $start,
+            $start->copy()->endOfMonth(),
+            [
+                'date' => $start->toDateString(),
+                'week' => $start->format('Y-\WW'),
+                'month' => $start->format('Y-m'),
+            ],
+        ];
+    }
+
+    private function formatRangeLabel(string $period, Carbon $rangeStart, Carbon $rangeEnd): string
+    {
+        if ($period === 'daily') {
+            return $rangeStart->format('d M Y');
+        }
+
+        if ($period === 'weekly') {
+            return $rangeStart->format('d M Y') . ' - ' . $rangeEnd->format('d M Y');
+        }
+
+        return $rangeStart->format('F Y');
+    }
+
+    private function buildInsights($collectionTrips, string $period, array $bucketLabels, $chartData): array
+    {
+        $insights = [];
+        $periodLabel = $period === 'monthly' ? 'month' : ($period === 'weekly' ? 'week' : 'day');
+
+        if ($collectionTrips->isEmpty()) {
+            return ["No collection trips were recorded for this {$periodLabel}."];
+        }
+
+        $topAsset = $collectionTrips
+            ->groupBy('asset_name')
+            ->map->count()
+            ->sortDesc();
+
+        if ($topAsset->isNotEmpty()) {
+            $assetName = $topAsset->keys()->first();
+            $assetCount = $topAsset->first();
+            $insights[] = "{$assetName} recorded the highest collection activity with {$assetCount} trips this {$periodLabel}.";
+        }
+
+        $peakValue = $chartData->max();
+        if ($peakValue > 0) {
+            $peakIndex = $chartData->search($peakValue);
+            $peakBucket = $peakIndex !== false ? ($bucketLabels[$peakIndex] ?? null) : null;
+
+            if ($peakBucket) {
+                $bucketText = $period === 'daily' ? "Peak hour was {$peakBucket}" : "Peak day was {$peakBucket}";
+                $insights[] = "{$bucketText} with {$peakValue} collection trips.";
+            }
+        }
+
+        $avgTrips = round($chartData->avg(), 1);
+        $aboveAverageAssets = $collectionTrips
+            ->groupBy('asset_name')
+            ->map->count()
+            ->filter(fn ($count) => $count > $avgTrips)
+            ->keys()
+            ->values();
+
+        if ($aboveAverageAssets->isNotEmpty()) {
+            $insights[] = 'Above-average collection demand detected at ' . $aboveAverageAssets->join(', ') . '.';
+        }
+
+        return $insights;
+    }
+
+    private function buildBinKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null): array
+    {
+        $assets = Asset::with([
+            'capacitySetting',
+            'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
+            'devices.sensors' => fn ($query) => $query->orderBy('created_at', 'asc'),
+        ])
+            ->where('is_active', 1)
+            ->when($assetId, fn ($query) => $query->where('id', $assetId))
+            ->get();
+
+        $fastestClearRows = collect();
+        $fullOver80Rows = collect();
+
+        foreach ($assets as $asset) {
+            $clearDurations = [];
+            $fullOver80Count = 0;
+
+            foreach ($asset->devices as $device) {
+                $sensors = $device->sensors
+                    ->filter(fn ($sensor) => is_numeric($sensor->capacity))
+                    ->map(fn ($sensor) => [
+                        'capacity' => (float) $sensor->capacity,
+                        'created_at' => Carbon::parse($sensor->created_at)->timezone(config('app.timezone')),
+                    ])
+                    ->values();
+
+                $awaitingClearAt = null;
+                $previousCapacity = null;
+
+                foreach ($sensors as $reading) {
+                    $currentCapacity = $reading['capacity'];
+                    $readingTime = $reading['created_at'];
+
+                    if ($previousCapacity !== null && $previousCapacity < 80 && $currentCapacity >= 80) {
+                        if ($readingTime->betweenIncluded($rangeStart, $rangeEnd)) {
+                            $fullOver80Count++;
+                            if ($awaitingClearAt === null) {
+                                $awaitingClearAt = $readingTime;
+                            }
+                        } elseif ($readingTime->lt($rangeStart) && $awaitingClearAt === null) {
+                            $awaitingClearAt = $readingTime;
+                        }
+                    }
+
+                    if (
+                        $awaitingClearAt !== null &&
+                        $previousCapacity !== null &&
+                        $previousCapacity > 10 &&
+                        $this->isCollectionCapacity($currentCapacity) &&
+                        $readingTime->betweenIncluded($rangeStart, $rangeEnd)
+                    ) {
+                        $clearDurations[] = round($awaitingClearAt->diffInMinutes($readingTime) / 60, 2);
+                        $awaitingClearAt = null;
+                    }
+                    $previousCapacity = $currentCapacity;
+                }
+            }
+
+            if (count($clearDurations) > 0) {
+                $fastestClearRows->push([
+                    'asset_name' => $asset->asset_name,
+                    'avg_clear_time' => round(array_sum($clearDurations) / count($clearDurations), 2),
+                ]);
+            }
+
+            $fullOver80Rows->push([
+                'asset_name' => $asset->asset_name,
+                'count' => $fullOver80Count,
+            ]);
+        }
+
+        $fastestClearRows = $fastestClearRows
+            ->sortBy('avg_clear_time')
+            ->take(8)
+            ->values();
+
+        $fullOver80Rows = $fullOver80Rows
+            ->filter(fn ($row) => $row['count'] > 0)
+            ->sortByDesc('count')
+            ->take(8)
+            ->values();
+
+        $fastestClearBin = $fastestClearRows->first();
+        $fullOver80PeakBin = $fullOver80Rows->first();
+
+        return [
+            'fastest_clear_labels' => $fastestClearRows->pluck('asset_name')->all(),
+            'fastest_clear_data' => $fastestClearRows->pluck('avg_clear_time')->all(),
+            'full_over_80_labels' => $fullOver80Rows->pluck('asset_name')->all(),
+            'full_over_80_data' => $fullOver80Rows->pluck('count')->all(),
+            'fastest_clear_bin' => $fastestClearBin
+                ? $fastestClearBin['asset_name'] . ' (' . $fastestClearBin['avg_clear_time'] . ' hrs)'
+                : 'N/A',
+            'full_over_80_peak_bin' => $fullOver80PeakBin
+                ? $fullOver80PeakBin['asset_name'] . ' (' . $fullOver80PeakBin['count'] . ' events)'
+                : 'N/A',
+        ];
+    }
+
+    private function isCollectionCapacity(float $capacity): bool
+    {
+        return $capacity <= 0.0 || abs($capacity) < 0.00001;
+    }
+
+    private function resolveAverageTripsMetric(int $totalTrips, Carbon $rangeStart, Carbon $rangeEnd): array
+    {
+        $minutes = max(1, $rangeStart->diffInMinutes($rangeEnd) + 1);
+        $hours = max(1, $rangeStart->diffInHours($rangeEnd) + 1);
+        $days = max(1, $rangeStart->diffInDays($rangeEnd) + 1);
+
+        $rates = [
+            ['unit' => 'minute', 'value' => $totalTrips / $minutes],
+            ['unit' => 'hour', 'value' => $totalTrips / $hours],
+            ['unit' => 'day', 'value' => $totalTrips / $days],
+        ];
+
+        $selectedRate = collect($rates)->first(fn ($rate) => $rate['value'] >= 1);
+
+        if (!$selectedRate) {
+            $selectedRate = $rates[2];
+        }
+
+        return [
+            'value' => (int) max(0, round($selectedRate['value'])),
+            'unit' => $selectedRate['unit'],
+            'subtitle' => 'Per ' . $selectedRate['unit'] . ' across selected range',
+        ];
+    }
+
+    private function buildSystemKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId, $collectionTrips): array
+    {
+        $assets = Asset::with([
+            'capacitySetting',
+            'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
+            'devices.sensors' => fn ($query) => $query->orderBy('created_at', 'asc'),
+            'devices.latestSensor',
+        ])
+            ->where('is_active', 1)
+            ->when($assetId, fn ($query) => $query->where('id', $assetId))
+            ->get();
+
+        $fillBeforeCollection = [];
+        $responseDurations = [];
+        $activeDeviceCount = 0;
+        $onlineDeviceCount = 0;
+
+        foreach ($assets as $asset) {
+            foreach ($asset->devices as $device) {
+                $activeDeviceCount++;
+
+                if ($device->latestSensor && Carbon::parse($device->latestSensor->created_at)->gte(now()->subMinutes(40))) {
+                    $onlineDeviceCount++;
+                }
+
+                $sensors = $device->sensors
+                    ->filter(fn ($sensor) => is_numeric($sensor->capacity))
+                    ->map(fn ($sensor) => [
+                        'capacity' => (float) $sensor->capacity,
+                        'created_at' => Carbon::parse($sensor->created_at)->timezone(config('app.timezone')),
+                    ])
+                    ->values();
+
+                $previousCapacity = null;
+                $fullAt = null;
+
+                foreach ($sensors as $reading) {
+                    $currentCapacity = $reading['capacity'];
+                    $readingTime = $reading['created_at'];
+
+                    if ($previousCapacity !== null && $previousCapacity < 80 && $currentCapacity >= 80 && $fullAt === null) {
+                        $fullAt = $readingTime;
+                    }
+
+                    if (
+                        $previousCapacity !== null &&
+                        $previousCapacity > 10 &&
+                        $this->isCollectionCapacity($currentCapacity) &&
+                        $readingTime->betweenIncluded($rangeStart, $rangeEnd)
+                    ) {
+                        $fillBeforeCollection[] = $previousCapacity;
+
+                        if ($fullAt !== null) {
+                            $responseDurations[] = round($fullAt->diffInMinutes($readingTime) / 60, 2);
+                            $fullAt = null;
+                        }
+                    }
+
+                    $previousCapacity = $currentCapacity;
+                }
+            }
+        }
+
+        $activeBins = max(1, $collectionTrips->unique('asset_id')->count());
+        $usageRanking = $collectionTrips
+            ->groupBy('asset_name')
+            ->map->count()
+            ->sortDesc();
+        $avgFillLevel = count($fillBeforeCollection) > 0 ? round(array_sum($fillBeforeCollection) / count($fillBeforeCollection), 1) : null;
+        $avgResponse = count($responseDurations) > 0 ? round(array_sum($responseDurations) / count($responseDurations), 2) : null;
+        $responseUnder4Hours = count($responseDurations) > 0
+            ? round((collect($responseDurations)->filter(fn ($hours) => $hours < 4)->count() / count($responseDurations)) * 100, 1)
+            : null;
+        $uptime = $activeDeviceCount > 0 ? round(($onlineDeviceCount / $activeDeviceCount) * 100, 1) : null;
+
+        $mostUsedName = $usageRanking->keys()->first();
+        $mostUsedCount = $usageRanking->first();
+
+        return [
+            [
+                'title' => 'Fill Level Efficiency',
+                'value' => $avgFillLevel !== null ? $avgFillLevel . '%' : 'N/A',
+                'detail' => 'Average bin fill level before collection',
+                'status' => $avgFillLevel !== null && $avgFillLevel >= 70 ? 'good' : 'warning',
+            ],
+            [
+                'title' => 'Collection Frequency',
+                'value' => $collectionTrips->count(),
+                'detail' => 'Total collection trips in selected period',
+                'status' => 'good',
+            ],
+            [
+                'title' => 'Collection Response Time',
+                'value' => $avgResponse !== null ? $avgResponse . ' hrs' : 'N/A',
+                'detail' => $responseUnder4Hours !== null
+                    ? $responseUnder4Hours . '% cleared in under 4 hours'
+                    : 'No full-to-clear cycles found',
+                'status' => $avgResponse !== null && $avgResponse < 4 ? 'good' : 'warning',
+            ],
+            [
+                'title' => 'Bin Usage Rate',
+                'value' => round($collectionTrips->count() / $activeBins, 1),
+                'detail' => $mostUsedName
+                    ? 'Highest usage: ' . $mostUsedName . ' (' . $mostUsedCount . ' trips)'
+                    : 'Average collection trips per active bin',
+                'status' => 'good',
+            ],
+            [
+                'title' => 'System Uptime',
+                'value' => $uptime !== null ? $uptime . '%' : 'N/A',
+                'detail' => $activeDeviceCount . ' active devices, ' . $onlineDeviceCount . ' online in last 40 minutes',
+                'status' => $uptime !== null && $uptime >= 95 ? 'good' : 'warning',
+            ],
+        ];
     }
 }
