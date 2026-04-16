@@ -34,79 +34,7 @@ function formatAssetLabel(array $asset): string
     return $assetName !== '' ? $assetName : $location;
 }
 
-function getDailyCollectionReport(PDO $db, Carbon $date): array
-{
-    $dayStart = $date->copy()->startOfDay();
-    $dayEnd = $date->copy()->endOfDay();
-
-    $assetStmt = $db->query("
-        SELECT a.id, a.asset_name, a.location
-        FROM assets a
-        WHERE a.is_active = 1
-        ORDER BY a.asset_name ASC, a.location ASC
-    ");
-
-    $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
-    $reportRows = [];
-    $totalCollections = 0;
-
-    $sensorStmt = $db->prepare("
-        SELECT d.id_device, s.capacity, s.created_at
-        FROM devices d
-        JOIN sensors s ON s.device_id = d.id_device
-        WHERE d.asset_id = ?
-          AND d.is_active = 1
-          AND s.created_at BETWEEN ? AND ?
-        ORDER BY d.id_device ASC, s.created_at ASC
-    ");
-
-    foreach ($assets as $asset) {
-        $sensorStmt->execute([
-            $asset['id'],
-            $dayStart->format('Y-m-d H:i:s'),
-            $dayEnd->format('Y-m-d H:i:s'),
-        ]);
-
-        $readings = $sensorStmt->fetchAll(PDO::FETCH_ASSOC);
-        $previousCapacities = [];
-        $collectionCount = 0;
-
-        foreach ($readings as $reading) {
-            if (!is_numeric($reading['capacity'])) {
-                continue;
-            }
-
-            $deviceId = (string) $reading['id_device'];
-            $currentCapacity = (float) $reading['capacity'];
-            $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
-            $previousCapacity = $previousCapacities[$deviceId] ?? null;
-
-            if (
-                $previousCapacity !== null &&
-                $previousCapacity > 10 &&
-                isCollectionCapacity($currentCapacity) &&
-                isWithinCollectionWindow($readingTime)
-            ) {
-                $collectionCount++;
-            }
-
-            $previousCapacities[$deviceId] = $currentCapacity;
-        }
-
-        $reportRows[] = [
-            'label' => formatAssetLabel($asset),
-            'total' => $collectionCount,
-        ];
-        $totalCollections += $collectionCount;
-    }
-
-    return [
-        'rows' => $reportRows,
-        'total' => $totalCollections,
-    ];
-}
-
-function getDailyCollectionTripsForNotification(PDO $db, Carbon $date): array
+function getDailyCollectionTrips(PDO $db, Carbon $date): array
 {
     $dayStart = $date->copy()->startOfDay();
     $dayEnd = $date->copy()->endOfDay();
@@ -149,15 +77,15 @@ function getDailyCollectionTripsForNotification(PDO $db, Carbon $date): array
             }
 
             $deviceId = (string) $reading['id_device'];
-            $currentCap = (float) $reading['capacity'];
-            $previousCap = $previousCapacities[$deviceId] ?? null;
+            $currentCapacity = (float) $reading['capacity'];
             $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
+            $previousCapacity = $previousCapacities[$deviceId] ?? null;
 
             if (!$binCleared) {
                 if (
-                    $previousCap !== null &&
-                    $previousCap > 10 &&
-                    isCollectionCapacity($currentCap)
+                    $previousCapacity !== null &&
+                    $previousCapacity > 10 &&
+                    isCollectionCapacity($currentCapacity)
                 ) {
                     $binCleared = true;
                     $triggeredDeviceId = $deviceId;
@@ -169,18 +97,18 @@ function getDailyCollectionTripsForNotification(PDO $db, Carbon $date): array
                             'location' => $asset['location'],
                             'id_device' => $reading['id_device'],
                             'device_name' => $reading['device_name'] ?? 'N/A',
-                            'capacity' => $currentCap,
-                            'prev_capacity' => $previousCap,
+                            'capacity' => $currentCapacity,
+                            'prev_capacity' => $previousCapacity,
                             'emptied_time' => $reading['created_at'],
                         ];
                     }
                 }
-            } elseif ($deviceId === $triggeredDeviceId && $currentCap > 10) {
+            } elseif ($deviceId === $triggeredDeviceId && $currentCapacity > 10) {
                 $binCleared = false;
                 $triggeredDeviceId = null;
             }
 
-            $previousCapacities[$deviceId] = $currentCap;
+            $previousCapacities[$deviceId] = $currentCapacity;
         }
     }
 
@@ -189,6 +117,44 @@ function getDailyCollectionTripsForNotification(PDO $db, Carbon $date): array
     });
 
     return $tripRows;
+}
+
+function getDailyCollectionReport(PDO $db, Carbon $date): array
+{
+    $assetStmt = $db->query("
+        SELECT a.id, a.asset_name, a.location
+        FROM assets a
+        WHERE a.is_active = 1
+        ORDER BY a.asset_name ASC, a.location ASC
+    ");
+
+    $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
+    $tripRows = getDailyCollectionTrips($db, $date);
+    $countsByAsset = [];
+
+    foreach ($tripRows as $trip) {
+        $assetId = (string) $trip['asset_id'];
+        $countsByAsset[$assetId] = ($countsByAsset[$assetId] ?? 0) + 1;
+    }
+
+    $reportRows = [];
+    $totalCollections = 0;
+
+    foreach ($assets as $asset) {
+        $assetId = (string) $asset['id'];
+        $collectionCount = $countsByAsset[$assetId] ?? 0;
+
+        $reportRows[] = [
+            'label' => formatAssetLabel($asset),
+            'total' => $collectionCount,
+        ];
+        $totalCollections += $collectionCount;
+    }
+
+    return [
+        'rows' => $reportRows,
+        'total' => $totalCollections,
+    ];
 }
 
 function buildDailyReportMessage(array $report, Carbon $now): string
@@ -364,7 +330,7 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 }
 
-$emptiedBins = getDailyCollectionTripsForNotification($db, $now);
+$emptiedBins = getDailyCollectionTrips($db, $now);
 
 /* -------------------------
    Debug Logging

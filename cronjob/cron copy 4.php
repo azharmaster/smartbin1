@@ -34,7 +34,7 @@ function formatAssetLabel(array $asset): string
     return $assetName !== '' ? $assetName : $location;
 }
 
-function getDailyCollectionReport(PDO $db, Carbon $date): array
+function getDailyCollectionTrips(PDO $db, Carbon $date): array
 {
     $dayStart = $date->copy()->startOfDay();
     $dayEnd = $date->copy()->endOfDay();
@@ -47,17 +47,16 @@ function getDailyCollectionReport(PDO $db, Carbon $date): array
     ");
 
     $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
-    $reportRows = [];
-    $totalCollections = 0;
+    $tripRows = [];
 
     $sensorStmt = $db->prepare("
-        SELECT d.id_device, s.capacity, s.created_at
+        SELECT d.id_device, d.device_name, s.capacity, s.created_at
         FROM devices d
         JOIN sensors s ON s.device_id = d.id_device
         WHERE d.asset_id = ?
           AND d.is_active = 1
           AND s.created_at BETWEEN ? AND ?
-        ORDER BY d.id_device ASC, s.created_at ASC
+        ORDER BY s.created_at ASC, d.id_device ASC
     ");
 
     foreach ($assets as $asset) {
@@ -69,7 +68,8 @@ function getDailyCollectionReport(PDO $db, Carbon $date): array
 
         $readings = $sensorStmt->fetchAll(PDO::FETCH_ASSOC);
         $previousCapacities = [];
-        $collectionCount = 0;
+        $binCleared = false;
+        $triggeredDeviceId = null;
 
         foreach ($readings as $reading) {
             if (!is_numeric($reading['capacity'])) {
@@ -81,17 +81,68 @@ function getDailyCollectionReport(PDO $db, Carbon $date): array
             $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
             $previousCapacity = $previousCapacities[$deviceId] ?? null;
 
-            if (
-                $previousCapacity !== null &&
-                $previousCapacity > 10 &&
-                isCollectionCapacity($currentCapacity) &&
-                isWithinCollectionWindow($readingTime)
-            ) {
-                $collectionCount++;
+            if (!$binCleared) {
+                if (
+                    $previousCapacity !== null &&
+                    $previousCapacity > 10 &&
+                    isCollectionCapacity($currentCapacity)
+                ) {
+                    $binCleared = true;
+                    $triggeredDeviceId = $deviceId;
+
+                    if (isWithinCollectionWindow($readingTime)) {
+                        $tripRows[] = [
+                            'asset_id' => $asset['id'],
+                            'asset_name' => $asset['asset_name'],
+                            'location' => $asset['location'],
+                            'id_device' => $reading['id_device'],
+                            'device_name' => $reading['device_name'] ?? 'N/A',
+                            'capacity' => $currentCapacity,
+                            'prev_capacity' => $previousCapacity,
+                            'emptied_time' => $reading['created_at'],
+                        ];
+                    }
+                }
+            } elseif ($deviceId === $triggeredDeviceId && $currentCapacity > 10) {
+                $binCleared = false;
+                $triggeredDeviceId = null;
             }
 
             $previousCapacities[$deviceId] = $currentCapacity;
         }
+    }
+
+    usort($tripRows, function ($a, $b) {
+        return strcmp($b['emptied_time'], $a['emptied_time']);
+    });
+
+    return $tripRows;
+}
+
+function getDailyCollectionReport(PDO $db, Carbon $date): array
+{
+    $assetStmt = $db->query("
+        SELECT a.id, a.asset_name, a.location
+        FROM assets a
+        WHERE a.is_active = 1
+        ORDER BY a.asset_name ASC, a.location ASC
+    ");
+
+    $assets = $assetStmt->fetchAll(PDO::FETCH_ASSOC);
+    $tripRows = getDailyCollectionTrips($db, $date);
+    $countsByAsset = [];
+
+    foreach ($tripRows as $trip) {
+        $assetId = (string) $trip['asset_id'];
+        $countsByAsset[$assetId] = ($countsByAsset[$assetId] ?? 0) + 1;
+    }
+
+    $reportRows = [];
+    $totalCollections = 0;
+
+    foreach ($assets as $asset) {
+        $assetId = (string) $asset['id'];
+        $collectionCount = $countsByAsset[$assetId] ?? 0;
 
         $reportRows[] = [
             'label' => formatAssetLabel($asset),
@@ -277,24 +328,9 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $emptyBins[] = $device;
     }
 
-    // EMPTIED / COLLECTION condition:
-    // Match asset details graph logic for notification use:
-    // previous reading > 10, current reading is a collection value (including 0),
-    // current reading happens during collection window,
-    // and both readings are on the same day to avoid cross-day false positives.
-    if (
-        $prevCapacity !== null &&
-        $prevCapacity > 10 &&
-        isCollectionCapacity($currentCapacity) &&
-        $prevReadingTime !== null &&
-        $prevReadingTime->format('Y-m-d') === $readingTime->format('Y-m-d') &&
-        isWithinCollectionWindow($readingTime)
-    ) {
-        $device['emptied_time'] = $currentSensor['created_at'];
-        $device['prev_capacity'] = $prevCapacity;
-        $emptiedBins[] = $device;
-    }
 }
+
+$emptiedBins = getDailyCollectionTrips($db, $now);
 
 /* -------------------------
    Debug Logging
@@ -362,10 +398,10 @@ if ($canSend) {
                 $assetList .= "*TRX BIN - IMMEDIATE CLEARANCE REQUIRED*\n\n";
                 $assetList .= "Date: " . $ts->format('d F Y') . "\n";
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
+                $assetList .= $asset['location'] . "\n";
                 $assetList .= "Location: *" . $asset['asset_name'] . "*\n";
-                $assetList .= $asset['location'] . "\n\n";
-                $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
-                $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
+                // $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n\n";
+                // $assetList .= "Please arrange for immediate clearance to avoid overflow.\n";
                 $assetList .= "\n";
             }
 
@@ -427,29 +463,15 @@ if ($canSend) {
         }
 
         if (count($sendBins) > 0) {
-            $groupedAssets = [];
-            foreach ($sendBins as $device) {
-                $assetId = $device['asset_id'];
-                if (!isset($groupedAssets[$assetId])) {
-                    $groupedAssets[$assetId] = [
-                        'asset_name' => $device['asset_name'],
-                        'location'   => $device['location'],
-                        'prev_capacity' => $device['prev_capacity'],
-                        'capacity'   => $device['capacity'],
-                        'emptied_time'  => $device['emptied_time']
-                    ];
-                }
-            }
-
             $assetList = '';
-            foreach ($groupedAssets as $asset) {
-                $ts = Carbon::parse($asset['emptied_time']);
+            foreach ($sendBins as $asset) {
+                $ts = Carbon::parse($asset['emptied_time'], 'Asia/Kuala_Lumpur');
                 $assetList .= "*TRX BIN - BIN CLEARED*\n\n";
                 $assetList .= "Date: " . $ts->format('d F Y') . "\n";
                 $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
+                $assetList .= "" . $asset['asset_name'] . "\n";
                 $assetList .= "Location: *" . $asset['location'] . "*\n";
-                $assetList .= "" . $asset['asset_name'] . "\n\n";
-                $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
+                // $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
                 $assetList .= "\n";
             }
 
