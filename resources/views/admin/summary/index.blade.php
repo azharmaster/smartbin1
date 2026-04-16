@@ -331,12 +331,12 @@
 
     {{-- ================= ROW 3 ================= --}}
     <div class="row g-4 mt-1 align-items-stretch">
-        {{-- Month Insights --}}
+        {{-- Period Insights --}}
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
                 <div class="card-header bg-dark text-white">
                     <i class="fas fa-lightbulb me-2"></i>
-                    {{ ucfirst($period) }} Insights
+                    {{ $period === 'month' ? 'Monthly' : ucfirst($period) }} Insights
                 </div>
                 <div class="card-body">
                     @if(count($monthInsights) > 0)
