@@ -471,6 +471,30 @@ public function getCleaningLogsForRange(Carbon $startDate, Carbon $endDate)
         ->values();
 }
 
+private function buildMonthlyCollectionTripChartData(Carbon $baseDate): array
+{
+    $startDate = $baseDate->copy()->startOfMonth();
+    $endDate = $baseDate->copy()->endOfMonth();
+
+    $dailyCounts = $this->getCleaningLogsForRange($startDate, $endDate)
+        ->groupBy(fn ($log) => $log->cleaned_at->format('Y-m-d'))
+        ->map(fn ($logs) => $logs->count());
+
+    $labels = [];
+    $data = [];
+
+    for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+        $dateKey = $date->format('Y-m-d');
+        $labels[] = $date->format('j');
+        $data[] = $dailyCounts->get($dateKey, 0);
+    }
+
+    return [
+        'labels' => $labels,
+        'data' => $data,
+    ];
+}
+
 public function getSummaryForRange(Carbon $startDate, Carbon $endDate): object
 {
     $binAnalytics = $this->computeBinAnalyticsForRange($startDate, $endDate);
@@ -708,6 +732,7 @@ public function index(Request $request)
     $cleaningLogs   = $this->getCleaningLogs($baseDate, $period);
     $summaryMetrics = $this->computeSummaryMetrics($baseDate, $period);
     $monthInsights  = $this->computeMonthInsights($baseDate, $period);
+    $monthlyCollectionTripChart = $this->buildMonthlyCollectionTripChartData($baseDate);
     [$startDate, $endDate] = $this->resolveDateRange($baseDate, $period);
     $metricModalData = $this->buildMetricModalData($binAnalytics, $cleaningLogs, $startDate, $endDate);
 
@@ -721,6 +746,7 @@ public function index(Request $request)
         'cleaningLogs',
         'summaryMetrics',
         'monthInsights',
+        'monthlyCollectionTripChart',
         'metricModalData'
     ));
 }

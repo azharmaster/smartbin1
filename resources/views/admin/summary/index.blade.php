@@ -279,6 +279,19 @@
     </div>
 
     <div class="row g-4 mt-1 align-items-stretch">
+        @if ($period === 'month')
+        <div class="col-12 d-flex">
+            <div class="card shadow-sm border-0 w-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Daily Collection Trips for {{ \Carbon\Carbon::parse($monthInput . '-01')->format('F Y') }}
+                </div>
+                <div class="card-body" style="height: 320px;">
+                    <canvas id="monthlyCollectionTripChart"></canvas>
+                </div>
+            </div>
+        </div>
+        @endif
 
         
 
@@ -375,6 +388,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const labels = @json($binAnalytics->pluck('asset_name'));
     const periodLabel = @json(ucfirst($period));
     const metricTableData = @json($metricModalData);
+    const monthlyCollectionTripLabels = @json($monthlyCollectionTripChart['labels'] ?? []);
+    const monthlyCollectionTripData = @json($monthlyCollectionTripChart['data'] ?? []);
 
     const metricMeta = {
         total_full_events: {
@@ -630,6 +645,70 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    const monthlyCollectionTripCanvas = document.getElementById('monthlyCollectionTripChart');
+    if (monthlyCollectionTripCanvas) {
+        new Chart(monthlyCollectionTripCanvas, {
+            type: 'line',
+            data: {
+                labels: monthlyCollectionTripLabels,
+                datasets: [{
+                    label: 'Collection Trips',
+                    data: monthlyCollectionTripData,
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.18)',
+                    pointBackgroundColor: '#e67e22',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.25
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Day of Month'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        min: 0,
+                        ticks: {
+                            precision: 0
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Collection Trips'
+                        }
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        align: 'top',
+                        anchor: 'end',
+                        color: '#a04000',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: function(value) {
+                            return value > 0 ? value : '';
+                        }
+                    }
+                }
+            }
+        });
+    }
 
 });
 </script>
