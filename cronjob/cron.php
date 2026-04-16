@@ -162,7 +162,7 @@ function buildDailyReportMessage(array $report, Carbon $now): string
     $lines = [];
     $lines[] = 'Smart Bin Report (' . $now->format('j/n/Y') . ')';
     $lines[] = '';
-    $lines[] = 'Operations ran smoothly with all bins emptied as scheduled.';
+    // $lines[] = 'Operations ran smoothly with all bins emptied as scheduled.';
     $lines[] = '';
     $lines[] = 'Collection details:';
 
@@ -173,7 +173,7 @@ function buildDailyReportMessage(array $report, Carbon $now): string
     $lines[] = '';
     $lines[] = 'Total collection: ' . $report['total'];
     $lines[] = '';
-    $lines[] = 'Overall status: Good and consistent.';
+    // $lines[] = 'Overall status: Good and consistent.';
 
     return implode("\n", $lines);
 }

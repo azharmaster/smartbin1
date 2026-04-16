@@ -270,7 +270,7 @@
                         <li>
                             <a class="dropdown-item d-flex align-items-center"
                                 href="{{ route('profile.editPassword') }}">
-                                <i class="fas fa-key me-2"></i> Reset Password
+                                <i class="fas fa-key me-2"></i> Change Password
                             </a>
                         </li>
                         <li>
