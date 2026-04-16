@@ -210,7 +210,7 @@
                         <th>Abnormal Data</th>
                         <th>Data Frequency</th>
                         <th>Avg RSRP</th>
-                        <th>Avg NSR</th>
+                        <th>Avg SNR</th>
                         <th>Latest Reading</th>
                         <th>Actions</th>
                     </tr>
