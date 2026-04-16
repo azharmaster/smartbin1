@@ -264,21 +264,6 @@
             </div>
         </div>
 
-        <div class="col-lg-6 d-flex">
-            <div class="card shadow-sm border-0 w-100">
-                <div class="card-header summary-gradient text-white">
-                    <i class="fas fa-stopwatch me-2"></i>
-                    Average Time for Bin to Become Empty (Hours)
-                </div>
-                <div class="card-body p-2" style="height: 320px;">
-                    <canvas id="avgEmptyChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mt-1 align-items-stretch">
-
         {{-- Average Clear Time --}}
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
@@ -291,6 +276,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="row g-4 mt-1 align-items-stretch">
+
+        
 
         {{-- Collection Trip --}}
         <div class="col-lg-6 d-flex">
@@ -327,11 +317,7 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- ================= ROW 3 ================= --}}
-    <div class="row g-4 mt-1 align-items-stretch">
-        {{-- Period Insights --}}
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
                 <div class="card-header bg-dark text-white">
@@ -352,6 +338,8 @@
             </div>
         </div>
     </div>
+
+  
     
 
     {{-- ================= ASSET IMAGES ================= --}}
@@ -643,41 +631,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /* Avg Empty Time */
-    new Chart(document.getElementById('avgEmptyChart'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Average Time to Become Empty (Hours)',
-                data: @json($binAnalytics->pluck('avg_empty_time')),
-                backgroundColor: 'rgba(241,196,15,0.85)',
-                borderColor: '#f1c40f',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, min: 0 }
-            },
-            plugins: {
-                datalabels: {
-                    anchor: 'center',
-                    align: 'center',
-                    color: '#fff',
-                    font: {
-                        weight: 'bold',
-                        size: 14
-                    },
-                    formatter: function(value) {
-                        return value > 0 ? value.toFixed(1) : '';
-                    }
-                }
-            }
-        }
-    });
 });
 </script>
 <script>
@@ -879,10 +832,6 @@ function printDashboard() {
           <li>
             <strong>Number of Times Each Bin Became Empty</strong><br>
             Shows how often each bin was recorded as emptied during the selected period.
-          </li>
-          <li>
-            <strong>Average Time for Bin to Become Empty (Hours)</strong><br>
-            Displays the average duration from full status until the bin was emptied.
           </li>
         </ul>
 
