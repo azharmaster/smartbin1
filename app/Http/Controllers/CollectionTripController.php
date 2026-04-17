@@ -47,6 +47,7 @@ class CollectionTripController extends Controller
     {
         $period = $request->input('period', 'monthly');
         $assetId = $request->integer('asset_id') ?: null;
+        $capacityFilter = $request->input('capacity_filter', 'empty');
 
         [$rangeStart, $rangeEnd, $inputs] = $this->resolveSummaryRange($request, $period);
 
@@ -92,7 +93,7 @@ class CollectionTripController extends Controller
         $hourlySummary = $this->buildHourlyCollectionSummary($collectionTrips);
 
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
-        $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
+        $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId, $capacityFilter);
         $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
         $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
         $highestCapacityTile = count($compartmentCapacities['labels']) > 0
@@ -134,6 +135,9 @@ class CollectionTripController extends Controller
             'fullOver80Labels' => $binKpis['full_over_80_labels'],
             'fullOver80Data' => $binKpis['full_over_80_data'],
             'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
+            'capacityFilter' => $capacityFilter,
+            'capacityFilterTitle' => $binKpis['filter_title'],
+            'capacityFilterDatasetLabel' => $binKpis['dataset_label'],
             'compartmentCapacityLabels' => $compartmentCapacities['labels'],
             'compartmentCapacityData' => $compartmentCapacities['data'],
             'highestCapacityTile' => $highestCapacityTile,
@@ -286,8 +290,9 @@ class CollectionTripController extends Controller
         return $insights;
     }
 
-    private function buildBinKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null): array
+    private function buildBinKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null, string $capacityFilter = 'empty'): array
     {
+        $filterMeta = $this->resolveCapacityFilterMeta($capacityFilter);
         $assets = Asset::with([
             'capacitySetting',
             'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
@@ -311,34 +316,16 @@ class CollectionTripController extends Controller
                     ])
                     ->values();
 
-                $awaitingClearAt = null;
-                $previousCapacity = null;
-
                 foreach ($sensors as $reading) {
                     $currentCapacity = $reading['capacity'];
                     $readingTime = $reading['created_at'];
 
-                    if ($previousCapacity !== null && $previousCapacity < 80 && $currentCapacity >= 80) {
-                        if ($readingTime->betweenIncluded($rangeStart, $rangeEnd)) {
-                            $fullOver80Count++;
-                            if ($awaitingClearAt === null) {
-                                $awaitingClearAt = $readingTime;
-                            }
-                        } elseif ($readingTime->lt($rangeStart) && $awaitingClearAt === null) {
-                            $awaitingClearAt = $readingTime;
-                        }
-                    }
-
                     if (
-                        $awaitingClearAt !== null &&
-                        $previousCapacity !== null &&
-                        $previousCapacity > 10 &&
-                        $this->isCollectionCapacity($currentCapacity) &&
-                        $readingTime->betweenIncluded($rangeStart, $rangeEnd)
+                        $readingTime->betweenIncluded($rangeStart, $rangeEnd) &&
+                        $this->matchesCapacityFilter($currentCapacity, $filterMeta['key'])
                     ) {
-                        $awaitingClearAt = null;
+                        $fullOver80Count++;
                     }
-                    $previousCapacity = $currentCapacity;
                 }
             }
 
@@ -362,7 +349,39 @@ class CollectionTripController extends Controller
             'full_over_80_peak_bin' => $fullOver80PeakBin
                 ? $fullOver80PeakBin['asset_name'] . ' (' . $fullOver80PeakBin['count'] . ' events)'
                 : 'N/A',
+            'filter_title' => $filterMeta['title'],
+            'dataset_label' => $filterMeta['dataset_label'],
         ];
+    }
+
+    private function resolveCapacityFilterMeta(string $capacityFilter): array
+    {
+        return match ($capacityFilter) {
+            'empty' => [
+                'key' => 'empty',
+                'title' => 'Empty Capacity Bins',
+                'dataset_label' => 'Empty (0%) Readings',
+            ],
+            'half' => [
+                'key' => 'half',
+                'title' => 'Half Full Capacity Bins',
+                'dataset_label' => 'Half Full (1%-79%) Readings',
+            ],
+            default => [
+                'key' => 'full',
+                'title' => 'Full Capacity Bins',
+                'dataset_label' => 'Full (80%-100%) Readings',
+            ],
+        };
+    }
+
+    private function matchesCapacityFilter(float $capacity, string $capacityFilter): bool
+    {
+        return match ($capacityFilter) {
+            'empty' => $capacity <= 0.0 || abs($capacity) < 0.00001,
+            'half' => $capacity >= 1.0 && $capacity <= 79.0,
+            default => $capacity >= 80.0 && $capacity <= 100.0,
+        };
     }
 
     private function isCollectionCapacity(float $capacity): bool

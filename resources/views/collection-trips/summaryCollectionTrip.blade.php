@@ -47,6 +47,7 @@
                     <input type="month" name="month" value="{{ $monthInput }}" class="form-control fw-bold" onchange="this.form.submit()">
                 </div>
                 @endif
+
             </form>
         </div>
 
@@ -191,9 +192,29 @@
     <div class="row g-4">
         <div class="col-lg-6">
             <div class="card shadow-sm border-0 h-100">
-                <div class="card-header summary-gradient text-white">
-                    <i class="fas fa-trash-alt me-2"></i>
-                    Bins Exceeding Full Capacity
+                <div class="card-header summary-gradient text-white d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                    <div>
+                        <i class="fas fa-trash-alt me-2"></i>
+                        Capacity Bins
+                    </div>
+                    <form method="GET" action="{{ route('collection-trips.summary') }}" class="mb-0">
+                        <input type="hidden" name="period" value="{{ $period }}">
+                        <input type="hidden" name="asset_id" value="{{ $assetId }}">
+                        <input type="hidden" name="date" value="{{ $dateInput }}">
+                        <input type="hidden" name="week" value="{{ $weekInput }}">
+                        <input type="hidden" name="month" value="{{ $monthInput }}">
+                        <div class="btn-group btn-group-sm capacity-tabs" role="group" aria-label="Capacity Filter">
+                            <button type="submit" name="capacity_filter" value="empty" class="btn {{ $capacityFilter === 'empty' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                                Empty (0)
+                            </button>
+                            <button type="submit" name="capacity_filter" value="half" class="btn {{ $capacityFilter === 'half' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                                Half Full (1-79)
+                            </button>
+                            <button type="submit" name="capacity_filter" value="full" class="btn {{ $capacityFilter === 'full' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                                Full (80-100)
+                            </button>
+                        </div>
+                    </form>
                 </div>
                 <div class="card-body" style="height: 340px;">
                     <canvas id="fullOver80Chart"></canvas>
@@ -304,6 +325,11 @@
         cursor: default;
     }
 
+    .capacity-tabs .btn {
+        font-weight: 700;
+        border-width: 1px;
+    }
+
     @media (min-width: 768px) {
         .col-md-2-4 {
             flex: 0 0 20%;
@@ -358,7 +384,7 @@
             data: {
                 labels: @json($fullOver80Labels),
                 datasets: [{
-                    label: 'Full 80%+ Events',
+                    label: @json($capacityFilterDatasetLabel),
                     data: @json($fullOver80Data),
                     backgroundColor: 'rgba(220,53,69,0.8)',
                     borderColor: '#dc3545',
