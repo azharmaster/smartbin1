@@ -110,23 +110,6 @@
         </div>
 
         <div class="col-md-2-4">
-            <div class="card shadow-sm border-0 h-100 metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-white-50 mb-2">Fastest Cleared Bin</h6>
-                            <h2 class="mb-0 fw-bold" style="font-size: 1.1rem;">{{ $fastestClearBin }}</h2>
-                            <small class="d-block mt-2 text-white-50">Bin with the shortest average time from full to cleared.</small>
-                        </div>
-                        <div class="text-white-50">
-                            <i class="fas fa-stopwatch fa-3x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-2-4">
             <div class="card shadow-sm border-0 h-100 metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
@@ -137,6 +120,25 @@
                         </div>
                         <div class="text-white-50">
                             <i class="fas fa-trophy fa-3x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2-4">
+            <div class="card shadow-sm border-0 h-100 metric-card" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Highest Capacity</h6>
+                            <h2 class="mb-0 fw-bold" style="font-size: 1.1rem;">{{ $highestCapacityTile['value'] }} {{ $highestCapacityTile['label'] }}</h2>
+                            <!-- <h2 class="mb-0 fw-bold"></h2>
+                            <small class="d-block mt-2 text-white-50"></small> -->
+                            <small class="d-block mt-1 text-white-50">Shows the asset and device with the highest latest recorded compartment capacity in the selected period.</small>
+                        </div>
+                        <div class="text-white-50">
+                            <i class="fas fa-battery-three-quarters fa-3x"></i>
                         </div>
                     </div>
                 </div>

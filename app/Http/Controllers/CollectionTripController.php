@@ -98,6 +98,15 @@ class CollectionTripController extends Controller
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
         $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
         $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
+        $highestCapacityTile = count($compartmentCapacities['labels']) > 0
+            ? [
+                'label' => $compartmentCapacities['labels'][0],
+                'value' => $compartmentCapacities['data'][0] . '%',
+            ]
+            : [
+                'label' => 'N/A',
+                'value' => 'N/A',
+            ];
         $insights = $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData);
 
         return view('collection-trips.summaryCollectionTrip', [
@@ -121,14 +130,12 @@ class CollectionTripController extends Controller
             'weekInput' => $inputs['week'],
             'monthInput' => $inputs['month'],
             'insights' => $insights,
-            'fastestClearLabels' => $binKpis['fastest_clear_labels'],
-            'fastestClearData' => $binKpis['fastest_clear_data'],
             'fullOver80Labels' => $binKpis['full_over_80_labels'],
             'fullOver80Data' => $binKpis['full_over_80_data'],
-            'fastestClearBin' => $binKpis['fastest_clear_bin'],
             'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
             'compartmentCapacityLabels' => $compartmentCapacities['labels'],
             'compartmentCapacityData' => $compartmentCapacities['data'],
+            'highestCapacityTile' => $highestCapacityTile,
             'systemKpis' => $systemKpis,
         ]);
     }
@@ -289,11 +296,9 @@ class CollectionTripController extends Controller
             ->when($assetId, fn ($query) => $query->where('id', $assetId))
             ->get();
 
-        $fastestClearRows = collect();
         $fullOver80Rows = collect();
 
         foreach ($assets as $asset) {
-            $clearDurations = [];
             $fullOver80Count = 0;
 
             foreach ($asset->devices as $device) {
@@ -330,18 +335,10 @@ class CollectionTripController extends Controller
                         $this->isCollectionCapacity($currentCapacity) &&
                         $readingTime->betweenIncluded($rangeStart, $rangeEnd)
                     ) {
-                        $clearDurations[] = round($awaitingClearAt->diffInMinutes($readingTime) / 60, 2);
                         $awaitingClearAt = null;
                     }
                     $previousCapacity = $currentCapacity;
                 }
-            }
-
-            if (count($clearDurations) > 0) {
-                $fastestClearRows->push([
-                    'asset_name' => $asset->asset_name,
-                    'avg_clear_time' => round(array_sum($clearDurations) / count($clearDurations), 2),
-                ]);
             }
 
             $fullOver80Rows->push([
@@ -350,28 +347,17 @@ class CollectionTripController extends Controller
             ]);
         }
 
-        $fastestClearRows = $fastestClearRows
-            ->sortBy('avg_clear_time')
-            ->take(8)
-            ->values();
-
         $fullOver80Rows = $fullOver80Rows
             ->filter(fn ($row) => $row['count'] > 0)
             ->sortByDesc('count')
             ->take(8)
             ->values();
 
-        $fastestClearBin = $fastestClearRows->first();
         $fullOver80PeakBin = $fullOver80Rows->first();
 
         return [
-            'fastest_clear_labels' => $fastestClearRows->pluck('asset_name')->all(),
-            'fastest_clear_data' => $fastestClearRows->pluck('avg_clear_time')->all(),
             'full_over_80_labels' => $fullOver80Rows->pluck('asset_name')->all(),
             'full_over_80_data' => $fullOver80Rows->pluck('count')->all(),
-            'fastest_clear_bin' => $fastestClearBin
-                ? $fastestClearBin['asset_name'] . ' (' . $fastestClearBin['avg_clear_time'] . ' hrs)'
-                : 'N/A',
             'full_over_80_peak_bin' => $fullOver80PeakBin
                 ? $fullOver80PeakBin['asset_name'] . ' (' . $fullOver80PeakBin['count'] . ' events)'
                 : 'N/A',
