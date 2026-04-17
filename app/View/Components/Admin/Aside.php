@@ -32,8 +32,8 @@ class Aside extends Component
                 "label" => "Summary",
                 "icon" => "fas fa-chart-pie",
                 "color" => "#36b9cc",
-                "route_name" => "summary",
-                "route_active" => "summary"
+                "route_name" => "collection-trips.summary",
+                "route_active" => "collection-trips.summary"
             ],
             // [
             //     "label" => "Cleaning History",
