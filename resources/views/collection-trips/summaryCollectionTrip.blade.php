@@ -204,16 +204,26 @@
     </div>
 
      <div class="row g-4">
-       
-
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-trash-alt me-2"></i>
-                    Bins Exceeding 80% Capacity
+                    Bins Exceeding Full Capacity
                 </div>
                 <div class="card-body" style="height: 340px;">
                     <canvas id="fullOver80Chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Compartment Capacity by Asset & Device
+                </div>
+                <div class="card-body" style="height: 340px;">
+                    <canvas id="compartmentCapacityChart"></canvas>
                 </div>
             </div>
         </div>
@@ -351,6 +361,45 @@ document.addEventListener('DOMContentLoaded', function () {
                 x: {
                     beginAtZero: true,
                     ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('compartmentCapacityChart'), {
+        type: 'bar',
+        data: {
+            labels: @json($compartmentCapacityLabels),
+            datasets: [{
+                label: 'Compartment Capacity',
+                data: @json($compartmentCapacityData),
+                backgroundColor: 'rgba(13, 110, 253, 0.78)',
+                borderColor: '#0d6efd',
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            ...baseChartOptions,
+            indexAxis: 'y',
+            plugins: {
+                ...baseChartOptions.plugins,
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` Capacity: ${context.parsed.x}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
                 }
             }
         }

@@ -97,6 +97,7 @@ class CollectionTripController extends Controller
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
         $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
+        $compartmentCapacities = $this->buildCompartmentCapacities($assetId);
         $insights = $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData);
 
         return view('collection-trips.summaryCollectionTrip', [
@@ -126,6 +127,8 @@ class CollectionTripController extends Controller
             'fullOver80Data' => $binKpis['full_over_80_data'],
             'fastestClearBin' => $binKpis['fastest_clear_bin'],
             'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
+            'compartmentCapacityLabels' => $compartmentCapacities['labels'],
+            'compartmentCapacityData' => $compartmentCapacities['data'],
             'systemKpis' => $systemKpis,
         ]);
     }
@@ -518,6 +521,34 @@ class CollectionTripController extends Controller
                 'detail' => $activeDeviceCount . ' active devices, ' . $onlineDeviceCount . ' online in last 40 minutes',
                 'status' => $uptime !== null && $uptime >= 95 ? 'good' : 'warning',
             ],
+        ];
+    }
+
+    private function buildCompartmentCapacities(?int $assetId = null): array
+    {
+        $rows = Asset::with([
+            'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('device_name'),
+            'devices.latestSensor',
+        ])
+            ->where('is_active', 1)
+            ->when($assetId, fn ($query) => $query->where('id', $assetId))
+            ->get()
+            ->flatMap(function ($asset) {
+                return $asset->devices->map(function ($device) use ($asset) {
+                    return [
+                        'label' => $asset->asset_name . ' - ' . ($device->device_name ?? 'N/A'),
+                        'capacity' => $device->latestSensor && is_numeric($device->latestSensor->capacity)
+                            ? round((float) $device->latestSensor->capacity, 1)
+                            : 0,
+                    ];
+                });
+            })
+            ->sortByDesc('capacity')
+            ->values();
+
+        return [
+            'labels' => $rows->pluck('label')->all(),
+            'data' => $rows->pluck('capacity')->all(),
         ];
     }
 }
