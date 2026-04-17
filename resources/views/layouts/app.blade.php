@@ -224,7 +224,7 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini text-sm @if(request()->routeIs('dashboard')) sidebar-collapse @endif">
+<body class="hold-transition sidebar-mini text-sm @if(request()->routeIs('dashboard') || request()->routeIs('collection-trips.summary')) sidebar-collapse @endif">
     @include('sweetalert::alert')
 
     <div class="wrapper">
