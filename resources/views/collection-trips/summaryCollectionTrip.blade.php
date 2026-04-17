@@ -162,20 +162,6 @@
 
     </div>
 
-    <div class="row g-4 mt-1">
-        <div class="col-lg-12">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header summary-gradient text-white">
-                    <i class="fas fa-clock me-2"></i>
-                    Collection Frequency by Hour (7 AM - 7 PM)
-                </div>
-                <div class="card-body" style="height: 340px;">
-                    <canvas id="hourlyCollectionChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row g-4 mt-1 align-items-stretch">
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
@@ -223,6 +209,18 @@
                 </div>
                 <div class="card-body" style="height: 340px;">
                     <canvas id="weekdayCollectionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-clock me-2"></i>
+                    Collection Frequency by Hour (7 AM - 7 PM)
+                </div>
+                <div class="card-body" style="height: 340px;">
+                    <canvas id="hourlyCollectionChart"></canvas>
                 </div>
             </div>
         </div>
