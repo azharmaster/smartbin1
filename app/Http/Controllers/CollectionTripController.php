@@ -88,11 +88,7 @@ class CollectionTripController extends Controller
             ->map->count()
             ->sortDesc()
             ->take(8);
-
-        $peakIndex = $chartData->search($chartData->max());
-        $peakLabel = $chartData->max() > 0 && $peakIndex !== false
-            ? $bucketLabels[$peakIndex]
-            : 'N/A';
+        $weekdaySummary = $this->buildWeekdayCollectionSummary($collectionTrips);
 
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
@@ -119,12 +115,14 @@ class CollectionTripController extends Controller
             'totalTrips' => $collectionTrips->count(),
             'activeBins' => $collectionTrips->unique('asset_id')->count(),
             'averageTripsMetric' => $this->resolveAverageTripsMetric($collectionTrips->count(), $rangeStart, $rangeEnd),
-            'peakLabel' => $peakLabel,
             'mostUsedBin' => $mostUsedBins->isNotEmpty()
                 ? $mostUsedBins->keys()->first() . ' (' . $mostUsedBins->first() . ' trips)'
                 : 'N/A',
             'mostUsedBinLabels' => $mostUsedBins->keys()->values()->all(),
             'mostUsedBinData' => $mostUsedBins->values()->all(),
+            'weekdayLabels' => $weekdaySummary['labels'],
+            'weekdayData' => $weekdaySummary['data'],
+            'weekdayPeakLabel' => $weekdaySummary['peak_label'],
             'rangeLabel' => $this->formatRangeLabel($period, $rangeStart, $rangeEnd),
             'dateInput' => $inputs['date'],
             'weekInput' => $inputs['week'],
@@ -394,8 +392,87 @@ class CollectionTripController extends Controller
         ];
     }
 
+    private function buildWeekdayCollectionSummary($collectionTrips): array
+    {
+        $weekdayOrder = [
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            0 => 'Sunday',
+        ];
+
+        $weekdayCounts = $collectionTrips
+            ->groupBy(fn ($trip) => (int) $trip['emptied_at']->dayOfWeek)
+            ->map->count();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($weekdayOrder as $dayIndex => $label) {
+            $labels[] = $label;
+            $data[] = (int) ($weekdayCounts[$dayIndex] ?? 0);
+        }
+
+        $peakCount = max($data);
+        $peakLabel = 'N/A';
+
+        if ($peakCount > 0) {
+            $peakDays = collect($weekdayOrder)
+                ->filter(fn ($label, $dayIndex) => (int) ($weekdayCounts[$dayIndex] ?? 0) === $peakCount)
+                ->values();
+
+            $peakLabel = $peakDays->join(', ') . ' (' . $peakCount . ' trips)';
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
+            'peak_label' => $peakLabel,
+        ];
+    }
+
+    private function resolveFrequentCollectionTimeMetric($collectionTrips): array
+    {
+        if ($collectionTrips->isEmpty()) {
+            return [
+                'value' => 'N/A',
+                'detail' => 'No collection trips recorded in the selected period.',
+            ];
+        }
+
+        $hourCounts = $collectionTrips
+            ->groupBy(fn ($trip) => (int) $trip['emptied_at']->format('H'))
+            ->map->count()
+            ->sortKeys();
+
+        $highestCount = (int) $hourCounts->max();
+        $peakHours = $hourCounts
+            ->filter(fn ($count) => (int) $count === $highestCount)
+            ->keys()
+            ->map(fn ($hour) => (int) $hour)
+            ->values();
+
+        $averagePeakHour = (int) round($peakHours->avg());
+        $averagePeakTime = Carbon::createFromTime($averagePeakHour, 0)->format('h:i A');
+
+        $timeWindow = $peakHours
+            ->map(function ($hour) {
+                return Carbon::createFromTime($hour, 0)->format('h:i A');
+            })
+            ->join(', ');
+
+        return [
+            'value' => $averagePeakTime,
+            'detail' => $highestCount . ' trips most often happened around ' . $timeWindow . '.',
+        ];
+    }
+
     private function buildSystemKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId, $collectionTrips): array
     {
+        $frequentCollectionTimeMetric = $this->resolveFrequentCollectionTimeMetric($collectionTrips);
         $assets = Asset::with([
             'capacitySetting',
             'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
@@ -486,10 +563,16 @@ class CollectionTripController extends Controller
                 'status' => 'good',
             ],
             [
+                'title' => 'Estimated Frequent Time',
+                'value' => $frequentCollectionTimeMetric['value'],
+                'detail' => $frequentCollectionTimeMetric['detail'],
+                'status' => $frequentCollectionTimeMetric['value'] !== 'N/A' ? 'good' : 'warning',
+            ],
+            [
                 'title' => 'Collection Response Time',
                 'value' => $avgResponse !== null ? $avgResponse . ' hrs' : 'N/A',
                 'detail' => $responseUnder4Hours !== null
-                    ? $responseUnder4Hours . '% cleared in under 4 hours'
+                    ? 'cleared in under 4 hours'
                     : 'No full-to-clear cycles found',
                 'status' => $avgResponse !== null && $avgResponse < 4 ? 'good' : 'warning',
             ],

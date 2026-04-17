@@ -97,9 +97,9 @@
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-white-50 mb-2">Peak {{ $period === 'daily' ? 'Hour' : 'Day' }}</h6>
-                            <h2 class="mb-0 fw-bold">{{ $peakLabel }}</h2>
-                            <small class="d-block mt-2 text-white-50">Time period with the highest collection activity.</small>
+                            <h6 class="text-white-50 mb-2">Peak Collection Day</h6>
+                            <h2 class="mb-0 fw-bold">{{ $weekdayPeakLabel }}</h2>
+                            <small class="d-block mt-2 text-white-50">The most frequent collection day from Monday to Sunday.</small>
                         </div>
                         <div class="text-white-50">
                             <i class="fas fa-chart-line fa-3x"></i>
@@ -135,7 +135,7 @@
                             <h2 class="mb-0 fw-bold" style="font-size: 1.1rem;">{{ $highestCapacityTile['value'] }} {{ $highestCapacityTile['label'] }}</h2>
                             <!-- <h2 class="mb-0 fw-bold"></h2>
                             <small class="d-block mt-2 text-white-50"></small> -->
-                            <small class="d-block mt-1 text-white-50">Shows the asset and device with the highest latest recorded compartment capacity in the selected period.</small>
+                            <small class="d-block mt-1 text-white-50">Highest recorded asset and device capacity.</small>
                         </div>
                         <div class="text-white-50">
                             <i class="fas fa-battery-three-quarters fa-3x"></i>
@@ -197,6 +197,18 @@
                 </div>
                 <div class="card-body" style="height: 340px;">
                     <canvas id="fullOver80Chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-calendar-week me-2"></i>
+                    Collection Frequency by Day
+                </div>
+                <div class="card-body" style="height: 340px;">
+                    <canvas id="weekdayCollectionChart"></canvas>
                 </div>
             </div>
         </div>
@@ -338,6 +350,32 @@
                     data: @json($fullOver80Data),
                     backgroundColor: 'rgba(220,53,69,0.8)',
                     borderColor: '#dc3545',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                ...baseChartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('weekdayCollectionChart'), {
+            type: 'bar',
+            data: {
+                labels: @json($weekdayLabels),
+                datasets: [{
+                    label: 'Collection Trips',
+                    data: @json($weekdayData),
+                    backgroundColor: 'rgba(111, 66, 193, 0.82)',
+                    borderColor: '#6f42c1',
                     borderWidth: 1,
                     borderRadius: 8
                 }]
