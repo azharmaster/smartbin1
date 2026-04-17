@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Services\CollectionTripService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -45,104 +46,18 @@ class CollectionTripController extends Controller
 
     public function summary(Request $request)
     {
-        $period = $request->input('period', 'monthly');
-        $assetId = $request->integer('asset_id') ?: null;
-        $capacityFilter = $request->input('capacity_filter', 'empty');
+        return view('collection-trips.summaryCollectionTrip', $this->buildSummaryViewData($request));
+    }
 
-        [$rangeStart, $rangeEnd, $inputs] = $this->resolveSummaryRange($request, $period);
+    public function pdf(Request $request)
+    {
+        $data = $this->buildSummaryViewData($request);
+        $data['pdfCharts'] = $this->buildPdfChartUrls($data);
 
-        $collectionTrips = $this->collectionTripService->getTrips(
-            $rangeStart->toDateString(),
-            $rangeEnd->toDateString(),
-            $assetId
-        );
-
-        $bucketFormat = $period === 'daily' ? 'Y-m-d H:00' : 'Y-m-d';
-        $bucketLabels = [];
-        $bucketKeys = [];
-
-        if ($period === 'daily') {
-            foreach (range(0, 23) as $hour) {
-                $bucketTime = $rangeStart->copy()->startOfDay()->addHours($hour);
-                $bucketKeys[] = $bucketTime->format($bucketFormat);
-                $bucketLabels[] = $bucketTime->format('H:i');
-            }
-        } else {
-            foreach (CarbonPeriod::create($rangeStart->copy()->startOfDay(), '1 day', $rangeEnd->copy()->startOfDay()) as $date) {
-                $bucketKeys[] = $date->format($bucketFormat);
-                $bucketLabels[] = $period === 'weekly'
-                    ? $date->format('D')
-                    : $date->format('d M');
-            }
-        }
-
-        $tripsByBucket = $collectionTrips
-            ->groupBy(fn ($trip) => $trip['emptied_at']->format($bucketFormat))
-            ->map(fn ($trips) => $trips->count());
-
-        $chartData = collect($bucketKeys)
-            ->map(fn ($bucketKey) => (int) ($tripsByBucket[$bucketKey] ?? 0))
-            ->values();
-
-        $mostUsedBins = $collectionTrips
-            ->groupBy('asset_name')
-            ->map->count()
-            ->sortDesc()
-            ->take(8);
-        $weekdaySummary = $this->buildWeekdayCollectionSummary($collectionTrips);
-        $hourlySummary = $this->buildHourlyCollectionSummary($collectionTrips);
-
-        $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
-        $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId, $capacityFilter);
-        $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
-        $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
-        $highestCapacityTile = count($compartmentCapacities['labels']) > 0
-            ? [
-                'label' => $compartmentCapacities['labels'][0],
-                'value' => $compartmentCapacities['data'][0] . '%',
-            ]
-            : [
-                'label' => 'N/A',
-                'value' => 'N/A',
-            ];
-        $insights = $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData);
-
-        return view('collection-trips.summaryCollectionTrip', [
-            'period' => $period,
-            'assetId' => $assetId,
-            'assets' => $assets,
-            'collectionTrips' => $collectionTrips,
-            'chartLabels' => $bucketLabels,
-            'chartData' => $chartData,
-            'totalTrips' => $collectionTrips->count(),
-            'activeBins' => $collectionTrips->unique('asset_id')->count(),
-            'averageTripsMetric' => $this->resolveAverageTripsMetric($collectionTrips->count(), $rangeStart, $rangeEnd),
-            'mostUsedBin' => $mostUsedBins->isNotEmpty()
-                ? $mostUsedBins->keys()->first() . ' (' . $mostUsedBins->first() . ' trips)'
-                : 'N/A',
-            'mostUsedBinLabels' => $mostUsedBins->keys()->values()->all(),
-            'mostUsedBinData' => $mostUsedBins->values()->all(),
-            'weekdayLabels' => $weekdaySummary['labels'],
-            'weekdayData' => $weekdaySummary['data'],
-            'weekdayPeakLabel' => $weekdaySummary['peak_label'],
-            'hourlyLabels' => $hourlySummary['labels'],
-            'hourlyData' => $hourlySummary['data'],
-            'rangeLabel' => $this->formatRangeLabel($period, $rangeStart, $rangeEnd),
-            'dateInput' => $inputs['date'],
-            'weekInput' => $inputs['week'],
-            'monthInput' => $inputs['month'],
-            'insights' => $insights,
-            'fullOver80Labels' => $binKpis['full_over_80_labels'],
-            'fullOver80Data' => $binKpis['full_over_80_data'],
-            'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
-            'capacityFilter' => $capacityFilter,
-            'capacityFilterTitle' => $binKpis['filter_title'],
-            'capacityFilterDatasetLabel' => $binKpis['dataset_label'],
-            'compartmentCapacityLabels' => $compartmentCapacities['labels'],
-            'compartmentCapacityData' => $compartmentCapacities['data'],
-            'highestCapacityTile' => $highestCapacityTile,
-            'systemKpis' => $systemKpis,
-        ]);
+        return Pdf::loadView('collection-trips.summaryCollectionTripPdf', $data)
+            ->setOption(['isRemoteEnabled' => true])
+            ->setPaper('a4', 'landscape')
+            ->download('collection-trip-summary.pdf');
     }
 
     /**
@@ -228,6 +143,99 @@ class CollectionTripController extends Controller
                 'week' => $start->format('Y-\WW'),
                 'month' => $start->format('Y-m'),
             ],
+        ];
+    }
+
+    private function buildSummaryViewData(Request $request): array
+    {
+        $period = $request->input('period', 'monthly');
+        $assetId = $request->integer('asset_id') ?: null;
+        $capacityFilter = $request->input('capacity_filter', 'empty');
+
+        [$rangeStart, $rangeEnd, $inputs] = $this->resolveSummaryRange($request, $period);
+
+        $collectionTrips = $this->collectionTripService->getTrips(
+            $rangeStart->toDateString(),
+            $rangeEnd->toDateString(),
+            $assetId
+        );
+
+        $bucketFormat = $period === 'daily' ? 'Y-m-d H:00' : 'Y-m-d';
+        $bucketLabels = [];
+        $bucketKeys = [];
+
+        if ($period === 'daily') {
+            foreach (range(0, 23) as $hour) {
+                $bucketTime = $rangeStart->copy()->startOfDay()->addHours($hour);
+                $bucketKeys[] = $bucketTime->format($bucketFormat);
+                $bucketLabels[] = $bucketTime->format('H:i');
+            }
+        } else {
+            foreach (CarbonPeriod::create($rangeStart->copy()->startOfDay(), '1 day', $rangeEnd->copy()->startOfDay()) as $date) {
+                $bucketKeys[] = $date->format($bucketFormat);
+                $bucketLabels[] = $period === 'weekly' ? $date->format('D') : $date->format('d M');
+            }
+        }
+
+        $tripsByBucket = $collectionTrips
+            ->groupBy(fn ($trip) => $trip['emptied_at']->format($bucketFormat))
+            ->map(fn ($trips) => $trips->count());
+
+        $chartData = collect($bucketKeys)
+            ->map(fn ($bucketKey) => (int) ($tripsByBucket[$bucketKey] ?? 0))
+            ->values();
+
+        $mostUsedBins = $collectionTrips
+            ->groupBy('asset_name')
+            ->map->count()
+            ->sortDesc()
+            ->take(8);
+
+        $weekdaySummary = $this->buildWeekdayCollectionSummary($collectionTrips);
+        $hourlySummary = $this->buildHourlyCollectionSummary($collectionTrips);
+        $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
+        $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId, $capacityFilter);
+        $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
+        $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
+        $highestCapacityTile = count($compartmentCapacities['labels']) > 0
+            ? ['label' => $compartmentCapacities['labels'][0], 'value' => $compartmentCapacities['data'][0] . '%']
+            : ['label' => 'N/A', 'value' => 'N/A'];
+
+        return [
+            'period' => $period,
+            'assetId' => $assetId,
+            'assets' => $assets,
+            'collectionTrips' => $collectionTrips,
+            'chartLabels' => $bucketLabels,
+            'chartData' => $chartData,
+            'totalTrips' => $collectionTrips->count(),
+            'activeBins' => $collectionTrips->unique('asset_id')->count(),
+            'averageTripsMetric' => $this->resolveAverageTripsMetric($collectionTrips->count(), $rangeStart, $rangeEnd),
+            'mostUsedBin' => $mostUsedBins->isNotEmpty()
+                ? $mostUsedBins->keys()->first() . ' (' . $mostUsedBins->first() . ' trips)'
+                : 'N/A',
+            'mostUsedBinLabels' => $mostUsedBins->keys()->values()->all(),
+            'mostUsedBinData' => $mostUsedBins->values()->all(),
+            'weekdayLabels' => $weekdaySummary['labels'],
+            'weekdayData' => $weekdaySummary['data'],
+            'weekdayPeakLabel' => $weekdaySummary['peak_label'],
+            'hourlyLabels' => $hourlySummary['labels'],
+            'hourlyData' => $hourlySummary['data'],
+            'rangeLabel' => $this->formatRangeLabel($period, $rangeStart, $rangeEnd),
+            'dateInput' => $inputs['date'],
+            'weekInput' => $inputs['week'],
+            'monthInput' => $inputs['month'],
+            'insights' => $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData),
+            'fullOver80Labels' => $binKpis['full_over_80_labels'],
+            'fullOver80Data' => $binKpis['full_over_80_data'],
+            'fullOver80PeakBin' => $binKpis['full_over_80_peak_bin'],
+            'capacityFilter' => $capacityFilter,
+            'capacityFilterTitle' => $binKpis['filter_title'],
+            'capacityFilterDatasetLabel' => $binKpis['dataset_label'],
+            'compartmentCapacityLabels' => $compartmentCapacities['labels'],
+            'compartmentCapacityData' => $compartmentCapacities['data'],
+            'highestCapacityTile' => $highestCapacityTile,
+            'systemKpis' => $systemKpis,
         ];
     }
 
@@ -474,6 +482,72 @@ class CollectionTripController extends Controller
             'labels' => $labels,
             'data' => $data,
         ];
+    }
+
+    private function buildPdfChartUrls(array $data): array
+    {
+        return [
+            'trend' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['chartLabels']), $this->normalizeChartArray($data['chartData']), 'Collection Trips', '#1f6423'),
+            'bin_frequency' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['mostUsedBinLabels']), $this->normalizeChartArray($data['mostUsedBinData']), 'Collection Trips', '#0f2027', true),
+            'capacity_bins' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['fullOver80Labels']), $this->normalizeChartArray($data['fullOver80Data']), $data['capacityFilterDatasetLabel'], '#dc3545'),
+            'weekday' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['weekdayLabels']), $this->normalizeChartArray($data['weekdayData']), 'Collection Trips', '#6f42c1'),
+            'hourly' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['hourlyLabels']), $this->normalizeChartArray($data['hourlyData']), 'Collection Trips', '#ff9f40'),
+            'compartment' => $this->buildQuickChartUrl('bar', $this->normalizeChartArray($data['compartmentCapacityLabels']), $this->normalizeChartArray($data['compartmentCapacityData']), 'Compartment Capacity', '#0d6efd', true, true),
+        ];
+    }
+
+    private function normalizeChartArray($value): array
+    {
+        if ($value instanceof \Illuminate\Support\Collection) {
+            return $value->values()->all();
+        }
+
+        return is_array($value) ? array_values($value) : [];
+    }
+
+    private function buildQuickChartUrl(
+        string $type,
+        array $labels,
+        array $data,
+        string $datasetLabel,
+        string $borderColor,
+        bool $horizontal = false,
+        bool $percentageAxis = false
+    ): string {
+        $config = [
+            'type' => $type,
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [[
+                    'label' => $datasetLabel,
+                    'data' => $data,
+                    'backgroundColor' => $this->hexToRgba($borderColor, 0.82),
+                    'borderColor' => $borderColor,
+                    'borderWidth' => 1,
+                ]],
+            ],
+            'options' => [
+                'indexAxis' => $horizontal ? 'y' : 'x',
+                'plugins' => ['legend' => ['display' => false]],
+                'scales' => [
+                    $horizontal ? 'x' : 'y' => [
+                        'beginAtZero' => true,
+                        'ticks' => $percentageAxis ? ['callback' => '(val) => val + "%"'] : ['precision' => 0],
+                    ],
+                ],
+            ],
+        ];
+
+        return 'https://quickchart.io/chart?width=900&height=320&devicePixelRatio=2&format=png&backgroundColor=white&c='
+            . urlencode(json_encode($config));
+    }
+
+    private function hexToRgba(string $hex, float $alpha): string
+    {
+        $hex = ltrim($hex, '#');
+        $rgb = sscanf($hex, '%02x%02x%02x');
+
+        return sprintf('rgba(%d,%d,%d,%.2f)', $rgb[0], $rgb[1], $rgb[2], $alpha);
     }
 
     private function resolveFrequentCollectionTimeMetric($collectionTrips): array

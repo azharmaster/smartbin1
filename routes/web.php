@@ -417,5 +417,6 @@ Route::post('/login', [LoginController::class, 'handleLogin'])
 Route::middleware('auth')->prefix('collection-trips')->as('collection-trips.')->controller(CollectionTripController::class)->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/summary', 'summary')->name('summary');
+    Route::get('/summary/pdf', 'pdf')->name('pdf');
     Route::get('/export', 'export')->name('export');
 });

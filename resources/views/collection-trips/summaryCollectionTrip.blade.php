@@ -3,6 +3,19 @@
 
 @section('content')
 <div class="container-fluid">
+    <div class="print-only mb-3">
+        <h2 class="mb-1">Summary Collection Trip</h2>
+        <div class="text-muted">
+            Range: {{ $rangeLabel }}
+            @if($assetId)
+            | Asset: {{ optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset' }}
+            @else
+            | Asset: All Assets
+            @endif
+            | Capacity Filter: {{ $capacityFilterTitle }}
+        </div>
+    </div>
+
     <div class="row mb-4 align-items-center no-print">
         <div class="col-lg-8">
             <form method="GET" action="{{ route('collection-trips.summary') }}" class="row g-2 align-items-end">
@@ -55,6 +68,11 @@
             <a href="{{ route('collection-trips.index', ['asset_id' => $assetId]) }}" class="btn btn-outline-primary mt-2 w-100">
                 <i class="fas fa-list me-1"></i> Trip List
             </a>
+        </div>
+        <div class="col-lg-2 text-end">
+            <button type="button" id="saveSummaryPdfBtn" class="btn btn-danger mt-2 w-100">
+                <i class="fas fa-file-pdf me-1"></i> Save PDF
+            </button>
         </div>
     </div>
 
@@ -330,10 +348,154 @@
         border-width: 1px;
     }
 
+    .print-only {
+        display: none;
+    }
+
     @media (min-width: 768px) {
         .col-md-2-4 {
             flex: 0 0 20%;
             max-width: 20%;
+        }
+    }
+
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 6mm;
+        }
+
+        html,
+        body {
+            background: #fff !important;
+            zoom: 0.78;
+            font-size: 10px !important;
+        }
+
+        .no-print,
+        .main-sidebar,
+        .main-header,
+        .main-footer,
+        .content-header,
+        .card-header form,
+        .btn,
+        .navbar {
+            display: none !important;
+        }
+
+        .content-wrapper,
+        .content,
+        .container-fluid {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .print-only {
+            display: block;
+            margin-bottom: 8px !important;
+        }
+
+        h2,
+        h6,
+        .card-header,
+        .table th,
+        .table td,
+        small,
+        .text-muted {
+            line-height: 1.2 !important;
+        }
+
+        .row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            margin-left: -4px !important;
+            margin-right: -4px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .col-lg-12,
+        .col-lg-6,
+        .col-md-2-4 {
+            float: none !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+
+        .col-lg-12 {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+        }
+
+        .col-lg-6 {
+            width: 50% !important;
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+
+        .col-md-2-4 {
+            width: 20% !important;
+            flex: 0 0 20% !important;
+            max-width: 20% !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            border: 1px solid #dee2e6 !important;
+            margin-bottom: 8px !important;
+        }
+
+        .card-header {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            padding: 6px 8px !important;
+        }
+
+        .card-body {
+            padding: 8px !important;
+        }
+
+        .table {
+            margin-bottom: 0 !important;
+        }
+
+        .table th,
+        .table td {
+            padding: 4px 6px !important;
+            font-size: 9px !important;
+        }
+
+        .metric-card .card-body {
+            padding: 8px !important;
+        }
+
+        .metric-card h2 {
+            font-size: 1.1rem !important;
+        }
+
+        .metric-card .fa-3x {
+            font-size: 1.6rem !important;
+        }
+
+        canvas {
+            max-width: 100% !important;
+        }
+
+        [style*="height: 380px"] {
+            height: 190px !important;
+        }
+
+        [style*="height: 340px"] {
+            height: 170px !important;
+        }
+
+        [style*="height: 320px"] {
+            height: 160px !important;
         }
     }
 </style>
@@ -343,6 +505,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const chartInstances = [];
         const baseChartOptions = {
             responsive: true,
             maintainAspectRatio: false,
@@ -353,7 +516,7 @@
             }
         };
 
-        new Chart(document.getElementById('collectionTripSummaryChart'), {
+        chartInstances.push(new Chart(document.getElementById('collectionTripSummaryChart'), {
             type: 'bar',
             data: {
                 labels: @json($chartLabels),
@@ -377,9 +540,9 @@
                     }
                 }
             }
-        });
+        }));
 
-        new Chart(document.getElementById('fullOver80Chart'), {
+        chartInstances.push(new Chart(document.getElementById('fullOver80Chart'), {
             type: 'bar',
             data: {
                 labels: @json($fullOver80Labels),
@@ -403,9 +566,9 @@
                     }
                 }
             }
-        });
+        }));
 
-        new Chart(document.getElementById('weekdayCollectionChart'), {
+        chartInstances.push(new Chart(document.getElementById('weekdayCollectionChart'), {
             type: 'bar',
             data: {
                 labels: @json($weekdayLabels),
@@ -429,9 +592,9 @@
                     }
                 }
             }
-        });
+        }));
 
-        new Chart(document.getElementById('hourlyCollectionChart'), {
+        chartInstances.push(new Chart(document.getElementById('hourlyCollectionChart'), {
             type: 'bar',
             data: {
                 labels: @json($hourlyLabels),
@@ -455,9 +618,9 @@
                     }
                 }
             }
-        });
+        }));
 
-        new Chart(document.getElementById('mostUsedBinChart'), {
+        chartInstances.push(new Chart(document.getElementById('mostUsedBinChart'), {
             type: 'bar',
             data: {
                 labels: @json($mostUsedBinLabels),
@@ -482,9 +645,9 @@
                     }
                 }
             }
-        });
+        }));
 
-        new Chart(document.getElementById('compartmentCapacityChart'), {
+        chartInstances.push(new Chart(document.getElementById('compartmentCapacityChart'), {
             type: 'bar',
             data: {
                 labels: @json($compartmentCapacityLabels),
@@ -521,6 +684,166 @@
                     }
                 }
             }
+        }));
+
+        function buildMetricTable() {
+            return {
+                table: {
+                    widths: ['20%', '20%', '20%', '20%', '20%'],
+                    body: [[
+                        buildMetricCell('Total Collection Trips', @json(number_format($totalTrips)), 'Total collection trips recorded for the selected period.'),
+                        buildMetricCell('Average Collection Rate', @json($averageTripsMetric['value'] . '/' . $averageTripsMetric['unit']), 'Average collection frequency using the most suitable time unit.'),
+                        buildMetricCell('Peak Collection Day', @json($weekdayPeakLabel), 'The most frequent collection day from Monday to Sunday.'),
+                        buildMetricCell('Highest Collection Volume', @json($mostUsedBin), 'Bin with the highest number of collection trips in this period.'),
+                        buildMetricCell('Highest Capacity', @json($highestCapacityTile['value'] . ' ' . $highestCapacityTile['label']), 'Highest recorded asset and device capacity.')
+                    ]]
+                },
+                layout: {
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 0,
+                    paddingLeft: () => 4,
+                    paddingRight: () => 4,
+                    paddingTop: () => 4,
+                    paddingBottom: () => 4
+                },
+                margin: [0, 0, 0, 8]
+            };
+        }
+
+        function buildMetricCell(title, value, note) {
+            return {
+                stack: [
+                    { text: title, fontSize: 9, color: '#6b7280', margin: [0, 0, 0, 4] },
+                    { text: value, fontSize: 12, bold: true, margin: [0, 0, 0, 4] },
+                    { text: note, fontSize: 8, color: '#6b7280' }
+                ],
+                fillColor: '#ffffff',
+                margin: [0, 0, 0, 0]
+            };
+        }
+
+        function chartImage(id) {
+            const canvas = document.getElementById(id);
+            return canvas ? canvas.toDataURL('image/png', 1.0) : null;
+        }
+
+        function buildChartCard(title, imageData) {
+            return {
+                stack: [
+                    { text: title, fillColor: '#672d84', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
+                    imageData
+                        ? { image: imageData, width: 350, height: 135, alignment: 'center' }
+                        : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 20, 0, 20] }
+                ],
+                margin: [0, 0, 0, 8]
+            };
+        }
+
+        function buildKpiTable() {
+            const rows = [
+                [
+                    { text: 'KPI', style: 'tableHeader' },
+                    { text: 'Value', style: 'tableHeader' },
+                    { text: 'Detail', style: 'tableHeader' }
+                ],
+                ...@json($systemKpis).map(kpi => [kpi.title, kpi.value, kpi.detail])
+            ];
+
+            return {
+                stack: [
+                    { text: 'Smart Bin System KPI', fillColor: '#212529', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['28%', '18%', '54%'],
+                            body: rows
+                        },
+                        layout: 'lightHorizontalLines'
+                    }
+                ]
+            };
+        }
+
+        function buildInsightsCard() {
+            const insights = @json($insights);
+            return {
+                stack: [
+                    { text: @json(($period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily')) . ' Insights'), fillColor: '#212529', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
+                    insights.length
+                        ? { ul: insights, fontSize: 9 }
+                        : { text: 'No insights available for this period.', fontSize: 9, color: '#6b7280' }
+                ]
+            };
+        }
+
+        document.getElementById('saveSummaryPdfBtn')?.addEventListener('click', function() {
+            chartInstances.forEach(function(chart) {
+                chart.resize();
+                chart.update('none');
+            });
+
+            const docDefinition = {
+                pageSize: 'A4',
+                pageOrientation: 'landscape',
+                pageMargins: [12, 12, 12, 12],
+                content: [
+                    { text: 'Summary Collection Trip', fontSize: 16, bold: true, margin: [0, 0, 0, 4] },
+                    {
+                        text: `Range: ${@json($rangeLabel)} | Asset: ${@json($assetId ? (optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset') : 'All Assets')} | Capacity Filter: ${@json($capacityFilterTitle)}`,
+                        fontSize: 9,
+                        color: '#6b7280',
+                        margin: [0, 0, 0, 8]
+                    },
+                    buildMetricTable(),
+                    {
+                        columns: [
+                            buildChartCard('Collection Trip Trend', chartImage('collectionTripSummaryChart')),
+                            buildChartCard('Collection Frequency by Bin', chartImage('mostUsedBinChart'))
+                        ],
+                        columnGap: 8
+                    },
+                    {
+                        columns: [
+                            buildChartCard('Capacity Bins', chartImage('fullOver80Chart')),
+                            buildChartCard('Collection Frequency by Day', chartImage('weekdayCollectionChart'))
+                        ],
+                        columnGap: 8
+                    },
+                    {
+                        columns: [
+                            buildChartCard('Collection Frequency by Hour (7 AM - 7 PM)', chartImage('hourlyCollectionChart')),
+                            buildChartCard('Compartment Capacity by Asset & Device', chartImage('compartmentCapacityChart'))
+                        ],
+                        columnGap: 8
+                    },
+                    {
+                        columns: [
+                            buildKpiTable(),
+                            buildInsightsCard()
+                        ],
+                        columnGap: 8
+                    }
+                ],
+                styles: {
+                    tableHeader: {
+                        bold: true,
+                        fillColor: '#f3f4f6',
+                        color: '#111827',
+                        fontSize: 9
+                    }
+                },
+                defaultStyle: {
+                    fontSize: 9
+                }
+            };
+
+            pdfMake.createPdf(docDefinition).download('collection-trip-summary.pdf');
+        });
+
+        window.addEventListener('afterprint', function() {
+            chartInstances.forEach(function(chart) {
+                chart.resize();
+            });
         });
     });
 </script>
