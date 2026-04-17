@@ -175,29 +175,12 @@
 
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    Smart Bin System KPI
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Compartment Capacity by Asset & Device
                 </div>
-                <div class="card-body p-0" style="height: 320px; overflow-y: auto;">
-                    <table class="table table-sm table-striped mb-0">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <th>KPI</th>
-                                <th>Value</th>
-                                <th>Detail</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($systemKpis as $kpi)
-                            <tr>
-                                <td>{{ $kpi['title'] }}</td>
-                                <td class="fw-bold">{{ $kpi['value'] }}</td>
-                                <td>{{ $kpi['detail'] }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="card-body p-2" style="height: 320px;">
+                    <canvas id="compartmentCapacityChart"></canvas>
                 </div>
             </div>
         </div>
@@ -218,12 +201,29 @@
 
         <div class="col-lg-6">
             <div class="card shadow-sm border-0 h-100">
-                <div class="card-header summary-gradient text-white">
-                    <i class="fas fa-chart-bar me-2"></i>
-                    Compartment Capacity by Asset & Device
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Smart Bin System KPI
                 </div>
-                <div class="card-body" style="height: 340px;">
-                    <canvas id="compartmentCapacityChart"></canvas>
+                <div class="card-body p-0" style="height: 340px; overflow-y: auto;">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>KPI</th>
+                                <th>Value</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($systemKpis as $kpi)
+                            <tr>
+                                <td>{{ $kpi['title'] }}</td>
+                                <td class="fw-bold">{{ $kpi['value'] }}</td>
+                                <td>{{ $kpi['detail'] }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
