@@ -732,7 +732,7 @@
                 stack: [
                     { text: title, fillColor: '#672d84', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
                     imageData
-                        ? { image: imageData, width: 350, height: 135, alignment: 'center' }
+                        ? { image: imageData, width: 380, height: 180, alignment: 'center' }
                         : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 20, 0, 20] }
                 ],
                 margin: [0, 0, 0, 8]
@@ -785,7 +785,7 @@
             const docDefinition = {
                 pageSize: 'A4',
                 pageOrientation: 'landscape',
-                pageMargins: [12, 12, 12, 12],
+                pageMargins: [14, 12, 14, 12],
                 content: [
                     { text: 'Summary Collection Trip', fontSize: 16, bold: true, margin: [0, 0, 0, 4] },
                     {
@@ -807,7 +807,8 @@
                             buildChartCard('Capacity Bins', chartImage('fullOver80Chart')),
                             buildChartCard('Collection Frequency by Day', chartImage('weekdayCollectionChart'))
                         ],
-                        columnGap: 8
+                        columnGap: 8,
+                        pageBreak: 'after'
                     },
                     {
                         columns: [
