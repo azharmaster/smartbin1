@@ -89,6 +89,7 @@ class CollectionTripController extends Controller
             ->sortDesc()
             ->take(8);
         $weekdaySummary = $this->buildWeekdayCollectionSummary($collectionTrips);
+        $hourlySummary = $this->buildHourlyCollectionSummary($collectionTrips);
 
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
@@ -123,6 +124,8 @@ class CollectionTripController extends Controller
             'weekdayLabels' => $weekdaySummary['labels'],
             'weekdayData' => $weekdaySummary['data'],
             'weekdayPeakLabel' => $weekdaySummary['peak_label'],
+            'hourlyLabels' => $hourlySummary['labels'],
+            'hourlyData' => $hourlySummary['data'],
             'rangeLabel' => $this->formatRangeLabel($period, $rangeStart, $rangeEnd),
             'dateInput' => $inputs['date'],
             'weekInput' => $inputs['week'],
@@ -431,6 +434,26 @@ class CollectionTripController extends Controller
             'labels' => $labels,
             'data' => $data,
             'peak_label' => $peakLabel,
+        ];
+    }
+
+    private function buildHourlyCollectionSummary($collectionTrips): array
+    {
+        $hourCounts = $collectionTrips
+            ->groupBy(fn ($trip) => (int) $trip['emptied_at']->format('G'))
+            ->map->count();
+
+        $labels = [];
+        $data = [];
+
+        foreach (range(7, 19) as $hour) {
+            $labels[] = Carbon::createFromTime($hour, 0)->format('g A');
+            $data[] = (int) ($hourCounts[$hour] ?? 0);
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
         ];
     }
 

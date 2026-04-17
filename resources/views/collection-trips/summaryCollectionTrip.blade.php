@@ -162,6 +162,20 @@
 
     </div>
 
+    <div class="row g-4 mt-1">
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header summary-gradient text-white">
+                    <i class="fas fa-clock me-2"></i>
+                    Collection Frequency by Hour (7 AM - 7 PM)
+                </div>
+                <div class="card-body" style="height: 340px;">
+                    <canvas id="hourlyCollectionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4 mt-1 align-items-stretch">
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
@@ -376,6 +390,32 @@
                     data: @json($weekdayData),
                     backgroundColor: 'rgba(111, 66, 193, 0.82)',
                     borderColor: '#6f42c1',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                ...baseChartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('hourlyCollectionChart'), {
+            type: 'bar',
+            data: {
+                labels: @json($hourlyLabels),
+                datasets: [{
+                    label: 'Collection Trips',
+                    data: @json($hourlyData),
+                    backgroundColor: 'rgba(255, 159, 64, 0.82)',
+                    borderColor: '#ff9f40',
                     borderWidth: 1,
                     borderRadius: 8
                 }]
