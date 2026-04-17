@@ -20,9 +20,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use App\Models\NotificationLog;
 use App\Models\WhatsAppNotification;
+use App\Services\CollectionTripService;
 
 class DashboardController extends Controller
 {
+    public function __construct(private CollectionTripService $collectionTripService)
+    {
+    }
+
     /**
      * Display the dashboard.
      *
@@ -302,59 +307,9 @@ private function getBinStatistics(): array
  */
 private function getCollectionTripsToday(): int
 {
-    $devices = Device::with([
-        'asset',
-        'asset.capacitySetting',
-        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
-    ])->whereHas('asset', fn($q) => $q->where('is_active', 1))
-      ->where('is_active', 1)
-      ->get();
-
-    $collectionCount = 0;
-    $emptiedAssetIds = [];
-
-    foreach ($devices as $device) {
-        if (!$device->asset || !$device->asset->capacitySetting) {
-            continue;
-        }
-
-        $assetId = $device->asset->id;
-        $capacity = $device->asset->capacitySetting;
-        $sensors = $device->sensors;
-
-        $wasFullOrHalf = false;
-        $previousCapacity = null;
-
-        foreach ($sensors as $sensor) {
-            if (!is_numeric($sensor->capacity)) {
-                continue;
-            }
-
-            $currentCapacity = $sensor->capacity;
-
-            // Check if bin was full or half (capacity > empty_to)
-            if (!$wasFullOrHalf && $previousCapacity !== null && $previousCapacity > $capacity->empty_to) {
-                $wasFullOrHalf = true;
-            }
-
-            // Check if bin was emptied (capacity goes negative or <= empty_to after being full/half)
-            if ($wasFullOrHalf && ($currentCapacity < 0 || $currentCapacity <= $capacity->empty_to)) {
-                $emptiedTime = Carbon::parse($sensor->created_at);
-
-                // Count if emptied today and not already counted for this asset
-                if ($emptiedTime->isToday() && !isset($emptiedAssetIds[$assetId])) {
-                    $collectionCount++;
-                    $emptiedAssetIds[$assetId] = true;
-                }
-
-                $wasFullOrHalf = false; // reset for next cycle
-            }
-
-            $previousCapacity = $currentCapacity;
-        }
-    }
-
-    return $collectionCount;
+    return $this->collectionTripService
+        ->getTrips(today()->toDateString(), today()->toDateString())
+        ->count();
 }
 
 // ------------------- UPDATED CALENDAR METHOD -------------------
