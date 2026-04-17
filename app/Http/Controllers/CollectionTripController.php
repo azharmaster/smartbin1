@@ -97,7 +97,7 @@ class CollectionTripController extends Controller
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId);
         $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
-        $compartmentCapacities = $this->buildCompartmentCapacities($assetId);
+        $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
         $insights = $this->buildInsights($collectionTrips, $period, $bucketLabels, $chartData);
 
         return view('collection-trips.summaryCollectionTrip', [
@@ -524,21 +524,25 @@ class CollectionTripController extends Controller
         ];
     }
 
-    private function buildCompartmentCapacities(?int $assetId = null): array
+    private function buildCompartmentCapacities(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null): array
     {
         $rows = Asset::with([
             'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('device_name'),
-            'devices.latestSensor',
+            'devices.sensors' => fn ($query) => $query
+                ->whereBetween('created_at', [$rangeStart, $rangeEnd])
+                ->orderBy('created_at', 'asc'),
         ])
             ->where('is_active', 1)
             ->when($assetId, fn ($query) => $query->where('id', $assetId))
             ->get()
             ->flatMap(function ($asset) {
                 return $asset->devices->map(function ($device) use ($asset) {
+                    $latestSensorInRange = $device->sensors->last();
+
                     return [
                         'label' => $asset->asset_name . ' - ' . ($device->device_name ?? 'N/A'),
-                        'capacity' => $device->latestSensor && is_numeric($device->latestSensor->capacity)
-                            ? round((float) $device->latestSensor->capacity, 1)
+                        'capacity' => $latestSensorInRange && is_numeric($latestSensorInRange->capacity)
+                            ? round((float) $latestSensorInRange->capacity, 1)
                             : 0,
                     ];
                 });
