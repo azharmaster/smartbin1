@@ -12,7 +12,7 @@
             @else
             | Asset: All Assets
             @endif
-            | Capacity Filter: {{ $capacityFilterTitle }}
+            | Capacity Filter: <span id="printCapacityFilterTitle">{{ $capacityFilterTitle }}</span>
         </div>
     </div>
 
@@ -215,24 +215,19 @@
                         <i class="fas fa-trash-alt me-2"></i>
                         Capacity Bins
                     </div>
-                    <form method="GET" action="{{ route('collection-trips.summary') }}" class="mb-0">
-                        <input type="hidden" name="period" value="{{ $period }}">
-                        <input type="hidden" name="asset_id" value="{{ $assetId }}">
-                        <input type="hidden" name="date" value="{{ $dateInput }}">
-                        <input type="hidden" name="week" value="{{ $weekInput }}">
-                        <input type="hidden" name="month" value="{{ $monthInput }}">
+                    <div class="mb-0">
                         <div class="btn-group btn-group-sm capacity-tabs" role="group" aria-label="Capacity Filter">
-                            <button type="submit" name="capacity_filter" value="empty" class="btn {{ $capacityFilter === 'empty' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                            <button type="button" data-capacity-filter="empty" class="btn {{ $capacityFilter === 'empty' ? 'btn-light text-dark' : 'btn-outline-light' }}">
                                 Empty (0)
                             </button>
-                            <button type="submit" name="capacity_filter" value="half" class="btn {{ $capacityFilter === 'half' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                            <button type="button" data-capacity-filter="half" class="btn {{ $capacityFilter === 'half' ? 'btn-light text-dark' : 'btn-outline-light' }}">
                                 Half Full (1-79)
                             </button>
-                            <button type="submit" name="capacity_filter" value="full" class="btn {{ $capacityFilter === 'full' ? 'btn-light text-dark' : 'btn-outline-light' }}">
+                            <button type="button" data-capacity-filter="full" class="btn {{ $capacityFilter === 'full' ? 'btn-light text-dark' : 'btn-outline-light' }}">
                                 Full (80-100)
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
                 <div class="card-body" style="height: 340px;">
                     <canvas id="fullOver80Chart"></canvas>
@@ -506,6 +501,12 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const chartInstances = [];
+        const capacityFilterDatasets = @json($capacityFilterDatasets);
+        const capacityFilterButtons = Array.from(document.querySelectorAll('[data-capacity-filter]'));
+        const printCapacityFilterTitle = document.getElementById('printCapacityFilterTitle');
+        let currentCapacityFilter = @json($capacityFilter);
+        let currentCapacityFilterTitle = @json($capacityFilterTitle);
+        let fullOver80Chart;
         const baseChartOptions = {
             responsive: true,
             maintainAspectRatio: false,
@@ -542,7 +543,7 @@
             }
         }));
 
-        chartInstances.push(new Chart(document.getElementById('fullOver80Chart'), {
+        fullOver80Chart = new Chart(document.getElementById('fullOver80Chart'), {
             type: 'bar',
             data: {
                 labels: @json($fullOver80Labels),
@@ -566,7 +567,46 @@
                     }
                 }
             }
-        }));
+        });
+        chartInstances.push(fullOver80Chart);
+
+        function syncCapacityFilterButtons(activeFilter) {
+            capacityFilterButtons.forEach(function(button) {
+                const isActive = button.dataset.capacityFilter === activeFilter;
+                button.classList.toggle('btn-light', isActive);
+                button.classList.toggle('text-dark', isActive);
+                button.classList.toggle('btn-outline-light', !isActive);
+            });
+        }
+
+        function applyCapacityFilter(filterKey) {
+            const dataset = capacityFilterDatasets[filterKey];
+
+            if (!dataset || !fullOver80Chart) {
+                return;
+            }
+
+            currentCapacityFilter = filterKey;
+            currentCapacityFilterTitle = dataset.filter_title;
+
+            fullOver80Chart.data.labels = dataset.labels;
+            fullOver80Chart.data.datasets[0].label = dataset.dataset_label;
+            fullOver80Chart.data.datasets[0].data = dataset.data;
+            fullOver80Chart.update();
+
+            if (printCapacityFilterTitle) {
+                printCapacityFilterTitle.textContent = dataset.filter_title;
+            }
+
+            syncCapacityFilterButtons(filterKey);
+        }
+
+        syncCapacityFilterButtons(currentCapacityFilter);
+        capacityFilterButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                applyCapacityFilter(button.dataset.capacityFilter);
+            });
+        });
 
         chartInstances.push(new Chart(document.getElementById('weekdayCollectionChart'), {
             type: 'bar',
@@ -789,7 +829,7 @@
                 content: [
                     { text: 'Summary Collection Trip', fontSize: 16, bold: true, margin: [0, 0, 0, 4] },
                     {
-                        text: `Range: ${@json($rangeLabel)} | Asset: ${@json($assetId ? (optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset') : 'All Assets')} | Capacity Filter: ${@json($capacityFilterTitle)}`,
+                        text: `Range: ${@json($rangeLabel)} | Asset: ${@json($assetId ? (optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset') : 'All Assets')} | Capacity Filter: ${currentCapacityFilterTitle}`,
                         fontSize: 9,
                         color: '#6b7280',
                         margin: [0, 0, 0, 8]

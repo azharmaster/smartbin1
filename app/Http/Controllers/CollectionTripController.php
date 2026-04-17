@@ -232,6 +232,7 @@ class CollectionTripController extends Controller
             'capacityFilter' => $capacityFilter,
             'capacityFilterTitle' => $binKpis['filter_title'],
             'capacityFilterDatasetLabel' => $binKpis['dataset_label'],
+            'capacityFilterDatasets' => $binKpis['datasets_by_filter'],
             'compartmentCapacityLabels' => $compartmentCapacities['labels'],
             'compartmentCapacityData' => $compartmentCapacities['data'],
             'highestCapacityTile' => $highestCapacityTile,
@@ -300,7 +301,7 @@ class CollectionTripController extends Controller
 
     private function buildBinKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null, string $capacityFilter = 'empty'): array
     {
-        $filterMeta = $this->resolveCapacityFilterMeta($capacityFilter);
+        $selectedFilterMeta = $this->resolveCapacityFilterMeta($capacityFilter);
         $assets = Asset::with([
             'capacitySetting',
             'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
@@ -310,10 +311,19 @@ class CollectionTripController extends Controller
             ->when($assetId, fn ($query) => $query->where('id', $assetId))
             ->get();
 
-        $fullOver80Rows = collect();
+        $filterKeys = ['empty', 'half', 'full'];
+        $rowsByFilter = [
+            'empty' => collect(),
+            'half' => collect(),
+            'full' => collect(),
+        ];
 
         foreach ($assets as $asset) {
-            $fullOver80Count = 0;
+            $countsByFilter = [
+                'empty' => 0,
+                'half' => 0,
+                'full' => 0,
+            ];
 
             foreach ($asset->devices as $device) {
                 $sensors = $device->sensors
@@ -328,37 +338,58 @@ class CollectionTripController extends Controller
                     $currentCapacity = $reading['capacity'];
                     $readingTime = $reading['created_at'];
 
-                    if (
-                        $readingTime->betweenIncluded($rangeStart, $rangeEnd) &&
-                        $this->matchesCapacityFilter($currentCapacity, $filterMeta['key'])
-                    ) {
-                        $fullOver80Count++;
+                    if (! $readingTime->betweenIncluded($rangeStart, $rangeEnd)) {
+                        continue;
+                    }
+
+                    foreach ($filterKeys as $filterKey) {
+                        if ($this->matchesCapacityFilter($currentCapacity, $filterKey)) {
+                            $countsByFilter[$filterKey]++;
+                        }
                     }
                 }
             }
 
-            $fullOver80Rows->push([
-                'asset_name' => $asset->asset_name,
-                'count' => $fullOver80Count,
-            ]);
+            foreach ($filterKeys as $filterKey) {
+                $rowsByFilter[$filterKey]->push([
+                    'asset_name' => $asset->asset_name,
+                    'count' => $countsByFilter[$filterKey],
+                ]);
+            }
         }
 
-        $fullOver80Rows = $fullOver80Rows
+        $datasetsByFilter = [];
+
+        foreach ($filterKeys as $filterKey) {
+            $filterMeta = $this->resolveCapacityFilterMeta($filterKey);
+            $rows = $rowsByFilter[$filterKey]
             ->filter(fn ($row) => $row['count'] > 0)
             ->sortByDesc('count')
             ->take(8)
             ->values();
 
-        $fullOver80PeakBin = $fullOver80Rows->first();
+            $peakBin = $rows->first();
+
+            $datasetsByFilter[$filterKey] = [
+                'labels' => $rows->pluck('asset_name')->all(),
+                'data' => $rows->pluck('count')->all(),
+                'peak_bin' => $peakBin
+                    ? $peakBin['asset_name'] . ' (' . $peakBin['count'] . ' events)'
+                    : 'N/A',
+                'filter_title' => $filterMeta['title'],
+                'dataset_label' => $filterMeta['dataset_label'],
+            ];
+        }
+
+        $selectedDataset = $datasetsByFilter[$selectedFilterMeta['key']];
 
         return [
-            'full_over_80_labels' => $fullOver80Rows->pluck('asset_name')->all(),
-            'full_over_80_data' => $fullOver80Rows->pluck('count')->all(),
-            'full_over_80_peak_bin' => $fullOver80PeakBin
-                ? $fullOver80PeakBin['asset_name'] . ' (' . $fullOver80PeakBin['count'] . ' events)'
-                : 'N/A',
-            'filter_title' => $filterMeta['title'],
-            'dataset_label' => $filterMeta['dataset_label'],
+            'full_over_80_labels' => $selectedDataset['labels'],
+            'full_over_80_data' => $selectedDataset['data'],
+            'full_over_80_peak_bin' => $selectedDataset['peak_bin'],
+            'filter_title' => $selectedDataset['filter_title'],
+            'dataset_label' => $selectedDataset['dataset_label'],
+            'datasets_by_filter' => $datasetsByFilter,
         ];
     }
 
