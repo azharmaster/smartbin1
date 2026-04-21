@@ -165,7 +165,7 @@
         </div>
     </div>
 
-    <div class="row g-3">
+    <div class="row g-4">
         <div class="col-lg-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
@@ -181,7 +181,7 @@
 
     </div>
 
-    <div class="row g-3 mt-1 align-items-stretch">
+    <div class="row g-4 mt-1 align-items-stretch">
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
                 <div class="card-header summary-gradient text-white">
@@ -207,7 +207,7 @@
         </div>
     </div>
 
-    <div class="row g-3">
+    <div class="row g-4">
         <div class="col-lg-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white d-flex justify-content-between align-items-center gap-3 flex-wrap">
@@ -339,15 +339,15 @@
     }
 
     .summary-chart-xl {
-        height: 210px;
+        height: 380px;
     }
 
     .summary-chart-lg {
-        height: 180px;
+        height: 340px;
     }
 
     .summary-chart-md {
-        height: 170px;
+        height: 320px;
     }
 
     .summary-panel-body {
@@ -355,7 +355,7 @@
     }
 
     .summary-panel-lg {
-        height: 180px;
+        height: 340px;
     }
 
     .metric-card {
