@@ -1098,9 +1098,7 @@ function trend($current, $previous) {
                 <div class="card-body map-card-body" style="height: 650px; position: relative;">
                     <!-- Map Controls - Floating -->
                     <div class="map-controls">
-                        <button id="toggleMapMovement" class="btn btn-success btn-sm">
-                            <i class="fas fa-pause"></i> Pause
-                        </button>
+                       
                         <button id="toggleMapMovement" class="btn btn-success btn-sm">
                             <i class="fas fa-pause"></i> Pause
                         </button>
