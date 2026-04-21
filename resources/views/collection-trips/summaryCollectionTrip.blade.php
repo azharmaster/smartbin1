@@ -165,14 +165,14 @@
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-3">
         <div class="col-lg-12">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-chart-line me-2"></i>
                     Collection Trip Trend
                 </div>
-                <div class="card-body" style="height: 380px;">
+                <div class="card-body summary-chart-body summary-chart-xl">
                     <canvas id="collectionTripSummaryChart"></canvas>
                 </div>
             </div>
@@ -181,14 +181,14 @@
 
     </div>
 
-    <div class="row g-4 mt-1 align-items-stretch">
+    <div class="row g-3 mt-1 align-items-stretch">
         <div class="col-lg-6 d-flex">
             <div class="card shadow-sm border-0 w-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-trophy me-2"></i>
                     Collection Frequency by Bin
                 </div>
-                <div class="card-body p-2" style="height: 320px;">
+                <div class="card-body p-2 summary-chart-body summary-chart-md">
                     <canvas id="mostUsedBinChart"></canvas>
                 </div>
             </div>
@@ -200,14 +200,14 @@
                     <i class="fas fa-chart-bar me-2"></i>
                     Compartment Capacity by Asset & Device
                 </div>
-                <div class="card-body p-2" style="height: 320px;">
+                <div class="card-body p-2 summary-chart-body summary-chart-md">
                     <canvas id="compartmentCapacityChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-3">
         <div class="col-lg-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white d-flex justify-content-between align-items-center gap-3 flex-wrap">
@@ -229,7 +229,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body" style="height: 340px;">
+                <div class="card-body summary-chart-body summary-chart-lg">
                     <canvas id="fullOver80Chart"></canvas>
                 </div>
             </div>
@@ -241,7 +241,7 @@
                     <i class="fas fa-calendar-week me-2"></i>
                     Collection Frequency by Day
                 </div>
-                <div class="card-body" style="height: 340px;">
+                <div class="card-body summary-chart-body summary-chart-lg">
                     <canvas id="weekdayCollectionChart"></canvas>
                 </div>
             </div>
@@ -253,7 +253,7 @@
                     <i class="fas fa-clock me-2"></i>
                     Collection Frequency by Hour (7 AM - 7 PM)
                 </div>
-                <div class="card-body" style="height: 340px;">
+                <div class="card-body summary-chart-body summary-chart-lg">
                     <canvas id="hourlyCollectionChart"></canvas>
                 </div>
             </div>
@@ -265,7 +265,7 @@
                     <i class="fas fa-lightbulb me-2"></i>
                     Smart Bin System KPI
                 </div>
-                <div class="card-body p-0" style="height: 340px; overflow-y: auto;">
+                <div class="card-body p-0 summary-panel-body summary-panel-lg">
                     <table class="table table-sm table-striped mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
@@ -334,6 +334,30 @@
         }
     }
 
+    .summary-chart-body {
+        padding: 8px;
+    }
+
+    .summary-chart-xl {
+        height: 250px;
+    }
+
+    .summary-chart-lg {
+        height: 220px;
+    }
+
+    .summary-chart-md {
+        height: 210px;
+    }
+
+    .summary-panel-body {
+        overflow-y: auto;
+    }
+
+    .summary-panel-lg {
+        height: 220px;
+    }
+
     .metric-card {
         cursor: default;
     }
@@ -357,14 +381,14 @@
     @media print {
         @page {
             size: A4 landscape;
-            margin: 6mm;
+            margin: 5mm;
         }
 
         html,
         body {
             background: #fff !important;
-            zoom: 0.78;
-            font-size: 10px !important;
+            zoom: 0.68;
+            font-size: 9px !important;
         }
 
         .no-print,
@@ -389,7 +413,7 @@
 
         .print-only {
             display: block;
-            margin-bottom: 8px !important;
+            margin-bottom: 6px !important;
         }
 
         h2,
@@ -442,17 +466,18 @@
             break-inside: avoid;
             page-break-inside: avoid;
             border: 1px solid #dee2e6 !important;
-            margin-bottom: 8px !important;
+            margin-bottom: 5px !important;
         }
 
         .card-header {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            padding: 6px 8px !important;
+            padding: 4px 6px !important;
+            font-size: 9px !important;
         }
 
         .card-body {
-            padding: 8px !important;
+            padding: 5px !important;
         }
 
         .table {
@@ -466,31 +491,37 @@
         }
 
         .metric-card .card-body {
-            padding: 8px !important;
+            padding: 5px !important;
         }
 
         .metric-card h2 {
-            font-size: 1.1rem !important;
+            font-size: 0.95rem !important;
         }
 
         .metric-card .fa-3x {
-            font-size: 1.6rem !important;
+            font-size: 1.2rem !important;
         }
 
         canvas {
             max-width: 100% !important;
         }
 
-        [style*="height: 380px"] {
-            height: 190px !important;
+        .summary-chart-xl {
+            height: 118px !important;
         }
 
-        [style*="height: 340px"] {
-            height: 170px !important;
+        .summary-chart-lg {
+            height: 108px !important;
         }
 
-        [style*="height: 320px"] {
-            height: 160px !important;
+        .summary-chart-md,
+        .summary-panel-lg {
+            height: 102px !important;
+        }
+
+        .row.g-3,
+        .row.g-4 {
+            row-gap: 4px !important;
         }
     }
 </style>
@@ -772,10 +803,10 @@
                 stack: [
                     { text: title, fillColor: '#672d84', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
                     imageData
-                        ? { image: imageData, width: 380, height: 180, alignment: 'center' }
-                        : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 20, 0, 20] }
+                        ? { image: imageData, width: 310, height: 110, alignment: 'center' }
+                        : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 10, 0, 10] }
                 ],
-                margin: [0, 0, 0, 8]
+                margin: [0, 0, 0, 5]
             };
         }
 
@@ -800,7 +831,8 @@
                         },
                         layout: 'lightHorizontalLines'
                     }
-                ]
+                ],
+                margin: [0, 0, 0, 5]
             };
         }
 
@@ -812,7 +844,8 @@
                     insights.length
                         ? { ul: insights, fontSize: 9 }
                         : { text: 'No insights available for this period.', fontSize: 9, color: '#6b7280' }
-                ]
+                ],
+                margin: [0, 0, 0, 5]
             };
         }
 
@@ -825,14 +858,14 @@
             const docDefinition = {
                 pageSize: 'A4',
                 pageOrientation: 'landscape',
-                pageMargins: [14, 12, 14, 12],
+                pageMargins: [10, 8, 10, 8],
                 content: [
-                    { text: 'Summary Collection Trip', fontSize: 16, bold: true, margin: [0, 0, 0, 4] },
+                    { text: 'Summary Collection Trip', fontSize: 14, bold: true, margin: [0, 0, 0, 3] },
                     {
                         text: `Range: ${@json($rangeLabel)} | Asset: ${@json($assetId ? (optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset') : 'All Assets')} | Capacity Filter: ${currentCapacityFilterTitle}`,
-                        fontSize: 9,
+                        fontSize: 8,
                         color: '#6b7280',
-                        margin: [0, 0, 0, 8]
+                        margin: [0, 0, 0, 5]
                     },
                     buildMetricTable(),
                     {
@@ -847,8 +880,7 @@
                             buildChartCard('Capacity Bins', chartImage('fullOver80Chart')),
                             buildChartCard('Collection Frequency by Day', chartImage('weekdayCollectionChart'))
                         ],
-                        columnGap: 8,
-                        pageBreak: 'after'
+                        columnGap: 8
                     },
                     {
                         columns: [
@@ -870,11 +902,11 @@
                         bold: true,
                         fillColor: '#f3f4f6',
                         color: '#111827',
-                        fontSize: 9
+                        fontSize: 8
                     }
                 },
                 defaultStyle: {
-                    fontSize: 9
+                    fontSize: 8
                 }
             };
 

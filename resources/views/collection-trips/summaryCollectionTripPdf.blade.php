@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <title>Summary Collection Trip</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #1f2937; margin: 0; }
+        @page { size: A4 landscape; margin: 8mm; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 9px; color: #1f2937; margin: 0; }
         .page { width: 100%; }
-        .header { margin-bottom: 10px; }
-        .header h1 { margin: 0 0 4px; font-size: 18px; }
-        .meta { color: #4b5563; font-size: 10px; }
+        .header { margin-bottom: 6px; }
+        .header h1 { margin: 0 0 3px; font-size: 15px; }
+        .meta { color: #4b5563; font-size: 8px; }
         table { width: 100%; border-collapse: collapse; }
-        .metrics td { width: 20%; padding: 4px; vertical-align: top; }
+        .metrics td { width: 20%; padding: 3px; vertical-align: top; }
         .metric-card {
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            padding: 8px;
-            min-height: 72px;
+            padding: 6px;
+            min-height: 58px;
         }
-        .metric-title { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
-        .metric-value { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-        .metric-note { font-size: 9px; color: #6b7280; }
-        .section-table td { width: 50%; padding: 5px; vertical-align: top; }
+        .metric-title { font-size: 8px; color: #6b7280; margin-bottom: 4px; }
+        .metric-value { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+        .metric-note { font-size: 7px; color: #6b7280; }
+        .section-table td { width: 50%; padding: 3px; vertical-align: top; }
         .card { border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; }
-        .card-header { background: #672d84; color: #fff; padding: 7px 9px; font-weight: 700; font-size: 11px; }
-        .card-body { padding: 8px; }
-        .chart { width: 100%; height: 170px; object-fit: contain; }
-        .kpi-table th, .kpi-table td { border: 1px solid #e5e7eb; padding: 5px 6px; text-align: left; font-size: 9px; }
+        .card-header { background: #672d84; color: #fff; padding: 5px 7px; font-weight: 700; font-size: 9px; }
+        .card-body { padding: 6px; }
+        .chart { width: 100%; height: 108px; object-fit: contain; }
+        .kpi-table th, .kpi-table td { border: 1px solid #e5e7eb; padding: 3px 4px; text-align: left; font-size: 7px; }
         .kpi-table th { background: #f3f4f6; }
         .insights { margin: 0; padding-left: 16px; }
-        .insights li { margin-bottom: 4px; }
+        .insights li { margin-bottom: 2px; font-size: 7px; }
     </style>
 </head>
 <body>
