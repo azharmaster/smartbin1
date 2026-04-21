@@ -339,15 +339,15 @@
     }
 
     .summary-chart-xl {
-        height: 250px;
+        height: 210px;
     }
 
     .summary-chart-lg {
-        height: 220px;
+        height: 180px;
     }
 
     .summary-chart-md {
-        height: 210px;
+        height: 170px;
     }
 
     .summary-panel-body {
@@ -355,7 +355,7 @@
     }
 
     .summary-panel-lg {
-        height: 220px;
+        height: 180px;
     }
 
     .metric-card {
@@ -381,14 +381,14 @@
     @media print {
         @page {
             size: A4 landscape;
-            margin: 5mm;
+            margin: 4mm;
         }
 
         html,
         body {
             background: #fff !important;
-            zoom: 0.68;
-            font-size: 9px !important;
+            zoom: 0.60;
+            font-size: 8px !important;
         }
 
         .no-print,
@@ -413,7 +413,7 @@
 
         .print-only {
             display: block;
-            margin-bottom: 6px !important;
+            margin-bottom: 4px !important;
         }
 
         h2,
@@ -466,18 +466,18 @@
             break-inside: avoid;
             page-break-inside: avoid;
             border: 1px solid #dee2e6 !important;
-            margin-bottom: 5px !important;
+            margin-bottom: 4px !important;
         }
 
         .card-header {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            padding: 4px 6px !important;
-            font-size: 9px !important;
+            padding: 3px 5px !important;
+            font-size: 8px !important;
         }
 
         .card-body {
-            padding: 5px !important;
+            padding: 4px !important;
         }
 
         .table {
@@ -486,20 +486,20 @@
 
         .table th,
         .table td {
-            padding: 4px 6px !important;
-            font-size: 9px !important;
+            padding: 3px 4px !important;
+            font-size: 8px !important;
         }
 
         .metric-card .card-body {
-            padding: 5px !important;
+            padding: 4px !important;
         }
 
         .metric-card h2 {
-            font-size: 0.95rem !important;
+            font-size: 0.82rem !important;
         }
 
         .metric-card .fa-3x {
-            font-size: 1.2rem !important;
+            font-size: 1rem !important;
         }
 
         canvas {
@@ -507,21 +507,28 @@
         }
 
         .summary-chart-xl {
-            height: 118px !important;
+            height: 92px !important;
         }
 
         .summary-chart-lg {
-            height: 108px !important;
+            height: 84px !important;
         }
 
         .summary-chart-md,
         .summary-panel-lg {
-            height: 102px !important;
+            height: 78px !important;
         }
 
         .row.g-3,
         .row.g-4 {
-            row-gap: 4px !important;
+            row-gap: 2px !important;
+        }
+
+        .card-header i,
+        .metric-card small,
+        .text-white-50,
+        .text-muted {
+            font-size: 7px !important;
         }
     }
 </style>
@@ -803,10 +810,10 @@
                 stack: [
                     { text: title, fillColor: '#672d84', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
                     imageData
-                        ? { image: imageData, width: 310, height: 110, alignment: 'center' }
-                        : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 10, 0, 10] }
+                        ? { image: imageData, width: 280, height: 88, alignment: 'center' }
+                        : { text: 'Chart unavailable', italics: true, color: '#6b7280', margin: [0, 8, 0, 8] }
                 ],
-                margin: [0, 0, 0, 5]
+                margin: [0, 0, 0, 3]
             };
         }
 
@@ -858,14 +865,14 @@
             const docDefinition = {
                 pageSize: 'A4',
                 pageOrientation: 'landscape',
-                pageMargins: [10, 8, 10, 8],
+                pageMargins: [8, 6, 8, 6],
                 content: [
-                    { text: 'Summary Collection Trip', fontSize: 14, bold: true, margin: [0, 0, 0, 3] },
+                    { text: 'Summary Collection Trip', fontSize: 12, bold: true, margin: [0, 0, 0, 2] },
                     {
                         text: `Range: ${@json($rangeLabel)} | Asset: ${@json($assetId ? (optional($assets->firstWhere('id', $assetId))->asset_name ?? 'Selected Asset') : 'All Assets')} | Capacity Filter: ${currentCapacityFilterTitle}`,
-                        fontSize: 8,
+                        fontSize: 7,
                         color: '#6b7280',
-                        margin: [0, 0, 0, 5]
+                        margin: [0, 0, 0, 3]
                     },
                     buildMetricTable(),
                     {
