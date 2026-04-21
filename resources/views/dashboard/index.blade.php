@@ -1098,8 +1098,15 @@ function trend($current, $previous) {
                 <div class="card-body map-card-body" style="height: 650px; position: relative;">
                     <!-- Map Controls - Floating -->
                     <div class="map-controls">
+                        <button id="toggleMapMovement" class="btn btn-success btn-sm">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button id="toggleMapMovement" class="btn btn-success btn-sm">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
                         <button id="zoomIn" class="btn btn-info btn-sm"><i class="fas fa-search-plus"></i></button>
                         <button id="zoomOut" class="btn btn-danger btn-sm"><i class="fas fa-search-minus"></i></button>
+                        
                         <button id="resetView" class="btn btn-secondary btn-sm"><i class="fas fa-crosshairs"></i> Reset</button>
                     </div>
 
@@ -1797,6 +1804,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const autoPopupDelay = 4000;
     let autoPopupIndex = 0;
     let autoPopupTimer = null;
+    let autoPopupPaused = false;
+    const toggleMapMovementBtn = document.getElementById('toggleMapMovement');
 
     // Add OpenStreetMap tiles with modern CartoDB Voyager
        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1808,6 +1817,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
     document.getElementById('zoomOut').addEventListener('click', () => map.zoomOut());
     document.getElementById('resetView').addEventListener('click', () => map.setView([3.1427, 101.7181], 17.5));
+
+    function updateMapMovementButton() {
+        if (!toggleMapMovementBtn) return;
+
+        if (autoPopupPaused) {
+            toggleMapMovementBtn.classList.remove('btn-success');
+            toggleMapMovementBtn.classList.add('btn-secondary');
+            toggleMapMovementBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+            return;
+        }
+
+        toggleMapMovementBtn.classList.remove('btn-secondary');
+        toggleMapMovementBtn.classList.add('btn-success');
+        toggleMapMovementBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+    }
 
     // Custom marker icon factory
     function createCustomMarker(color, assetName, deviceCount) {
@@ -1950,7 +1974,7 @@ document.addEventListener('DOMContentLoaded', function() {
     @endforeach
 
     function openAutoPopup(index) {
-        if (!autoPopupMarkers.length) return;
+        if (!autoPopupMarkers.length || autoPopupPaused) return;
 
         const marker = autoPopupMarkers[index];
         if (!marker) return;
@@ -1965,7 +1989,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function queueNextPopup() {
         clearTimeout(autoPopupTimer);
+        if (autoPopupPaused || autoPopupMarkers.length <= 1) return;
+
         autoPopupTimer = setTimeout(() => {
+            if (autoPopupPaused) return;
             autoPopupIndex = (autoPopupIndex + 1) % autoPopupMarkers.length;
             openAutoPopup(autoPopupIndex);
             queueNextPopup();
@@ -1973,16 +2000,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function startAutoPopupRotation() {
-        if (!autoPopupMarkers.length) return;
+        if (!autoPopupMarkers.length || autoPopupPaused) return;
 
         openAutoPopup(autoPopupIndex);
+        queueNextPopup();
+    }
 
-        if (autoPopupMarkers.length > 1) {
-            queueNextPopup();
-        }
+    if (toggleMapMovementBtn) {
+        toggleMapMovementBtn.addEventListener('click', () => {
+            autoPopupPaused = !autoPopupPaused;
+
+            if (autoPopupPaused) {
+                clearTimeout(autoPopupTimer);
+                autoPopupTimer = null;
+            } else {
+                startAutoPopupRotation();
+            }
+
+            updateMapMovementButton();
+        });
     }
 
     map.whenReady(() => {
+        updateMapMovementButton();
         setTimeout(startAutoPopupRotation, 800);
     });
 });
