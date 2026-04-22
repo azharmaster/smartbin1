@@ -68,6 +68,21 @@
       color: #230c0cff;
     }
 
+    .login-card-body .password-toggle {
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .login-card-body .password-toggle:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+    .login-card-body .password-toggle:hover {
+      background: rgba(255, 255, 255, 0.35);
+      color: #007bff;
+    }
+
     /* ---------- Remember me text ---------- */
     .icheck-primary label {
       color: #030303ff;
@@ -125,8 +140,11 @@
           </div>
         </div>
         <div class="input-group mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Password">
+          <input type="password" id="login-password" name="password" class="form-control" placeholder="Password">
           <div class="input-group-append">
+            <button type="button" class="input-group-text password-toggle" data-target="login-password" aria-label="Show password">
+              <span class="fas fa-eye-slash"></span>
+            </button>
             <div class="input-group-text">
               <span class="fas fa-lock"></span>
             </div>
@@ -166,5 +184,19 @@
 <script src="{{ asset('adminlte') }}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('adminlte') }}/dist/js/adminlte.min.js"></script>
+<script>
+  document.querySelectorAll('.password-toggle').forEach(function (toggle) {
+    toggle.addEventListener('click', function () {
+      var input = document.getElementById(this.dataset.target);
+      var icon = this.querySelector('span');
+      var isHidden = input.type === 'password';
+
+      input.type = isHidden ? 'text' : 'password';
+      icon.classList.toggle('fa-eye-slash', !isHidden);
+      icon.classList.toggle('fa-eye', isHidden);
+      this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+  });
+</script>
 </body>
 </html>
