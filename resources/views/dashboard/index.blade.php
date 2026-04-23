@@ -2061,7 +2061,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-chart-pie"></i> Summary Notification</h5>
+        <h5 class="modal-title"><i class="fas fa-chart-bar"></i> Daily Bin Summary</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -2169,7 +2169,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <ul>
           <li>Displays public holidays and special events.</li>
           <li>Shows grouped notification logs per day.</li>
-          <li>Click a notification label to view all alerts for that date.</li>
+          <li>Click a date or notification label to view daily collection trip and full bin summary.</li>
           <li>Switch between Month and Week view.</li>
         </ul>
         <p><strong>Purpose:</strong> Assist planning during high-traffic events or holidays.</p>
@@ -2212,7 +2212,143 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!calendarEl) return;
 
     const calendarEvents = @json($calendarCombined);
+    const calendarSummaryUrl = @json(route('dashboard.calendarSummary'));
     const isMobile = window.innerWidth < 768;
+    const summaryModalTitle = document.querySelector('#notificationModal .modal-title');
+    const summaryModalBody = document.getElementById('notificationListContainer');
+
+    function renderCalendarSummaryChart(labels, data) {
+        const canvas = document.getElementById('calendarHourlyChart');
+        if (!canvas) return;
+
+        if (window.calendarSummaryChartInstance) {
+            window.calendarSummaryChartInstance.destroy();
+        }
+
+        window.calendarSummaryChartInstance = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Collection Trips',
+                    data: data,
+                    backgroundColor: 'rgba(255, 159, 64, 0.82)',
+                    borderColor: '#ff9f40',
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function openCalendarSummary(dateString) {
+        if (!summaryModalBody) return;
+
+        if (summaryModalTitle) {
+            summaryModalTitle.innerHTML = '<i class="fas fa-chart-bar"></i> Daily Bin Summary';
+        }
+
+        summaryModalBody.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></div>
+                <span class="ms-2">Loading daily summary...</span>
+            </div>
+        `;
+
+        $('#notificationModal').modal('show');
+
+        fetch(`${calendarSummaryUrl}?date=${encodeURIComponent(dateString)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Failed to load calendar summary.');
+                }
+
+                return response.json();
+            })
+            .then(function(summary) {
+                const emptyState = summary.collection_trip_count === 0 && summary.full_bin_count === 0
+                    ? `
+                        <div class="alert alert-light border mb-3">
+                            No collection trip or full bin events were recorded on this date.
+                        </div>
+                    `
+                    : '';
+
+                summaryModalBody.innerHTML = `
+                    <div class="card bg-light mb-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-calendar-day me-1"></i> Summary for ${summary.date_label}
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100 bg-white text-center">
+                                        <div class="text-primary fw-bold" style="font-size: 2rem;">${summary.collection_trip_count}</div>
+                                        <small class="text-muted">Collection Trips</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100 bg-white text-center">
+                                        <div class="text-danger fw-bold" style="font-size: 2rem;">${summary.full_bin_count}</div>
+                                        <small class="text-muted">Full Bin Events</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${emptyState}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white fw-bold">
+                            <i class="fas fa-chart-column me-1"></i> Collection Frequency by Hour (7 AM - 7 PM)
+                        </div>
+                        <div class="card-body">
+                            <div style="height: 280px;">
+                                <canvas id="calendarHourlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                renderCalendarSummaryChart(summary.hourly_labels, summary.hourly_data);
+            })
+            .catch(function() {
+                summaryModalBody.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        Unable to load the daily summary right now.
+                    </div>
+                `;
+            });
+    }
+
+    function formatCalendarDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridWeek',
@@ -2239,8 +2375,25 @@ document.addEventListener('DOMContentLoaded', function () {
             info.el.setAttribute('title', info.event.title);
         },
 
+        dayCellDidMount: function(info) {
+            info.el.style.cursor = 'pointer';
+            info.el.addEventListener('click', function(event) {
+                if (event.target.closest('.fc-event')) {
+                    return;
+                }
+
+                openCalendarSummary(formatCalendarDate(info.date));
+            });
+        },
+
         eventClick: function(info) {
-    if (info.event.extendedProps.type === 'notification_group') {
+            if (info.event.extendedProps.type === 'notification_group') {
+                openCalendarSummary(info.event.startStr.slice(0, 10));
+                info.jsEvent.preventDefault();
+                return;
+            }
+
+            if (false && info.event.extendedProps.type === 'notification_group') {
         // Get the clicked date
         const clickedDate = info.event.start.toLocaleDateString();
         

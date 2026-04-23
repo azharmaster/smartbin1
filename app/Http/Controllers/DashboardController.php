@@ -28,6 +28,27 @@ class DashboardController extends Controller
     {
     }
 
+    public function calendarSummary(Request $request)
+    {
+        $validated = $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $selectedDate = Carbon::parse($validated['date'])->startOfDay();
+        $dateString = $selectedDate->toDateString();
+        $collectionTrips = $this->collectionTripService->getTrips($dateString, $dateString);
+        $hourlySummary = $this->buildCalendarHourlySummary($collectionTrips);
+
+        return response()->json([
+            'date' => $dateString,
+            'date_label' => $selectedDate->format('d M Y'),
+            'collection_trip_count' => $collectionTrips->count(),
+            'full_bin_count' => $this->countFullBinEventsForDate($selectedDate),
+            'hourly_labels' => $hourlySummary['labels'],
+            'hourly_data' => $hourlySummary['data'],
+        ]);
+    }
+
     /**
      * Display the dashboard.
      *
@@ -305,12 +326,110 @@ private function getBinStatistics(): array
  *
  * @return int
  */
-private function getCollectionTripsToday(): int
-{
-    return $this->collectionTripService
-        ->getTrips(today()->toDateString(), today()->toDateString())
-        ->count();
-}
+    private function getCollectionTripsToday(): int
+    {
+        return $this->collectionTripService
+            ->getTrips(today()->toDateString(), today()->toDateString())
+            ->count();
+    }
+
+    private function buildCalendarHourlySummary(Collection $collectionTrips): array
+    {
+        $hourCounts = $collectionTrips
+            ->groupBy(fn ($trip) => (int) $trip['emptied_at']->format('G'))
+            ->map->count();
+
+        $labels = [];
+        $data = [];
+
+        foreach (range(7, 19) as $hour) {
+            $labels[] = Carbon::createFromTime($hour, 0)->format('g A');
+            $data[] = (int) ($hourCounts[$hour] ?? 0);
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
+        ];
+    }
+
+    private function countFullBinEventsForDate(Carbon $selectedDate): int
+    {
+        $startOfDay = $selectedDate->copy()->startOfDay();
+        $endOfDay = $selectedDate->copy()->endOfDay();
+        $assets = Asset::with([
+            'capacitySetting',
+            'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
+            'devices.sensors' => fn ($query) => $query->orderBy('created_at', 'asc'),
+        ])
+            ->where('is_active', 1)
+            ->get();
+
+        $fullBinEvents = 0;
+
+        foreach ($assets as $asset) {
+            $capacitySetting = $asset->capacitySetting;
+
+            if (!$capacitySetting) {
+                continue;
+            }
+
+            $allReadings = collect();
+
+            foreach ($asset->devices as $device) {
+                foreach ($device->sensors as $sensor) {
+                    if (!is_numeric($sensor->capacity)) {
+                        continue;
+                    }
+
+                    $allReadings->push([
+                        'device_id' => $device->id,
+                        'capacity' => (float) $sensor->capacity,
+                        'created_at' => Carbon::parse($sensor->created_at)->timezone(config('app.timezone')),
+                    ]);
+                }
+            }
+
+            $allReadings = $allReadings->sortBy('created_at')->values();
+            $previousCapacities = [];
+            $assetWasFull = false;
+
+            foreach ($allReadings as $reading) {
+                $deviceId = $reading['device_id'];
+                $currentCapacity = $reading['capacity'];
+                $previousCapacity = $previousCapacities[$deviceId] ?? null;
+                $readingTime = $reading['created_at'];
+
+                if (
+                    $previousCapacity !== null &&
+                    $previousCapacity <= $capacitySetting->half_to &&
+                    $currentCapacity > $capacitySetting->half_to &&
+                    !$assetWasFull
+                ) {
+                    $assetWasFull = true;
+
+                    if (
+                        $readingTime->greaterThanOrEqualTo($startOfDay) &&
+                        $readingTime->lessThanOrEqualTo($endOfDay)
+                    ) {
+                        $fullBinEvents++;
+                    }
+                }
+
+                if (
+                    $previousCapacity !== null &&
+                    $previousCapacity > 10 &&
+                    $this->isCollectionCapacity($currentCapacity)
+                ) {
+                    $assetWasFull = false;
+                }
+
+                $previousCapacities[$deviceId] = $currentCapacity;
+            }
+        }
+
+        return $fullBinEvents;
+    }
 
 // ------------------- UPDATED CALENDAR METHOD -------------------
 /** Combine holidays, events, and notifications for calendar */

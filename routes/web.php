@@ -76,6 +76,7 @@ Route::get('/staff/mainmenu', function () {
 
 Route::middleware('auth')->group(function(){
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/calendar-summary', [DashboardController::class, 'calendarSummary'])->name('dashboard.calendarSummary');
     Route::post('/logout',[LoginController::class,'logout'])->name('logout');
 
     Route::post('/dashboard/toggle-whatsapp-notification', [DashboardController::class, 'toggleWhatsappNotification'])
