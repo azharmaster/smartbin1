@@ -2300,7 +2300,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="card bg-light mb-3 border-0 shadow-sm">
                         <div class="card-body">
                             <h6 class="fw-bold mb-3">
-                                <i class="fas fa-calendar-day me-1"></i> Daily Summary for ${summary.date_label}
+                                <i class="fas fa-calendar-day me-1"></i> Summary for ${summary.date_label}
                             </h6>
                             <div class="row g-3">
                                 <div class="col-md-6">
