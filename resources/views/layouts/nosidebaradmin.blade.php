@@ -33,19 +33,17 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Source Sans Pro', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #14233d 0%, #1f3a5f 50%, #243b6b 100%);
-            color: #f1f5f9;
+            background: linear-gradient(135deg, #1a2f3f 0%, #2d4a5c 100%);
+            color: #fff;
             min-height: 100vh;
-            margin: 0;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            margin: 0; /* ✅ FIX: remove forced side margins */
         }
 
-        /* Force full width */
+        /* ✅ FORCE FULL WIDTH */
         .wrapper,
         .content-wrapper,
         .content {
@@ -56,26 +54,13 @@
         }
 
         .container-fluid {
-            padding-left: clamp(12px, 3vw, 28px);
-            padding-right: clamp(12px, 3vw, 28px);
+            padding-left: 24px;
+            padding-right: 24px;
         }
 
         .content-wrapper .content {
             border-radius: 10px;
             padding: 10px;
-        }
-
-        /* Content header bar (page title + logout) */
-        .content-header {
-            padding-top: 14px;
-            padding-bottom: 6px;
-        }
-
-        .content-header h4 {
-            font-size: clamp(1.1rem, 2.2vw, 1.5rem);
-            font-weight: 600;
-            color: #f8fafc;
-            letter-spacing: -0.01em;
         }
 
         /* === Dashboard Layout === */
@@ -94,82 +79,29 @@
             grid-column: 1 / -1;
             text-align: center;
             margin-bottom: 5px;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         .header h1 {
-            font-size: clamp(1.6rem, 4vw, 2.5rem);
-            margin-bottom: 8px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             color: #4cd964;
-            font-weight: 600;
-            letter-spacing: -0.01em;
         }
 
         .header p {
-            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            font-size: 1.1rem;
             opacity: 0.8;
-        }
-
-        .logout-btn {
-            color: #f1f5f9;
-            border-radius: 8px;
-            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .logout-btn:hover,
         .logout-btn:focus,
         .logout-btn:active {
-            background-color: rgba(248, 113, 113, 0.12) !important;
-            color: #fca5a5 !important;
-        }
-
-        /* Footer polish */
-        .main-footer {
-            background: transparent;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            color: rgba(241, 245, 249, 0.75);
-            font-size: 0.8rem;
-            padding: 12px 18px;
-        }
-
-        .main-footer strong {
-            color: #f8fafc;
-        }
-
-        /* Responsive: tighten layout on small screens */
-        @media (max-width: 767.98px) {
-            .content-header .row > .col-sm-6 {
-                width: 100%;
-                max-width: 100%;
-                flex: 0 0 100%;
-                text-align: left;
-            }
-
-            .content-header .breadcrumb,
-            .content-header .float-sm-right {
-                float: none !important;
-                margin-top: 8px;
-                padding-left: 0;
-            }
-
-            .header {
-                padding: 14px;
-            }
-
-            .main-footer {
-                text-align: center;
-            }
-
-            .main-footer .float-right {
-                float: none !important;
-                display: block;
-                margin-top: 4px;
-            }
+            background-color: transparent !important;
+            color: inherit !important;
         }
     </style>
 </head>
@@ -214,7 +146,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="main-footer">
+        <footer class="main-footer" style="background-color: rgba(0, 0, 0, 0); color: #ffff">
             <div class="float-right d-none d-sm-inline"><b>Version</b> 0.1</div>
             <strong>Copyright &copy; 2026-2027 SmartBin.</strong>
             All rights reserved.
