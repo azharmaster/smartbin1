@@ -325,6 +325,60 @@ body.sidebar-hover-open .nav-sidebar .nav-icon {
     margin-right: 12px;
 }
 
+/* ===================================================== */
+/* ===== Mobile / Tablet Responsiveness ================ */
+/* ===================================================== */
+@media (max-width: 991.98px) {
+    /* AdminLTE already slides the sidebar off-canvas via .sidebar-open;
+       we add a soft backdrop and refine the open width for small screens. */
+    .main-sidebar {
+        width: 260px !important;
+    }
+
+    body.sidebar-collapse .main-sidebar {
+        margin-left: -260px;
+    }
+
+    body.sidebar-open .main-sidebar {
+        margin-left: 0 !important;
+    }
+
+    /* Backdrop overlay when sidebar is open on mobile */
+    body.sidebar-open::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        z-index: 1037;
+        animation: sb-fade-in 0.2s ease;
+    }
+
+    @keyframes sb-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .main-sidebar {
+        z-index: 1038;
+    }
+
+    /* Disable hover-open on touch devices to avoid sticky overlays */
+    body.sidebar-hover-open .main-sidebar {
+        width: 260px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .main-sidebar {
+        width: 86vw !important;
+        max-width: 300px;
+    }
+
+    body.sidebar-collapse .main-sidebar {
+        margin-left: -86vw;
+    }
+}
+
 </style>
 
 <script>
