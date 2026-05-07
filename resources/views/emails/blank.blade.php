@@ -4,6 +4,6 @@
     <title>Summary Report</title>
 </head>
 <body>
-    <p>Please find the attached monthly summary report (PDF).</p>
+    <p>{{ $emailMessage ?? 'Please find the attached monthly summary report (PDF).' }}</p>
 </body>
 </html>

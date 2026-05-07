@@ -16,6 +16,10 @@ class Kernel extends ConsoleKernel
         // Send monthly summary email on the last day of each month at 5:00 PM
         $schedule->command('summary:send-monthly')
                  ->monthlyOnLastDayAt('17:00');
+
+        // Send collection trip summary PDF to all admins on the last day of each month at 5:10 PM
+        $schedule->command('collection-trips:send-summary-email')
+                 ->monthlyOnLastDayAt('17:10');
     }
 
     protected function commands()

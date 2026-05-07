@@ -46,18 +46,32 @@ class CollectionTripController extends Controller
 
     public function summary(Request $request)
     {
-        return view('collection-trips.summaryCollectionTrip', $this->buildSummaryViewData($request));
+        return view('collection-trips.summaryCollectionTrip', $this->getSummaryViewData($request->all()));
     }
 
     public function pdf(Request $request)
     {
-        $data = $this->buildSummaryViewData($request);
+        return response()->streamDownload(function () use ($request) {
+            echo $this->generateSummaryPdf($request->all());
+        }, 'collection-trip-summary.pdf');
+    }
+
+    public function getSummaryViewData(array $filters = []): array
+    {
+        $request = Request::create('/collection-trips/summary', 'GET', $filters);
+
+        return $this->buildSummaryViewData($request);
+    }
+
+    public function generateSummaryPdf(array $filters = []): string
+    {
+        $data = $this->getSummaryViewData($filters);
         $data['pdfCharts'] = $this->buildPdfChartUrls($data);
 
         return Pdf::loadView('collection-trips.summaryCollectionTripPdf', $data)
             ->setOption(['isRemoteEnabled' => true])
             ->setPaper('a4', 'landscape')
-            ->download('collection-trip-summary.pdf');
+            ->output();
     }
 
     /**
