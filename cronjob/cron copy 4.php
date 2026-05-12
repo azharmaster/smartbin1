@@ -161,8 +161,8 @@ function buildDailyReportMessage(array $report, Carbon $now): string
 {
     $lines = [];
     $lines[] = 'Smart Bin Report (' . $now->format('j/n/Y') . ')';
-    $lines[] = '';
-    $lines[] = 'Operations ran smoothly with all bins emptied as scheduled.';
+    // $lines[] = '';
+    // $lines[] = 'Operations ran smoothly with all bins emptied as scheduled.';
     $lines[] = '';
     $lines[] = 'Collection details:';
 
@@ -173,7 +173,7 @@ function buildDailyReportMessage(array $report, Carbon $now): string
     $lines[] = '';
     $lines[] = 'Total collection: ' . $report['total'];
     $lines[] = '';
-    $lines[] = 'Overall status: Good and consistent.';
+    // $lines[] = 'Overall status: Good and consistent.';
 
     return implode("\n", $lines);
 }
@@ -192,7 +192,7 @@ $apiKey = "admin";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
 $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
-$logFile = __DIR__.'/cron.log';
+$logFile = __DIR__ . '/cron.log';
 
 /* -------------------------
    1️⃣ Check Notification Toggle
@@ -327,7 +327,6 @@ while ($device = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $device['empty_time'] = $currentSensor['created_at'];
         $emptyBins[] = $device;
     }
-
 }
 
 $emptiedBins = getDailyCollectionTrips($db, $now);
@@ -335,8 +334,8 @@ $emptiedBins = getDailyCollectionTrips($db, $now);
 /* -------------------------
    Debug Logging
 ---------------------------- */
-file_put_contents($logFile, date('Y-m-d H:i')." | canSend: ".($canSend ? 'YES':'NO')." | Reasons: ".implode(', ',$reason)."\n", FILE_APPEND);
-file_put_contents($logFile, date('Y-m-d H:i')." | Full bins: ".count($fullBins)." | Emptied bins: ".count($emptiedBins)." | Empty bins: ".count($emptyBins)."\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | canSend: " . ($canSend ? 'YES' : 'NO') . " | Reasons: " . implode(', ', $reason) . "\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Full bins: " . count($fullBins) . " | Emptied bins: " . count($emptiedBins) . " | Empty bins: " . count($emptyBins) . "\n", FILE_APPEND);
 
 /* -------------------------
    5️⃣ Get Supervisors
@@ -349,7 +348,7 @@ $supervisors = $db->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 if (empty($supervisors)) {
-    file_put_contents($logFile, date('Y-m-d H:i')." | No supervisor contacts found\n", FILE_APPEND);
+    file_put_contents($logFile, date('Y-m-d H:i') . " | No supervisor contacts found\n", FILE_APPEND);
     $canSend = false;
 }
 
@@ -358,7 +357,7 @@ if (empty($supervisors)) {
 ---------------------------- */
 if ($canSend) {
     $tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
-//$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
+    //$tenMinAgo = $now->copy()->subMinutes(10)->format('Y-m-d H:i:s');
     // --------- FULL BINS NOTIFICATION ---------
     if (count($fullBins) > 0) {
         $sendBins = [];
@@ -410,13 +409,13 @@ if ($canSend) {
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | FULL WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | FULL WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -432,7 +431,7 @@ if ($canSend) {
                     $logStmt->execute([$device['id_device'], substr($assetList, 0, 300), $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -475,18 +474,18 @@ if ($canSend) {
                 $assetList .= "\n";
             }
 
-            $msg =$assetList;
+            $msg = $assetList;
             //$msg = "*TRX BIN - BIN CLEARED*\n\n" . $assetList;
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | EMPTIED WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | EMPTIED WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -502,7 +501,7 @@ if ($canSend) {
                     $logStmt->execute([$device['id_device'], $device['event_key'], $msg]);
                 }
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         }
     }
@@ -530,13 +529,13 @@ if ($canSend) {
 
             foreach ($supervisors as $sup) {
                 if (!empty($sup['phone'])) {
-                    $formatted = '60'.ltrim(preg_replace('/\D+/', '', $sup['phone']),'0');
+                    $formatted = '60' . ltrim(preg_replace('/\D+/', '', $sup['phone']), '0');
                     try {
                         $result = $whatsapp->sendTextMessage($formatted, $msg);
                         $ok = isset($result['success']) ? $result['success'] : false;
-                        file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT WA to {$formatted} | ".($ok?'SUCCESS':'FAILED')."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | DAILY REPORT WA to {$formatted} | " . ($ok ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
                     } catch (Exception $e) {
-                        file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT WA ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                        file_put_contents($logFile, date('Y-m-d H:i') . " | DAILY REPORT WA ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
                     }
                 }
             }
@@ -549,12 +548,12 @@ if ($canSend) {
                 ");
                 $logStmt->execute([$reportDateKey, $msg]);
             } catch (Exception $e) {
-                file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
+                file_put_contents($logFile, date('Y-m-d H:i') . " | DAILY REPORT DB log ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
             }
         } else {
-            file_put_contents($logFile, date('Y-m-d H:i')." | DAILY REPORT skipped, already sent for {$reportDateKey}\n", FILE_APPEND);
+            file_put_contents($logFile, date('Y-m-d H:i') . " | DAILY REPORT skipped, already sent for {$reportDateKey}\n", FILE_APPEND);
         }
     }
 }
 
-file_put_contents($logFile, date('Y-m-d H:i')." | Cron executed\n\n", FILE_APPEND);
+file_put_contents($logFile, date('Y-m-d H:i') . " | Cron executed\n\n", FILE_APPEND);

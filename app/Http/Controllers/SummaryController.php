@@ -16,6 +16,8 @@ use App\Services\CollectionTripService;
 
 class SummaryController extends Controller
 {
+    private const CLEAR_HOLD_MINUTES = 20;
+
     public function __construct(private CollectionTripService $collectionTripService)
     {
     }
@@ -129,9 +131,9 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
             $allReadings = $allReadings->sortBy('created_at')->values();
 
             $previousCapacities = [];
-            $binCleared         = false;
-            $triggeredDeviceId  = null;
+            $lastClearedAt = null;
             $currentDay         = null;
+            $emptyTo            = (float) $setting->empty_to;
 
             $timesFull      = 0;
             $timesEmpty     = 0;
@@ -151,9 +153,8 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                 $readingDay  = $readingTime->format('Y-m-d');
 
                 if ($currentDay !== null && $currentDay !== $readingDay) {
-                    $binCleared = false;
-                    $triggeredDeviceId = null;
                     $previousCapacities = [];
+                    $lastClearedAt = null;
                 }
                 $currentDay = $readingDay;
 
@@ -171,30 +172,26 @@ private function _getCapacityStats(Carbon $baseDate, string $period): object
                     }
                 }
 
-                // Clear Bin detection (per asset, new logic)
-                if (!$binCleared) {
-                    if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
-                        $binCleared        = true;
-                        $triggeredDeviceId = $deviceId;
-                        $assetWasFull      = false; // reset full flag after clear
+                // Clear Bin detection: any compartment drops from half/full to empty.
+                if (
+                    $previousCap !== null &&
+                    $previousCap > $emptyTo &&
+                    $this->isCollectionCapacity($currentCap, $emptyTo) &&
+                    !$this->isClearHoldActive($lastClearedAt, $readingTime)
+                ) {
+                    $lastClearedAt = $readingTime;
+                    $assetWasFull = false; // reset full flag after clear
 
-                        // Only count clear time if within period
-                        if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
-                            $timesEmpty++;
-                            $lastClearAt = $readingTime;
+                    // Only count clear time if within period
+                    if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($start, $end)) {
+                        $timesEmpty++;
+                        $lastClearAt = $readingTime;
 
-                            // Clear time = from last full to now cleared
-                            if ($lastFullAt) {
-                                $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
-                                $lastFullAt = null;
-                            }
+                        // Clear time = from last full to now cleared
+                        if ($lastFullAt) {
+                            $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
+                            $lastFullAt = null;
                         }
-                    }
-                } else {
-                    // Tunggu triggered compartment naik balik >10%
-                    if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                        $binCleared        = false;
-                        $triggeredDeviceId = null;
                     }
                 }
 
@@ -376,9 +373,9 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
         $allReadings = $allReadings->sortBy('created_at')->values();
 
         $previousCapacities = [];
-        $binCleared = false;
-        $triggeredDeviceId = null;
+        $lastClearedAt = null;
         $currentDay = null;
+        $emptyTo = (float) $setting->empty_to;
 
         $timesFull = 0;
         $timesEmpty = 0;
@@ -396,9 +393,8 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
             $readingDay = $readingTime->format('Y-m-d');
 
             if ($currentDay !== null && $currentDay !== $readingDay) {
-                $binCleared = false;
-                $triggeredDeviceId = null;
                 $previousCapacities = [];
+                $lastClearedAt = null;
             }
             $currentDay = $readingDay;
 
@@ -421,26 +417,23 @@ public function computeBinAnalyticsForRange(Carbon $startDate, Carbon $endDate)
                 }
             }
 
-            if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
-                    $binCleared = true;
-                    $triggeredDeviceId = $deviceId;
-                    $assetWasFull = false;
+            if (
+                $previousCap !== null &&
+                $previousCap > $emptyTo &&
+                $this->isCollectionCapacity($currentCap, $emptyTo) &&
+                !$this->isClearHoldActive($lastClearedAt, $readingTime)
+            ) {
+                $lastClearedAt = $readingTime;
+                $assetWasFull = false;
 
-                    if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
-                        $timesEmpty++;
-                        $lastClearAt = $readingTime;
+                if ($this->isWithinCollectionWindow($readingTime) && $readingTime->between($startDate, $endDate)) {
+                    $timesEmpty++;
+                    $lastClearAt = $readingTime;
 
-                        if ($lastFullAt) {
-                            $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
-                            $lastFullAt = null;
-                        }
+                    if ($lastFullAt) {
+                        $clearDurations[] = $lastFullAt->diffInMinutes($readingTime) / 60;
+                        $lastFullAt = null;
                     }
-                }
-            } else {
-                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                    $binCleared = false;
-                    $triggeredDeviceId = null;
                 }
             }
 
@@ -920,9 +913,15 @@ private function isWithinCollectionWindow(Carbon $timestamp): bool
     return $minutes >= 420 && $minutes <= 1140;
 }
 
-private function isCollectionCapacity(float $capacity): bool
+private function isCollectionCapacity(float $capacity, float $emptyTo): bool
 {
-    return $capacity <= 0.0 || abs($capacity) < 0.00001;
+    return $capacity <= $emptyTo;
+}
+
+private function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime): bool
+{
+    return $lastClearedAt !== null &&
+        $lastClearedAt->copy()->addMinutes(self::CLEAR_HOLD_MINUTES)->greaterThan($readingTime);
 }
 
 }

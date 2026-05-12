@@ -16,6 +16,7 @@ class AssetDetails extends Component
 {
     private const COLLECTION_START_HOUR = 7;
     private const COLLECTION_END_HOUR = 19;
+    private const CLEAR_HOLD_MINUTES = 20;
 
     public $asset;
     public $floors;
@@ -113,9 +114,9 @@ class AssetDetails extends Component
 
         // --- Detect Clear Bin & Full events ---
         $previousCapacities = [];
-        $binCleared         = false;
-        $triggeredDeviceId  = null;
+        $lastClearedAt = null;
         $clearEventCount    = 0;
+        $emptyTo = (float) ($capacitySetting?->empty_to ?? 0);
 
         $currentDay = null;
 
@@ -129,9 +130,8 @@ class AssetDetails extends Component
 
             // Reset state when day changes
             if ($currentDay !== null && $currentDay !== $readingDay) {
-                $binCleared        = false;
-                $triggeredDeviceId = null;
                 $previousCapacities = [];
+                $lastClearedAt = null;
                 if ($readingDay === $this->selectedDate) {
                     $clearEventCount = 0;
                 }
@@ -141,23 +141,21 @@ class AssetDetails extends Component
             $withinCollectionWindow = $this->isWithinCollectionWindow($readingTime);
 
             // Clear Bin detection
-            if (!$binCleared) {
-                if ($previousCap !== null && $previousCap > 10 && $this->isCollectionCapacity($currentCap)) {
-                    $binCleared = true;
-                    $triggeredDeviceId = $deviceId;
-                    if ($isSelectedDate && $withinCollectionWindow) {
-                        $clearEventCount++;
-                        $this->chartClearEvents[] = [
-                            'time'  => $readingTime->format('H:i'),
-                            'count' => $clearEventCount,
-                            'datetime' => $this->selectedDate . 'T' . $readingTime->format('H:i:s'),
-                        ];
-                    }
-                }
-            } else {
-                if ($deviceId === $triggeredDeviceId && $currentCap > 10) {
-                    $binCleared = false;
-                    $triggeredDeviceId = null;
+            if (
+                $previousCap !== null &&
+                $previousCap > $emptyTo &&
+                $this->isCollectionCapacity($currentCap, $emptyTo) &&
+                !$this->isClearHoldActive($lastClearedAt, $readingTime)
+            ) {
+                $lastClearedAt = $readingTime;
+
+                if ($isSelectedDate && $withinCollectionWindow) {
+                    $clearEventCount++;
+                    $this->chartClearEvents[] = [
+                        'time'  => $readingTime->format('H:i'),
+                        'count' => $clearEventCount,
+                        'datetime' => $this->selectedDate . 'T' . $readingTime->format('H:i:s'),
+                    ];
                 }
             }
 
@@ -449,9 +447,15 @@ class AssetDetails extends Component
             ->setTime(self::COLLECTION_END_HOUR, 0, 0);
     }
 
-    private function isCollectionCapacity(float $capacity): bool
+    private function isCollectionCapacity(float $capacity, float $emptyTo): bool
     {
-        return $capacity <= 0.0 || abs($capacity) < 0.00001;
+        return $capacity <= $emptyTo;
+    }
+
+    private function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime): bool
+    {
+        return $lastClearedAt !== null &&
+            $lastClearedAt->copy()->addMinutes(self::CLEAR_HOLD_MINUTES)->greaterThan($readingTime);
     }
 
     private function getLastFullAndClear(Device $device, float $full_threshold, float $empty_threshold): array

@@ -7,6 +7,8 @@ use Carbon\Carbon;
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
+const CLEAR_HOLD_MINUTES = 20;
+
 function isWithinCollectionWindow(Carbon $timestamp): bool
 {
     $minutes = ($timestamp->hour * 60) + $timestamp->minute;
@@ -16,9 +18,15 @@ function isWithinCollectionWindow(Carbon $timestamp): bool
     return $minutes >= $startMinutes && $minutes <= $endMinutes;
 }
 
-function isCollectionCapacity(float $capacity): bool
+function isCollectionCapacity(float $capacity, float $emptyTo): bool
 {
-    return $capacity <= 0.0 || abs($capacity) < 0.00001;
+    return $capacity <= $emptyTo;
+}
+
+function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime): bool
+{
+    return $lastClearedAt !== null &&
+        $lastClearedAt->copy()->addMinutes(CLEAR_HOLD_MINUTES)->greaterThan($readingTime);
 }
 
 function isDailyReportTime(Carbon $timestamp): bool
@@ -40,8 +48,9 @@ function getDailyCollectionTrips(PDO $db, Carbon $date): array
     $dayEnd = $date->copy()->endOfDay();
 
     $assetStmt = $db->query("
-        SELECT a.id, a.asset_name, a.location
+        SELECT a.id, a.asset_name, a.location, cs.empty_to, cs.half_to
         FROM assets a
+        LEFT JOIN capacity_settings cs ON cs.asset_id = a.id
         WHERE a.is_active = 1
         ORDER BY a.asset_name ASC, a.location ASC
     ");
@@ -60,6 +69,8 @@ function getDailyCollectionTrips(PDO $db, Carbon $date): array
     ");
 
     foreach ($assets as $asset) {
+        $emptyTo = is_numeric($asset['empty_to'] ?? null) ? (float) $asset['empty_to'] : 0.0;
+
         $sensorStmt->execute([
             $asset['id'],
             $dayStart->format('Y-m-d H:i:s'),
@@ -68,8 +79,7 @@ function getDailyCollectionTrips(PDO $db, Carbon $date): array
 
         $readings = $sensorStmt->fetchAll(PDO::FETCH_ASSOC);
         $previousCapacities = [];
-        $binCleared = false;
-        $triggeredDeviceId = null;
+        $lastClearedAt = null;
 
         foreach ($readings as $reading) {
             if (!is_numeric($reading['capacity'])) {
@@ -81,31 +91,26 @@ function getDailyCollectionTrips(PDO $db, Carbon $date): array
             $readingTime = Carbon::parse($reading['created_at'], 'Asia/Kuala_Lumpur');
             $previousCapacity = $previousCapacities[$deviceId] ?? null;
 
-            if (!$binCleared) {
-                if (
-                    $previousCapacity !== null &&
-                    $previousCapacity > 10 &&
-                    isCollectionCapacity($currentCapacity)
-                ) {
-                    $binCleared = true;
-                    $triggeredDeviceId = $deviceId;
+            if (
+                $previousCapacity !== null &&
+                $previousCapacity > $emptyTo &&
+                isCollectionCapacity($currentCapacity, $emptyTo) &&
+                !isClearHoldActive($lastClearedAt, $readingTime)
+            ) {
+                $lastClearedAt = $readingTime;
 
-                    if (isWithinCollectionWindow($readingTime)) {
-                        $tripRows[] = [
-                            'asset_id' => $asset['id'],
-                            'asset_name' => $asset['asset_name'],
-                            'location' => $asset['location'],
-                            'id_device' => $reading['id_device'],
-                            'device_name' => $reading['device_name'] ?? 'N/A',
-                            'capacity' => $currentCapacity,
-                            'prev_capacity' => $previousCapacity,
-                            'emptied_time' => $reading['created_at'],
-                        ];
-                    }
+                if (isWithinCollectionWindow($readingTime)) {
+                    $tripRows[] = [
+                        'asset_id' => $asset['id'],
+                        'asset_name' => $asset['asset_name'],
+                        'location' => $asset['location'],
+                        'id_device' => $reading['id_device'],
+                        'device_name' => $reading['device_name'] ?? 'N/A',
+                        'capacity' => $currentCapacity,
+                        'prev_capacity' => $previousCapacity,
+                        'emptied_time' => $reading['created_at'],
+                    ];
                 }
-            } elseif ($deviceId === $triggeredDeviceId && $currentCapacity > 10) {
-                $binCleared = false;
-                $triggeredDeviceId = null;
             }
 
             $previousCapacities[$deviceId] = $currentCapacity;

@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 class CollectionTripController extends Controller
 {
+    private const CLEAR_HOLD_MINUTES = 20;
+
     public function __construct(private CollectionTripService $collectionTripService)
     {
     }
@@ -437,9 +439,15 @@ class CollectionTripController extends Controller
         };
     }
 
-    private function isCollectionCapacity(float $capacity): bool
+    private function isCollectionCapacity(float $capacity, float $emptyTo): bool
     {
-        return $capacity <= 0.0 || abs($capacity) < 0.00001;
+        return $capacity <= $emptyTo;
+    }
+
+    private function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime): bool
+    {
+        return $lastClearedAt !== null &&
+            $lastClearedAt->copy()->addMinutes(self::CLEAR_HOLD_MINUTES)->greaterThan($readingTime);
     }
 
     private function resolveAverageTripsMetric(int $totalTrips, Carbon $rangeStart, Carbon $rangeEnd): array
@@ -650,6 +658,12 @@ class CollectionTripController extends Controller
         $onlineDeviceCount = 0;
 
         foreach ($assets as $asset) {
+            $lastClearedAt = null;
+
+            $capacitySetting = $asset->capacitySetting;
+            $emptyTo = (float) ($capacitySetting?->empty_to ?? 0);
+            $halfTo = (float) ($capacitySetting?->half_to ?? 79);
+
             foreach ($asset->devices as $device) {
                 $activeDeviceCount++;
 
@@ -672,16 +686,18 @@ class CollectionTripController extends Controller
                     $currentCapacity = $reading['capacity'];
                     $readingTime = $reading['created_at'];
 
-                    if ($previousCapacity !== null && $previousCapacity < 80 && $currentCapacity >= 80 && $fullAt === null) {
+                    if ($previousCapacity !== null && $previousCapacity <= $halfTo && $currentCapacity > $halfTo && $fullAt === null) {
                         $fullAt = $readingTime;
                     }
 
                     if (
                         $previousCapacity !== null &&
-                        $previousCapacity > 10 &&
-                        $this->isCollectionCapacity($currentCapacity) &&
+                        $previousCapacity > $emptyTo &&
+                        $this->isCollectionCapacity($currentCapacity, $emptyTo) &&
+                        !$this->isClearHoldActive($lastClearedAt, $readingTime) &&
                         $readingTime->betweenIncluded($rangeStart, $rangeEnd)
                     ) {
+                        $lastClearedAt = $readingTime;
                         $fillBeforeCollection[] = $previousCapacity;
 
                         if ($fullAt !== null) {
