@@ -145,9 +145,9 @@
             <button type="button" class="input-group-text password-toggle" data-target="login-password" aria-label="Show password">
               <span class="fas fa-eye-slash"></span>
             </button>
-            <div class="input-group-text">
+            <!-- <div class="input-group-text">
               <span class="fas fa-lock"></span>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="row">
