@@ -2321,7 +2321,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${emptyState}
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white fw-bold">
-                            <i class="fas fa-chart-column me-1"></i> Collection Frequency by Hour (7 AM - 7 PM)
+                            <i class="fas fa-chart-column me-1"></i> Collection Frequency by Hour (7 AM - 10 PM)
                         </div>
                         <div class="card-body">
                             <div style="height: 280px;">

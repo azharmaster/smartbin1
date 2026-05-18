@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 class AssetDetails extends Component
 {
     private const COLLECTION_START_HOUR = 7;
-    private const COLLECTION_END_HOUR = 19;
+    private const COLLECTION_END_HOUR = 22;
     private const CLEAR_HOLD_MINUTES = 20;
 
     public $asset;

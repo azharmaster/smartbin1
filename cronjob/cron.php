@@ -13,7 +13,7 @@ function isWithinCollectionWindow(Carbon $timestamp): bool
 {
     $minutes = ($timestamp->hour * 60) + $timestamp->minute;
     $startMinutes = 7 * 60;
-    $endMinutes = 19 * 60;
+    $endMinutes = 22 * 60;
 
     return $minutes >= $startMinutes && $minutes <= $endMinutes;
 }

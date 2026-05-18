@@ -251,7 +251,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header summary-gradient text-white">
                     <i class="fas fa-clock me-2"></i>
-                    Collection Frequency by Hour (7 AM - 7 PM)
+                    Collection Frequency by Hour (7 AM - 10 PM)
                 </div>
                 <div class="card-body summary-chart-body summary-chart-lg">
                     <canvas id="hourlyCollectionChart"></canvas>
@@ -891,7 +891,7 @@
                     },
                     {
                         columns: [
-                            buildChartCard('Collection Frequency by Hour (7 AM - 7 PM)', chartImage('hourlyCollectionChart')),
+                            buildChartCard('Collection Frequency by Hour (7 AM - 10 PM)', chartImage('hourlyCollectionChart')),
                             buildChartCard('Compartment Capacity by Asset & Device', chartImage('compartmentCapacityChart'))
                         ],
                         columnGap: 8

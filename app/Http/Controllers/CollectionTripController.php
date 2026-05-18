@@ -526,7 +526,7 @@ class CollectionTripController extends Controller
         $labels = [];
         $data = [];
 
-        foreach (range(7, 19) as $hour) {
+        foreach (range(7, 22) as $hour) {
             $labels[] = Carbon::createFromTime($hour, 0)->format('g A');
             $data[] = (int) ($hourCounts[$hour] ?? 0);
         }

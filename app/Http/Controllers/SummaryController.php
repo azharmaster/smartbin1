@@ -910,7 +910,7 @@ private function isWithinCollectionWindow(Carbon $timestamp): bool
 {
     $minutes = ($timestamp->hour * 60) + $timestamp->minute;
 
-    return $minutes >= 420 && $minutes <= 1140;
+    return $minutes >= 420 && $minutes <= 1320;
 }
 
 private function isCollectionCapacity(float $capacity, float $emptyTo): bool

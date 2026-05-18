@@ -344,7 +344,7 @@ private function getBinStatistics(): array
         $labels = [];
         $data = [];
 
-        foreach (range(7, 19) as $hour) {
+        foreach (range(7, 22) as $hour) {
             $labels[] = Carbon::createFromTime($hour, 0)->format('g A');
             $data[] = (int) ($hourCounts[$hour] ?? 0);
         }
@@ -833,7 +833,7 @@ private function isWithinCollectionWindow(Carbon $timestamp): bool
 {
     $minutes = ($timestamp->hour * 60) + $timestamp->minute;
 
-    return $minutes >= 420 && $minutes <= 1140;
+    return $minutes >= 420 && $minutes <= 1320;
 }
 
 private function isCollectionCapacity(float $capacity, float $emptyTo): bool

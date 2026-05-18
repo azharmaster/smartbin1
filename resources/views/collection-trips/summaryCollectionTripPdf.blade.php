@@ -85,7 +85,7 @@
             <tr>
                 <td>
                     <div class="card">
-                        <div class="card-header">Collection Frequency by Hour (7 AM - 7 PM)</div>
+                        <div class="card-header">Collection Frequency by Hour (7 AM - 10 PM)</div>
                         <div class="card-body"><img class="chart" src="{{ $pdfCharts['hourly'] }}" alt="Hourly Frequency"></div>
                     </div>
                 </td>
