@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class CollectionTripController extends Controller
 {
-    private const CLEAR_HOLD_MINUTES = 20;
+    private const CLEAR_HOLD_MINUTES = 60;
 
     public function __construct(private CollectionTripService $collectionTripService)
     {

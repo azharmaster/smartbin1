@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
-const CLEAR_HOLD_MINUTES = 20;
+const CLEAR_HOLD_MINUTES = 60;
 
 function isWithinCollectionWindow(Carbon $timestamp): bool
 {
