@@ -253,8 +253,10 @@
             <div class="col-lg-12">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header summary-gradient text-white">
-                        <i class="fas fa-chart-line me-2"></i>
-                        Collection Trip Trend
+                        <i class="fas fa-chart-line me-2"></i>Collection Trip Trend
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Collection Trip Trend"
+                            data-info="Line chart showing the trend of collection trips over the selected period. The X-axis shows time labels (hours for daily, dates for weekly/monthly) and the Y-axis shows the number of collection trips at each time point."></i>
                     </div>
                     <div class="card-body summary-chart-body summary-chart-xl">
                         <canvas id="collectionTripSummaryChart"></canvas>
@@ -269,8 +271,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header summary-gradient text-white">
-                        <i class="fas fa-trophy me-2"></i>
-                        Collection Frequency by Bin
+                        <i class="fas fa-trophy me-2"></i>Collection Frequency by Bin
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Collection Frequency by Bin"
+                            data-info="Top 8 most frequently collected bins during this period, sorted by the number of collection trips. Helps identify the most active locations that require operational attention."></i>
                     </div>
                     <div class="card-body p-2 summary-chart-body summary-chart-md">
                         <canvas id="mostUsedBinChart"></canvas>
@@ -281,8 +285,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header summary-gradient text-white">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Compartment Capacity by Asset & Device
+                        <i class="fas fa-chart-bar me-2"></i>Compartment Capacity by Asset &amp; Device
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Compartment Capacity by Asset &amp; Device"
+                            data-info="Current capacity percentage of each compartment (asset &amp; device) within the selected period, sorted from highest. Helps identify which devices are fullest or most active."></i>
                     </div>
                     <div class="card-body p-2 summary-chart-body summary-chart-md">
                         <canvas id="compartmentCapacityChart"></canvas>
@@ -293,8 +299,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header summary-gradient text-white">
-                        <i class="fas fa-calendar-week me-2"></i>
-                        Collection Frequency by Day
+                        <i class="fas fa-calendar-week me-2"></i>Collection Frequency by Day
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Collection Frequency by Day"
+                            data-info="Number of collection trips for each day (Monday to Sunday) within the selected period. Helps plan daily schedules based on the busiest days."></i>
                     </div>
                     <div class="card-body p-2 summary-chart-body summary-chart-md">
                         <canvas id="weekdayCollectionChart"></canvas>
@@ -307,8 +315,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header summary-gradient text-white">
-                        <i class="fas fa-clock me-2"></i>
-                        Collection Frequency by Hour (7 AM - 10 PM)
+                        <i class="fas fa-clock me-2"></i>Collection Frequency by Hour (7 AM - 10 PM)
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Collection Frequency by Hour"
+                            data-info="Distribution of collection trips by hour (7 AM to 10 PM) within this period. Helps identify peak operational hours and coordinate crew task allocation."></i>
                     </div>
                     <div class="card-body p-2 summary-chart-body summary-chart-md">
                         <canvas id="hourlyCollectionChart"></canvas>
@@ -319,8 +329,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header bg-dark text-white">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        Smart Bin System KPI
+                        <i class="fas fa-lightbulb me-2"></i>Smart Bin System KPI
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="Smart Bin System KPI"
+                            data-info="Key system performance indicators (KPIs) including fill level efficiency, collection frequency, estimated frequent time, response time, bin usage rate, and system uptime for the selected period."></i>
                     </div>
                     <div class="card-body p-0 summary-panel-body summary-panel-lg">
                         <table class="table table-sm table-striped mb-0">
@@ -348,8 +360,10 @@
             <div class="col-lg-4 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header bg-dark text-white">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        {{ $period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily') }} Insights
+                        <i class="fas fa-lightbulb me-2"></i>{{ $period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily') }} Insights
+                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
+                            data-info-title="{{ $period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily') }} Insights"
+                            data-info="Automatic summary analyzed from this period's data: most active bin, peak day/hour, and assets exceeding average collection demand."></i>
                     </div>
                     <div class="card-body">
                         @if(count($insights) > 0)
@@ -365,6 +379,12 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="cardInfoBackdrop"></div>
+    <div id="cardInfoPopover" role="dialog" aria-modal="false">
+        <div class="popover-header" id="cardInfoTitle"></div>
+        <div class="popover-body" id="cardInfoBody"></div>
     </div>
 
     <style>
@@ -427,6 +447,76 @@
             margin-top: 2px;
         }
 
+        .card-info-icon {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            font-size: 1rem;
+        }
+
+        .card-info-icon:hover,
+        .card-info-icon:focus {
+            opacity: 1;
+            transform: scale(1.15);
+            outline: none;
+        }
+
+        .card-info-icon.active {
+            opacity: 1;
+            color: #ffd200;
+        }
+
+        /* Custom info popover */
+        #cardInfoPopover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            max-width: 300px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+            z-index: 2000;
+            display: none;
+            overflow: hidden;
+        }
+
+        #cardInfoPopover.show {
+            display: block;
+            animation: cardInfoFadeIn 0.15s ease;
+        }
+
+        @keyframes cardInfoFadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        #cardInfoPopover .popover-header {
+            background: #672d84;
+            color: #ffffff;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        #cardInfoPopover .popover-body {
+            padding: 12px 14px;
+            font-size: 0.84rem;
+            color: #374151;
+            line-height: 1.55;
+        }
+
+        #cardInfoBackdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1999;
+            display: none;
+        }
+
+        #cardInfoBackdrop.show {
+            display: block;
+        }
+
         .capacity-tabs .btn {
             font-weight: 700;
             border-width: 1px;
@@ -463,7 +553,10 @@
             .content-header,
             .card-header form,
             .btn,
-            .navbar {
+            .navbar,
+            .card-info-icon,
+            #cardInfoPopover,
+            #cardInfoBackdrop {
                 display: none !important;
             }
 
@@ -630,6 +723,101 @@
                     }
                 }
             };
+
+            // Custom info popover for card headers (no Bootstrap dependency)
+            const cardInfoPopover = document.getElementById('cardInfoPopover');
+            const cardInfoBackdrop = document.getElementById('cardInfoBackdrop');
+            const cardInfoTitle = document.getElementById('cardInfoTitle');
+            const cardInfoBody = document.getElementById('cardInfoBody');
+            let cardInfoActiveIcon = null;
+
+            function positionCardInfoPopover(icon) {
+                if (!cardInfoPopover || !icon) return;
+                const rect = icon.getBoundingClientRect();
+                const popWidth = 300;
+                const gap = 10;
+
+                let left = rect.right + gap;
+                if (left + popWidth > window.innerWidth - 8) {
+                    left = rect.left - popWidth - gap;
+                }
+                if (left < 8) {
+                    left = Math.max(8, Math.min(rect.left, window.innerWidth - popWidth - 8));
+                }
+
+                const top = Math.max(8, rect.top);
+
+                cardInfoPopover.style.left = left + 'px';
+                cardInfoPopover.style.top = top + 'px';
+            }
+
+            function showCardInfo(icon) {
+                if (!cardInfoPopover) return;
+
+                if (cardInfoActiveIcon) {
+                    cardInfoActiveIcon.classList.remove('active');
+                }
+
+                cardInfoActiveIcon = icon;
+                icon.classList.add('active');
+
+                if (cardInfoTitle) cardInfoTitle.textContent = icon.dataset.infoTitle || '';
+                if (cardInfoBody) cardInfoBody.innerHTML = icon.dataset.info || '';
+
+                cardInfoPopover.classList.add('show');
+                cardInfoBackdrop.classList.add('show');
+                positionCardInfoPopover(icon);
+            }
+
+            function hideCardInfo() {
+                if (!cardInfoPopover) return;
+                cardInfoPopover.classList.remove('show');
+                cardInfoBackdrop.classList.remove('show');
+                if (cardInfoActiveIcon) {
+                    cardInfoActiveIcon.classList.remove('active');
+                    cardInfoActiveIcon = null;
+                }
+            }
+
+            document.querySelectorAll('.card-info-icon').forEach(function (icon) {
+                icon.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (cardInfoActiveIcon === icon) {
+                        hideCardInfo();
+                    } else {
+                        showCardInfo(icon);
+                    }
+                });
+
+                icon.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (cardInfoActiveIcon === icon) {
+                            hideCardInfo();
+                        } else {
+                            showCardInfo(icon);
+                        }
+                    } else if (e.key === 'Escape') {
+                        hideCardInfo();
+                    }
+                });
+            });
+
+            if (cardInfoBackdrop) {
+                cardInfoBackdrop.addEventListener('click', hideCardInfo);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') hideCardInfo();
+            });
+
+            window.addEventListener('scroll', function () {
+                if (cardInfoActiveIcon) positionCardInfoPopover(cardInfoActiveIcon);
+            }, true);
+
+            window.addEventListener('resize', function () {
+                if (cardInfoActiveIcon) positionCardInfoPopover(cardInfoActiveIcon);
+            });
 
             chartInstances.push(new Chart(document.getElementById('collectionTripSummaryChart'), {
                 type: 'bar',
