@@ -794,6 +794,7 @@ class CollectionTripController extends Controller
                 });
             })
             ->sortByDesc('capacity')
+            ->filter(fn ($item) => $item['capacity'] > 0)
             ->values();
 
         return [
