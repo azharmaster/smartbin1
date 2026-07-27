@@ -183,6 +183,21 @@ function buildDailyReportMessage(array $report, Carbon $now): string
     return implode("\n", $lines);
 }
 
+function buildBinClearedMessage(array $asset): string
+{
+    $ts = Carbon::parse($asset['emptied_time'], 'Asia/Kuala_Lumpur');
+
+    return implode("\n", [
+        'TRX BIN - BIN CLEARED',
+        '',
+        'Date: ' . $ts->format('j F Y'),
+        'Time Detected: ' . $ts->format('g:i A'),
+        '',
+        $asset['asset_name'],
+        'Location: ' . $asset['location'],
+    ]);
+}
+
 // Load .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
@@ -451,18 +466,22 @@ if ($canSend) {
                 $device['id_device'],
                 Carbon::parse($device['emptied_time'], 'Asia/Kuala_Lumpur')->format('Y-m-d H:i:s')
             );
+            $messagePreview = buildBinClearedMessage($device);
 
             $lastLogStmt = $db->prepare("
                 SELECT id
                 FROM notification_logs
-                WHERE device_id = ? AND channel = 'whatsapp_emptied' AND message_preview = ?
+                WHERE device_id = ?
+                  AND channel = 'whatsapp_emptied'
+                  AND message_preview IN (?, ?)
                 LIMIT 1
             ");
-            $lastLogStmt->execute([$device['id_device'], $eventKey]);
+            $lastLogStmt->execute([$device['id_device'], $eventKey, $messagePreview]);
             $alreadySent = $lastLogStmt->fetchColumn();
 
             if (!$alreadySent) {
                 $device['event_key'] = $eventKey;
+                $device['message_preview'] = $messagePreview;
                 $sendBins[] = $device;
             }
         }
@@ -470,12 +489,7 @@ if ($canSend) {
         if (count($sendBins) > 0) {
             $assetList = '';
             foreach ($sendBins as $asset) {
-                $ts = Carbon::parse($asset['emptied_time'], 'Asia/Kuala_Lumpur');
-                $assetList .= "*TRX BIN - BIN CLEARED*\n\n";
-                $assetList .= "Date: " . $ts->format('d F Y') . "\n";
-                $assetList .= "Time Detected: " . $ts->format('g:i A') . "\n\n";
-                $assetList .= "" . $asset['asset_name'] . "\n";
-                $assetList .= "Location: *" . $asset['location'] . "*\n";
+                $assetList .= buildBinClearedMessage($asset) . "\n";
                 // $assetList .= "PIC: Amran (TRX DM - Manager, Soft Services) +60133564132\n";
                 $assetList .= "\n";
             }
@@ -504,7 +518,7 @@ if ($canSend) {
                     VALUES (?, 'whatsapp_emptied', ?, ?, '$timedate')
                 ");
                 foreach ($sendBins as $device) {
-                    $logStmt->execute([$device['id_device'], $device['event_key'], $msg]);
+                    $logStmt->execute([$device['id_device'], $device['message_preview'], $msg]);
                 }
             } catch (Exception $e) {
                 file_put_contents($logFile, date('Y-m-d H:i')." | DB log ERROR: ".$e->getMessage()."\n", FILE_APPEND);
