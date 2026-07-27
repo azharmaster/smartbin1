@@ -193,7 +193,7 @@ $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
 // WAHA configuration
 $apiUrl = "https://waha.pakarai.dpdns.org";  // WAHA server URL
 //$apiUrl = "https://mpeg-yoga-bite-elected.trycloudflare.com";  // WAHA server URL
-$apiKey = "admin";                                      // WAHA API key
+$apiKey = "waha2026adminkey";                                      // WAHA API key
 $whatsapp = new WhatsAppSender($apiUrl, $apiKey);
 
 $now = Carbon::now('Asia/Kuala_Lumpur'); // Carbon instance in Malaysia time
