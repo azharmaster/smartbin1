@@ -8,27 +8,20 @@ use App\Models\Asset;
 use Illuminate\Support\Collection;
 use App\Models\CapacitySetting;
 use App\Models\Sensor;
-use Illuminate\Support\Facades\Cache;
-use Closure;
-use Throwable;
 
 
 class AdminMainDashboardController extends Controller
 {
-    private const LIVE_CACHE_SECONDS = 10;
-    private const DASHBOARD_CACHE_SECONDS = 60;
-    private const STATIC_CACHE_SECONDS = 300;
-
     /**
      * Display Admin Main Dashboard
      */
     public function index()
     {
         /** @var Collection<int, Device> $devices */
-        $devices = $this->rememberDashboard('devices-with-latest-sensor', self::LIVE_CACHE_SECONDS, fn () => $this->loadDevicesWithLatestSensor());
+        $devices = $this->loadDevicesWithLatestSensor();
 
         // ✅ Load capacity settings from DB
-        $capacity = $this->rememberDashboard('capacity-setting:first', self::STATIC_CACHE_SECONDS, fn () => CapacitySetting::first());
+        $capacity = CapacitySetting::first();
         $emptyMax = $capacity->empty_to;
         $halfMax  = $capacity->half_to;
 
@@ -61,15 +54,15 @@ class AdminMainDashboardController extends Controller
             });
 
         // Get last emptied times for each device (compartment)
-        $lastEmptiedTimes = $this->rememberDashboard('last-emptied-times-by-device', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getLastEmptiedTimesByDevice());
+        $lastEmptiedTimes = $this->getLastEmptiedTimesByDevice();
         
         // Get last emptied times for each bin (asset)
-        $lastEmptiedTimesByBin = $this->rememberDashboard('last-emptied-times-by-bin', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getLastEmptiedTimesByBin());
+        $lastEmptiedTimesByBin = $this->getLastEmptiedTimesByBin();
 
-        $lastUpdated = $this->rememberDashboard('last-updated', self::LIVE_CACHE_SECONDS, fn () => Sensor::latest('created_at')->value('created_at'));
+        $lastUpdated = Sensor::latest('created_at')->value('created_at');
 
-        $floors = $this->rememberDashboard('floors:all', self::STATIC_CACHE_SECONDS, fn () => Floor::all());
-        $assetsWithCoords = $this->rememberDashboard('assets-with-coords', self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadAssetsWithCoordinates());
+        $floors = Floor::all();
+        $assetsWithCoords = $this->loadAssetsWithCoordinates();
 
         return view('adminmaindashboard', compact(
             'devices',
@@ -105,15 +98,6 @@ class AdminMainDashboardController extends Controller
             'admin.dashboardpopupview.dashboard_bin_modal',
             compact('asset', 'devices')
         );
-    }
-
-    private function rememberDashboard(string $key, int $seconds, Closure $callback): mixed
-    {
-        try {
-            return Cache::remember("admin-live-dashboard:{$key}", now()->addSeconds($seconds), $callback);
-        } catch (Throwable) {
-            return $callback();
-        }
     }
 
     private function countEmptyDevicesCollection($devices, $emptyMax)
