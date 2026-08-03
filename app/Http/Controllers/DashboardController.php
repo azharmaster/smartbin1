@@ -18,13 +18,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use App\Models\NotificationLog;
 use App\Models\WhatsAppNotification;
 use App\Services\CollectionTripService;
+use Closure;
+use Throwable;
 
 class DashboardController extends Controller
 {
     private const CLEAR_HOLD_MINUTES = 60;
+    private const LIVE_CACHE_SECONDS = 10;
+    private const DASHBOARD_CACHE_SECONDS = 60;
+    private const STATIC_CACHE_SECONDS = 300;
 
     public function __construct(private CollectionTripService $collectionTripService)
     {
@@ -38,16 +44,25 @@ class DashboardController extends Controller
 
         $selectedDate = Carbon::parse($validated['date'])->startOfDay();
         $dateString = $selectedDate->toDateString();
-        $collectionTrips = $this->collectionTripService->getTrips($dateString, $dateString);
-        $hourlySummary = $this->buildCalendarHourlySummary($collectionTrips);
+        $summary = $this->rememberDashboard("calendar-summary:{$dateString}", self::LIVE_CACHE_SECONDS, function () use ($selectedDate, $dateString) {
+            $collectionTrips = $this->collectionTripService->getTrips($dateString, $dateString);
+            $hourlySummary = $this->buildCalendarHourlySummary($collectionTrips);
+
+            return [
+                'collection_trip_count' => $collectionTrips->count(),
+                'full_bin_count' => $this->countFullBinEventsForDate($selectedDate),
+                'hourly_labels' => $hourlySummary['labels'],
+                'hourly_data' => $hourlySummary['data'],
+            ];
+        });
 
         return response()->json([
             'date' => $dateString,
             'date_label' => $selectedDate->format('d M Y'),
-            'collection_trip_count' => $collectionTrips->count(),
-            'full_bin_count' => $this->countFullBinEventsForDate($selectedDate),
-            'hourly_labels' => $hourlySummary['labels'],
-            'hourly_data' => $hourlySummary['data'],
+            'collection_trip_count' => $summary['collection_trip_count'],
+            'full_bin_count' => $summary['full_bin_count'],
+            'hourly_labels' => $summary['hourly_labels'],
+            'hourly_data' => $summary['hourly_data'],
         ]);
     }
 
@@ -58,57 +73,57 @@ class DashboardController extends Controller
      */
     public function index()
 {
-    $devices = $this->loadDevicesWithLatestSensor();
+    $devices = $this->rememberDashboard('devices-with-latest-sensor', self::LIVE_CACHE_SECONDS, fn () => $this->loadDevicesWithLatestSensor());
 
     // Floors and assets
-    $floors = Floor::all();
-    $assetsWithCoords = Asset::whereNotNull('x')
+    $floors = $this->rememberDashboard('floors:all', self::STATIC_CACHE_SECONDS, fn () => Floor::all());
+    $assetsWithCoords = $this->rememberDashboard('assets-with-coords', self::DASHBOARD_CACHE_SECONDS, fn () => Asset::whereNotNull('x')
                             ->whereNotNull('y')
                             ->with(['devices' => function($q) {
                                 $q->where('is_active', 1);
                             }])
-                            ->get();
-    $assetsWithDevices = Asset::with(['devices.sensors'])
+                            ->get());
+    $assetsWithDevices = $this->rememberDashboard('assets-with-devices', self::DASHBOARD_CACHE_SECONDS, fn () => Asset::with(['devices.sensors'])
         ->whereHas('devices')
         ->where('is_active', 1)
         ->orderBy('asset_name')
-        ->get();
+        ->get());
 
     // Todos and tasks
-    $todos = $this->loadTodosForUser(Auth::id());
-    $latestComplaints = $this->loadLatestComplaints();
-    $users = User::all();
-    $assignedTasks = $this->loadAssignedTasks();
-    $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
+    $todos = $this->rememberDashboard('todos:user:' . Auth::id(), self::LIVE_CACHE_SECONDS, fn () => $this->loadTodosForUser(Auth::id()));
+    $latestComplaints = $this->rememberDashboard('latest-complaints', self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadLatestComplaints());
+    $users = $this->rememberDashboard('users:all', self::STATIC_CACHE_SECONDS, fn () => User::all());
+    $assignedTasks = $this->rememberDashboard('assigned-tasks', self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadAssignedTasks());
+    $tasksCompletedPerStaff = $this->rememberDashboard('tasks-completed-per-staff:' . now()->format('Y-m'), self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadTasksCompletedPerStaff());
 
     // Smart bin clear times
-    $smartBinClearTimes = $this->calculateSmartBinClearTimes();
+    $smartBinClearTimes = $this->rememberDashboard('smart-bin-clear-times:' . now()->format('o-W'), self::DASHBOARD_CACHE_SECONDS, fn () => $this->calculateSmartBinClearTimes());
 
     // Calendar
-    $calendarCombined = $this->getCalendarEvents();
+    $calendarCombined = $this->rememberDashboard('calendar-events', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getCalendarEvents());
 
     // Today's notifications
-    $todayNotifications = $this->getTodayNotifications();
+    $todayNotifications = $this->rememberDashboard('today-notifications:' . today()->toDateString(), self::LIVE_CACHE_SECONDS, fn () => $this->getTodayNotifications());
 
     // Upcoming holidays and events
-    $upcomingHolidaysAndEvents = $this->getUpcomingHolidaysAndEvents();
+    $upcomingHolidaysAndEvents = $this->rememberDashboard('upcoming-holidays-events', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getUpcomingHolidaysAndEvents());
 
     $deviceStats = $this->getDeviceStats($devices);
-    $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
+    $whatsappNotificationActive = $this->rememberDashboard('whatsapp-notification-status', self::LIVE_CACHE_SECONDS, fn () => $this->getWhatsappNotificationStatus());
 
-    $abnormalBins = $this->getAbnormalBins();
+    $abnormalBins = $this->rememberDashboard('abnormal-bins', self::LIVE_CACHE_SECONDS, fn () => $this->getAbnormalBins());
 
     // Get bin statistics
-    $binStatistics = $this->getBinStatistics();
+    $binStatistics = $this->rememberDashboard('bin-statistics:' . today()->toDateString(), self::LIVE_CACHE_SECONDS, fn () => $this->getBinStatistics());
 
     // Last emptied times for each asset
-    $lastEmptiedTimes = $this->getLastEmptiedTimes();
+    $lastEmptiedTimes = $this->rememberDashboard('last-emptied-times', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getLastEmptiedTimes());
 
     // Predicted full times for each asset
-    $predictedFullTimes = $this->getPredictedFullTimes();
+    $predictedFullTimes = $this->rememberDashboard('predicted-full-times', self::LIVE_CACHE_SECONDS, fn () => $this->getPredictedFullTimes());
 
     // ✅ FULL ASSETS USING ADMIN CAPACITY SETTING & LATEST SENSOR
-    $fullAssets = DB::table('devices')
+    $fullAssets = $this->rememberDashboard('full-assets', self::LIVE_CACHE_SECONDS, fn () => DB::table('devices')
         ->join('assets', 'devices.asset_id', '=', 'assets.id')
         ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
         ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
@@ -119,26 +134,26 @@ class DashboardController extends Controller
         )')
         ->whereColumn('s1.capacity', '>', 'capacity_settings.half_to')
         ->distinct('assets.id')
-        ->count('assets.id');
+        ->count('assets.id'));
 
     return view('dashboard.index', array_merge($deviceStats, $binStatistics, [
 
-        'todos' => $this->loadTodosForUser(Auth::id()),
-        'floors' => Floor::all(),
-        'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->whereHas('devices')->where('is_active', 1)->get(),
+        'todos' => $todos,
+        'floors' => $floors,
+        'assetsWithCoords' => $assetsWithCoords,
         'devices' => $devices,
-        'users' => User::all(),
-        'assignedTasks' => $this->loadAssignedTasks(),
-        'latestComplaints' => $this->loadLatestComplaints(),
-        'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
-        'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
-        'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->where('is_active', 1)->orderBy('asset_name')->get(),
-        'calendarCombined' => $this->getCalendarEvents(),
-        'todayNotifications' => $this->getTodayNotifications(),
+        'users' => $users,
+        'assignedTasks' => $assignedTasks,
+        'latestComplaints' => $latestComplaints,
+        'tasksCompletedPerStaff' => $tasksCompletedPerStaff,
+        'smartBinClearTimes' => $smartBinClearTimes,
+        'assetsWithDevices' => $assetsWithDevices,
+        'calendarCombined' => $calendarCombined,
+        'todayNotifications' => $todayNotifications,
         'upcomingHolidaysAndEvents' => $upcomingHolidaysAndEvents,
         'whatsappNotificationActive'=> $whatsappNotificationActive,
         'abnormalBins' => $abnormalBins,
-        'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
+        'abnormalBinsTrend' => $this->rememberDashboard('abnormal-bins-trend', self::DASHBOARD_CACHE_SECONDS, fn () => $this->getAbnormalBinsTrend()),
 
         // ✅ PASS FULL ASSETS TO VIEW
         'fullAssets' => $fullAssets,
@@ -146,6 +161,15 @@ class DashboardController extends Controller
         'predictedFullTimes' => $predictedFullTimes,
     ]));
 }
+
+    private function rememberDashboard(string $key, int $seconds, Closure $callback): mixed
+    {
+        try {
+            return Cache::remember("dashboard:{$key}", now()->addSeconds($seconds), $callback);
+        } catch (Throwable) {
+            return $callback();
+        }
+    }
     private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40)
     {
         $trend = collect();

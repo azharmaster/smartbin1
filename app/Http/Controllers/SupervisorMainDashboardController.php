@@ -7,13 +7,20 @@ use App\Models\Asset;
 use App\Models\Device;
 use App\Models\Sensor;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Closure;
+use Throwable;
 
 class SupervisorMainDashboardController extends Controller
 {
+    private const LIVE_CACHE_SECONDS = 10;
+    private const DASHBOARD_CACHE_SECONDS = 60;
+    private const STATIC_CACHE_SECONDS = 300;
+
     public function index()
     {
         // Load devices with their latest sensor & asset-floor relationship
-        $devices = Device::with('latestSensor', 'asset.floor', 'asset.capacitySetting')->get();
+        $devices = $this->rememberDashboard('devices-with-latest-sensor', self::LIVE_CACHE_SECONDS, fn () => Device::with('latestSensor', 'asset.floor', 'asset.capacitySetting')->get());
 
         // Total devices
         $totalDevices = $devices->count();
@@ -64,15 +71,15 @@ class SupervisorMainDashboardController extends Controller
             });
 
         // Get all floors
-        $floors = Floor::all();
+        $floors = $this->rememberDashboard('floors:all', self::STATIC_CACHE_SECONDS, fn () => Floor::all());
 
         // Get assets that have coordinates (for map markers)
-        $assetsWithCoords = Asset::whereNotNull('x')
+        $assetsWithCoords = $this->rememberDashboard('assets-with-coords', self::DASHBOARD_CACHE_SECONDS, fn () => Asset::whereNotNull('x')
             ->whereNotNull('y')
-            ->get();
+            ->get());
 
         // Get last updated time
-        $lastUpdated = Sensor::max('created_at');
+        $lastUpdated = $this->rememberDashboard('last-updated', self::LIVE_CACHE_SECONDS, fn () => Sensor::max('created_at'));
 
         return view('adminmaindashboard', compact(
             'devices',
@@ -89,6 +96,15 @@ class SupervisorMainDashboardController extends Controller
             'undetectedDevices',
             'lastUpdated'
         ));
+    }
+
+    private function rememberDashboard(string $key, int $seconds, Closure $callback): mixed
+    {
+        try {
+            return Cache::remember("supervisor-live-dashboard:{$key}", now()->addSeconds($seconds), $callback);
+        } catch (Throwable) {
+            return $callback();
+        }
     }
 
     // ✅ NEW METHOD (ADDED ONLY – NOTHING ELSE TOUCHED)

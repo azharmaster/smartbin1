@@ -14,9 +14,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Closure;
+use Throwable;
 
 class SupervisorDashboardController extends Controller
 {
+    private const LIVE_CACHE_SECONDS = 10;
+    private const DASHBOARD_CACHE_SECONDS = 60;
+    private const STATIC_CACHE_SECONDS = 300;
+
     /**
      * Display the dashboard.
      *
@@ -25,7 +32,7 @@ class SupervisorDashboardController extends Controller
     public function index()
     {
         /** @var \Illuminate\Support\Collection<int, Device> $devices */
-        $devices = $this->loadDevicesWithLatestSensor();
+        $devices = $this->rememberDashboard('devices-with-latest-sensor', self::LIVE_CACHE_SECONDS, fn () => $this->loadDevicesWithLatestSensor());
 
         $totalDevices = $devices->count();
         $fullDevicesCollection = $this->countFullDevices($devices);
@@ -35,17 +42,17 @@ class SupervisorDashboardController extends Controller
         $emptyDevices = $this->countEmptyDevices($devices);
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
-        $floors = Floor::all();
-        $assetsWithCoords = Asset::whereNotNull('x')
+        $floors = $this->rememberDashboard('floors:all', self::STATIC_CACHE_SECONDS, fn () => Floor::all());
+        $assetsWithCoords = $this->rememberDashboard('assets-with-coords', self::DASHBOARD_CACHE_SECONDS, fn () => Asset::whereNotNull('x')
                                  ->whereNotNull('y')
-                                 ->get();
-        $todos = $this->loadTodosForUser(Auth::id());
-        $latestComplaints = $this->loadLatestComplaints();
-        $users = User::where('role', 2)->get();
-        $assignedTasks = $this->loadAssignedTasks();
-        $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
+                                 ->get());
+        $todos = $this->rememberDashboard('todos:user:' . Auth::id(), self::LIVE_CACHE_SECONDS, fn () => $this->loadTodosForUser(Auth::id()));
+        $latestComplaints = $this->rememberDashboard('latest-complaints', self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadLatestComplaints());
+        $users = $this->rememberDashboard('staff-users', self::STATIC_CACHE_SECONDS, fn () => User::where('role', 2)->get());
+        $assignedTasks = $this->rememberDashboard('assigned-tasks', self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadAssignedTasks());
+        $tasksCompletedPerStaff = $this->rememberDashboard('tasks-completed-per-staff:' . now()->format('Y-m'), self::DASHBOARD_CACHE_SECONDS, fn () => $this->loadTasksCompletedPerStaff());
 
-        $smartBinClearTimes = $this->calculateSmartBinClearTimes();
+        $smartBinClearTimes = $this->rememberDashboard('smart-bin-clear-times', self::DASHBOARD_CACHE_SECONDS, fn () => $this->calculateSmartBinClearTimes());
 
         /* =======================
            📅 CALENDAR EVENTS (ADDED)
@@ -111,6 +118,15 @@ foreach ($assignedTasks as $task) {
     private function loadDevicesWithLatestSensor()
     {
         return Device::with('latestSensor', 'asset.floor')->get();
+    }
+
+    private function rememberDashboard(string $key, int $seconds, Closure $callback): mixed
+    {
+        try {
+            return Cache::remember("supervisor-dashboard:{$key}", now()->addSeconds($seconds), $callback);
+        } catch (Throwable) {
+            return $callback();
+        }
     }
 
     private function countFullDevices($devices)
