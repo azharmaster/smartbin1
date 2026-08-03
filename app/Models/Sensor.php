@@ -99,9 +99,9 @@ class Sensor extends Model
         } elseif ($rsrpValue >= -100) {
             return 'Normal';
         } elseif ($rsrpValue >= -110) {
-            return 'Week';
+            return 'Weak';
         } else {
-            return 'Very Week';
+            return 'Very Weak';
         }
     }
 }

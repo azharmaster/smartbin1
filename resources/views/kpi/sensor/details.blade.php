@@ -231,9 +231,9 @@
                                 <span class="badge badge-strong">{{ $sensor->network_strength }}</span>
                             @elseif($sensor->network_strength === 'Normal')
                                 <span class="badge badge-normal-signal">{{ $sensor->network_strength }}</span>
-                            @elseif($sensor->network_strength === 'Week')
+                            @elseif($sensor->network_strength === 'Weak')
                                 <span class="badge badge-weak">{{ $sensor->network_strength }}</span>
-                            @elseif($sensor->network_strength === 'Very Week')
+                            @elseif($sensor->network_strength === 'Very Weak')
                                 <span class="badge badge-weak">{{ $sensor->network_strength }}</span>
                             @else
                                 <span class="badge bg-secondary">{{ $sensor->network_strength }}</span>

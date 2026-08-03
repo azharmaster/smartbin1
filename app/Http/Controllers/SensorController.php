@@ -16,59 +16,16 @@ class SensorController extends Controller
         // Get all sensors with relationships for client-side filtering
         $allSensors = Sensor::with('device.asset')->orderBy('created_at', 'desc')->get()
             ->map(function ($sensor) {
-                // Calculate network_strength based on RSRP
-                $rsrp = $sensor->rsrp;
-                if ($rsrp !== null) {
-                    $rsrpValue = floatval($rsrp);
-                    if ($rsrpValue > -80) {
-                        $sensor->network_strength = 'Strong';
-                    } elseif ($rsrpValue > -100) {
-                        $sensor->network_strength = 'Normal';
-                    } elseif ($rsrpValue > -110) {
-                        $sensor->network_strength = 'Week';
-                    } else {
-                        $sensor->network_strength = 'Very Week';
-                    }
-                }
-                
-                // Calculate battery percentage
-                $voltage = $sensor->battery;
-                if ($voltage !== null) {
-                    $voltage = floatval($voltage);
-                    if ($voltage >= 3.7) {
-                        $sensor->battery_percentage = 100;
-                    } elseif ($voltage >= 3.6) {
-                        $sensor->battery_percentage = 98;
-                    } elseif ($voltage >= 3.5) {
-                        $sensor->battery_percentage = 95;
-                    } elseif ($voltage >= 3.4) {
-                        $sensor->battery_percentage = 80;
-                    } elseif ($voltage >= 3.3) {
-                        $sensor->battery_percentage = 20;
-                    } elseif ($voltage >= 3.2) {
-                        $sensor->battery_percentage = 10;
-                    } elseif ($voltage >= 3.1) {
-                        $sensor->battery_percentage = 8;
-                    } elseif ($voltage >= 3.0) {
-                        $sensor->battery_percentage = 5;
-                    } elseif ($voltage >= 2.9) {
-                        $sensor->battery_percentage = 3;
-                    } elseif ($voltage >= 2.8) {
-                        $sensor->battery_percentage = 1;
-                    } else {
-                        $sensor->battery_percentage = 0;
-                    }
-                } else {
-                    $sensor->battery_percentage = 0;
-                }
-                
+                $sensor->network_strength = $sensor->network_strength;
+                $sensor->battery_percentage = $sensor->battery_percentage;
+
                 return $sensor;
             });
 
         // Get all assets for dropdown
         $assets = Asset::orderBy('asset_name')->get();
 
-        // ✅ UPDATED PART FOR CHART (JOIN DEVICE NAME + ASSET NAME)
+        // Latest reading per device for the chart.
         $latestPerDevice = Sensor::join('devices', 'sensors.device_id', '=', 'devices.id_device')
             ->join('assets', 'devices.asset_id', '=', 'assets.id')
             ->select(
@@ -125,7 +82,7 @@ class SensorController extends Controller
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'created_at', 'rsrp', 'nsr'));
+        $sensor = Sensor::create($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;
@@ -165,7 +122,7 @@ class SensorController extends Controller
             'nsr' => 'nullable|string|max:50',
         ]);
 
-        $sensor->update($request->only('device_id', 'battery', 'capacity', 'created_at', 'rsrp', 'nsr'));
+        $sensor->update($request->only('device_id', 'battery', 'capacity', 'time', 'rsrp', 'nsr'));
 
         $device = $sensor->device;
         $asset = $device->asset;

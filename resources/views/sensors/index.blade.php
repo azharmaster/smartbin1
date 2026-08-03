@@ -3,7 +3,7 @@
 @section('content')
 
 <!-- Floating Help Button -->
-<button type="button" data-bs-toggle="modal" data-bs-target="#sensorsHelpModal" style="
+<button type="button" data-toggle="modal" data-target="#sensorsHelpModal" style="
         position: fixed;
         bottom: 30px;
         right: 30px;
@@ -188,8 +188,10 @@
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Sensor Data – User Guide</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Sensor Data - User Guide</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
       <div class="modal-body" style="font-size: 14px;">
@@ -217,30 +219,30 @@
           <li><strong>Device ID</strong>: Unique identifier of the sensor/device.</li>
           <li><strong>Battery</strong>: Current battery level in percentage (%).</li>
           <li><strong>Capacity</strong>: Current fill level of the bin in percentage (%).</li>
-          <li><strong>RSRP</strong>: Reference Signal Received Power – measures the signal strength of the device in dBm. 
+          <li><strong>RSRP</strong>: Reference Signal Received Power - measures the signal strength of the device in dBm. 
               <br> 
               <strong>Interpretation:</strong>
               <ul>
-                <li>Closer to 0 → stronger signal</li>
+                <li>Closer to 0 means stronger signal</li>
                 <li>Typical ranges:</li>
-                <li>-70 dBm → Excellent signal</li>
-                <li>-85 dBm → Good signal</li>
-                <li>-100 dBm → Fair signal</li>
-                <li>-110 dBm → Weak signal</li>
-                <li>-120 dBm → Very weak / unstable</li>
+                <li>-70 dBm: Excellent signal</li>
+                <li>-85 dBm: Good signal</li>
+                <li>-100 dBm: Fair signal</li>
+                <li>-110 dBm: Weak signal</li>
+                <li>-120 dBm: Very weak / unstable</li>
               </ul>
               <em>Example:</em> RSRP = -80 dBm means the device has a good signal.</em>
           </li>
-          <li><strong>NSR</strong>: Noise-to-Signal Ratio – measures signal quality relative to interference in dB.
+          <li><strong>NSR</strong>: Noise-to-Signal Ratio - measures signal quality relative to interference in dB.
               <br>
               <strong>Interpretation:</strong>
               <ul>
-                <li>Higher NSR → better quality</li>
+                <li>Higher NSR means better quality</li>
                 <li>Typical ranges:</li>
-                <li>15 dB → Excellent quality</li>
-                <li>10 dB → Good quality</li>
-                <li>5 dB → Fair quality</li>
-                <li>2 dB → Poor quality / prone to errors</li>
+                <li>15 dB: Excellent quality</li>
+                <li>10 dB: Good quality</li>
+                <li>5 dB: Fair quality</li>
+                <li>2 dB: Poor quality / prone to errors</li>
               </ul>
               <em>Example:</em> NSR = 12 dB means the device has good signal quality.</em>
           </li>
@@ -249,8 +251,8 @@
               <ul>
                 <li><strong>Strong</strong>: RSRP > -80 dBm (Excellent connection)</li>
                 <li><strong>Normal</strong>: RSRP between -80 and -100 dBm (Good connection)</li>
-                <li><strong>Week</strong>: RSRP between -100 and -110 dBm (Fair connection)</li>
-                <li><strong>Very Week</strong>: RSRP < -110 dBm (Poor connection)</li>
+                <li><strong>Weak</strong>: RSRP between -100 and -110 dBm (Fair connection)</li>
+                <li><strong>Very Weak</strong>: RSRP < -110 dBm (Poor connection)</li>
               </ul>
           </li>
           <li><strong>Time</strong>: Timestamp of the latest data reading from the device.</li>
@@ -316,8 +318,8 @@ function openHelp() {
         const badges = {
             'Strong': 'bg-success',
             'Normal': 'bg-info',
-            'Week': 'bg-warning',
-            'Very Week': 'bg-danger'
+            'Weak': 'bg-warning',
+            'Very Weak': 'bg-danger'
         };
         const badgeClass = badges[strength] || 'bg-secondary';
         return `<span class="badge ${badgeClass}">${strength}</span>`;
@@ -485,7 +487,7 @@ function openHelp() {
                 fill: false,
                 borderWidth: 2,
 
-                borderColor: '#28a745',   // ✅ line color (Bootstrap green)
+                borderColor: '#28a745',
                 backgroundColor: 'rgba(46,204,113,0.2)',
                 pointBackgroundColor: '#28a745',
                 pointBorderColor: '#28a745',

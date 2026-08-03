@@ -34,7 +34,7 @@ class KpiSensorController extends Controller
 
             // Check for weak network signals
             $weakNetworkCount = $deviceSensors->filter(function ($s) {
-                return in_array($s->network_strength, ['Week', 'Very Week']);
+                return in_array($s->network_strength, ['Weak', 'Very Weak']);
             })->count();
 
             // Check for abnormal data (negative values)
@@ -142,7 +142,7 @@ class KpiSensorController extends Controller
             }
 
             $weakNetworkCount = $deviceSensors->filter(function ($s) {
-                return in_array($s->network_strength, ['Week', 'Very Week']);
+                return in_array($s->network_strength, ['Weak', 'Very Weak']);
             })->count();
 
             $abnormalData = $deviceSensors->filter(function ($s) {

@@ -57,7 +57,9 @@
                             <input type="text"
                                    name="id_device"
                                    class="form-control"
-                                   value="{{ $id_device }}">
+                                   value="{{ old('id_device', $id_device) }}"
+                                   maxlength="32"
+                                   required>
                         @endif
                     </div>
 

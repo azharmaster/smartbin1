@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Sensor; // ✅ ADDED (required for latestSensor)
-use App\Models\Asset;  // ✅ ADDED to link Device to Asset
+use App\Models\Sensor;
+use App\Models\Asset;
 
 class Device extends Model
 {

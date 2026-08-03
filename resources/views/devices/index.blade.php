@@ -3,7 +3,7 @@
 @section('content')
 
 <!-- Floating Help Button -->
-<button type="button" data-bs-toggle="modal" data-bs-target="#devicesHelpModal" style="
+<button type="button" data-toggle="modal" data-target="#devicesHelpModal" style="
         position: fixed;
         bottom: 30px;
         right: 30px;
@@ -57,7 +57,9 @@
                         <th>Sensor Name</th>
                         <th>Serial Number</th>
                         <th>Sim Card</th>
-                        @if(auth()->user()->role == 1)<th>Option</th>@endif
+                        <th>Health</th>
+                        <th>Latest Reading</th>
+                        <th>Option</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,6 +71,36 @@
                         <td>{{ $device->device_name }}</td>
                         <td>{{ $device->serialno }}</td>
                         <td>{{ $device->simcard }}</td>
+                        <td class="text-center">
+                            @php
+                                $latestSensor = $device->latestSensor;
+                                $lastSeenAt = $latestSensor?->time ?? $latestSensor?->created_at;
+                                $isOffline = !$lastSeenAt || \Carbon\Carbon::parse($lastSeenAt)->lt(now()->subMinutes(40));
+                            @endphp
+
+                            @if(!$latestSensor)
+                                <span class="badge badge-secondary">No Data</span>
+                            @elseif($isOffline)
+                                <span class="badge badge-danger">Offline</span>
+                            @else
+                                <span class="badge badge-success">Online</span>
+                            @endif
+
+                            <div class="small text-muted mt-1">
+                                Battery: {{ $latestSensor ? $latestSensor->battery_percentage . '%' : '-' }}
+                            </div>
+                        </td>
+                        <td>
+                            @if($latestSensor)
+                                <div>{{ $lastSeenAt ? \Carbon\Carbon::parse($lastSeenAt)->format('d M Y, h:i A') : '-' }}</div>
+                                <small class="text-muted">
+                                    Capacity: {{ is_numeric($latestSensor->capacity) ? $latestSensor->capacity . '%' : '-' }}
+                                    | Signal: {{ $latestSensor->network_strength }}
+                                </small>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
                         <td>
                             @if(auth()->user()->role == 1)
                             <div style="position: relative; display: flex; align-items: center; justify-content: center;">
@@ -112,8 +144,10 @@
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Sensors / Devices – User Guide</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Sensors / Devices - User Guide</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
       <div class="modal-body" style="font-size: 14px;">
@@ -177,7 +211,7 @@
   </div>
 </div>
 
-!--OPEN HELP MODAL -->
+<!-- OPEN HELP MODAL -->
 <script>
 function openHelp() {
     $('#helpModal').modal('show');
