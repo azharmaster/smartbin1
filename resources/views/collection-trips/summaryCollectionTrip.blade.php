@@ -312,7 +312,7 @@
         </div>
 
         <div class="row g-4 mt-1 align-items-stretch">
-            <div class="col-lg-4 d-flex">
+            <div class="col-lg-6 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header summary-gradient text-white">
                         <i class="fas fa-clock me-2"></i>Collection Frequency by Hour (7 AM - 10 PM)
@@ -326,38 +326,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-4 d-flex">
-                <div class="card shadow-sm border-0 w-100">
-                    <div class="card-header bg-dark text-white">
-                        <i class="fas fa-lightbulb me-2"></i>Smart Bin System KPI
-                        <i class="fas fa-question-circle card-info-icon ms-2" role="button" tabindex="0"
-                            data-info-title="Smart Bin System KPI"
-                            data-info="Key system performance indicators (KPIs) including fill level efficiency, collection frequency, estimated frequent time, response time, bin usage rate, and system uptime for the selected period."></i>
-                    </div>
-                    <div class="card-body p-0 summary-panel-body summary-panel-lg">
-                        <table class="table table-sm table-striped mb-0">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>KPI</th>
-                                    <th>Value</th>
-                                    <th>Detail</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($systemKpis as $kpi)
-                                    <tr>
-                                        <td>{{ $kpi['title'] }}</td>
-                                        <td class="fw-bold">{{ $kpi['value'] }}</td>
-                                        <td>{{ $kpi['detail'] }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 d-flex">
+            <div class="col-lg-6 d-flex">
                 <div class="card shadow-sm border-0 w-100">
                     <div class="card-header bg-dark text-white">
                         <i class="fas fa-lightbulb me-2"></i>{{ $period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily') }} Insights
@@ -1081,32 +1050,6 @@
                 };
             }
 
-            function buildKpiTable() {
-                const rows = [
-                    [
-                        { text: 'KPI', style: 'tableHeader' },
-                        { text: 'Value', style: 'tableHeader' },
-                        { text: 'Detail', style: 'tableHeader' }
-                    ],
-                    ...@json($systemKpis).map(kpi => [kpi.title, kpi.value, kpi.detail])
-                ];
-
-                return {
-                    stack: [
-                        { text: 'Smart Bin System KPI', fillColor: '#212529', color: '#ffffff', bold: true, fontSize: 10, margin: [0, 0, 0, 6] },
-                        {
-                            table: {
-                                headerRows: 1,
-                                widths: ['28%', '18%', '54%'],
-                                body: rows
-                            },
-                            layout: 'lightHorizontalLines'
-                        }
-                    ],
-                    margin: [0, 0, 0, 5]
-                };
-            }
-
             function buildInsightsCard() {
                 const insights = @json($insights);
                 return {
@@ -1162,10 +1105,8 @@
                         },
                         {
                             columns: [
-                                buildKpiTable(),
                                 buildInsightsCard()
-                            ],
-                            columnGap: 8
+                            ]
                         }
                     ],
                     styles: {

@@ -26,8 +26,6 @@
         .card-header { background: #672d84; color: #fff; padding: 4px 5px; font-weight: 700; font-size: 8px; }
         .card-body { padding: 4px; }
         .chart { width: 100%; height: 82px; object-fit: contain; }
-        .kpi-table th, .kpi-table td { border: 1px solid #e5e7eb; padding: 2px 3px; text-align: left; font-size: 6px; }
-        .kpi-table th { background: #f3f4f6; }
         .insights { margin: 0; padding-left: 16px; }
         .insights li { margin-bottom: 1px; font-size: 6px; }
     </style>
@@ -97,32 +95,7 @@
                 </td>
             </tr>
             <tr>
-                <td>
-                    <div class="card">
-                        <div class="card-header">Smart Bin System KPI</div>
-                        <div class="card-body">
-                            <table class="kpi-table">
-                                <thead>
-                                    <tr>
-                                        <th>KPI</th>
-                                        <th>Value</th>
-                                        <th>Detail</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($systemKpis as $kpi)
-                                        <tr>
-                                            <td>{{ $kpi['title'] }}</td>
-                                            <td>{{ $kpi['value'] }}</td>
-                                            <td>{{ $kpi['detail'] }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </td>
-                <td>
+                <td colspan="2">
                     <div class="card">
                         <div class="card-header">{{ $period === 'monthly' ? 'Monthly' : ($period === 'weekly' ? 'Weekly' : 'Daily') }} Insights</div>
                         <div class="card-body">

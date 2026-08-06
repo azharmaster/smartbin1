@@ -11,8 +11,6 @@ use Illuminate\Http\Request;
 
 class CollectionTripController extends Controller
 {
-    private const CLEAR_HOLD_MINUTES = 60;
-
     public function __construct(private CollectionTripService $collectionTripService)
     {
     }
@@ -211,7 +209,6 @@ class CollectionTripController extends Controller
         $hourlySummary = $this->buildHourlyCollectionSummary($collectionTrips);
         $assets = Asset::where('is_active', 1)->orderBy('asset_name')->get(['id', 'asset_name']);
         $binKpis = $this->buildBinKpis($rangeStart, $rangeEnd, $assetId, $capacityFilter);
-        $systemKpis = $this->buildSystemKpis($rangeStart, $rangeEnd, $assetId, $collectionTrips);
         $compartmentCapacities = $this->buildCompartmentCapacities($rangeStart, $rangeEnd, $assetId);
         $highestCapacityTile = count($compartmentCapacities['labels']) > 0
             ? ['label' => $compartmentCapacities['labels'][0], 'value' => $compartmentCapacities['data'][0] . '%']
@@ -252,7 +249,6 @@ class CollectionTripController extends Controller
             'compartmentCapacityLabels' => $compartmentCapacities['labels'],
             'compartmentCapacityData' => $compartmentCapacities['data'],
             'highestCapacityTile' => $highestCapacityTile,
-            'systemKpis' => $systemKpis,
         ];
     }
 
@@ -439,17 +435,6 @@ class CollectionTripController extends Controller
         };
     }
 
-    private function isCollectionCapacity(float $capacity, float $emptyTo): bool
-    {
-        return $capacity <= $emptyTo;
-    }
-
-    private function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime): bool
-    {
-        return $lastClearedAt !== null &&
-            $lastClearedAt->copy()->addMinutes(self::CLEAR_HOLD_MINUTES)->greaterThan($readingTime);
-    }
-
     private function resolveAverageTripsMetric(int $totalTrips, Carbon $rangeStart, Carbon $rangeEnd): array
     {
         $minutes = max(1, $rangeStart->diffInMinutes($rangeEnd) + 1);
@@ -601,173 +586,6 @@ class CollectionTripController extends Controller
         $rgb = sscanf($hex, '%02x%02x%02x');
 
         return sprintf('rgba(%d,%d,%d,%.2f)', $rgb[0], $rgb[1], $rgb[2], $alpha);
-    }
-
-    private function resolveFrequentCollectionTimeMetric($collectionTrips): array
-    {
-        if ($collectionTrips->isEmpty()) {
-            return [
-                'value' => 'N/A',
-                'detail' => 'No collection trips recorded in the selected period.',
-            ];
-        }
-
-        $hourCounts = $collectionTrips
-            ->groupBy(fn ($trip) => (int) $trip['emptied_at']->format('H'))
-            ->map->count()
-            ->sortKeys();
-
-        $highestCount = (int) $hourCounts->max();
-        $peakHours = $hourCounts
-            ->filter(fn ($count) => (int) $count === $highestCount)
-            ->keys()
-            ->map(fn ($hour) => (int) $hour)
-            ->values();
-
-        $averagePeakHour = (int) round($peakHours->avg());
-        $averagePeakTime = Carbon::createFromTime($averagePeakHour, 0)->format('h:i A');
-
-        $timeWindow = $peakHours
-            ->map(function ($hour) {
-                return Carbon::createFromTime($hour, 0)->format('h:i A');
-            })
-            ->join(', ');
-
-        return [
-            'value' => $averagePeakTime,
-            'detail' => $highestCount . ' trips most often happened around ' . $timeWindow . '.',
-        ];
-    }
-
-    private function buildSystemKpis(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId, $collectionTrips): array
-    {
-        $frequentCollectionTimeMetric = $this->resolveFrequentCollectionTimeMetric($collectionTrips);
-        $assets = Asset::with([
-            'capacitySetting',
-            'devices' => fn ($query) => $query->where('is_active', 1)->orderBy('id_device'),
-            'devices.sensors' => fn ($query) => $query->orderBy('created_at', 'asc'),
-            'devices.latestSensor',
-        ])
-            ->where('is_active', 1)
-            ->when($assetId, fn ($query) => $query->where('id', $assetId))
-            ->get();
-
-        $fillBeforeCollection = [];
-        $responseDurations = [];
-        $activeDeviceCount = 0;
-        $onlineDeviceCount = 0;
-
-        foreach ($assets as $asset) {
-            $lastClearedAt = null;
-
-            $capacitySetting = $asset->capacitySetting;
-            $emptyTo = (float) ($capacitySetting?->empty_to ?? 0);
-            $halfTo = (float) ($capacitySetting?->half_to ?? 79);
-
-            foreach ($asset->devices as $device) {
-                $activeDeviceCount++;
-
-                if ($device->latestSensor && Carbon::parse($device->latestSensor->created_at)->gte(now()->subMinutes(40))) {
-                    $onlineDeviceCount++;
-                }
-
-                $sensors = $device->sensors
-                    ->filter(fn ($sensor) => is_numeric($sensor->capacity))
-                    ->map(fn ($sensor) => [
-                        'capacity' => (float) $sensor->capacity,
-                        'created_at' => Carbon::parse($sensor->created_at)->timezone(config('app.timezone')),
-                    ])
-                    ->values();
-
-                $previousCapacity = null;
-                $fullAt = null;
-
-                foreach ($sensors as $reading) {
-                    $currentCapacity = $reading['capacity'];
-                    $readingTime = $reading['created_at'];
-
-                    if ($previousCapacity !== null && $previousCapacity <= $halfTo && $currentCapacity > $halfTo && $fullAt === null) {
-                        $fullAt = $readingTime;
-                    }
-
-                    if (
-                        $previousCapacity !== null &&
-                        $previousCapacity > $emptyTo &&
-                        $this->isCollectionCapacity($currentCapacity, $emptyTo) &&
-                        !$this->isClearHoldActive($lastClearedAt, $readingTime) &&
-                        $readingTime->betweenIncluded($rangeStart, $rangeEnd)
-                    ) {
-                        $lastClearedAt = $readingTime;
-                        $fillBeforeCollection[] = $previousCapacity;
-
-                        if ($fullAt !== null) {
-                            $responseDurations[] = round($fullAt->diffInMinutes($readingTime) / 60, 2);
-                            $fullAt = null;
-                        }
-                    }
-
-                    $previousCapacity = $currentCapacity;
-                }
-            }
-        }
-
-        $activeBins = max(1, $collectionTrips->unique('asset_id')->count());
-        $usageRanking = $collectionTrips
-            ->groupBy('asset_name')
-            ->map->count()
-            ->sortDesc();
-        $avgFillLevel = count($fillBeforeCollection) > 0 ? round(array_sum($fillBeforeCollection) / count($fillBeforeCollection), 1) : null;
-        $avgResponse = count($responseDurations) > 0 ? round(array_sum($responseDurations) / count($responseDurations), 2) : null;
-        $responseUnder4Hours = count($responseDurations) > 0
-            ? round((collect($responseDurations)->filter(fn ($hours) => $hours < 4)->count() / count($responseDurations)) * 100, 1)
-            : null;
-        $uptime = $activeDeviceCount > 0 ? round(($onlineDeviceCount / $activeDeviceCount) * 100, 1) : null;
-
-        $mostUsedName = $usageRanking->keys()->first();
-        $mostUsedCount = $usageRanking->first();
-
-        return [
-            [
-                'title' => 'Fill Level Efficiency',
-                'value' => $avgFillLevel !== null ? $avgFillLevel . '%' : 'N/A',
-                'detail' => 'Average bin fill level before collection',
-                'status' => $avgFillLevel !== null && $avgFillLevel >= 70 ? 'good' : 'warning',
-            ],
-            [
-                'title' => 'Collection Frequency',
-                'value' => $collectionTrips->count(),
-                'detail' => 'Total collection trips in selected period',
-                'status' => 'good',
-            ],
-            [
-                'title' => 'Estimated Frequent Time',
-                'value' => $frequentCollectionTimeMetric['value'],
-                'detail' => $frequentCollectionTimeMetric['detail'],
-                'status' => $frequentCollectionTimeMetric['value'] !== 'N/A' ? 'good' : 'warning',
-            ],
-            [
-                'title' => 'Collection Response Time',
-                'value' => $avgResponse !== null ? $avgResponse . ' hrs' : 'N/A',
-                'detail' => $responseUnder4Hours !== null
-                    ? 'cleared in under 4 hours'
-                    : 'No full-to-clear cycles found',
-                'status' => $avgResponse !== null && $avgResponse < 4 ? 'good' : 'warning',
-            ],
-            [
-                'title' => 'Bin Usage Rate',
-                'value' => round($collectionTrips->count() / $activeBins, 1),
-                'detail' => $mostUsedName
-                    ? 'Highest usage: ' . $mostUsedName . ' (' . $mostUsedCount . ' trips)'
-                    : 'Average collection trips per active bin',
-                'status' => 'good',
-            ],
-            [
-                'title' => 'System Uptime',
-                'value' => $uptime !== null ? $uptime . '%' : 'N/A',
-                'detail' => $activeDeviceCount . ' active devices, ' . $onlineDeviceCount . ' online in last 40 minutes',
-                'status' => $uptime !== null && $uptime >= 95 ? 'good' : 'warning',
-            ],
-        ];
     }
 
     private function buildCompartmentCapacities(Carbon $rangeStart, Carbon $rangeEnd, ?int $assetId = null): array
