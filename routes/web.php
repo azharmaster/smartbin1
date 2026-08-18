@@ -333,7 +333,7 @@ Route::get(
 
 // Admin Main Dashboard
 Route::get('/admin/dashboard', [AdminMainDashboardController::class, 'index'])
-    ->name('admin.main.dashboard') // matches your dropdown
+    ->name('admin.dashboard')
     ->middleware('auth');
 
 Route::get('/supervisor/dashboard', [SupervisorDashboardController::class, 'index'])
@@ -355,9 +355,6 @@ Route::get('/capacity', [CapacityController::class, 'index'])
         ->name('capacity.index');
 
 Route::put('capacity', [CapacityController::class, 'update'])->name('capacity.update');
-
-
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
 // Users create and update route
 Route::post('/users', [UserController::class, 'store'])->name('users.store');

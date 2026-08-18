@@ -8,10 +8,13 @@ use App\Models\Asset;
 use Illuminate\Support\Collection;
 use App\Models\CapacitySetting;
 use App\Models\Sensor;
+use Carbon\Carbon;
 
 
 class AdminMainDashboardController extends Controller
 {
+    private const DASHBOARD_HISTORY_DAYS = 14;
+
     /**
      * Display Admin Main Dashboard
      */
@@ -19,20 +22,16 @@ class AdminMainDashboardController extends Controller
     {
         /** @var Collection<int, Device> $devices */
         $devices = $this->loadDevicesWithLatestSensor();
-
-        // ✅ Load capacity settings from DB
-        $capacity = CapacitySetting::first();
-        $emptyMax = $capacity->empty_to;
-        $halfMax  = $capacity->half_to;
+        $devices->each(fn ($device) => $device->setRelation('latestSensor', $device->sensors->last()));
 
         $totalDevices = $devices->count();
 
         $totalDevices = $devices->count();
-        $fullDevicesCollection = $this->countFullDevices($devices, $halfMax);
+        $fullDevicesCollection = $this->countFullDevices($devices);
         $fullDevices = $fullDevicesCollection->count();
-        $halfDevicesCollection = $this->countHalfDevices($devices, $emptyMax, $halfMax);
+        $halfDevicesCollection = $this->countHalfDevices($devices);
         $halfDevices = $halfDevicesCollection->count();
-        $emptyDevicesCollection = $this->countEmptyDevicesCollection($devices, $emptyMax);
+        $emptyDevicesCollection = $this->countEmptyDevicesCollection($devices);
         $emptyDevices = $emptyDevicesCollection->count();
         $undetectedDevices = $this->countUndetectedDevices($devices);
 
@@ -53,16 +52,15 @@ class AdminMainDashboardController extends Controller
                 });
             });
 
-        // Get last emptied times for each device (compartment)
-        $lastEmptiedTimes = $this->getLastEmptiedTimesByDevice();
+        $lastEmptiedTimes = collect();
         
         // Get last emptied times for each bin (asset)
-        $lastEmptiedTimesByBin = $this->getLastEmptiedTimesByBin();
+        $lastEmptiedTimesByBin = $this->getLastEmptiedTimesByBin($devices);
 
-        $lastUpdated = Sensor::latest('created_at')->value('created_at');
+        $lastUpdated = Sensor::max('created_at');
 
-        $floors = Floor::all();
-        $assetsWithCoords = $this->loadAssetsWithCoordinates();
+        $floors = collect();
+        $assetsWithCoords = collect();
 
         return view('adminmaindashboard', compact(
             'devices',
@@ -100,49 +98,57 @@ class AdminMainDashboardController extends Controller
         );
     }
 
-    private function countEmptyDevicesCollection($devices, $emptyMax)
+    private function countEmptyDevicesCollection($devices)
 {
     return $devices->filter(fn($d) =>
         $d->latestSensor &&
+        $d->asset?->capacitySetting &&
         is_numeric($d->latestSensor->capacity) &&
-        $d->latestSensor->capacity <= $emptyMax
+        $d->latestSensor->capacity <= $d->asset->capacitySetting->empty_to
     );
 }
 
     private function loadDevicesWithLatestSensor(): Collection
     {
+        $historyStart = Carbon::now()->subDays(self::DASHBOARD_HISTORY_DAYS);
+
         return Device::with([
-            'latestSensor',
-            'asset.floor'
+            'asset.floor',
+            'asset.capacitySetting',
+            'sensors' => fn ($q) => $q->where('created_at', '>=', $historyStart)
+                ->orderBy('created_at', 'asc'),
         ])->get();
     }
 
     /** Capacity > 85% */
-    private function countFullDevices($devices, $halfMax)
+    private function countFullDevices($devices)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
+            $d->asset?->capacitySetting &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > $halfMax
+            $d->latestSensor->capacity > $d->asset->capacitySetting->half_to
         );
     }
 
-    private function countHalfDevices($devices, $emptyMax, $halfMax)
+    private function countHalfDevices($devices)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
+            $d->asset?->capacitySetting &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity > $emptyMax &&
-            $d->latestSensor->capacity <= $halfMax
+            $d->latestSensor->capacity > $d->asset->capacitySetting->empty_to &&
+            $d->latestSensor->capacity <= $d->asset->capacitySetting->half_to
         );
     }
 
-    private function countEmptyDevices($devices, $emptyMax)
+    private function countEmptyDevices($devices)
     {
         return $devices->filter(fn($d) =>
             $d->latestSensor &&
+            $d->asset?->capacitySetting &&
             is_numeric($d->latestSensor->capacity) &&
-            $d->latestSensor->capacity <= $emptyMax
+            $d->latestSensor->capacity <= $d->asset->capacitySetting->empty_to
         )->count();
     }
 
@@ -169,21 +175,16 @@ class AdminMainDashboardController extends Controller
      *
      * @return \Illuminate\Support\Collection
      */
-    private function getLastEmptiedTimesByBin()
+    private function getLastEmptiedTimesByBin(Collection $devices)
     {
         $result = [];
-
-        $devices = Device::with([
-            'asset.capacitySetting',
-            'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')
-        ])->get();
 
         foreach ($devices as $device) {
             if (!$device->asset || !$device->asset->capacitySetting) continue;
 
             $assetId = $device->asset->id;
             $capacity = $device->asset->capacitySetting;
-            $sensors = $device->sensors;
+            $sensors = $device->sensors->sortByDesc('created_at')->values();
 
             // Initialize if not set
             if (!isset($result[$assetId])) {

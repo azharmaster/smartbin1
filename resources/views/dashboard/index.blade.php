@@ -1415,7 +1415,7 @@ function trend($current, $previous) {
                                     @endphp
 
                                     <a href="javascript:void(0)" class="text-decoration-none device-link mb-1 d-block"
-                                    onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $device->asset->id]) }}')">
+                                    onclick="openAssetDetails('{{ route('master-data.assets.details', ['asset' => $asset->id]) }}')">
                                         <div class="device-card {{ $cardClass }}" data-status="{{ $status }}">
                                             <div class="d-flex justify-content-between align-items-start mb-1">
                                                 <div class="fw-bold fs-6 text-white">{{ $device->device_name }}</div>
@@ -1424,7 +1424,7 @@ function trend($current, $previous) {
 
                                             <div class="text-white small mb-1">
                                                 <i class="fas fa-map-marker-alt"></i>
-                                                {{ $device->asset->floor->floor_name ?? 'Unknown' }}
+                                                {{ $asset->floor->floor_name ?? 'Unknown' }}
                                             </div>
 
                                             <div class="d-flex justify-content-between align-items-center">
@@ -1853,21 +1853,22 @@ document.addEventListener('DOMContentLoaded', function() {
     @foreach($assetsWithCoords as $asset)
         @php
             $devices = $asset->devices;
+            $setting = $asset->capacitySetting;
 
             $fullCount = $devices->filter(fn($device) =>
-                $device->latestSensor && $device->asset->capacitySetting &&
-                $device->latestSensor->capacity > $device->asset->capacitySetting->half_to
+                $device->latestSensor && $setting &&
+                $device->latestSensor->capacity > $setting->half_to
             )->count();
 
             $halfCount = $devices->filter(fn($device) =>
-                $device->latestSensor && $device->asset->capacitySetting &&
-                $device->latestSensor->capacity > $device->asset->capacitySetting->empty_to &&
-                $device->latestSensor->capacity <= $device->asset->capacitySetting->half_to
+                $device->latestSensor && $setting &&
+                $device->latestSensor->capacity > $setting->empty_to &&
+                $device->latestSensor->capacity <= $setting->half_to
             )->count();
 
             $emptyCount = $devices->filter(fn($device) =>
-                $device->latestSensor && $device->asset->capacitySetting &&
-                $device->latestSensor->capacity <= $device->asset->capacitySetting->empty_to
+                $device->latestSensor && $setting &&
+                $device->latestSensor->capacity <= $setting->empty_to
             )->count();
 
             if($fullCount > 0) {

@@ -73,10 +73,14 @@ class SupervisorMainDashboardController extends Controller
 
         // Get last updated time
         $lastUpdated = Sensor::max('created_at');
+        $lastEmptiedTimes = collect();
+        $lastEmptiedTimesByBin = collect();
 
         return view('adminmaindashboard', compact(
             'devices',
             'groupedDevices',
+            'lastEmptiedTimes',
+            'lastEmptiedTimesByBin',
             'floors',
             'assetsWithCoords',
             'totalDevices',

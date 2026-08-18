@@ -25,6 +25,7 @@ use App\Services\CollectionTripService;
 class DashboardController extends Controller
 {
     private const CLEAR_HOLD_MINUTES = 60;
+    private const DASHBOARD_HISTORY_DAYS = 14;
 
     public function __construct(private CollectionTripService $collectionTripService)
     {
@@ -58,87 +59,98 @@ class DashboardController extends Controller
      */
     public function index()
 {
-    $devices = $this->loadDevicesWithLatestSensor();
+    $historyStart = Carbon::now()->subDays(self::DASHBOARD_HISTORY_DAYS);
 
-    // Floors and assets
-    $floors = Floor::all();
-    $assetsWithCoords = Asset::whereNotNull('x')
-                            ->whereNotNull('y')
-                            ->with(['devices' => function($q) {
-                                $q->where('is_active', 1);
-                            }])
-                            ->get();
-    $assetsWithDevices = Asset::with(['devices.sensors'])
-        ->whereHas('devices')
+    // Assets
+    $assetsWithDevices = Asset::with([
+            'floor',
+            'capacitySetting',
+            'devices' => function ($q) use ($historyStart) {
+                $q->where('is_active', 1)
+                    ->with([
+                        'sensors' => fn ($query) => $query->where('created_at', '>=', $historyStart)
+                            ->orderBy('created_at', 'asc'),
+                    ]);
+            },
+        ])
+        ->whereHas('devices', fn ($q) => $q->where('is_active', 1))
         ->where('is_active', 1)
         ->orderBy('asset_name')
         ->get();
+    $assetsWithDevices->each(function ($asset) {
+        $asset->devices->each(function ($device) use ($asset) {
+            $device->setRelation('asset', $asset);
+            $device->setRelation('latestSensor', $device->sensors->last());
+        });
+    });
+    $devices = $assetsWithDevices->flatMap->devices->values();
+    $assetsWithCoords = $assetsWithDevices
+        ->filter(fn ($asset) => $asset->x !== null && $asset->y !== null)
+        ->values();
 
-    // Todos and tasks
-    $todos = $this->loadTodosForUser(Auth::id());
-    $latestComplaints = $this->loadLatestComplaints();
-    $users = User::all();
-    $assignedTasks = $this->loadAssignedTasks();
-    $tasksCompletedPerStaff = $this->loadTasksCompletedPerStaff();
+    // Legacy dashboard data kept as empty collections because this view does not render it.
+    $todos = collect();
+    $floors = collect();
+    $latestComplaints = collect();
+    $users = collect();
+    $assignedTasks = collect();
+    $tasksCompletedPerStaff = collect();
 
     // Smart bin clear times
-    $smartBinClearTimes = $this->calculateSmartBinClearTimes();
+    $smartBinClearTimes = collect();
+
+    $holidays = Holiday::where('is_active', true)->get();
+    $events = Event::all();
+    $notificationLogs = NotificationLog::get();
 
     // Calendar
-    $calendarCombined = $this->getCalendarEvents();
+    $calendarCombined = $this->getCalendarEvents($holidays, $events, $notificationLogs);
 
     // Today's notifications
-    $todayNotifications = $this->getTodayNotifications();
+    $todayNotifications = $this->getTodayNotifications($notificationLogs);
 
     // Upcoming holidays and events
-    $upcomingHolidaysAndEvents = $this->getUpcomingHolidaysAndEvents();
+    $upcomingHolidaysAndEvents = $this->getUpcomingHolidaysAndEvents($holidays, $events);
 
-    $deviceStats = $this->getDeviceStats($devices);
     $whatsappNotificationActive = $this->getWhatsappNotificationStatus();
 
-    $abnormalBins = $this->getAbnormalBins();
+    $abnormalBins = $this->getAbnormalBins(devices: $devices);
+    $deviceStats = $this->getDeviceStats($devices, $abnormalBins);
 
     // Get bin statistics
-    $binStatistics = $this->getBinStatistics();
+    $collectionTripToday = $this->collectionTripService
+        ->getTripsFromAssets($assetsWithDevices, today()->toDateString(), today()->toDateString())
+        ->count();
+
+    $binStatistics = $this->getBinStatistics($devices, $assetsWithDevices, $collectionTripToday);
 
     // Last emptied times for each asset
-    $lastEmptiedTimes = $this->getLastEmptiedTimes();
+    $lastEmptiedTimes = $this->getLastEmptiedTimes($assetsWithDevices);
 
     // Predicted full times for each asset
-    $predictedFullTimes = $this->getPredictedFullTimes();
+    $predictedFullTimes = $this->getPredictedFullTimes($assetsWithDevices);
 
-    // ✅ FULL ASSETS USING ADMIN CAPACITY SETTING & LATEST SENSOR
-    $fullAssets = DB::table('devices')
-        ->join('assets', 'devices.asset_id', '=', 'assets.id')
-        ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
-        ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
-        ->whereRaw('s1.created_at = (
-            SELECT MAX(s2.created_at)
-            FROM sensors s2
-            WHERE s2.device_id = s1.device_id
-        )')
-        ->whereColumn('s1.capacity', '>', 'capacity_settings.half_to')
-        ->distinct('assets.id')
-        ->count('assets.id');
+    $abnormalBinsTrend = $this->getAbnormalBinsTrend(devices: $devices);
+    $fullAssets = $binStatistics['fullBins'];
 
     return view('dashboard.index', array_merge($deviceStats, $binStatistics, [
 
-        'todos' => $this->loadTodosForUser(Auth::id()),
-        'floors' => Floor::all(),
-        'assetsWithCoords' => Asset::whereNotNull('x')->whereNotNull('y')->whereHas('devices')->where('is_active', 1)->get(),
+        'todos' => $todos,
+        'floors' => $floors,
+        'assetsWithCoords' => $assetsWithCoords,
         'devices' => $devices,
-        'users' => User::all(),
-        'assignedTasks' => $this->loadAssignedTasks(),
-        'latestComplaints' => $this->loadLatestComplaints(),
-        'tasksCompletedPerStaff' => $this->loadTasksCompletedPerStaff(),
-        'smartBinClearTimes' => $this->calculateSmartBinClearTimes(),
-        'assetsWithDevices' => Asset::with(['devices.sensors'])->whereHas('devices')->where('is_active', 1)->orderBy('asset_name')->get(),
-        'calendarCombined' => $this->getCalendarEvents(),
-        'todayNotifications' => $this->getTodayNotifications(),
+        'users' => $users,
+        'assignedTasks' => $assignedTasks,
+        'latestComplaints' => $latestComplaints,
+        'tasksCompletedPerStaff' => $tasksCompletedPerStaff,
+        'smartBinClearTimes' => $smartBinClearTimes,
+        'assetsWithDevices' => $assetsWithDevices,
+        'calendarCombined' => $calendarCombined,
+        'todayNotifications' => $todayNotifications,
         'upcomingHolidaysAndEvents' => $upcomingHolidaysAndEvents,
         'whatsappNotificationActive'=> $whatsappNotificationActive,
         'abnormalBins' => $abnormalBins,
-        'abnormalBinsTrend' => $this->getAbnormalBinsTrend(),
+        'abnormalBinsTrend' => $abnormalBinsTrend,
 
         // ✅ PASS FULL ASSETS TO VIEW
         'fullAssets' => $fullAssets,
@@ -146,32 +158,42 @@ class DashboardController extends Controller
         'predictedFullTimes' => $predictedFullTimes,
     ]));
 }
-    private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40)
+    private function getAbnormalBinsTrend($days = 7, $minutesThreshold = 40, ?Collection $devices = null)
     {
         $trend = collect();
         $startDate = Carbon::today()->subDays($days - 1);
+        $historyStart = $startDate->copy()->subDay();
+        $endDate = Carbon::today()->endOfDay();
+
+        $deviceIds = ($devices ?? Device::with('asset')->get())
+            ->filter(fn ($device) =>
+                $device->is_active &&
+                $device->asset &&
+                $device->asset->is_active
+            )
+            ->pluck('id_device')
+            ->values();
+
+        $readingsByDevice = Sensor::select('device_id', 'capacity', 'created_at')
+            ->whereIn('device_id', $deviceIds)
+            ->whereBetween('created_at', [$historyStart, $endDate])
+            ->orderBy('device_id')
+            ->orderBy('created_at')
+            ->get()
+            ->groupBy('device_id');
 
         for ($i = 0; $i < $days; $i++) {
 
             $date = $startDate->copy()->addDays($i)->toDateString();
             $endOfDay = Carbon::parse($date)->endOfDay();
 
-            $devices = Device::with([
-                'asset',
-                'latestSensor' => function ($q) use ($endOfDay) {
-                    $q->where('time', '<=', $endOfDay);
-                }
-            ])
-            ->where('is_active', 1)
-            ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
-            ->get();
-
             $abnormal = 0;
             $undetected = 0;
 
-            foreach ($devices as $device) {
+            foreach ($deviceIds as $deviceId) {
 
-                $sensor = $device->latestSensor;
+                $sensor = ($readingsByDevice[$deviceId] ?? collect())
+                    ->last(fn ($reading) => $reading->created_at->lessThanOrEqualTo($endOfDay));
 
                 if (!$sensor) {
                     $undetected++;
@@ -200,14 +222,16 @@ class DashboardController extends Controller
         return $trend;
     }
 
-    private function getAbnormalBins($minutesThreshold = 40)
+    private function getAbnormalBins($minutesThreshold = 40, ?Collection $devices = null)
     {
         $threshold = Carbon::now()->subMinutes($minutesThreshold);
 
-        return Device::with(['asset', 'latestSensor'])
-            ->where('is_active', 1)
-            ->whereHas('asset', fn ($q) => $q->where('is_active', 1))
-            ->get()
+        return ($devices ?? Device::with(['asset', 'latestSensor'])->get())
+            ->filter(fn ($device) =>
+                $device->is_active &&
+                $device->asset &&
+                $device->asset->is_active
+            )
             ->filter(function ($device) use ($threshold) {
 
                 $sensor = $device->latestSensor;
@@ -239,14 +263,14 @@ class DashboardController extends Controller
     }
 
     /** Device statistics */
-private function getDeviceStats($devices): array
+private function getDeviceStats($devices, ?Collection $abnormalBins = null): array
 {
     $fullDevices  = $this->countFullDevices($devices);
     $halfDevices  = $this->countHalfDevices($devices);
     $emptyDevices = $this->countEmptyDevices($devices);
 
     // Count undetected separately (no latest sensor or too old)
-    $undetectedDevices = $this->countUndetectedDevicesFromAbnormalBins();
+    $undetectedDevices = $this->countUndetectedDevicesFromAbnormalBins(abnormalBins: $abnormalBins);
 
     return [
         'totalDevices' => $devices->count(),
@@ -269,50 +293,44 @@ private function getDeviceStats($devices): array
  *
  * @return array
  */
-private function getBinStatistics(): array
+private function getBinStatistics(Collection $devices, Collection $assetsWithDevices, int $collectionTripToday): array
 {
-    // 1. Total Bins Installed - Count of all active assets
-    $totalBinsInstalled = Asset::where('is_active', 1)->count();
+    $activeDevices = $devices->filter(fn ($device) =>
+        $device->is_active &&
+        $device->asset &&
+        $device->asset->is_active
+    );
 
-    // 2. Active Bins - Count of bins that have devices with recent sensor data
-    $activeBins = Asset::where('is_active', 1)
-        ->whereHas('devices', function ($query) {
-            $query->where('is_active', 1)
-                ->whereHas('sensors');
-        })
+    $totalBinsInstalled = $assetsWithDevices->count();
+
+    $activeBins = $activeDevices
+        ->filter(fn ($device) => $device->latestSensor)
+        ->pluck('asset_id')
+        ->unique()
         ->count();
 
-    // 3. Full Bins - Count of bins where latest sensor capacity is above half_to threshold
-    $fullBins = DB::table('devices')
-        ->join('assets', 'devices.asset_id', '=', 'assets.id')
-        ->join('capacity_settings', 'assets.id', '=', 'capacity_settings.asset_id')
-        ->join('sensors as s1', 'devices.id_device', '=', 's1.device_id')
-        ->whereRaw('s1.created_at = (
-            SELECT MAX(s2.created_at)
-            FROM sensors s2
-            WHERE s2.device_id = s1.device_id
-        )')
-        ->whereColumn('s1.capacity', '>', 'capacity_settings.half_to')
-        ->where('assets.is_active', 1)
-        ->where('devices.is_active', 1)
-        ->distinct('assets.id')
-        ->count('assets.id');
+    $fullBins = $activeDevices
+        ->filter(function ($device) {
+            $sensor = $device->latestSensor;
+            $setting = $device->asset->capacitySetting ?? null;
 
-    // 4. Collection Trip Today - Count of bins that went from full to empty today
-    $collectionTripToday = $this->getCollectionTripsToday();
-
-    // 5. Undetect Bins - Count of active devices with no sensor data today
-    $undetectBins = DB::table('devices')
-        ->join('assets', 'devices.asset_id', '=', 'assets.id')
-        ->where('assets.is_active', 1)
-        ->where('devices.is_active', 1)
-        ->whereNotIn('devices.id_device', function ($query) {
-            $query->select('device_id')
-                ->from('sensors')
-                ->whereDate('created_at', today());
+            return $sensor &&
+                $setting &&
+                is_numeric($sensor->capacity) &&
+                $sensor->capacity > $setting->half_to;
         })
-        ->distinct('devices.id_device')
-        ->count('devices.id_device');
+        ->pluck('asset_id')
+        ->unique()
+        ->count();
+
+    $undetectBins = $activeDevices
+        ->filter(fn ($device) =>
+            !$device->latestSensor ||
+            !Carbon::parse($device->latestSensor->created_at)->isToday()
+        )
+        ->pluck('id_device')
+        ->unique()
+        ->count();
 
     return [
         'totalBinsInstalled' => $totalBinsInstalled,
@@ -438,11 +456,11 @@ private function getBinStatistics(): array
 
 // ------------------- UPDATED CALENDAR METHOD -------------------
 /** Combine holidays, events, and notifications for calendar */
-private function getCalendarEvents()
+private function getCalendarEvents(?Collection $holidays = null, ?Collection $events = null, ?Collection $notifications = null)
 {
-    $holidays = Holiday::where('is_active', true)->get();
-    $events = Event::all();
-    $notifications = NotificationLog::with('asset')->get(); // eager load asset
+    $holidays ??= Holiday::where('is_active', true)->get();
+    $events ??= Event::all();
+    $notifications ??= NotificationLog::get();
 
     
 
@@ -509,18 +527,18 @@ $calendarNotifications = $groupedNotifications->map(function($items, $date) {
     }
 
 /** Today's notifications grouped by date */
-private function getTodayNotifications()
+private function getTodayNotifications(?Collection $notifications = null)
 {
-    return NotificationLog::whereDate('sent_at', now()->toDateString())
-        ->orderBy('sent_at', 'desc')
-        ->get()
+    return ($notifications ?? NotificationLog::whereDate('sent_at', now()->toDateString())->get())
+        ->filter(fn ($notification) => Carbon::parse($notification->sent_at)->isToday())
+        ->sortByDesc('sent_at')
         ->groupBy(function($n) {
             return Carbon::parse($n->sent_at)->format('Y-m-d');
         });
 }
 
 /** Get upcoming holidays and events (starting within next 7 days) */
-private function getUpcomingHolidaysAndEvents()
+private function getUpcomingHolidaysAndEvents(?Collection $holidays = null, ?Collection $events = null)
 {
     $today = Carbon::today();
     $nextWeek = Carbon::today()->addDays(7);
@@ -528,10 +546,9 @@ private function getUpcomingHolidaysAndEvents()
     $upcomingItems = collect();
 
     // Upcoming holidays
-    $holidays = Holiday::where('is_active', true)
-        ->whereBetween('start_date', [$today, $nextWeek])
-        ->orderBy('start_date', 'asc')
-        ->get();
+    $holidays = ($holidays ?? Holiday::where('is_active', true)->get())
+        ->filter(fn ($holiday) => Carbon::parse($holiday->start_date)->betweenIncluded($today, $nextWeek))
+        ->sortBy('start_date');
 
     foreach ($holidays as $holiday) {
         $upcomingItems->push([
@@ -543,9 +560,9 @@ private function getUpcomingHolidaysAndEvents()
     }
 
     // Upcoming events
-    $events = Event::whereBetween('start_date', [$today, $nextWeek])
-        ->orderBy('start_date', 'asc')
-        ->get();
+    $events = ($events ?? Event::all())
+        ->filter(fn ($event) => Carbon::parse($event->start_date)->betweenIncluded($today, $nextWeek))
+        ->sortBy('start_date');
 
     foreach ($events as $event) {
         $upcomingItems->push([
@@ -631,9 +648,9 @@ private function countEmptyDevices($devices)
     //     })->count();
     // }
 
-    private function countUndetectedDevicesFromAbnormalBins($minutesThreshold = 40)
+    private function countUndetectedDevicesFromAbnormalBins($minutesThreshold = 40, ?Collection $abnormalBins = null)
     {
-        return $this->getAbnormalBins($minutesThreshold)
+        return ($abnormalBins ?? $this->getAbnormalBins($minutesThreshold))
             ->where('type', 'undetected')
             ->count();
     }
@@ -706,10 +723,13 @@ private function calculateSmartBinClearTimes()
 
     $startOfWeek = Carbon::now()->startOfWeek(); // Monday 00:00
     $endOfWeek   = Carbon::now()->endOfWeek();   // Sunday 23:59
+    $historyStart = $startOfWeek->copy()->subDay();
 
     $devices = Device::with([
         'asset.capacitySetting', // <-- corrected
-        'sensors' => fn ($q) => $q->orderBy('created_at', 'asc')
+        'sensors' => fn ($q) => $q->where('created_at', '>=', $historyStart)
+            ->where('created_at', '<=', $endOfWeek)
+            ->orderBy('created_at', 'asc')
     ])->get();
 
     foreach ($devices as $device) {
@@ -756,15 +776,9 @@ private function calculateSmartBinClearTimes()
  *
  * @return \Illuminate\Support\Collection
  */
-private function getLastEmptiedTimes()
+private function getLastEmptiedTimes(Collection $assets)
 {
     $result = [];
-
-    $assets = Asset::with([
-        'capacitySetting',
-        'devices' => fn($q) => $q->where('is_active', 1),
-        'devices.sensors' => fn($q) => $q->orderBy('created_at', 'asc'),
-    ])->where('is_active', 1)->get();
 
     foreach ($assets as $asset) {
         if (!$asset->capacitySetting) continue;
@@ -852,56 +866,53 @@ private function isClearHoldActive(?Carbon $lastClearedAt, Carbon $readingTime):
  *
  * @return \Illuminate\Support\Collection
  */
-private function getPredictedFullTimes()
+private function getPredictedFullTimes(Collection $assets)
 {
     $result = [];
 
-    $devices = Device::with([
-        'asset',
-        'asset.capacitySetting',
-        'sensors' => fn ($q) => $q->orderBy('created_at', 'desc')->limit(10)
-    ])->get();
+    foreach ($assets as $asset) {
+        if (!$asset->capacitySetting) continue;
 
-    foreach ($devices as $device) {
-        if (!$device->asset || !$device->asset->capacitySetting) continue;
+        $assetId = $asset->id;
+        $capacity = $asset->capacitySetting;
 
-        $assetId = $device->asset->id;
-        $capacity = $device->asset->capacitySetting;
-        $sensors = $device->sensors;
+        foreach ($asset->devices as $device) {
+            $sensors = $device->sensors
+                ->filter(fn($s) => is_numeric($s->capacity))
+                ->sortByDesc('created_at')
+                ->take(10)
+                ->values();
 
-        // Need at least 2 sensor readings to calculate fill rate
-        if ($sensors->count() < 2) continue;
+            // Need at least 2 sensor readings to calculate fill rate
+            if ($sensors->count() < 2) continue;
 
-        $sensors = $sensors->filter(fn($s) => is_numeric($s->capacity))->values();
+            // Get the latest sensor reading
+            $latestSensor = $sensors->first();
+            $currentCapacity = $latestSensor->capacity;
 
-        if ($sensors->count() < 2) continue;
+            // Skip if already full
+            if ($currentCapacity > $capacity->half_to) continue;
 
-        // Get the latest sensor reading
-        $latestSensor = $sensors->first();
-        $currentCapacity = $latestSensor->capacity;
+            // Calculate fill rate (capacity change per hour)
+            $oldestSensor = $sensors->last();
+            $timeDiffHours = max(1, Carbon::parse($oldestSensor->created_at)->diffInMinutes($latestSensor->created_at) / 60);
+            $capacityChange = $currentCapacity - $oldestSensor->capacity;
+            $fillRatePerHour = $capacityChange / $timeDiffHours;
 
-        // Skip if already full
-        if ($currentCapacity > $capacity->half_to) continue;
+            // Skip if not filling (negative or zero rate)
+            if ($fillRatePerHour <= 0) continue;
 
-        // Calculate fill rate (capacity change per hour)
-        $oldestSensor = $sensors->last();
-        $timeDiffHours = max(1, Carbon::parse($oldestSensor->created_at)->diffInMinutes($latestSensor->created_at) / 60);
-        $capacityChange = $currentCapacity - $oldestSensor->capacity;
-        $fillRatePerHour = $capacityChange / $timeDiffHours;
+            // Calculate hours until full
+            $remainingCapacity = $capacity->half_to - $currentCapacity;
+            $hoursUntilFull = $remainingCapacity / $fillRatePerHour;
 
-        // Skip if not filling (negative or zero rate)
-        if ($fillRatePerHour <= 0) continue;
+            // Predicted full time
+            $predictedFullTime = Carbon::now()->addHours($hoursUntilFull);
 
-        // Calculate hours until full
-        $remainingCapacity = $capacity->half_to - $currentCapacity;
-        $hoursUntilFull = $remainingCapacity / $fillRatePerHour;
-
-        // Predicted full time
-        $predictedFullTime = Carbon::now()->addHours($hoursUntilFull);
-
-        // Store if this is the earliest predicted full time for this asset
-        if (!isset($result[$assetId]) || $predictedFullTime < $result[$assetId]) {
-            $result[$assetId] = $predictedFullTime;
+            // Store if this is the earliest predicted full time for this asset
+            if (!isset($result[$assetId]) || $predictedFullTime < $result[$assetId]) {
+                $result[$assetId] = $predictedFullTime;
+            }
         }
     }
 

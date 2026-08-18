@@ -11,16 +11,22 @@ class CollectionTripService
     private const COLLECTION_START_HOUR = 7;
     private const COLLECTION_END_HOUR = 22;
     private const CLEAR_HOLD_MINUTES = 60;
+    private const RANGE_CONTEXT_DAYS = 1;
 
     public function getTrips(?string $dateFrom = null, ?string $dateTo = null, ?int $assetId = null): Collection
     {
         $rangeStart = $dateFrom ? Carbon::parse($dateFrom)->startOfDay() : null;
         $rangeEnd = $dateTo ? Carbon::parse($dateTo)->endOfDay() : null;
+        $sensorStart = $rangeStart?->copy()->subDays(self::RANGE_CONTEXT_DAYS);
 
         $assets = Asset::with([
             'floor',
             'capacitySetting',
-            'devices.sensors' => fn ($q) => $q->orderBy('created_at', 'asc'),
+            'devices.sensors' => function ($q) use ($sensorStart, $rangeEnd) {
+                $q->when($sensorStart, fn ($query) => $query->where('created_at', '>=', $sensorStart))
+                    ->when($rangeEnd, fn ($query) => $query->where('created_at', '<=', $rangeEnd))
+                    ->orderBy('created_at', 'asc');
+            },
         ])
             ->when($assetId, fn ($q) => $q->where('id', $assetId))
             ->where('is_active', 1)
@@ -31,18 +37,31 @@ class CollectionTripService
 
     public function getTripsForAsset(Asset $asset, ?string $dateFrom = null, ?string $dateTo = null): Collection
     {
-        if (!$asset->relationLoaded('devices')) {
+        $rangeStart = $dateFrom ? Carbon::parse($dateFrom)->startOfDay() : null;
+        $rangeEnd = $dateTo ? Carbon::parse($dateTo)->endOfDay() : null;
+        $sensorStart = $rangeStart?->copy()->subDays(self::RANGE_CONTEXT_DAYS);
+
+        if (!$asset->relationLoaded('devices') || $rangeStart || $rangeEnd) {
             $asset->load([
                 'floor',
                 'capacitySetting',
-                'devices.sensors' => fn ($q) => $q->orderBy('created_at', 'asc'),
+                'devices.sensors' => function ($q) use ($sensorStart, $rangeEnd) {
+                    $q->when($sensorStart, fn ($query) => $query->where('created_at', '>=', $sensorStart))
+                        ->when($rangeEnd, fn ($query) => $query->where('created_at', '<=', $rangeEnd))
+                        ->orderBy('created_at', 'asc');
+                },
             ]);
         }
 
+        return $this->extractTrips(collect([$asset]), $rangeStart, $rangeEnd);
+    }
+
+    public function getTripsFromAssets(Collection $assets, ?string $dateFrom = null, ?string $dateTo = null): Collection
+    {
         $rangeStart = $dateFrom ? Carbon::parse($dateFrom)->startOfDay() : null;
         $rangeEnd = $dateTo ? Carbon::parse($dateTo)->endOfDay() : null;
 
-        return $this->extractTrips(collect([$asset]), $rangeStart, $rangeEnd);
+        return $this->extractTrips($assets, $rangeStart, $rangeEnd);
     }
 
     private function extractTrips(Collection $assets, ?Carbon $rangeStart, ?Carbon $rangeEnd): Collection
