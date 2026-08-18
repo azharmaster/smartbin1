@@ -1805,11 +1805,31 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoPopupPaused = false;
     const toggleMapMovementBtn = document.getElementById('toggleMapMovement');
 
-    // Add OpenStreetMap tiles with modern CartoDB Voyager
-       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: 'TRX SmartBin'
-    }).addTo(map);
+    const satelliteLayer = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+            maxZoom: 20,
+            maxNativeZoom: 19,
+            attribution: 'Tiles &copy; Esri'
+        }
+    ).addTo(map);
+
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    L.control.layers(
+        {
+            Satellite: satelliteLayer,
+            Street: streetLayer
+        },
+        null,
+        {
+            collapsed: false,
+            position: 'topleft'
+        }
+    ).addTo(map);
 
     // Map controls
     document.getElementById('zoomIn').addEventListener('click', () => map.zoomIn());
